@@ -22,6 +22,151 @@ function trackEvent(eventName, params = {}) {
 }
 // ─────────────────────────────────────────────────────────────
 
+// ── Visitor Counter ───────────────────────────────────────────
+async function fetchVisitorCount() {
+  try {
+    const res = await fetch("https://api.countapi.xyz/hit/neuralkit-abhishek/visits");
+    const data = await res.json();
+    return data.value;
+  } catch { return null; }
+}
+// ─────────────────────────────────────────────────────────────
+
+// ── Daily AI Trivia ───────────────────────────────────────────
+function TriviaSection() {
+  const [trivia, setTrivia] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function loadTrivia() {
+    setLoading(true);
+    setSelected(null);
+    setTrivia(null);
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 300,
+          messages: [{
+            role: "system",
+            content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:
+{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}`
+          }, {
+            role: "user",
+            content: "Give me a fresh AI trivia question about machine learning, LLMs, AI history, or famous researchers."
+          }]
+        }),
+      });
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content || "";
+      const json = JSON.parse(text.replace(/```json|```/g, "").trim());
+      setTrivia(json);
+    } catch { setTrivia({ error: true }); }
+    setLoading(false);
+  }
+
+  useEffect(() => { loadTrivia(); }, []);
+
+  const isCorrect = selected && trivia && selected.startsWith(trivia.answer);
+
+  return (
+    <section style={{
+      borderTop: "1px solid rgba(255,255,255,0.05)",
+      borderBottom: "1px solid rgba(255,255,255,0.05)",
+      padding: "60px 32px",
+      background: "rgba(255,255,255,0.01)",
+    }}>
+      <div style={{ maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
+        <div style={{
+          fontFamily: "'Space Mono', monospace",
+          fontSize: "0.68rem",
+          color: "#00ffe0",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          marginBottom: "8px",
+        }}>◆ Daily AI Trivia</div>
+        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.8rem", marginBottom: "28px", fontFamily: "'Space Mono', monospace" }}>
+          Test your AI knowledge — new question every time
+        </p>
+
+        {loading && (
+          <div style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}>
+            <span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />
+            Generating question...
+          </div>
+        )}
+
+        {trivia && !trivia.error && !loading && (
+          <div>
+            <div style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: "1.15rem",
+              fontWeight: 700,
+              color: "#fff",
+              marginBottom: "24px",
+              lineHeight: 1.5,
+            }}>{trivia.question}</div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+              {trivia.options.map((opt) => {
+                const isThis = selected === opt;
+                const correct = opt.startsWith(trivia.answer);
+                let bg = "rgba(255,255,255,0.04)";
+                let border = "1px solid rgba(255,255,255,0.08)";
+                let color = "rgba(255,255,255,0.8)";
+                if (selected) {
+                  if (correct) { bg = "rgba(0,255,224,0.12)"; border = "1px solid #00ffe0"; color = "#00ffe0"; }
+                  else if (isThis) { bg = "rgba(255,80,80,0.1)"; border = "1px solid #ff6b6b"; color = "#ff6b6b"; }
+                }
+                return (
+                  <button key={opt} onClick={() => !selected && setSelected(opt)} style={{
+                    background: bg, border, borderRadius: "10px",
+                    padding: "14px 16px", color, fontSize: "0.85rem",
+                    cursor: selected ? "default" : "pointer",
+                    fontFamily: "'DM Sans', sans-serif", textAlign: "left",
+                    transition: "all 0.2s",
+                  }}>{opt}</button>
+                );
+              })}
+            </div>
+
+            {selected && (
+              <div style={{
+                background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)",
+                border: `1px solid ${isCorrect ? "rgba(0,255,224,0.2)" : "rgba(255,180,0,0.2)"}`,
+                borderRadius: "12px", padding: "16px", marginBottom: "20px",
+                fontSize: "0.85rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.7,
+              }}>
+                {isCorrect ? "✅ Correct! " : `❌ Not quite. The answer is ${trivia.answer}. `}
+                {trivia.fact}
+              </div>
+            )}
+
+            <button onClick={loadTrivia} style={{
+              background: "rgba(0,255,224,0.08)",
+              border: "1px solid rgba(0,255,224,0.2)",
+              borderRadius: "10px", padding: "10px 24px",
+              color: "#00ffe0", fontFamily: "'Space Mono', monospace",
+              fontSize: "0.78rem", cursor: "pointer", letterSpacing: "0.05em",
+            }}>↻ New Question</button>
+          </div>
+        )}
+
+        {trivia?.error && !loading && (
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.85rem" }}>
+            Couldn't load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 const TOOLS = [
   {
     id: "summarizer",
@@ -321,9 +466,10 @@ function Particle({ style }) {
 export default function App() {
   const [activeTool, setActiveTool] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(null);
 
-  // Load GA once on mount
   useEffect(() => { loadGA(GA_ID); }, []);
+  useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -642,6 +788,7 @@ export default function App() {
             Try Tools Free →
           </button>
           <button
+            onClick={() => window.open("https://news.ycombinator.com/news", "_blank")}
             style={{
               background: "transparent",
               border: "1px solid rgba(255,255,255,0.15)",
@@ -653,49 +800,28 @@ export default function App() {
               cursor: "pointer",
             }}
           >
-            Learn More
+            AI News →
           </button>
         </div>
 
         {/* Stats strip */}
-        <div
-          style={{
-            marginTop: "56px",
-            display: "flex",
-            gap: "60px",
-            whiteSpace: "nowrap",
-            justifyContent: "center",
-          }}
-        >
+        <div style={{ marginTop: "56px", display: "flex", gap: "60px", whiteSpace: "nowrap", justifyContent: "center" }}>
           {[
-            { n: "10+", label: "Free Tools" },
+            { n: visitorCount ? visitorCount.toLocaleString() : "...", label: "Visitors" },
             { n: "0", label: "Signup Required" },
             { n: "∞", label: "Possibilities" },
           ].map(({ n, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
-              <div
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontSize: "2rem",
-                  fontWeight: 800,
-                  background: "linear-gradient(135deg, #00ffe0, #0af)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {n}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.72rem",
-                  color: "rgba(255,255,255,0.4)",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  fontFamily: "'Space Mono', monospace",
-                }}
-              >
-                {label}
-              </div>
+              <div style={{
+                fontFamily: "'Syne', sans-serif", fontSize: "2rem", fontWeight: 800,
+                background: "linear-gradient(135deg, #00ffe0, #0af)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>{n}</div>
+              <div style={{
+                fontSize: "0.72rem", color: "rgba(255,255,255,0.4)",
+                letterSpacing: "0.1em", textTransform: "uppercase",
+                fontFamily: "'Space Mono', monospace",
+              }}>{label}</div>
             </div>
           ))}
         </div>
@@ -746,7 +872,7 @@ export default function App() {
               fontWeight: 300,
             }}
           >
-            Powered by Claude AI. No API key needed.
+            Powered by Groq AI. Free & Instant.
           </p>
         </div>
 
@@ -814,60 +940,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* COMING SOON TOOLS STRIP */}
-      <section
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
-          padding: "48px 32px",
-          textAlign: "center",
-          background: "rgba(255,255,255,0.01)",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Space Mono', monospace",
-            fontSize: "0.68rem",
-            color: "rgba(255,255,255,0.35)",
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            marginBottom: "24px",
-          }}
-        >
-          Coming Soon
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "14px",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          {[
-            "📄 PDF Chat",
-            "🏗 Agent Builder",
-            "📊 Data Analyzer",
-            "✍️ Prompt Engineer",
-            "🔗 RAG Playground",
-            "🧪 LLM Comparator",
-          ].map((item) => (
-            <div
-              key={item}
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "100px",
-                padding: "10px 20px",
-                fontSize: "0.83rem",
-                color: "rgba(255,255,255,0.45)",
-              }}
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      </section>
+      <TriviaSection />
 
       {/* FOOTER CTA */}
       <section
