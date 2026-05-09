@@ -38,24 +38,63 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+
+  // Replace emojis with clean text labels
+  const cleaned = text
+    .replace(/🎯/g, "[CORE]")
+    .replace(/🔍/g, "[FINDINGS]")
+    .replace(/💡/g, "[INSIGHTS]")
+    .replace(/⚠️/g, "[WARNING]")
+    .replace(/📌/g, "[NOTE]")
+    .replace(/✅/g, "[+]")
+    .replace(/❌/g, "[-]")
+    .replace(/🚀/g, "[KEY]")
+    .replace(/📈/g, "[GROWTH]")
+    .replace(/◆/g, "*")
+    .replace(/[^\x00-\x7F]/g, "")
+    .trim();
+
   doc.setFont("helvetica");
-  doc.setFontSize(11);
-  const lines = doc.splitTextToSize(text, 180);
-  let y = 20;
-  doc.setFontSize(16);
-  doc.text("ZeroAPI · AI Output", 10, y);
-  y += 10;
+
+  // Header
+  doc.setFontSize(18);
+  doc.setTextColor(0, 0, 0);
+  doc.text("ZeroAPI - AI Output", 10, 20);
   doc.setFontSize(9);
-  doc.setTextColor(150);
-  doc.text(`zeroapi.in  |  ${new Date().toLocaleDateString()}`, 10, y);
-  y += 10;
-  doc.setTextColor(0);
+  doc.setTextColor(130, 130, 130);
+  doc.text(`zeroapi.in  |  Generated: ${new Date().toLocaleDateString("en-IN")}`, 10, 28);
+
+  // Divider
+  doc.setDrawColor(0, 200, 180);
+  doc.setLineWidth(0.5);
+  doc.line(10, 32, 200, 32);
+
+  // Content
   doc.setFontSize(11);
+  const lines = doc.splitTextToSize(cleaned, 185);
+  let y = 42;
   lines.forEach(line => {
     if (y > 280) { doc.addPage(); y = 20; }
+    if (line.startsWith("[")) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 150, 130);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(30, 30, 30);
+    }
     doc.text(line, 10, y);
     y += 7;
   });
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text(`ZeroAPI.in - Free AI Tools | Page ${i} of ${pageCount}`, 10, 290);
+  }
+
   doc.save(`${filename}.pdf`);
 }
 
