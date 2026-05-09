@@ -20,7 +20,7 @@ function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
 async function fetchVisitorCount() {
   try {
-    const r = await fetch("https://api.countapi.xyz/hit/neuralkit-abhishek/visits");
+    const r = await fetch("https://countapi.mileshilliard.com/api/v1/hit/neuralkit-abhishek-visits");
     return (await r.json()).value;
   } catch { return null; }
 }
