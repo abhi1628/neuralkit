@@ -463,6 +463,78 @@ function Particle({ style }) {
   );
 }
 
+function AskAuthor() {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function ask() {
+    if (!question.trim()) return;
+    setLoading(true); setAnswer(""); setError("");
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 500,
+          messages: [{
+            role: "system",
+            content: `You are Prof. Abhishek Singh, Assistant Professor of CSE at Baderia Global Institute of Engineering and Management, Jabalpur, India. You have M.Tech in Data Science and VLSI Design, and you authored "Agentic AI Systems: Design & Engineering". Answer questions about AI, Agentic Systems, LLMs, Python, research, and your book in a friendly, knowledgeable, professor-like tone. Be concise but insightful. Speak in first person as Prof. Abhishek Singh.`
+          }, { role: "user", content: question }]
+        }),
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) setAnswer(data.choices[0].message.content);
+      else setError("Couldn't get a response. Please try again.");
+    } catch { setError("Connection error. Please try again."); }
+    setLoading(false);
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+        <input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && ask()}
+          placeholder="e.g. What is an AI agent? How do I start with LangGraph?"
+          style={{
+            flex: 1, background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px",
+            padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif",
+            fontSize: "0.85rem", outline: "none",
+          }}
+          onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.4)"}
+          onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+        />
+        <button onClick={ask} disabled={loading || !question.trim()} style={{
+          background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
+          border: "none", borderRadius: "10px", padding: "12px 20px",
+          color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000",
+          fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer",
+          fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap",
+        }}>
+          {loading ? "..." : "Ask →"}
+        </button>
+      </div>
+      {error && <div style={{ color: "#ff6b6b", fontSize: "0.82rem", marginBottom: "12px" }}>⚠ {error}</div>}
+      {answer && (
+        <div style={{
+          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "12px", padding: "18px",
+          fontSize: "0.88rem", color: "rgba(255,255,255,0.8)", lineHeight: 1.8,
+          textAlign: "left",
+        }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#00ffe0", marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [activeTool, setActiveTool] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -567,20 +639,25 @@ export default function App() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "7px",
-              background: "linear-gradient(135deg, #00ffe0, #0af)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "14px",
-            }}
-          >
-            ◈
-          </div>
+          <svg width="32" height="32" viewBox="-80 -80 160 160" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00ffe0"/>
+                <stop offset="100%" stopColor="#00aaff"/>
+              </linearGradient>
+            </defs>
+            <polygon points="0,-70 61,-35 61,35 0,70 -61,35 -61,-35" fill="none" stroke="url(#lg1)" strokeWidth="3"/>
+            <line x1="0" y1="-38" x2="32" y2="19" stroke="rgba(0,255,224,0.3)" strokeWidth="1.5"/>
+            <line x1="0" y1="-38" x2="-32" y2="19" stroke="rgba(0,170,255,0.3)" strokeWidth="1.5"/>
+            <line x1="32" y1="19" x2="-32" y2="19" stroke="rgba(0,255,224,0.25)" strokeWidth="1.5"/>
+            <line x1="0" y1="-38" x2="0" y2="-70" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5"/>
+            <line x1="32" y1="19" x2="61" y2="35" stroke="rgba(0,170,255,0.4)" strokeWidth="1.5"/>
+            <line x1="-32" y1="19" x2="-61" y2="35" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5"/>
+            <circle cx="0" cy="-38" r="6" fill="#00ffe0"/>
+            <circle cx="32" cy="19" r="6" fill="#00aaff"/>
+            <circle cx="-32" cy="19" r="6" fill="#00ffe0"/>
+            <circle cx="0" cy="0" r="3" fill="rgba(0,170,255,0.7)"/>
+          </svg>
           <span
             style={{
               fontFamily: "'Syne', sans-serif",
@@ -593,9 +670,14 @@ export default function App() {
           </span>
         </div>
         <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-          {["Tools", "About", "Blog"].map((item) => (
+          {[
+            { label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) },
+            { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) },
+            { label: "YouTube", action: () => window.open("https://www.youtube.com/@pyofpython", "_blank") },
+          ].map(({ label, action }) => (
             <span
-              key={item}
+              key={label}
+              onClick={action}
               style={{
                 fontSize: "0.85rem",
                 color: "rgba(255,255,255,0.55)",
@@ -606,10 +688,11 @@ export default function App() {
               onMouseEnter={(e) => (e.target.style.color = "#fff")}
               onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.55)")}
             >
-              {item}
+              {label}
             </span>
           ))}
           <button
+            onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
             style={{
               background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
               border: "none",
@@ -872,7 +955,7 @@ export default function App() {
               fontWeight: 300,
             }}
           >
-            Powered by Groq AI. Free & Instant.
+            Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free
           </p>
         </div>
 
@@ -944,10 +1027,11 @@ export default function App() {
 
       {/* FOOTER CTA */}
       <section
+        id="about"
         style={{
           maxWidth: "700px",
           margin: "0 auto",
-          padding: "100px 32px",
+          padding: "100px 32px 60px",
           textAlign: "center",
         }}
       >
@@ -962,48 +1046,55 @@ export default function App() {
           }}
         >
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Built by an </span>
-          <span
-            style={{
-              background: "linear-gradient(135deg, #00ffe0, #0af)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              display: "inline-block",
-            }}
-          >
+          <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>
             AI Researcher
           </span>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>, for everyone.</span>
         </h2>
-        <p
-          style={{
-            color: "rgba(255,255,255,0.45)",
-            lineHeight: 1.8,
-            fontSize: "1rem",
-            fontWeight: 300,
-            marginBottom: "36px",
-          }}
-        >
-          NeuralKit is crafted by Abhishek Singh, Professor of CS & AI at BGIEM Jabalpur
-          and author of <em>Agentic AI Systems: Design & Engineering</em>. These tools
-          are built from real research, for real engineers.
+        <p style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
+          NeuralKit is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design & Engineering</em>.
+          <br/><br/>
+          This platform exists because powerful AI tools shouldn't be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> NeuralKit is also the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
-        <button
-          onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM/ref=tmm_pap_swatch_0", "_blank")}
-          style={{
-            background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
-            border: "none",
-            borderRadius: "12px",
-            padding: "16px 40px",
-            color: "#000",
-            fontWeight: 700,
-            fontSize: "0.95rem",
-            cursor: "pointer",
-            fontFamily: "'Space Mono', monospace",
-            boxShadow: "0 0 40px rgba(0,255,224,0.25)",
-          }}
-        >
-          Explore the Book →
-        </button>
+        <div style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
+          <button
+            onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM/ref=tmm_pap_swatch_0", "_blank")}
+            style={{
+              background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
+              border: "none", borderRadius: "12px", padding: "14px 32px",
+              color: "#000", fontWeight: 700, fontSize: "0.9rem",
+              cursor: "pointer", fontFamily: "'Space Mono', monospace",
+              boxShadow: "0 0 30px rgba(0,255,224,0.2)",
+            }}
+          >
+            📘 Explore the Book →
+          </button>
+          <button
+            onClick={() => window.open("https://www.youtube.com/@pyofpython", "_blank")}
+            style={{
+              background: "rgba(255,0,0,0.1)", border: "1px solid rgba(255,80,80,0.3)",
+              borderRadius: "12px", padding: "14px 32px",
+              color: "#ff6b6b", fontWeight: 600, fontSize: "0.9rem",
+              cursor: "pointer",
+            }}
+          >
+            ▶ YouTube: pyofpython
+          </button>
+        </div>
+      </section>
+
+      {/* ASK THE AUTHOR */}
+      <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 32px 100px" }}>
+        <div style={{
+          background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)",
+          borderRadius: "20px", padding: "36px",
+        }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem", marginBottom: "20px" }}>
+            Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.
+          </p>
+          <AskAuthor />
+        </div>
       </section>
 
       {/* FOOTER */}
@@ -1018,28 +1109,19 @@ export default function App() {
           gap: "12px",
         }}
       >
-        <div
-          style={{
-            fontFamily: "'Space Mono', monospace",
-            fontSize: "0.72rem",
-            color: "rgba(255,255,255,0.25)",
-          }}
-        >
-          © 2026 NeuralKit · Built by Abhishek Singh
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>
+          © 2026 NeuralKit · Prof. Abhishek Singh · All Rights Reserved
         </div>
         <div style={{ display: "flex", gap: "24px" }}>
-          {["Privacy", "Terms", "Contact"].map((item) => (
-            <span
-              key={item}
-              style={{
-                fontSize: "0.78rem",
-                color: "rgba(255,255,255,0.3)",
-                cursor: "pointer",
-                fontFamily: "'Space Mono', monospace",
-              }}
-            >
-              {item}
-            </span>
+          {[
+            { label: "Privacy", action: () => alert("Privacy Policy\n\nNeuralKit does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required.") },
+            { label: "Terms", action: () => alert("Terms of Use\n\nNeuralKit is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time.") },
+            { label: "Contact", action: () => window.location.href = "mailto:abhi16.2007@gmail.com" },
+          ].map(({ label, action }) => (
+            <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }}
+              onMouseEnter={(e) => (e.target.style.color = "rgba(255,255,255,0.7)")}
+              onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.3)")}
+            >{label}</span>
           ))}
         </div>
       </footer>
