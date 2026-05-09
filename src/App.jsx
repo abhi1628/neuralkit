@@ -133,17 +133,42 @@ function TriviaSection() {
   const [total, setTotal] = useState(0);
   const [shared, setShared] = useState(false);
 
+  const topics = [
+    "history of artificial intelligence and its pioneers",
+    "large language models and transformer architecture",
+    "computer vision and image recognition breakthroughs",
+    "reinforcement learning and famous RL milestones",
+    "famous AI researchers and their contributions",
+    "natural language processing techniques",
+    "AI ethics and bias in machine learning",
+    "robotics and autonomous systems",
+    "neural network architectures like CNN, RNN, LSTM",
+    "AI applications in healthcare and medicine",
+    "generative AI and diffusion models",
+    "AI in gaming — AlphaGo, AlphaStar, OpenAI Five",
+    "Python libraries for machine learning",
+    "data science and statistics fundamentals",
+    "AI safety and alignment research",
+    "famous AI failures and lessons learned",
+    "quantum computing and AI",
+    "edge AI and on-device machine learning",
+    "multimodal AI models",
+    "AI regulation and global policies",
+  ];
+
   async function loadTrivia() {
     setLoading(true); setSelected(null); setTrivia(null);
+    const topic = topics[Math.floor(Math.random() * topics.length)];
+    const seed = Math.floor(Math.random() * 10000);
     try {
       const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile", max_tokens: 300,
+          model: "llama-3.3-70b-versatile", max_tokens: 300, temperature: 1.2,
           messages: [
             { role: "system", content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:\n{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
-            { role: "user", content: "Give me a fresh AI trivia question about machine learning, LLMs, AI history, or famous researchers." }
+            { role: "user", content: `Generate a UNIQUE trivia question (seed:${seed}) specifically about: ${topic}. Make it different from common questions.` }
           ],
         }),
       });
