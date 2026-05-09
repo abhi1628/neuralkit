@@ -112,7 +112,7 @@ const TOOLS = [
     icon: "⚡",
     name: "Research Summarizer",
     tagline: "Paste any paper, article, or abstract. Get instant structured insights.",
-    placeholder: "Paste your research paper, abstract, or any long text here...",
+    placeholder: "Paste your research abstract, introduction, or any text (best results under 4,000 words)...",
     inputLabel: "Input Text",
     cta: "Summarize Now",
     systemPrompt: `You are an expert research analyst. When given text, produce a concise structured summary:
@@ -503,7 +503,7 @@ function UploadTool({ prompt, filename, icon, label }) {
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : "rgba(255,255,255,0.5)", marginBottom: "6px" }}>
           {extracting ? "Extracting text..." : fileName ? fileName : `Click to upload PDF or Word file`}
         </div>
-        {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx</div>}
+        {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx · Max ~10 pages for best results</div>}
         {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= 12000 ? " · Large file: first 12K chars used" : ""}</div>}
       </div>
       {extractedText && (
@@ -833,7 +833,7 @@ export default function App() {
             {[
               { label: "Privacy", action: () => alert("Privacy Policy\n\nZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required.") },
               { label: "Terms", action: () => alert("Terms of Use\n\nZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time.") },
-              { label: "Contact", action: () => window.location.href = "mailto:abhi16.2007@gmail.com" },
+              { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) },
             ].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }}
                 onMouseEnter={(e) => (e.target.style.color = "rgba(255,255,255,0.7)")}
