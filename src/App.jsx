@@ -673,7 +673,6 @@ export default function App() {
           {[
             { label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) },
-            { label: "YouTube", action: () => window.open("https://www.youtube.com/@pyofpython", "_blank") },
           ].map(({ label, action }) => (
             <span
               key={label}
@@ -691,6 +690,19 @@ export default function App() {
               {label}
             </span>
           ))}
+          {/* YouTube icon */}
+          <span
+            onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank")}
+            title="YouTube: pyofpython"
+            style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/>
+              <polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/>
+            </svg>
+          </span>
           <button
             onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
             style={{
@@ -1070,15 +1082,23 @@ export default function App() {
             📘 Explore the Book →
           </button>
           <button
-            onClick={() => window.open("https://www.youtube.com/@pyofpython", "_blank")}
+            onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank")}
             style={{
-              background: "rgba(255,0,0,0.1)", border: "1px solid rgba(255,80,80,0.3)",
-              borderRadius: "12px", padding: "14px 32px",
-              color: "#ff6b6b", fontWeight: 600, fontSize: "0.9rem",
-              cursor: "pointer",
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "12px", padding: "14px 24px",
+              color: "rgba(255,255,255,0.7)", fontWeight: 500, fontSize: "0.9rem",
+              cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
+              transition: "border-color 0.2s",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
           >
-            ▶ YouTube: pyofpython
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect width="24" height="24" rx="5" fill="#ff0000"/>
+              <polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/>
+            </svg>
+            pyofpython
           </button>
         </div>
       </section>
