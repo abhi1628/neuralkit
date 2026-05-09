@@ -140,6 +140,8 @@ function ToolPanel({ tool }) {
       if (data?.choices?.[0]?.message?.content) {
         setOutput(data.choices[0].message.content);
         setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+      } else if (data?.error) {
+        setError(`API Error: ${data.error.message}`);
       } else {
         setError("Unexpected response. Please try again.");
       }
