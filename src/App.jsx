@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
 // ── Google Analytics ──────────────────────────────────────────
-const GA_ID = "G-FTQS5X9WF3"; // ← Replace with your Measurement ID
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_KEY;
 
-function loadGA(id) {
+const GA_ID = "G-FTQS5X9WF3";
   if (document.getElementById("ga-script")) return;
   const s = document.createElement("script");
   s.id = "ga-script";
@@ -121,19 +121,24 @@ function ToolPanel({ tool }) {
     setError("");
     trackEvent("tool_run", { tool_name: tool.name, input_length: input.length });
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "llama3-8b-8192",
           max_tokens: 1000,
-          system: tool.systemPrompt,
-          messages: [{ role: "user", content: input }],
+          messages: [
+            { role: "system", content: tool.systemPrompt },
+            { role: "user", content: input },
+          ],
         }),
       });
       const data = await res.json();
-      if (data?.content?.[0]?.text) {
-        setOutput(data.content[0].text);
+      if (data?.choices?.[0]?.message?.content) {
+        setOutput(data.choices[0].message.content);
         setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
       } else {
         setError("Unexpected response. Please try again.");
