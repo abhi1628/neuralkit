@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 
 // ── Google Analytics ──────────────────────────────────────────
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_KEY;
-
 const GA_ID = "G-FTQS5X9WF3";
-  if (document.getElementById("ga-script")) return;
+
+function loadGA(id) {
   const s = document.createElement("script");
   s.id = "ga-script";
   s.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
