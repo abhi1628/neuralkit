@@ -20,7 +20,7 @@ function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
 async function fetchVisitorCount() {
   try {
-    const r = await fetch("https://countapi.mileshilliard.com/api/v1/hit/neuralkit-abhishek-visits");
+    const r = await fetch("https://countapi.mileshilliard.com/api/v1/hit/zeroapi-in-visits");
     return (await r.json()).value;
   } catch { return null; }
 }
@@ -34,7 +34,7 @@ function loadScript(src) {
   });
 }
 
-async function downloadAsPDF(text, filename = "neuralkit-output") {
+async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -43,11 +43,11 @@ async function downloadAsPDF(text, filename = "neuralkit-output") {
   const lines = doc.splitTextToSize(text, 180);
   let y = 20;
   doc.setFontSize(16);
-  doc.text("NeuralKit — AI Output", 10, y);
+  doc.text("ZeroAPI · AI Output", 10, y);
   y += 10;
   doc.setFontSize(9);
   doc.setTextColor(150);
-  doc.text(`neuralkit-gamma.vercel.app  |  ${new Date().toLocaleDateString()}`, 10, y);
+  doc.text(`zeroapi.in  |  ${new Date().toLocaleDateString()}`, 10, y);
   y += 10;
   doc.setTextColor(0);
   doc.setFontSize(11);
@@ -189,7 +189,7 @@ function TriviaSection() {
   }
 
   function shareScore() {
-    const text = `🧠 I scored ${score}/${total} on NeuralKit AI Trivia!\nTest your AI knowledge for free → neuralkit-gamma.vercel.app`;
+    const text = `🧠 I scored ${score}/${total} on ZeroAPI AI Trivia!\nTest your AI knowledge for free → zeroapi.in`;
     navigator.clipboard.writeText(text).then(() => { setShared(true); setTimeout(() => setShared(false), 2500); });
   }
 
@@ -306,7 +306,7 @@ function ToolPanel({ tool }) {
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>◆ Output</div>
             {formatOutput(output)}
           </div>
-          <OutputActions text={output} filename={`neuralkit-${tool.id}`} />
+          <OutputActions text={output} filename={`zeroapi-${tool.id}`} />
         </div>
       )}
     </div>
@@ -382,7 +382,7 @@ function MCQPanel({ tool }) {
         <div ref={outputRef}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Generated Questions</div>
           {formatMCQ(rawOutput)}
-          <OutputActions text={rawOutput} filename="neuralkit-mcqs" />
+          <OutputActions text={rawOutput} filename="zeroapi-mcqs" />
         </div>
       )}
     </div>
@@ -479,7 +479,7 @@ function UploadTool({ prompt, filename, icon, label }) {
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>◆ {label} Result</div>
             {formatOutput(output)}
           </div>
-          <OutputActions text={output} filename={`neuralkit-${filename}`} />
+          <OutputActions text={output} filename={`zeroapi-${filename}`} />
         </div>
       )}
     </div>
@@ -540,7 +540,7 @@ function AskAuthor() {
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#00ffe0", marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
-          <OutputActions text={answer} filename="neuralkit-ask-author" />
+          <OutputActions text={answer} filename="zeroapi-ask-author" />
         </div>
       )}
     </div>
@@ -647,7 +647,7 @@ export default function App() {
             <circle cx="-32" cy="19" r="6" fill="#00ffe0"/>
             <circle cx="0" cy="0" r="3" fill="rgba(0,170,255,0.7)"/>
           </svg>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>NeuralKit</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>ZeroAPI</span>
         </div>
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[
@@ -677,7 +677,7 @@ export default function App() {
 
         <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.75rem", fontFamily: "'Space Mono', monospace", color: "#00ffe0", letterSpacing: "0.08em" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00ffe0", animation: "pulse 1.5s ease infinite", display: "inline-block" }} />
-          FREE AI TOOLS FOR DEVELOPERS & RESEARCHERS
+          FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
         <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(3rem, 7vw, 6.5rem)", fontWeight: 800, lineHeight: 1.0, letterSpacing: "-0.04em", marginBottom: "24px", maxWidth: "900px", color: "#fff" }}>
@@ -688,7 +688,7 @@ export default function App() {
         </h1>
 
         <p className="hero-sub" style={{ fontSize: "1.15rem", color: "rgba(255,255,255,0.5)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
-          Free, browser-based AI tools for developers, researchers, and engineers. No signup. No cost. Just intelligence at your fingertips.
+          Free, browser-based AI tools for developers, researchers, and engineers. Zero API key. Zero signup. Zero cost. Just intelligence at your fingertips.
         </p>
 
         <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
@@ -761,9 +761,9 @@ export default function App() {
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>, for everyone.</span>
         </h2>
         <p style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
-          NeuralKit is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design & Engineering</em>.
+          ZeroAPI is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design & Engineering</em>.
           <br /><br />
-          This platform exists because powerful AI tools shouldn't be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> NeuralKit is the practical companion to the book — real tools, real AI, no gatekeeping.
+          This platform exists because powerful AI tools shouldn't be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
         <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
           <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM/ref=tmm_pap_swatch_0", "_blank")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
@@ -788,11 +788,11 @@ export default function App() {
       {/* FOOTER */}
       <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© 2026 NeuralKit · Prof. Abhishek Singh · All Rights Reserved</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© 2026 ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
           <div style={{ display: "flex", gap: "24px" }}>
             {[
-              { label: "Privacy", action: () => alert("Privacy Policy\n\nNeuralKit does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required.") },
-              { label: "Terms", action: () => alert("Terms of Use\n\nNeuralKit is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time.") },
+              { label: "Privacy", action: () => alert("Privacy Policy\n\nZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required.") },
+              { label: "Terms", action: () => alert("Terms of Use\n\nZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time.") },
               { label: "Contact", action: () => window.location.href = "mailto:abhi16.2007@gmail.com" },
             ].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }}
