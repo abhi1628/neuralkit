@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 // ── Google Analytics ──────────────────────────────────────────
-const GA_ID = "G-XXXXXXXXXX"; // ← Replace with your Measurement ID
+const GA_ID = "G-FTQS5X9WF3"; // ← Replace with your Measurement ID
 
 function loadGA(id) {
   if (document.getElementById("ga-script")) return;
@@ -908,6 +908,7 @@ export default function App() {
           are built from real research, for real engineers.
         </p>
         <button
+          onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM/ref=tmm_pap_swatch_0", "_blank")}
           style={{
             background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
             border: "none",
