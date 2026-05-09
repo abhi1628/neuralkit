@@ -525,11 +525,11 @@ function AskAuthor() {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
-        <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none" }}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ flex: "1 1 200px", minWidth: 0, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none" }}
           onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.4)"}
           onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"} />
-        <button onClick={ask} disabled={loading || !question.trim()} style={{ background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}>
+        <button onClick={ask} disabled={loading || !question.trim()} style={{ flex: "0 0 auto", background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}>
           {loading ? "..." : "Ask →"}
         </button>
       </div>
@@ -675,12 +675,12 @@ export default function App() {
         <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: "radial-gradient(circle, rgba(0,170,255,0.07) 0%, transparent 70%)", top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
         {particles.map((p, i) => <Particle key={i} style={p} />)}
 
-        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.75rem", fontFamily: "'Space Mono', monospace", color: "#00ffe0", letterSpacing: "0.08em" }}>
+        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: "#00ffe0", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00ffe0", animation: "pulse 1.5s ease infinite", display: "inline-block" }} />
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
-        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(3rem, 7vw, 6.5rem)", fontWeight: 800, lineHeight: 1.0, letterSpacing: "-0.04em", marginBottom: "24px", maxWidth: "900px", color: "#fff" }}>
+        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2.2rem, 10vw, 6.5rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: "#fff", wordBreak: "break-word" }}>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Your AI </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>Superpower</span>
           <br />
@@ -754,7 +754,7 @@ export default function App() {
       <TriviaSection />
 
       {/* ABOUT */}
-      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "100px 32px 60px", textAlign: "center" }}>
+      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 24px 40px", textAlign: "center" }}>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: "#fff" }}>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
@@ -777,7 +777,7 @@ export default function App() {
       </section>
 
       {/* ASK THE AUTHOR */}
-      <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 32px 100px" }}>
+      <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 60px" }}>
         <div style={{ background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "20px", padding: "36px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
