@@ -128,7 +128,7 @@ function ToolPanel({ tool }) {
           "Authorization": `Bearer ${GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
+          model: "llama3-70b-8192",
           max_tokens: 1000,
           messages: [
             { role: "system", content: tool.systemPrompt },
