@@ -235,7 +235,7 @@ function TriviaSection() {
   const isCorrect = selected && trivia && selected.startsWith(trivia.answer);
 
   return (
-    <section style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "60px 32px", background: "rgba(255,255,255,0.01)" }}>
+    <section className="trivia-section" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "60px 32px", background: "rgba(255,255,255,0.01)" }}>
       <div style={{ maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "8px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase" }}>◆ Daily AI Trivia</div>
@@ -255,7 +255,7 @@ function TriviaSection() {
         {trivia && !trivia.error && !loading && (
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: "#fff", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+            <div className="trivia-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
               {trivia.options.map((opt) => {
                 const isThis = selected === opt, correct = opt.startsWith(trivia.answer);
                 let bg = "rgba(255,255,255,0.04)", border = "1px solid rgba(255,255,255,0.08)", color = "rgba(255,255,255,0.8)";
@@ -394,7 +394,7 @@ function MCQPanel({ tool }) {
         <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
           <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
+          <div className="mcq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
             {opts.map((opt, j) => <div key={j} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: "rgba(255,255,255,0.75)" }}>{opt}</div>)}
           </div>
           {ansLine && <div style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "0.82rem", color: "#00ffe0", marginBottom: "8px" }}>{ansLine}</div>}
@@ -654,13 +654,14 @@ export default function App() {
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
           .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
-          .hero-title { font-size: 2.8rem !important; }
+          .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
           .hero-stats { gap: 30px !important; }
           .tools-section { padding: 60px 20px 80px !important; }
           .tool-row { flex-direction: column !important; }
           .tool-panel { padding: 24px !important; }
           .mcq-grid { grid-template-columns: 1fr !important; }
           .trivia-grid { grid-template-columns: 1fr !important; }
+          .trivia-section { padding: 40px 20px !important; }
           .about-section { padding: 60px 20px !important; }
           .about-buttons { flex-direction: column !important; align-items: center !important; }
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
@@ -719,9 +720,9 @@ export default function App() {
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
-        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2.2rem, 10vw, 6.5rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: "#fff", wordBreak: "break-word" }}>
+        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: "#fff", wordBreak: "keep-all" }}>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Your AI </span>
-          <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>Superpower</span>
+          <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", whiteSpace: "nowrap" }}>Superpower</span>
           <br />
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Starts Here</span>
         </h1>
