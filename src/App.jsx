@@ -258,7 +258,7 @@ function ToolPanel({ tool }) {
   function formatOutput(text) {
     return text.split("\n").map((line, i) => {
       const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️1-9]/);
-      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "4px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.7 }}>{line.replace(/\*\*/g, "")}</div>;
+      return <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px" }}>{line.replace(/\*\*/g, "")}</div>;
     });
   }
 
@@ -277,8 +277,8 @@ function ToolPanel({ tool }) {
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {output && (
         <div ref={outputRef}>
-          <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "12px", padding: "20px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Output</div>
+          <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "12px", padding: "24px 28px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>◆ Output</div>
             {formatOutput(output)}
           </div>
           <OutputActions text={output} filename={`neuralkit-${tool.id}`} />
@@ -425,7 +425,7 @@ function UploadTool({ prompt, filename, icon, label }) {
   function formatOutput(text) {
     return text.split("\n").map((line, i) => {
       const isBold = line.match(/^[🎯🔍💡📌⚠️✅❌🚀📈1-9]/);
-      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "4px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.7 }}>{line}</div>;
+      return <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px" }}>{line}</div>;
     });
   }
 
@@ -450,8 +450,8 @@ function UploadTool({ prompt, filename, icon, label }) {
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {output && (
         <div>
-          <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "12px", padding: "20px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ {label} Result</div>
+          <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "12px", padding: "24px 28px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>◆ {label} Result</div>
             {formatOutput(output)}
           </div>
           <OutputActions text={output} filename={`neuralkit-${filename}`} />
@@ -511,7 +511,7 @@ function AskAuthor() {
       {error && <div style={{ color: "#ff6b6b", fontSize: "0.82rem", marginBottom: "12px" }}>⚠ {error}</div>}
       {answer && (
         <div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px", fontSize: "0.88rem", color: "rgba(255,255,255,0.8)", lineHeight: 1.8, textAlign: "left" }}>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: "rgba(255,255,255,0.88)", lineHeight: 1.85, textAlign: "left", letterSpacing: "0.01em" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#00ffe0", marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
