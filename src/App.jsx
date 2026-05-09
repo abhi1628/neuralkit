@@ -187,18 +187,163 @@ Be precise, technical yet accessible. Use bullet points. Keep it under 300 words
     id: "codeExplainer",
     icon: "🧠",
     name: "Code Explainer",
-    tagline: "Paste any Python, JS, or pseudocode. Get a crystal-clear breakdown.",
-    placeholder: "# Paste your code snippet here...\ndef my_agent(state):\n    ...",
+    tagline: "Paste C, C++, Java, Python or pseudocode. Get a crystal-clear breakdown.",
+    placeholder: "// Paste your code here — C, C++, Java, Python, or pseudocode\nvoid main() {\n    ...\n}",
     inputLabel: "Code Snippet",
     cta: "Explain This Code",
-    systemPrompt: `You are an expert software engineer and educator. When given a code snippet:
-1. **What it does** — one sentence overview
-2. **Step-by-step walkthrough** — explain each major block/function clearly
-3. **Key concepts used** — list any patterns, algorithms, or libraries
-4. **Gotchas or improvements** — flag any bugs, inefficiencies, or suggestions
+    systemPrompt: `You are an expert software engineer and educator. When given a code snippet in ANY language (C, C++, Java, Python, pseudocode, or others):
+1. **Language detected** — identify the language
+2. **What it does** — one sentence overview
+3. **Step-by-step walkthrough** — explain each major block/function clearly
+4. **Key concepts used** — list any patterns, algorithms, or libraries
+5. **Gotchas or improvements** — flag any bugs, inefficiencies, or suggestions
 Use markdown-style bold for section headers. Be educational but concise.`,
   },
 ];
+
+// ── Load external scripts ─────────────────────────────────────
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement("script");
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function DocSummarizer() {
+  const [fileName, setFileName] = useState("");
+  const [extractedText, setExtractedText] = useState("");
+  const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [error, setError] = useState("");
+  const [charCount, setCharCount] = useState(0);
+  const fileRef = useRef(null);
+
+  async function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFileName(file.name);
+    setOutput(""); setError(""); setExtractedText("");
+    setExtracting(true);
+    try {
+      let text = "";
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map((s) => s.str).join(" ") + "\n";
+        }
+      } else if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
+        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await window.mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      } else {
+        setError("Please upload a PDF or Word (.docx) file.");
+        setExtracting(false); return;
+      }
+      if (!text.trim()) { setError("Could not extract text from this file."); setExtracting(false); return; }
+      const trimmed = text.slice(0, 12000);
+      setExtractedText(trimmed);
+      setCharCount(trimmed.length);
+    } catch (e) {
+      setError("Error reading file. Please try again.");
+    }
+    setExtracting(false);
+  }
+
+  async function summarize() {
+    if (!extractedText) return;
+    setLoading(true); setOutput(""); setError("");
+    trackEvent("tool_run", { tool_name: "Document Summarizer", input_length: extractedText.length });
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 1000,
+          messages: [
+            { role: "system", content: `You are an expert research analyst. When given document text, produce a structured summary:
+🎯 Document Type & Purpose (1-2 sentences)
+🔍 Key Points (5-7 bullet points)
+💡 Main Conclusions (2-3 points)
+📌 Important Details (dates, names, figures if any)
+⚠️ Limitations or Gaps (if any)
+Be precise and concise. Keep under 400 words.` },
+            { role: "user", content: extractedText },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
+      else if (data?.error) setError(`API Error: ${data.error.message}`);
+      else setError("Unexpected response. Please try again.");
+    } catch { setError("Connection error. Please try again."); }
+    setLoading(false);
+  }
+
+  function formatOutput(text) {
+    return text.split("\n").map((line, i) => {
+      const isBold = line.match(/^[🎯🔍💡📌⚠️1-9]/);
+      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "4px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.7 }}>{line}</div>;
+    });
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {/* Upload zone */}
+      <div
+        onClick={() => fileRef.current?.click()}
+        style={{
+          border: `2px dashed ${fileName ? "rgba(0,255,224,0.4)" : "rgba(255,255,255,0.12)"}`,
+          borderRadius: "14px", padding: "40px 20px", textAlign: "center",
+          cursor: "pointer", transition: "all 0.2s",
+          background: fileName ? "rgba(0,255,224,0.04)" : "transparent",
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(0,255,224,0.3)"}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? "rgba(0,255,224,0.4)" : "rgba(255,255,255,0.12)"}
+      >
+        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile}/>
+        <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? "📄" : "⬆️"}</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : "rgba(255,255,255,0.5)", marginBottom: "6px" }}>
+          {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
+        </div>
+        {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx</div>}
+        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted {charCount >= 12000 ? "· Large file: first 12K chars used" : ""}</div>}
+      </div>
+
+      {extractedText && (
+        <button onClick={summarize} disabled={loading} style={{
+          background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
+          border: "none", borderRadius: "10px", padding: "14px 28px",
+          color: loading ? "rgba(255,255,255,0.3)" : "#000",
+          fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700,
+          cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center",
+          boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none",
+        }}>
+          {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }}/> Summarizing...</> : "→ Summarize Document"}
+        </button>
+      )}
+
+      {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+
+      {output && (
+        <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Summary</div>
+          {formatOutput(output)}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ToolCard({ tool, active, onClick }) {
   return (
@@ -971,67 +1116,53 @@ export default function App() {
           </p>
         </div>
 
-        {/* Tool selector */}
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            marginBottom: "36px",
-            flexWrap: "wrap",
-          }}
-        >
+        {/* Tool selector — top row */}
+        <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
           {TOOLS.map((tool, i) => (
-            <ToolCard
-              key={tool.id}
-              tool={tool}
-              active={activeTool === i}
-              onClick={() => handleToolSwitch(i)}
-            />
+            <ToolCard key={tool.id} tool={tool} active={activeTool === i} onClick={() => handleToolSwitch(i)} />
           ))}
         </div>
 
-        {/* Tool panel */}
+        {/* Document Summarizer card — full width */}
         <div
+          onClick={() => handleToolSwitch(2)}
           style={{
-            background: "rgba(255,255,255,0.025)",
-            border: "1px solid rgba(255,255,255,0.07)",
-            borderRadius: "20px",
-            padding: "36px",
+            background: activeTool === 2 ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : "rgba(255,255,255,0.04)",
+            border: activeTool === 2 ? "none" : "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "16px", padding: "20px 24px", cursor: "pointer",
+            transition: "all 0.3s ease", marginBottom: "36px",
+            boxShadow: activeTool === 2 ? "0 0 40px rgba(0,255,224,0.25)" : "none",
+            display: "flex", alignItems: "center", gap: "20px",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              marginBottom: "28px",
-              paddingBottom: "20px",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
-            <span style={{ fontSize: "1.5rem" }}>{TOOLS[activeTool].icon}</span>
+          <span style={{ fontSize: "2rem" }}>📄</span>
+          <div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "1rem", fontWeight: 700, color: activeTool === 2 ? "#000" : "#fff", marginBottom: "4px" }}>
+              Document Summarizer
+            </div>
+            <div style={{ fontSize: "0.78rem", color: activeTool === 2 ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.5)" }}>
+              Upload any PDF or Word file — get an instant structured summary. No paste needed.
+            </div>
+          </div>
+          <div style={{ marginLeft: "auto", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: activeTool === 2 ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.25)", whiteSpace: "nowrap" }}>
+            .pdf · .doc · .docx
+          </div>
+        </div>
+
+        {/* Tool panel */}
+        <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", padding: "36px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <span style={{ fontSize: "1.5rem" }}>{activeTool === 2 ? "📄" : TOOLS[activeTool].icon}</span>
             <div>
-              <div
-                style={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontWeight: 700,
-                  fontSize: "1.1rem",
-                }}
-              >
-                {TOOLS[activeTool].name}
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem" }}>
+                {activeTool === 2 ? "Document Summarizer" : TOOLS[activeTool].name}
               </div>
-              <div
-                style={{
-                  fontSize: "0.8rem",
-                  color: "rgba(255,255,255,0.45)",
-                  marginTop: "2px",
-                }}
-              >
-                {TOOLS[activeTool].tagline}
+              <div style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.45)", marginTop: "2px" }}>
+                {activeTool === 2 ? "Upload PDF or Word — instant AI summary" : TOOLS[activeTool].tagline}
               </div>
             </div>
           </div>
-          <ToolPanel tool={TOOLS[activeTool]} />
+          {activeTool === 2 ? <DocSummarizer /> : <ToolPanel tool={TOOLS[activeTool]} />}
         </div>
       </section>
 
