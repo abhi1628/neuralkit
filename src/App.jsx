@@ -538,7 +538,188 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
   );
 }
 
-// ── Ask Author ─────────────────────────────────────────────────
+// ── Code Playground ────────────────────────────────────────────
+const LANGUAGES = [
+  { label: "Python", value: "python", version: "3.10.0", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
+  { label: "C", value: "c", version: "10.2.0", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
+  { label: "C++", value: "cpp", version: "10.2.0", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
+  { label: "Java", value: "java", version: "15.0.2", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        // Try a loop:\n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
+  { label: "SQL", value: "sqlite3", version: "3.36.0", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
+  { label: "JavaScript", value: "javascript", version: "18.15.0", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\n// Try some code:\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\n// Arrow function\nconst greet = name => \`Hello, \${name}!\`;\nconsole.log(greet("ZeroAPI"));` },
+];
+
+function CodePlayground() {
+  const [lang, setLang] = useState(LANGUAGES[0]);
+  const [code, setCode] = useState(LANGUAGES[0].starter);
+  const [output, setOutput] = useState("");
+  const [running, setRunning] = useState(false);
+  const [explaining, setExplaining] = useState(false);
+  const [explanation, setExplanation] = useState("");
+  const [error, setError] = useState("");
+  const [runError, setRunError] = useState(false);
+
+  function switchLang(l) {
+    setLang(l);
+    setCode(l.starter);
+    setOutput("");
+    setExplanation("");
+    setError("");
+  }
+
+  async function runCode() {
+    if (!code.trim()) return;
+    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
+    trackEvent("playground_run", { language: lang.label });
+    try {
+      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: lang.value,
+          version: lang.version,
+          files: [{ name: lang.value === "java" ? "Main.java" : `main.${lang.value === "cpp" ? "cpp" : lang.value === "sqlite3" ? "sql" : lang.value}`, content: code }],
+        }),
+      });
+      const data = await res.json();
+      const out = data?.run?.output || data?.run?.stdout || "";
+      const err = data?.run?.stderr || data?.compile?.stderr || "";
+      if (err && !out) { setOutput(err); setRunError(true); }
+      else if (out) { setOutput(out); }
+      else { setOutput("(No output)"); }
+    } catch { setError("Connection error. Please try again."); }
+    setRunning(false);
+  }
+
+  async function explainCode() {
+    if (!code.trim()) return;
+    setExplaining(true); setExplanation("");
+    trackEvent("playground_explain", { language: lang.label });
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 600,
+          messages: [{
+            role: "system",
+            content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:
+1. **What it does** — one sentence
+2. **Line by line** — explain each important line simply
+3. **Key concepts** — what programming concepts are used
+4. **Output** — what will it print/return
+Keep it beginner-friendly and concise.`
+          }, { role: "user", content: `Explain this ${lang.label} code:\n\n${code}` }]
+        }),
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) setExplanation(data.choices[0].message.content);
+      else setError("Couldn't get explanation. Try again.");
+    } catch { setError("Connection error."); }
+    setExplaining(false);
+  }
+
+  function formatExplanation(text) {
+    return text.split("\n").map((line, i) => {
+      const isBold = line.startsWith("**") || line.match(/^[1-9]\./);
+      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px" }}>{line.replace(/\*\*/g, "")}</div>;
+    });
+  }
+
+  return (
+    <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
+      {/* Header */}
+      <div style={{ marginBottom: "40px", textAlign: "center" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#fff", WebkitTextFillColor: "#fff", marginBottom: "12px" }}>Write. Run. Learn.</h2>
+        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
+      </div>
+
+      {/* Language selector */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+        {LANGUAGES.map(l => (
+          <button key={l.value} onClick={() => switchLang(l)} style={{
+            background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.05)",
+            border: lang.value === l.value ? "none" : "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "100px", padding: "8px 18px",
+            color: lang.value === l.value ? "#000" : "rgba(255,255,255,0.6)",
+            fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700,
+            cursor: "pointer", transition: "all 0.2s",
+            boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none",
+          }}>
+            {l.icon} {l.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Editor + Output */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", overflow: "hidden" }}>
+
+        {/* Editor toolbar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#ff5f57" }} />
+            <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#febc2e" }} />
+            <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#28c840" }} />
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => setCode(lang.starter)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+              {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
+            </button>
+          </div>
+        </div>
+
+        {/* Code textarea */}
+        <textarea
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Tab") { e.preventDefault(); const s = e.target.selectionStart; const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd); setCode(newCode); setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0); }
+          }}
+          spellCheck={false}
+          style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+        />
+
+        {/* Output */}
+        {(output || error) && (
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ padding: "10px 20px", background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : "#00ffe0", letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
+              <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
+                {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
+              </button>
+            </div>
+            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : "rgba(255,255,255,0.85)", lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{output || error}</pre>
+          </div>
+        )}
+      </div>
+
+      {/* AI Explanation */}
+      {explanation && (
+        <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "16px", padding: "24px 28px" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>🧠 AI Explanation</div>
+          {formatExplanation(explanation)}
+          <OutputActions text={explanation} filename="zeroapi-code-explanation" />
+        </div>
+      )}
+
+      {/* Tip */}
+      <div style={{ marginTop: "16px", textAlign: "center" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", marginBottom: "6px" }}>
+          💡 Tip: Press Tab to indent · Click "Ask AI to Explain" after running for instant explanation
+        </div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.18)" }}>
+          ⚠ Supports standard library code only · No ML/DL libraries (TensorFlow, PyTorch, sklearn) ·{" "}
+          <span onClick={() => window.open("https://colab.research.google.com", "_blank")} style={{ color: "rgba(0,255,224,0.4)", cursor: "pointer", textDecoration: "underline" }}>
+            Use Google Colab for ML/DL
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
 function AskAuthor() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -662,6 +843,7 @@ export default function App() {
           .mcq-grid { grid-template-columns: 1fr !important; }
           .trivia-grid { grid-template-columns: 1fr !important; }
           .trivia-section { padding: 40px 20px !important; }
+          #playground { padding: 60px 20px !important; }
           .about-section { padding: 60px 20px !important; }
           .about-buttons { flex-direction: column !important; align-items: center !important; }
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
@@ -692,6 +874,7 @@ export default function App() {
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[
             { label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) },
+            { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) },
           ].map(({ label, action }) => (
             <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.55)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }}
@@ -792,6 +975,8 @@ export default function App() {
       </section>
 
       <TriviaSection />
+
+      <CodePlayground />
 
       {/* ABOUT */}
       <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 24px 40px", textAlign: "center" }}>
