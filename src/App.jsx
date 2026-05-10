@@ -539,15 +539,13 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
 }
 
 // ── Code Playground ────────────────────────────────────────────
-const COMPILER_KEY = import.meta.env.VITE_COMPILER_KEY;
 
 const LANG_MAP = {
   python: "python-3.14",
-  c: "c-gcc",
-  cpp: "cpp-gcc",
+  c: "gcc-15",
+  cpp: "g++-15",
   java: "openjdk-25",
-  sqlite3: "sqlite3",
-  javascript: "nodejs",
+  javascript: "typescript-deno",
 };
 
 const LANGUAGES = [
@@ -581,19 +579,50 @@ function CodePlayground() {
     if (!code.trim()) return;
     setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
     trackEvent("playground_run", { language: lang.label });
+
+    // SQL runs in browser via sql.js — no API needed
+    if (lang.value === "sqlite3") {
+      try {
+        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+        const SQL = await window.initSqlJs({
+          locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
+        });
+        const db = new SQL.Database();
+        const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
+        let result = "";
+        for (const stmt of statements) {
+          try {
+            const res = db.exec(stmt + ";");
+            if (res.length > 0) {
+              const { columns, values } = res[0];
+              result += columns.join(" | ") + "\n";
+              result += columns.map(() => "---").join("-|-") + "\n";
+              values.forEach(row => { result += row.join(" | ") + "\n"; });
+              result += "\n";
+            }
+          } catch (e) { result += `Error: ${e.message}\n`; }
+        }
+        setOutput(result.trim() || "(No output)");
+        setRunError(false);
+      } catch (e) {
+        setOutput(`SQL Error: ${e.message}`);
+        setRunError(true);
+      }
+      setRunning(false);
+      return;
+    }
+
+    // All other languages go through Vercel proxy
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
-      const res = await fetch("https://api.onlinecompiler.io/api/run-code-sync/", {
+      const res = await fetch("/api/run-code", {
         method: "POST",
-        headers: {
-          "Authorization": COMPILER_KEY,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ compiler, code, input: "" }),
       });
       const data = await res.json();
       const out = data?.output || "";
-      const err = data?.error || "";
+      const err = data?.error || data?.message || "";
       if (out.trim()) { setOutput(out.trim()); setRunError(false); }
       else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
       else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
