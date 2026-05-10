@@ -747,14 +747,28 @@ Keep it beginner-friendly and concise.`
       )}
 
       {/* Tip */}
-      <div style={{ marginTop: "16px", textAlign: "center" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.25)", marginBottom: "6px" }}>
-          💡 Tip: Press Tab to indent · Click "Ask AI to Explain" after running for instant explanation
+      <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "6px",
+          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "100px", padding: "6px 16px",
+          fontFamily: "'Space Mono', monospace", fontSize: "0.65rem",
+          color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em",
+        }}>
+          💡 Tab to indent &nbsp;·&nbsp; Run code first, then "Ask AI to Explain"
         </div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.18)" }}>
-          ⚡ Code execution powered by OnlineCompiler.io &nbsp;·&nbsp; ⚠ Standard library only · No ML/DL libraries ·{" "}
-          <span onClick={() => window.open("https://colab.research.google.com", "_blank")} style={{ color: "rgba(0,255,224,0.4)", cursor: "pointer", textDecoration: "underline" }}>
-            Use Google Colab for ML/DL
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "8px",
+          fontFamily: "'Space Mono', monospace", fontSize: "0.62rem",
+          color: "rgba(255,255,255,0.18)", letterSpacing: "0.03em",
+        }}>
+          <span>⚡ Powered by OnlineCompiler.io</span>
+          <span style={{ color: "rgba(255,255,255,0.08)" }}>·</span>
+          <span>Standard library only</span>
+          <span style={{ color: "rgba(255,255,255,0.08)" }}>·</span>
+          <span onClick={() => window.open("https://colab.research.google.com", "_blank")}
+            style={{ color: "rgba(0,255,224,0.35)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+            Use Colab for ML/DL
           </span>
         </div>
       </div>
@@ -1020,7 +1034,7 @@ export default function App() {
       <CodePlayground />
 
       {/* ABOUT */}
-      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 24px 40px", textAlign: "center" }}>
+      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: "#fff" }}>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
