@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_KEY;
 const GA_ID = "G-FTQS5X9WF3";
 
@@ -16,6 +17,7 @@ function loadGA(id) {
   gtag("js", new Date());
   gtag("config", id);
 }
+
 function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
 async function fetchVisitorCount() {
@@ -39,7 +41,6 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Replace emojis with clean text labels
   const cleaned = text
     .replace(/🎯/g, "[CORE]")
     .replace(/🔍/g, "[FINDINGS]")
@@ -55,8 +56,6 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
     .trim();
 
   doc.setFont("helvetica");
-
-  // Header
   doc.setFontSize(18);
   doc.setTextColor(0, 0, 0);
   doc.text("ZeroAPI - AI Output", 10, 20);
@@ -64,12 +63,10 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   doc.setTextColor(130, 130, 130);
   doc.text(`zeroapi.in  |  Generated: ${new Date().toLocaleDateString("en-IN")}`, 10, 28);
 
-  // Divider
   doc.setDrawColor(0, 200, 180);
   doc.setLineWidth(0.5);
   doc.line(10, 32, 200, 32);
 
-  // Content
   doc.setFontSize(11);
   const lines = doc.splitTextToSize(cleaned, 185);
   let y = 42;
@@ -86,7 +83,6 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
     y += 7;
   });
 
-  // Footer
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -102,6 +98,25 @@ function copyToClipboard(text, setCopied) {
   navigator.clipboard.writeText(text).then(() => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  });
+}
+
+function formatOutput(text) {
+  return text.split("\n").map((line, i) => {
+    const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
+    return (
+      <div key={i} style={{
+        marginBottom: line === "" ? "14px" : "6px",
+        fontWeight: isBold ? 700 : 400,
+        color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)",
+        fontSize: "0.9rem",
+        lineHeight: 1.85,
+        letterSpacing: "0.01em",
+        paddingLeft: isBold ? "0" : "4px"
+      }}>
+        {line.replace(/\*\*/g, "")}
+      </div>
+    );
   });
 }
 
@@ -200,7 +215,7 @@ function TriviaSection() {
     const topic = topics[Math.floor(Math.random() * topics.length)];
     const seed = Math.floor(Math.random() * 10000);
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({
@@ -213,7 +228,17 @@ function TriviaSection() {
       });
       const data = await res.json();
       const text = data?.choices?.[0]?.message?.content || "";
-      setTrivia(JSON.parse(text.replace(/```json|```/g, "").trim()));
+      let parsed;
+      try {
+        const clean = text.replace(/```json\s*|\s*```/g, "").trim();
+        parsed = JSON.parse(clean);
+        if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length !== 4) {
+          throw new Error("Invalid trivia shape");
+        }
+      } catch {
+        parsed = { error: true };
+      }
+      setTrivia(parsed);
     } catch { setTrivia({ error: true }); }
     setLoading(false);
   }
@@ -221,18 +246,18 @@ function TriviaSection() {
   useEffect(() => { loadTrivia(); }, []);
 
   function handleAnswer(opt) {
-    if (selected) return;
+    if (selected || !trivia || trivia.error) return;
     setSelected(opt);
     setTotal(t => t + 1);
     if (opt.startsWith(trivia.answer)) setScore(s => s + 1);
   }
 
   function shareScore() {
-    const text = `🧠 I scored ${score}/${total} on ZeroAPI AI Trivia!\nTest your AI knowledge for free → zeroapi.in`;
+    const text = `I scored ${score}/${total} on ZeroAPI AI Trivia!\nTest your AI knowledge for free → zeroapi.in`;
     navigator.clipboard.writeText(text).then(() => { setShared(true); setTimeout(() => setShared(false), 2500); });
   }
 
-  const isCorrect = selected && trivia && selected.startsWith(trivia.answer);
+  const isCorrect = selected && trivia && !trivia.error && selected.startsWith(trivia.answer);
 
   return (
     <section className="trivia-section" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "60px 32px", background: "rgba(255,255,255,0.01)" }}>
@@ -245,7 +270,7 @@ function TriviaSection() {
                 Score: {score}/{total}
               </div>
               <button onClick={shareScore} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", background: shared ? "rgba(0,255,224,0.15)" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "100px", padding: "3px 12px", color: shared ? "#00ffe0" : "rgba(255,255,255,0.5)", cursor: "pointer" }}>
-                {shared ? "✅ Copied!" : "📤 Share Score"}
+                {shared ? "Copied!" : "Share Score"}
               </button>
             </div>
           )}
@@ -264,12 +289,12 @@ function TriviaSection() {
               })}
             </div>
             {selected && <div style={{ background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)", border: `1px solid ${isCorrect ? "rgba(0,255,224,0.2)" : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.7 }}>
-              {isCorrect ? "✅ Correct! " : `❌ Not quite. Answer: ${trivia.answer}. `}{trivia.fact}
+              {isCorrect ? "Correct! " : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}
             </div>}
             <button onClick={loadTrivia} style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "10px", padding: "10px 24px", color: "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", letterSpacing: "0.05em" }}>↻ New Question</button>
           </div>
         )}
-        {trivia?.error && !loading && <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.85rem" }}>Couldn't load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button></div>}
+        {trivia?.error && !loading && <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.85rem" }}>Couldn&apos;t load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button></div>}
       </div>
     </section>
   );
@@ -282,16 +307,16 @@ function OutputActions({ text, filename }) {
   return (
     <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
       <button onClick={() => copyToClipboard(text, setCopied)} style={{ display: "flex", alignItems: "center", gap: "6px", background: copied ? "rgba(0,255,224,0.12)" : "rgba(255,255,255,0.06)", border: `1px solid ${copied ? "rgba(0,255,224,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: "8px", padding: "8px 16px", color: copied ? "#00ffe0" : "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer", transition: "all 0.2s" }}>
-        {copied ? "✅ Copied!" : "📋 Copy"}
+        {copied ? "Copied!" : "Copy"}
       </button>
       <button onClick={async () => { setDownloading(true); await downloadAsPDF(text, filename); setDownloading(false); }} style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 16px", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer", transition: "all 0.2s" }}>
-        {downloading ? "⏳ Generating..." : "⬇️ Download PDF"}
+        {downloading ? "Generating..." : "Download PDF"}
       </button>
     </div>
   );
 }
 
-// ── ToolPanel (Research Summarizer + Code Explainer) ───────────
+// ── ToolPanel ──────────────────────────────────────────────────
 function ToolPanel({ tool }) {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -306,7 +331,7 @@ function ToolPanel({ tool }) {
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: tool.name, input_length: input.length });
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: tool.systemPrompt }, { role: "user", content: input }] }),
@@ -317,13 +342,6 @@ function ToolPanel({ tool }) {
       else setError("Unexpected response. Please try again.");
     } catch { setError("Connection error. Please try again."); }
     setLoading(false);
-  }
-
-  function formatOutput(text) {
-    return text.split("\n").map((line, i) => {
-      const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️1-9]/);
-      return <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px" }}>{line.replace(/\*\*/g, "")}</div>;
-    });
   }
 
   return (
@@ -355,7 +373,6 @@ function ToolPanel({ tool }) {
 // ── MCQ Panel ──────────────────────────────────────────────────
 function MCQPanel({ tool }) {
   const [input, setInput] = useState("");
-  const [questions, setQuestions] = useState([]);
   const [rawOutput, setRawOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -363,18 +380,17 @@ function MCQPanel({ tool }) {
 
   async function generate() {
     if (!input.trim()) return;
-    setLoading(true); setQuestions([]); setRawOutput(""); setError("");
+    setLoading(true); setRawOutput(""); setError("");
     trackEvent("tool_run", { tool_name: "MCQ Generator" });
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1200, messages: [{ role: "system", content: tool.systemPrompt }, { role: "user", content: input }] }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) {
-        const text = data.choices[0].message.content;
-        setRawOutput(text);
+        setRawOutput(data.choices[0].message.content);
         setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
       } else if (data?.error) setError(`API Error: ${data.error.message}`);
       else setError("Unexpected response. Please try again.");
@@ -383,7 +399,7 @@ function MCQPanel({ tool }) {
   }
 
   function formatMCQ(text) {
-    const blocks = text.split(/(?=Q\d+\.)/).filter(b => b.trim());
+    const blocks = text.split(/\n(?=Q\d+\.\s)/).filter(b => b.trim());
     return blocks.map((block, i) => {
       const lines = block.trim().split("\n").filter(l => l.trim());
       const qLine = lines[0] || "";
@@ -428,7 +444,7 @@ function MCQPanel({ tool }) {
   );
 }
 
-// ── Document Summarizer ────────────────────────────────────────
+// ── Document Summarizer / Resume Analyzer ─────────────────────
 function UploadTool({ prompt, filename, icon, label }) {
   const [fileName, setFileName] = useState("");
   const [extractedText, setExtractedText] = useState("");
@@ -473,7 +489,7 @@ function UploadTool({ prompt, filename, icon, label }) {
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: prompt }, { role: "user", content: extractedText }] }),
@@ -486,13 +502,6 @@ function UploadTool({ prompt, filename, icon, label }) {
     setLoading(false);
   }
 
-  function formatOutput(text) {
-    return text.split("\n").map((line, i) => {
-      const isBold = line.match(/^[🎯🔍💡📌⚠️✅❌🚀📈1-9]/);
-      return <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px" }}>{line}</div>;
-    });
-  }
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? "rgba(0,255,224,0.4)" : "rgba(255,255,255,0.12)"}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? "rgba(0,255,224,0.04)" : "transparent" }}
@@ -501,7 +510,7 @@ function UploadTool({ prompt, filename, icon, label }) {
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile} />
         <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? icon : "⬆️"}</div>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : "rgba(255,255,255,0.5)", marginBottom: "6px" }}>
-          {extracting ? "Extracting text..." : fileName ? fileName : `Click to upload PDF or Word file`}
+          {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
         </div>
         {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx · Max ~10 pages for best results</div>}
         {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= 12000 ? " · Large file: first 12K chars used" : ""}</div>}
@@ -539,7 +548,6 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
 }
 
 // ── Code Playground ────────────────────────────────────────────
-
 const LANG_MAP = {
   python: "python-3.14",
   c: "gcc-15",
@@ -549,12 +557,12 @@ const LANG_MAP = {
 };
 
 const LANGUAGES = [
-  { label: "Python", value: "python", version: "3.10.0", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
-  { label: "C", value: "c", version: "10.2.0", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
-  { label: "C++", value: "cpp", version: "10.2.0", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
-  { label: "Java", value: "java", version: "15.0.2", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        // Try a loop:\n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
-  { label: "SQL", value: "sqlite3", version: "3.36.0", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
-  { label: "JavaScript", value: "javascript", version: "18.15.0", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\n// Try some code:\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\n// Arrow function\nconst greet = name => \`Hello, \${name}!\`;\nconsole.log(greet("ZeroAPI"));` },
+  { label: "Python", value: "python", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
+  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
+  { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
+  { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        // Try a loop:\n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
+  { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
+  { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\n// Try some code:\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\n// Arrow function\nconst greet = name => \\`Hello, \\${name}!\\`;\nconsole.log(greet("ZeroAPI"));` },
 ];
 
 function CodePlayground() {
@@ -566,6 +574,7 @@ function CodePlayground() {
   const [explanation, setExplanation] = useState("");
   const [error, setError] = useState("");
   const [runError, setRunError] = useState(false);
+  const sqlLoaded = useRef(false);
 
   function switchLang(l) {
     setLang(l);
@@ -580,10 +589,12 @@ function CodePlayground() {
     setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
-    // SQL runs in browser via sql.js — no API needed
     if (lang.value === "sqlite3") {
       try {
-        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+        if (!sqlLoaded.current) {
+          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+          sqlLoaded.current = true;
+        }
         const SQL = await window.initSqlJs({
           locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
         });
@@ -612,7 +623,6 @@ function CodePlayground() {
       return;
     }
 
-    // All other languages go through Vercel proxy
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch("/api/run-code", {
@@ -636,7 +646,7 @@ function CodePlayground() {
     setExplaining(true); setExplanation("");
     trackEvent("playground_explain", { language: lang.label });
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({
@@ -668,14 +678,12 @@ Keep it beginner-friendly and concise.`
 
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
-      {/* Header */}
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#fff", WebkitTextFillColor: "#fff", marginBottom: "12px" }}>Write. Run. Learn.</h2>
         <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
 
-      {/* Language selector */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
           <button key={l.value} onClick={() => switchLang(l)} style={{
@@ -692,10 +700,7 @@ Keep it beginner-friendly and concise.`
         ))}
       </div>
 
-      {/* Editor + Output */}
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", overflow: "hidden" }}>
-
-        {/* Editor toolbar */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#ff5f57" }} />
@@ -712,7 +717,6 @@ Keep it beginner-friendly and concise.`
           </div>
         </div>
 
-        {/* Code textarea */}
         <textarea
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -723,7 +727,6 @@ Keep it beginner-friendly and concise.`
           style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }}
         />
 
-        {/* Output */}
         {(output || error) && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ padding: "10px 20px", background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -737,7 +740,6 @@ Keep it beginner-friendly and concise.`
         )}
       </div>
 
-      {/* AI Explanation */}
       {explanation && (
         <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "16px", padding: "24px 28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>🧠 AI Explanation</div>
@@ -746,7 +748,6 @@ Keep it beginner-friendly and concise.`
         </div>
       )}
 
-      {/* Tip */}
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: "6px",
@@ -755,7 +756,7 @@ Keep it beginner-friendly and concise.`
           fontFamily: "'Space Mono', monospace", fontSize: "0.65rem",
           color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em",
         }}>
-          💡 Tab to indent &nbsp;·&nbsp; Run code first, then "Ask AI to Explain"
+          💡 Tab to indent &nbsp;·&nbsp; Run code first, then &quot;Ask AI to Explain&quot;
         </div>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: "8px",
@@ -766,7 +767,7 @@ Keep it beginner-friendly and concise.`
           <span style={{ color: "rgba(255,255,255,0.08)" }}>·</span>
           <span>Standard library only</span>
           <span style={{ color: "rgba(255,255,255,0.08)" }}>·</span>
-          <span onClick={() => window.open("https://colab.research.google.com", "_blank")}
+          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")}
             style={{ color: "rgba(0,255,224,0.35)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>
             Use Colab for ML/DL
           </span>
@@ -775,18 +776,19 @@ Keep it beginner-friendly and concise.`
     </section>
   );
 }
+
+// ── Ask the Author ─────────────────────────────────────────────
 function AskAuthor() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
 
   async function ask() {
     if (!question.trim()) return;
     setLoading(true); setAnswer(""); setError("");
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
         body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 500, messages: [{ role: "system", content: `You are Prof. Abhishek Singh, Assistant Professor of CSE at Baderia Global Institute of Engineering and Management, Jabalpur, India. M.Tech in Data Science and VLSI Design, author of "Agentic AI Systems: Design & Engineering". Answer questions about AI, Agentic Systems, LLMs, Python, research in a friendly, professor-like tone. First person.` }, { role: "user", content: question }] }),
@@ -827,11 +829,34 @@ function Particle({ style }) {
   return <div style={{ position: "absolute", borderRadius: "50%", background: "rgba(0,255,224,0.15)", animation: "float linear infinite", ...style }} />;
 }
 
+// ── Error Boundary ─────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, info) { console.error("ZeroAPI Error:", error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: "100vh", background: "#060a0f", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: "40px", textAlign: "center" }}>
+          <div style={{ fontSize: "3rem", marginBottom: "20px" }}>⚠️</div>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.5rem", marginBottom: "12px" }}>Something went wrong</h2>
+          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: "24px" }}>Please refresh the page to continue.</p>
+          <button onClick={() => window.location.reload()} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 24px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Refresh Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ── Main App ───────────────────────────────────────────────────
-export default function App() {
+function AppInner() {
   const [activeTool, setActiveTool] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [visitorCount, setVisitorCount] = useState(null);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => { loadGA(GA_ID); }, []);
   useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
@@ -871,6 +896,16 @@ export default function App() {
 
   const activeInfo = getActiveInfo();
 
+  const Modal = ({ title, content, onClose }) => (
+    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={onClose}>
+      <div style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "32px", maxWidth: "600px", maxHeight: "80vh", overflow: "auto", textAlign: "left" }} onClick={e => e.stopPropagation()}>
+        <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.2rem", marginBottom: "16px", color: "#fff" }}>{title}</h3>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.85rem", lineHeight: 1.8, whiteSpace: "pre-line" }}>{content}</div>
+        <button onClick={onClose} style={{ marginTop: "20px", background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "10px 20px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Close</button>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: "#060a0f", color: "#fff", fontFamily: "'DM Sans', sans-serif", overflowX: "hidden" }}>
       <style>{`
@@ -909,6 +944,9 @@ export default function App() {
         }
       `}</style>
 
+      {privacyOpen && <Modal title="Privacy Policy" content={"ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required."} onClose={() => setPrivacyOpen(false)} />}
+      {termsOpen && <Modal title="Terms of Use" content={"ZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time."} onClose={() => setTermsOpen(false)} />}
+
       {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(6,10,15,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -944,14 +982,13 @@ export default function App() {
               onMouseEnter={(e) => (e.target.style.color = "#fff")}
               onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.55)")}>{label}</span>
           ))}
-          <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }}
+          <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
-        {/* Mobile try button */}
         <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
@@ -979,7 +1016,7 @@ export default function App() {
 
         <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "16px 36px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Try Tools Free →</button>
-          <button onClick={() => window.open("https://news.ycombinator.com/news", "_blank")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", padding: "16px 36px", color: "rgba(255,255,255,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
+          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "12px", padding: "16px 36px", color: "rgba(255,255,255,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
         </div>
 
         <div className="hero-stats" style={{ marginTop: "56px", display: "flex", gap: "60px", justifyContent: "center", flexWrap: "wrap" }}>
@@ -1002,19 +1039,16 @@ export default function App() {
           </p>
         </div>
 
-        {/* Row 1: Text tools */}
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
           {TOOLS.slice(0, 2).map((tool, i) => (
             <ToolCard key={tool.id} icon={tool.icon} name={tool.name} tagline={tool.tagline} active={activeTool === i} onClick={() => handleToolSwitch(i)} />
           ))}
         </div>
 
-        {/* Row 2: MCQ full width */}
         <div style={{ marginBottom: "16px" }}>
           <ToolCard icon={TOOLS[2].icon} name={TOOLS[2].name} tagline={TOOLS[2].tagline} active={activeTool === 2} onClick={() => handleToolSwitch(2)} fullWidth />
         </div>
 
-        {/* Row 3: Upload tools */}
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
           {[
             { icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — get an instant structured summary." },
@@ -1024,7 +1058,6 @@ export default function App() {
           ))}
         </div>
 
-        {/* Active Tool Panel */}
         <div className="tool-panel" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", padding: "36px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
             <span style={{ fontSize: "1.5rem" }}>{activeInfo.icon}</span>
@@ -1049,13 +1082,13 @@ export default function App() {
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}> for everyone.</span>
         </h2>
         <p style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
-          ZeroAPI is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design & Engineering</em>.
+          ZeroAPI is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
-          This platform exists because powerful AI tools shouldn't be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
+          This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
         <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
-          <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM/ref=tmm_pap_swatch_0", "_blank")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
-          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px", padding: "14px 24px", color: "rgba(255,255,255,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }}
+          <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM", "_blank", "noopener,noreferrer")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
+          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px", padding: "14px 24px", color: "rgba(255,255,255,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
@@ -1076,11 +1109,11 @@ export default function App() {
       {/* FOOTER */}
       <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© 2026 ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
           <div style={{ display: "flex", gap: "24px" }}>
             {[
-              { label: "Privacy", action: () => alert("Privacy Policy\n\nZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required.") },
-              { label: "Terms", action: () => alert("Terms of Use\n\nZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time.") },
+              { label: "Privacy", action: () => setPrivacyOpen(true) },
+              { label: "Terms", action: () => setTermsOpen(true) },
               { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) },
             ].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }}
@@ -1091,5 +1124,13 @@ export default function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
   );
 }
