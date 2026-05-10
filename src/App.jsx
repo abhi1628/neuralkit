@@ -875,7 +875,9 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: "#060a0f", color: "#fff", fontFamily: "'DM Sans', sans-serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; min-height: 100vh; background: #060a0f; overflow-x: hidden; }
+        #root { width: 100%; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes float { 0% { transform: translateY(0px) scale(1); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.4; } 100% { transform: translateY(-120vh) scale(0.5); opacity: 0; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -910,19 +912,25 @@ export default function App() {
       {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(6,10,15,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <svg width="32" height="32" viewBox="-80 -80 160 160">
-            <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
-            <polygon points="0,-70 61,-35 61,35 0,70 -61,35 -61,-35" fill="none" stroke="url(#lg1)" strokeWidth="3"/>
-            <line x1="0" y1="-38" x2="32" y2="19" stroke="rgba(0,255,224,0.35)" strokeWidth="1.5"/>
-            <line x1="0" y1="-38" x2="-32" y2="19" stroke="rgba(0,170,255,0.35)" strokeWidth="1.5"/>
-            <line x1="32" y1="19" x2="-32" y2="19" stroke="rgba(0,255,224,0.25)" strokeWidth="1.5"/>
-            <line x1="0" y1="-38" x2="0" y2="-70" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5"/>
-            <line x1="32" y1="19" x2="61" y2="35" stroke="rgba(0,170,255,0.4)" strokeWidth="1.5"/>
-            <line x1="-32" y1="19" x2="-61" y2="35" stroke="rgba(0,255,224,0.4)" strokeWidth="1.5"/>
-            <circle cx="0" cy="-38" r="6" fill="#00ffe0"/>
-            <circle cx="32" cy="19" r="6" fill="#00aaff"/>
-            <circle cx="-32" cy="19" r="6" fill="#00ffe0"/>
-            <circle cx="0" cy="0" r="3" fill="rgba(0,170,255,0.7)"/>
+          <svg width="36" height="36" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00ffe0"/>
+                <stop offset="100%" stopColor="#00aaff"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
+            <circle cx="60" cy="60" r="34" fill="none" stroke="rgba(0,255,224,0.2)" strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round"/>
+            <circle cx="60" cy="12" r="4" fill="#00ffe0"/>
+            <circle cx="108" cy="60" r="4" fill="#00aaff"/>
+            <circle cx="60" cy="108" r="4" fill="#00ffe0"/>
+            <circle cx="12" cy="60" r="4" fill="#00aaff"/>
+            <line x1="60" y1="12" x2="60" y2="22" stroke="#00ffe0" strokeWidth="2"/>
+            <line x1="108" y1="60" x2="98" y2="60" stroke="#00aaff" strokeWidth="2"/>
+            <line x1="60" y1="108" x2="60" y2="98" stroke="#00ffe0" strokeWidth="2"/>
+            <line x1="12" y1="60" x2="22" y2="60" stroke="#00aaff" strokeWidth="2"/>
+            <text x="60" y="55" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="22" fontWeight="900" fill="url(#lg1)">0</text>
+            <text x="60" y="74" textAnchor="middle" fontFamily="monospace" fontSize="10" fill="rgba(255,255,255,0.5)" letterSpacing="3">API</text>
           </svg>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>ZeroAPI</span>
         </div>
@@ -1038,7 +1046,7 @@ export default function App() {
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: "#fff" }}>
           <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
-          <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}>, for everyone.</span>
+          <span style={{ color: "#fff", WebkitTextFillColor: "#fff" }}> for everyone.</span>
         </h2>
         <p style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
           ZeroAPI is built by <strong style={{ color: "#fff", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design & Engineering</em>.
