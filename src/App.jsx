@@ -539,6 +539,17 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
 }
 
 // ── Code Playground ────────────────────────────────────────────
+const COMPILER_KEY = import.meta.env.VITE_COMPILER_KEY;
+
+const LANG_MAP = {
+  python: "python-3.14",
+  c: "c-gcc",
+  cpp: "cpp-gcc",
+  java: "openjdk-25",
+  sqlite3: "sqlite3",
+  javascript: "nodejs",
+};
+
 const LANGUAGES = [
   { label: "Python", value: "python", version: "3.10.0", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
   { label: "C", value: "c", version: "10.2.0", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    // Try a loop:\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
@@ -571,21 +582,22 @@ function CodePlayground() {
     setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
     trackEvent("playground_run", { language: lang.label });
     try {
-      const res = await fetch("https://emkc.org/api/v2/piston/execute", {
+      const compiler = LANG_MAP[lang.value] || lang.value;
+      const res = await fetch("https://api.onlinecompiler.io/api/run-code-sync/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          language: lang.value,
-          version: lang.version,
-          files: [{ name: lang.value === "java" ? "Main.java" : `main.${lang.value === "cpp" ? "cpp" : lang.value === "sqlite3" ? "sql" : lang.value}`, content: code }],
-        }),
+        headers: {
+          "Authorization": COMPILER_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ compiler, code, input: "" }),
       });
       const data = await res.json();
-      const out = data?.run?.output || data?.run?.stdout || "";
-      const err = data?.run?.stderr || data?.compile?.stderr || "";
-      if (err && !out) { setOutput(err); setRunError(true); }
-      else if (out) { setOutput(out); }
-      else { setOutput("(No output)"); }
+      const out = data?.output || "";
+      const err = data?.error || "";
+      if (out.trim()) { setOutput(out.trim()); setRunError(false); }
+      else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
+      else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
+      else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
     } catch { setError("Connection error. Please try again."); }
     setRunning(false);
   }
@@ -711,7 +723,7 @@ Keep it beginner-friendly and concise.`
           💡 Tip: Press Tab to indent · Click "Ask AI to Explain" after running for instant explanation
         </div>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.18)" }}>
-          ⚠ Supports standard library code only · No ML/DL libraries (TensorFlow, PyTorch, sklearn) ·{" "}
+          ⚡ Code execution powered by OnlineCompiler.io &nbsp;·&nbsp; ⚠ Standard library only · No ML/DL libraries ·{" "}
           <span onClick={() => window.open("https://colab.research.google.com", "_blank")} style={{ color: "rgba(0,255,224,0.4)", cursor: "pointer", textDecoration: "underline" }}>
             Use Google Colab for ML/DL
           </span>
