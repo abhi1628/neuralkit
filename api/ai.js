@@ -1,4 +1,4 @@
-// Existing compiler proxy — now with rate limiting and origin restriction
+// Proxies all AI requests to Groq — keeps API key server-side
 export default async function handler(req, res) {
   const allowedOrigins = ["https://zeroapi.in", "https://www.zeroapi.in", "http://localhost:5173", "http://localhost:3000"];
   const origin = req.headers.origin;
@@ -11,34 +11,41 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { compiler, code, input } = req.body;
-  if (!compiler || !code) return res.status(400).json({ error: "Missing compiler or code" });
+  const { messages, model, max_tokens, temperature } = req.body;
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: "Missing messages array" });
+  }
 
-  // Rate limit: 15 runs per 5 min per IP
+  // Simple rate limit: max 20 requests per 5 minutes per IP
   const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress;
-  const rateKey = `run_${clientIp}`;
+  const rateKey = `rate_${clientIp}`;
   const now = Date.now();
   if (!global.rateMap) global.rateMap = new Map();
   const entry = global.rateMap.get(rateKey);
   if (entry && now - entry.windowStart < 300000) {
-    if (entry.count >= 15) return res.status(429).json({ error: "Too many code runs. Try again in a few minutes." });
+    if (entry.count >= 20) return res.status(429).json({ error: "Too many requests. Try again in a few minutes." });
     entry.count++;
   } else {
     global.rateMap.set(rateKey, { windowStart: now, count: 1 });
   }
 
   try {
-    const response = await fetch("https://api.onlinecompiler.io/api/run-code-sync/", {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": process.env.COMPILER_KEY,
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
       },
-      body: JSON.stringify({ compiler, code, input: input || "" }),
+      body: JSON.stringify({
+        model: model || "llama-3.3-70b-versatile",
+        messages,
+        max_tokens: max_tokens || 1000,
+        temperature: temperature ?? 0.7,
+      }),
     });
-    const data = await response.json();
-    return res.status(200).json(data);
+    const data = await groqRes.json();
+    return res.status(groqRes.status).json(data);
   } catch {
-    return res.status(500).json({ error: "Execution failed. Please try again." });
+    return res.status(500).json({ error: "AI service unavailable. Please try again." });
   }
 }
