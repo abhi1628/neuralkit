@@ -127,9 +127,10 @@ const TOOLS = [
     icon: "⚡",
     name: "Research Summarizer",
     tagline: "Paste any paper, article, or abstract. Get instant structured insights.",
-    placeholder: "Paste your research abstract, introduction, or any text (best results under 4,000 words)...",
+    placeholder: "Paste your research abstract, introduction, or any text (best results under 8,000 words)...",
     inputLabel: "Input Text",
     cta: "Summarize Now",
+    example: `Transformer models have revolutionized natural language processing since their introduction in 2017. The self-attention mechanism allows transformers to process entire sequences in parallel, unlike recurrent neural networks which process tokens sequentially. This parallelism enables training on much larger datasets. BERT introduced bidirectional pre-training, while GPT models use autoregressive generation. Large language models like GPT-4 and Claude demonstrate emergent capabilities such as reasoning, code generation, and few-shot learning. Key challenges remain: hallucination, computational cost, and interpretability. Recent work on RLHF (Reinforcement Learning from Human Feedback) has improved alignment with human preferences.`,
     systemPrompt: `You are an expert research analyst. When given text, produce a concise structured summary:
 🎯 Core Idea (1-2 sentences)
 🔍 Key Findings (3-5 bullet points)
@@ -145,6 +146,20 @@ Be precise, technical yet accessible. Keep under 300 words.`,
     placeholder: "// Paste code or SQL query here\nSELECT * FROM users WHERE ...",
     inputLabel: "Code / SQL",
     cta: "Explain This",
+    example: `def binary_search(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+
+result = binary_search([1, 3, 5, 7, 9, 11], 7)
+print(f"Found at index: {result}")`,
     systemPrompt: `You are an expert software engineer and educator. When given a code snippet or SQL query in ANY language (C, C++, Java, Python, SQL, pseudocode, etc.):
 1. **Language detected** — identify the language/query type
 2. **What it does** — one sentence overview
@@ -161,6 +176,7 @@ Be educational but concise.`,
     placeholder: "Paste any topic, paragraph, textbook content, or just write a subject like:\n\n'Transformer architecture in deep learning'\n'Photosynthesis in plants'\n'Newton's laws of motion'",
     inputLabel: "Topic / Content",
     cta: "Generate MCQs",
+    example: `Neural networks are computing systems inspired by biological neural networks. They consist of layers of interconnected nodes or neurons. The input layer receives data, hidden layers process it through weighted connections and activation functions like ReLU or sigmoid, and the output layer produces predictions. Backpropagation adjusts weights to minimize loss. Deep learning uses many hidden layers to learn hierarchical representations. CNNs excel at image tasks, RNNs handle sequential data, and Transformers dominate NLP tasks today.`,
     systemPrompt: `You are an expert educator and exam paper setter. When given a topic or text, generate exactly 5 high-quality multiple choice questions. Format EXACTLY like this:
 
 Q1. [Question text]
@@ -247,11 +263,18 @@ function TriviaSection() {
 
   useEffect(() => { loadTrivia(); }, []);
 
-  function handleAnswer(opt) {
+  async function handleAnswer(opt) {
     if (selected || !trivia || trivia.error) return;
     setSelected(opt);
     setTotal(t => t + 1);
-    if (opt.startsWith(trivia.answer)) setScore(s => s + 1);
+    if (opt.startsWith(trivia.answer)) {
+      setScore(s => s + 1);
+      // Fire confetti!
+      try {
+        await loadScript("https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js");
+        window.confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ["#00ffe0", "#00aaff", "#a78bfa", "#fff"] });
+      } catch { /* confetti is optional */ }
+    }
   }
 
   function shareScore() {
@@ -319,6 +342,8 @@ function OutputActions({ text, filename }) {
 }
 
 // ── ToolPanel ──────────────────────────────────────────────────
+const WORD_LIMIT = 8000;
+
 function ToolPanel({ tool }) {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -328,8 +353,11 @@ function ToolPanel({ tool }) {
 
   useEffect(() => { setInput(""); setOutput(""); setError(""); }, [tool.id]);
 
+  const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
+  const isOverLimit = wordCount > WORD_LIMIT;
+
   async function runTool() {
-    if (!input.trim()) return;
+    if (!input.trim() || isOverLimit) return;
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: tool.name, input_length: input.length });
     try {
@@ -355,13 +383,26 @@ function ToolPanel({ tool }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
-        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+          <label style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase" }}>{tool.inputLabel}</label>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {tool.example && (
+              <button onClick={() => setInput(tool.example)} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "6px", padding: "4px 10px", color: "#00ffe0", cursor: "pointer" }}>
+                Try Example
+              </button>
+            )}
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: isOverLimit ? "#ff6b6b" : wordCount > WORD_LIMIT * 0.8 ? "#febc2e" : "rgba(255,255,255,0.3)" }}>
+              {wordCount.toLocaleString()} / {WORD_LIMIT.toLocaleString()} words
+            </span>
+          </div>
+        </div>
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={8}
-          style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
-          onFocus={(e) => (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
-          onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
+          style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.12)"}`, borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
+          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
+          onBlur={(e) => (e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.12)")} />
+        {isOverLimit && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#ff6b6b", marginTop: "6px" }}>⚠ Text exceeds {WORD_LIMIT.toLocaleString()} word limit. Please shorten it.</div>}
       </div>
-      <button onClick={runTool} disabled={loading || !input.trim()} style={{ background: loading || !input.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", cursor: loading || !input.trim() ? "not-allowed" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading && input.trim() ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
+      <button onClick={runTool} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading && input.trim() && !isOverLimit ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
         {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : `→ ${tool.cta}`}
       </button>
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
@@ -386,8 +427,11 @@ function MCQPanel({ tool }) {
   const [error, setError] = useState("");
   const outputRef = useRef(null);
 
+  const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
+  const isOverLimit = wordCount > WORD_LIMIT;
+
   async function generate() {
-    if (!input.trim()) return;
+    if (!input.trim() || isOverLimit) return;
     setLoading(true); setRawOutput(""); setError("");
     trackEvent("tool_run", { tool_name: "MCQ Generator" });
     try {
@@ -435,13 +479,26 @@ function MCQPanel({ tool }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
-        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+          <label style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase" }}>{tool.inputLabel}</label>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {tool.example && (
+              <button onClick={() => setInput(tool.example)} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "6px", padding: "4px 10px", color: "#00ffe0", cursor: "pointer" }}>
+                Try Example
+              </button>
+            )}
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: isOverLimit ? "#ff6b6b" : wordCount > WORD_LIMIT * 0.8 ? "#febc2e" : "rgba(255,255,255,0.3)" }}>
+              {wordCount.toLocaleString()} / {WORD_LIMIT.toLocaleString()} words
+            </span>
+          </div>
+        </div>
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={6}
-          style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
-          onFocus={(e) => (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
-          onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.12)")} />
+          style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.12)"}`, borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
+          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
+          onBlur={(e) => (e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.12)")} />
+        {isOverLimit && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#ff6b6b", marginTop: "6px" }}>⚠ Text exceeds {WORD_LIMIT.toLocaleString()} word limit. Please shorten it.</div>}
       </div>
-      <button onClick={generate} disabled={loading || !input.trim()} style={{ background: loading || !input.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
+      <button onClick={generate} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
         {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Generating MCQs...</> : "→ Generate 5 MCQs"}
       </button>
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
@@ -490,7 +547,7 @@ function UploadTool({ prompt, filename, icon, label }) {
         text = result.value;
       } else { setError("Please upload a PDF or Word (.docx) file."); setExtracting(false); return; }
       if (!text.trim()) { setError("Could not extract text from this file."); setExtracting(false); return; }
-      const trimmed = text.slice(0, 12000);
+      const trimmed = text.slice(0, 50000);
       setExtractedText(trimmed); setCharCount(trimmed.length);
     } catch { setError("Error reading file. Please try again."); }
     setExtracting(false);
@@ -528,8 +585,8 @@ function UploadTool({ prompt, filename, icon, label }) {
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : "rgba(255,255,255,0.5)", marginBottom: "6px" }}>
           {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
         </div>
-        {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx · Max ~10 pages for best results</div>}
-        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= 12000 ? " · Large file: first 12K chars used" : ""}</div>}
+        {!fileName && <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.3)" }}>Supports .pdf · .doc · .docx · Up to ~40 pages</div>}
+        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= 50000 ? " · Very large file: first 50K chars used" : ""}</div>}
       </div>
       {extractedText && (
         <button onClick={analyze} disabled={loading} style={{ background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
@@ -693,6 +750,8 @@ Keep it beginner-friendly and concise.`
     });
   }
 
+  const lineCount = code.split("\n").length;
+
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
@@ -734,15 +793,22 @@ Keep it beginner-friendly and concise.`
           </div>
         </div>
 
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Tab") { e.preventDefault(); const s = e.target.selectionStart; const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd); setCode(newCode); setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0); }
-          }}
-          spellCheck={false}
-          style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }}
-        />
+        {/* Code editor with line numbers */}
+        <div style={{ display: "flex", background: "#0d1117" }}>
+          <div style={{ padding: "20px 10px 20px 14px", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, color: "rgba(255,255,255,0.2)", userSelect: "none", borderRight: "1px solid rgba(255,255,255,0.06)", minWidth: "44px", textAlign: "right" }}>
+            {Array.from({ length: lineCount }, (_, i) => i + 1).map(n => <div key={n}>{n}</div>)}
+          </div>
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Tab") { e.preventDefault(); const s = e.target.selectionStart; const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd); setCode(newCode); setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0); }
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+            }}
+            spellCheck={false}
+            style={{ flex: 1, minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 14px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+          />
+        </div>
 
         {(output || error) && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
@@ -767,7 +833,7 @@ Keep it beginner-friendly and concise.`
 
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono'", fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em" }}>
-          💡 Tab to indent &nbsp;·&nbsp; Run code first, then &quot;Ask AI to Explain&quot;
+          💡 Tab to indent &nbsp;·&nbsp; Ctrl+Enter to run &nbsp;·&nbsp; then "Ask AI to Explain"
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono'", fontSize: "0.62rem", color: "rgba(255,255,255,0.18)", letterSpacing: "0.03em" }}>
           <span>⚡ Powered by OnlineCompiler.io</span>
@@ -869,10 +935,15 @@ function AppInner() {
   const [termsOpen, setTermsOpen] = useState(false);
   const currentYear = new Date().getFullYear();
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   useEffect(() => { loadGA(GA_ID); }, []);
   useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40);
+    const handler = () => {
+      setScrolled(window.scrollY > 40);
+      setShowScrollTop(window.scrollY > 500);
+    };
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
@@ -1114,12 +1185,15 @@ function AppInner() {
 
       <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ fontFamily: "'Space Mono'", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div style={{ fontFamily: "'Space Mono'", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
+            <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ background: "none", border: "none", fontFamily: "'Space Mono'", fontSize: "0.65rem", color: "rgba(0,255,224,0.35)", cursor: "pointer", textAlign: "left", padding: 0, letterSpacing: "0.05em" }}>↑ Back to top</button>
+          </div>
           <div style={{ display: "flex", gap: "24px" }}>
             {[
               { label: "Privacy", action: () => setPrivacyOpen(true) },
               { label: "Terms", action: () => setTermsOpen(true) },
-              { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) },
+              { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com")) },
             ].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono'", transition: "color 0.2s" }}
                 onMouseEnter={(e) => (e.target.style.color = "rgba(255,255,255,0.7)")}
@@ -1128,6 +1202,15 @@ function AppInner() {
           </div>
         </div>
       </footer>
+
+      {/* Floating scroll to top button */}
+      {showScrollTop && (
+        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{ position: "fixed", bottom: "32px", right: "32px", zIndex: 99, width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", color: "#000", fontSize: "1.1rem", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(0,255,224,0.4)", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >↑</button>
+      )}
     </div>
   );
 }
