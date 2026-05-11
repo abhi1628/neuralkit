@@ -779,74 +779,176 @@ function CodePlayground() {
   const [runError, setRunError] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const sqlLoaded = useRef(false);
+  const sqlDb = useRef(null);  // PERSISTENT DATABASE!
   const codeAreaRef = useRef(null);
 
   function switchLang(l) {
-    setLang(l); setCode(l.starter); setOutput(""); setExplanation(""); setError("");
+    setLang(l);
+    setCode(l.starter);
+    setOutput("");
+    setExplanation("");
+    setError("");
+    // Reset SQL database when switching away from SQL
+    if (l.value === "sqlite3") {
+      sqlDb.current = null;
+    }
   }
 
-  // Feature 3: Try Example for playground
+  // Reset SQL database (for the Reset DB button)
+  function resetSqlDb() {
+    sqlDb.current = null;
+    setOutput("✅ Database reset! Run your SQL again to create a fresh database.");
+    setTimeout(() => {
+      if (output === "✅ Database reset! Run your SQL again to create a fresh database.") {
+        setOutput("");
+      }
+    }, 3000);
+  }
+
   function loadExample() {
     const key = lang.value === "sqlite3" ? "sql" : lang.value;
     const ex = EXAMPLES[key] || EXAMPLES.python;
     setCode(ex);
-    setOutput(""); setExplanation(""); setError("");
+    setOutput("");
+    setExplanation("");
+    setError("");
+    // Reset SQL DB when loading example to ensure clean state
+    if (lang.value === "sqlite3") {
+      sqlDb.current = null;
+    }
     trackEvent("playground_example", { language: lang.label });
   }
 
   async function runCode() {
     if (!code.trim()) return;
-    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
+    setRunning(true);
+    setOutput("");
+    setError("");
+    setExplanation("");
+    setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
     if (lang.value === "sqlite3") {
       try {
-        if (!sqlLoaded.current) { await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"); sqlLoaded.current = true; }
-        const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
-        const db = new SQL.Database();
+        if (!sqlLoaded.current) {
+          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+          sqlLoaded.current = true;
+        }
+
+        // Reuse existing database or create new one
+        if (!sqlDb.current) {
+          const SQL = await window.initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
+          });
+          sqlDb.current = new SQL.Database();
+          setOutput("📁 New database created!\n");
+        }
+
+        const db = sqlDb.current;
         const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
         let result = "";
+        let hasOutput = false;
+
         for (const stmt of statements) {
           try {
+            const isSelect = stmt.toLowerCase().startsWith("select");
             const res = db.exec(stmt + ";");
-            if (res.length > 0) { const { columns, values } = res[0]; result += columns.join(" | ") + "\n"; result += columns.map(() => "---").join("-|-") + "\n"; values.forEach(row => { result += row.join(" | ") + "\n"; }); result += "\n"; }
-          } catch (e) { result += `Error: ${e.message}\n`; }
+
+            if (res.length > 0 && isSelect) {
+              const { columns, values } = res[0];
+              result += columns.join(" | ") + "\n";
+              result += columns.map(() => "---").join("-|-") + "\n";
+              values.forEach(row => {
+                result += row.join(" | ") + "\n";
+              });
+              result += "\n";
+              hasOutput = true;
+            } else if (res.length > 0 && !isSelect) {
+              const changes = db.getRowsModified();
+              result += `✓ ${changes} row(s) affected\n`;
+              hasOutput = true;
+            } else if (!isSelect && !res.length) {
+              result += `✓ Query executed successfully\n`;
+              hasOutput = true;
+            }
+          } catch (e) {
+            result += `❌ Error: ${e.message}\n`;
+            hasOutput = true;
+          }
         }
-        setOutput(result.trim() || "(No output)"); setRunError(false);
-      } catch (e) { setOutput(`SQL Error: ${e.message}`); setRunError(true); }
-      setRunning(false); return;
+
+        if (hasOutput) {
+          setOutput(prev => prev === "📁 New database created!\n" ? result : prev + result);
+        } else {
+          setOutput(prev => prev + "✅ All queries executed (no output)\n");
+        }
+        setRunError(false);
+      } catch (e) {
+        setOutput(`❌ SQL Error: ${e.message}`);
+        setRunError(true);
+        sqlDb.current = null;
+      }
+      setRunning(false);
+      return;
     }
 
+    // Other languages (Python, C, C++, Java, JavaScript)
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
-      const res = await fetch("/api/run-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ compiler, code, input: "" }) });
+      const res = await fetch("/api/run-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ compiler, code, input: "" })
+      });
       const data = await res.json();
-      const out = data?.output || ""; const err = data?.error || data?.message || "";
-      if (out.trim()) { setOutput(out.trim()); setRunError(false); }
-      else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
-      else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
-      else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
-    } catch { setError("Connection error. Please try again."); }
+      const out = data?.output || "";
+      const err = data?.error || data?.message || "";
+      if (out.trim()) {
+        setOutput(out.trim());
+        setRunError(false);
+      } else if (err.trim()) {
+        setOutput(err.trim());
+        setRunError(true);
+      } else if (data?.status === "success") {
+        setOutput("(No output)");
+        setRunError(false);
+      } else {
+        setOutput(`Error: ${data?.status || "Unknown error"}`);
+        setRunError(true);
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    }
     setRunning(false);
   }
 
   async function explainCode() {
     if (!code.trim()) return;
-    setExplaining(true); setExplanation("");
+    setExplaining(true);
+    setExplanation("");
     trackEvent("playground_explain", { language: lang.label });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile", max_tokens: 600,
-          messages: [{ role: "system", content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line simply\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.` }, { role: "user", content: `Explain this ${lang.label} code:\n\n${code}` }]
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 600,
+          messages: [{
+            role: "system",
+            content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line simply\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.`
+          }, {
+            role: "user",
+            content: `Explain this ${lang.label} code:\n\n${code}`
+          }]
         }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) setExplanation(data.choices[0].message.content);
       else setError("Couldn't get explanation. Try again.");
-    } catch { setError("Connection error."); }
+    } catch {
+      setError("Connection error.");
+    }
     setExplaining(false);
   }
 
@@ -857,14 +959,25 @@ function CodePlayground() {
     });
   }
 
-  // Feature 4: Ctrl+Enter to run
   const handleCodeKeyDown = useCallback((e) => {
-    if (e.key === "Tab") { e.preventDefault(); const s = e.target.selectionStart; const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd); setCode(newCode); setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0); }
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); runCode(); }
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const s = e.target.selectionStart;
+      const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd);
+      setCode(newCode);
+      setTimeout(() => {
+        e.target.selectionStart = e.target.selectionEnd = s + 2;
+      }, 0);
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      runCode();
+    }
   }, [code]);
 
-  // Feature 5: Sync scroll for line numbers
-  function handleCodeScroll(e) { setScrollTop(e.target.scrollTop); }
+  function handleCodeScroll(e) {
+    setScrollTop(e.target.scrollTop);
+  }
 
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
@@ -896,15 +1009,19 @@ function CodePlayground() {
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => setCode(lang.starter)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            {lang.value === "sqlite3" && (
+              <button onClick={resetSqlDb} style={{ background: "rgba(255,180,0,0.1)", border: "1px solid rgba(255,180,0,0.3)", borderRadius: "8px", padding: "6px 14px", color: "#febc2e", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>
+                🔄 Reset DB
+              </button>
+            )}
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "6px 14px", color: "rgba(255,255,255,0.5)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
             <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
               {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
             </button>
           </div>
         </div>
 
-        {/* Feature 5: Editor with line numbers */}
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} />
           <textarea
@@ -941,8 +1058,13 @@ function CodePlayground() {
 
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em" }}>
-          💡 Tab to indent &nbsp;·&nbsp; Ctrl+Enter to run &nbsp;·&nbsp; Run code first, then &quot;Ask AI to Explain&quot;
+          💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
+        {lang.value === "sqlite3" && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(0,255,224,0.05)", borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(0,255,224,0.6)" }}>
+            🗄️ SQL database persists across multiple runs! INSERT, UPDATE, DELETE stay until you refresh or click Reset DB.
+          </div>
+        )}
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(255,255,255,0.18)", letterSpacing: "0.03em" }}>
           <span>⚡ Powered by OnlineCompiler.io</span>
           <span style={{ color: "rgba(255,255,255,0.08)" }}>·</span>
@@ -954,7 +1076,6 @@ function CodePlayground() {
     </section>
   );
 }
-
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor() {
   const [question, setQuestion] = useState("");
