@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
 
@@ -765,7 +764,7 @@ const LANGUAGES = [
   { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
   { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
   { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
-  { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => \`Hello, \${name}!\`;\nconsole.log(greet("ZeroAPI"));` },
+  { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => \\`Hello, \\${name}!\\`;\nconsole.log(greet("ZeroAPI"));` },
 ];
 
 function CodePlayground() {
