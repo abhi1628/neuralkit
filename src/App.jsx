@@ -1314,7 +1314,7 @@ function AppInner() {
             <circle cx="60" cy="60" r="34" fill="none" stroke="rgba(0,255,224,0.2)" strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round"/>
             <circle cx="60" cy="12" r="4" fill="#00ffe0"/><circle cx="108" cy="60" r="4" fill="#00aaff"/><circle cx="60" cy="108" r="4" fill="#00ffe0"/><circle cx="12" cy="60" r="4" fill="#00aaff"/>
             <line x1="60" y1="12" x2="60" y2="22" stroke="#00ffe0" strokeWidth="2"/><line x1="108" y1="60" x2="98" y2="60" stroke="#00aaff" strokeWidth="2"/><line x1="60" y1="108" x2="60" y2="98" stroke="#00ffe0" strokeWidth="2"/><line x1="12" y1="60" x2="22" y2="60" stroke="#00aaff" strokeWidth="2"/>
-            <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)"> style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
+            <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
             <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill="rgba(255,255,255,0.5)" letterSpacing="4" fontWeight="700">API</text>
           </svg>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>ZeroAPI</span>
