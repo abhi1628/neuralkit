@@ -1306,16 +1306,16 @@ function AppInner() {
       <ScrollToTop />
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "18px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(6,10,15,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none", transition: "all 0.3s ease" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(6,10,15,0.92)" : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <svg width="36" height="36" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
             <circle cx="60" cy="60" r="34" fill="none" stroke="rgba(0,255,224,0.2)" strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round"/>
             <circle cx="60" cy="12" r="4" fill="#00ffe0"/><circle cx="108" cy="60" r="4" fill="#00aaff"/><circle cx="60" cy="108" r="4" fill="#00ffe0"/><circle cx="12" cy="60" r="4" fill="#00aaff"/>
             <line x1="60" y1="12" x2="60" y2="22" stroke="#00ffe0" strokeWidth="2"/><line x1="108" y1="60" x2="98" y2="60" stroke="#00aaff" strokeWidth="2"/><line x1="60" y1="108" x2="60" y2="98" stroke="#00ffe0" strokeWidth="2"/><line x1="12" y1="60" x2="22" y2="60" stroke="#00aaff" strokeWidth="2"/>
-            <text x="60" y="55" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="22" fontWeight="900" fill="url(#lg1)">0</text>
-            <text x="60" y="74" textAnchor="middle" fontFamily="monospace" fontSize="10" fill="rgba(255,255,255,0.5)" letterSpacing="3">API</text>
+            <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)">0</text style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
+            <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill="rgba(255,255,255,0.5)" letterSpacing="4" fontWeight="700">API</text>
           </svg>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>ZeroAPI</span>
         </div>
