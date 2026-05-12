@@ -8,10 +8,8 @@ const GA_ID = "G-FTQS5X9WF3";
 const WORD_LIMIT = 8000;
 const WORD_LIMIT_UPLOAD = 12000;
 
-// ── EXAMPLES for "Try Example" feature ──────────────────────
 const EXAMPLES = {
   summarizer: `Transformer architectures have revolutionized natural language processing since their introduction in "Attention Is All You Need" (Vaswani et al., 2017). Unlike recurrent neural networks that process sequences sequentially, transformers rely entirely on self-attention mechanisms to capture global dependencies in parallel. The key innovation is the multi-head attention layer, which allows the model to attend to different representation subspaces at different positions. When a sequence is processed, each token can directly attend to every other token, creating a fully connected graph of relationships. This parallelism enables training on unprecedented scale — GPT-4 reportedly uses over 1.8 trillion parameters across a mixture-of-experts architecture. The self-attention mechanism computes Query, Key, and Value matrices from input embeddings, then applies scaled dot-product attention: Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V. Positional encodings are added to inject sequence order information since the architecture itself is permutation-invariant. Layer normalization and residual connections stabilize training across deep stacks of 12-96 layers. Transformers have since expanded beyond NLP to computer vision (ViT), protein folding (AlphaFold2), and multimodal systems (CLIP, DALL-E), demonstrating their remarkable generality across domains.`,
-
   codeExplainer: `import torch
 import torch.nn as nn
 
@@ -38,11 +36,8 @@ class SelfAttention(nn.Module):
         attention = torch.softmax(energy / (self.embed_size ** (1/2)), dim=3)
         out = torch.einsum("nhql,nlhd->nqhd", [attention, values]).reshape(N, query_len, self.embed_size)
         return self.fc_out(out)`,
-
   mcq: `The Transformer architecture and its self-attention mechanism. Explain how multi-head attention works, the role of positional encodings, and why transformers replaced RNNs for sequence modeling.`,
-
   askAuthor: `What is the difference between Agentic AI and traditional LLM prompting? How does tool use and planning make agents fundamentally different?`,
-
   python: `def quicksort(arr):
     if len(arr) <= 1:
         return arr
@@ -52,13 +47,10 @@ class SelfAttention(nn.Module):
     right = [x for x in arr if x > pivot]
     return quicksort(left) + middle + quicksort(right)
 
-# Test it
 print(quicksort([3, 6, 8, 10, 1, 2, 1]))`,
-
   c: `#include <stdio.h>
 #include <stdlib.h>
 
-// Binary search implementation
 int binary_search(int arr[], int left, int right, int target) {
     while (left <= right) {
         int mid = left + (right - left) / 2;
@@ -73,16 +65,14 @@ int main() {
     int arr[] = {2, 3, 4, 10, 40};
     int n = sizeof(arr) / sizeof(arr[0]);
     int result = binary_search(arr, 0, n - 1, 10);
-    printf("Element found at index: %d\\n", result);
+    printf("Element found at index: %d\n", result);
     return 0;
 }`,
-
   cpp: `#include <iostream>
 #include <vector>
 #include <algorithm>
 using namespace std;
 
-// Find the longest increasing subsequence
 int lis(vector<int>& nums) {
     vector<int> tails;
     for (int num : nums) {
@@ -98,11 +88,9 @@ int main() {
     cout << "LIS length: " << lis(nums) << endl;
     return 0;
 }`,
-
   java: `import java.util.*;
 
 public class Main {
-    // Dijkstra's shortest path algorithm
     static int[] dijkstra(Map<Integer, List<int[]>> graph, int start, int n) {
         int[] dist = new int[n];
         Arrays.fill(dist, Integer.MAX_VALUE);
@@ -127,7 +115,6 @@ public class Main {
         System.out.println("Dijkstra ready - add your graph!");
     }
 }`,
-
   sql: `-- Find top 5 customers by total order value
 SELECT 
     c.customer_id,
@@ -142,9 +129,7 @@ GROUP BY c.customer_id
 HAVING total_orders >= 3
 ORDER BY total_spent DESC
 LIMIT 5;`,
-
-  javascript: `// Build a neural network from scratch
-function NeuralNetwork(inputSize, hiddenSize, outputSize) {
+  javascript: `function NeuralNetwork(inputSize, hiddenSize, outputSize) {
     this.W1 = Array.from({length: inputSize}, () => 
         Array.from({length: hiddenSize}, () => Math.random() - 0.5));
     this.b1 = new Array(hiddenSize).fill(0);
@@ -168,7 +153,6 @@ const nn = new NeuralNetwork(2, 4, 1);
 console.log("Prediction:", nn.forward([0.5, 0.3]));`,
 };
 
-// ── Google Analytics ─────────────────────────────────────────
 function loadGA(id) {
   if (document.getElementById("ga-script")) return;
   const s = document.createElement("script");
@@ -184,13 +168,11 @@ function loadGA(id) {
 }
 function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
-// ── Visitor Count ────────────────────────────────────────────
 async function fetchVisitorCount() {
   try { const r = await fetch(VISITOR_API_URL); return (await r.json()).value; }
   catch { return null; }
 }
 
-// ── Script Loader ────────────────────────────────────────────
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
@@ -200,7 +182,6 @@ function loadScript(src) {
   });
 }
 
-// ── PDF Download ─────────────────────────────────────────────
 async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
@@ -229,17 +210,14 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   doc.save(`${filename}.pdf`);
 }
 
-// ── Clipboard ────────────────────────────────────────────────
 function copyToClipboard(text, setCopied) {
   navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
 }
 
-// ── Word Count Utility ───────────────────────────────────────
 function countWords(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-// ── Format Output ────────────────────────────────────────────
 function formatOutput(text) {
   return text.split("\n").map((line, i) => {
     const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
@@ -251,7 +229,6 @@ function formatOutput(text) {
   });
 }
 
-// ── Feature 1: Word Counter Component ────────────────────────
 function WordCounter({ text, limit = WORD_LIMIT }) {
   const words = countWords(text);
   const pct = (words / limit) * 100;
@@ -271,7 +248,6 @@ function WordCounter({ text, limit = WORD_LIMIT }) {
   );
 }
 
-// ── Feature 3: Try Example Button ────────────────────────────
 function TryExample({ onFill, exampleMap, toolId }) {
   const example = exampleMap[toolId];
   if (!example) return null;
@@ -284,7 +260,6 @@ function TryExample({ onFill, exampleMap, toolId }) {
   );
 }
 
-// ── Feature 5: Line Numbers ──────────────────────────────────
 function LineNumbers({ code, scrollTop }) {
   const lines = code.split("\n").length;
   return (
@@ -298,7 +273,6 @@ function LineNumbers({ code, scrollTop }) {
   );
 }
 
-// ── Feature 7: Scroll to Top Button ──────────────────────────
 function ScrollToTop() {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -316,7 +290,6 @@ function ScrollToTop() {
   );
 }
 
-// ── Feature 6: Fire Confetti ─────────────────────────────────
 function fireConfetti() {
   const colors = ["#00ffe0", "#a78bfa", "#ffffff", "#00aaff"];
   const defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.94, startVelocity: 20, colors };
@@ -328,7 +301,6 @@ function fireConfetti() {
   frame();
 }
 
-// ── TOOLS ────────────────────────────────────────────────────
 const TOOLS = [
   {
     id: "summarizer",
@@ -338,12 +310,16 @@ const TOOLS = [
     placeholder: "Paste your research abstract, introduction, or any text (best results under 8,000 words)...",
     inputLabel: "Input Text",
     cta: "Summarize Now",
-    systemPrompt: `You are an expert research analyst. When given text, produce a concise structured summary:
-🎯 Core Idea (1-2 sentences)
-🔍 Key Findings (3-5 bullet points)
-💡 Practical Implications (2-3 points)
-⚠️ Limitations or Gaps (1-2 points)
-Be precise, technical yet accessible. Keep under 300 words.`,
+    systemPrompt: `You are an expert research analyst. When given text, produce a thorough structured summary with the following sections:
+
+🎯 Core Idea (1-2 sentences capturing the main contribution)
+🔍 Key Findings (3-5 bullet points with specific numbers, metrics, or results mentioned)
+📊 Methodology (describe the approach, techniques, algorithms, datasets, or experimental setup used — be specific about methods)
+💡 Practical Implications (2-3 points on real-world applications)
+⚠️ Limitations or Gaps (1-2 points on constraints or future work needed)
+📌 Notable Details (important dates, names, figures, or citations)
+
+Be precise, technical yet accessible. Include methodology details even if they seem implicit. Keep under 350 words.`,
   },
   {
     id: "codeExplainer",
@@ -382,11 +358,10 @@ D) [Option]
 Q2. [Question text]
 ...and so on for all 5 questions.
 
-Make questions progressively harder. Cover different aspects. Avoid trivial questions.`,
+Make questions progressively harder. Cover different aspects. Avoid trivial questions. Vary question types: conceptual, application-based, analytical, and comparative.`,
   },
 ];
 
-// ── Trivia Section ───────────────────────────────────────────
 function TriviaSection() {
   const [trivia, setTrivia] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -394,6 +369,8 @@ function TriviaSection() {
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const [shared, setShared] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   const topics = [
     "history of artificial intelligence and its pioneers",
@@ -429,7 +406,8 @@ function TriviaSection() {
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile", max_tokens: 300, temperature: 1.2,
           messages: [
-            { role: "system", content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:\n{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
+            { role: "system", content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:
+{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
             { role: "user", content: `Generate a UNIQUE trivia question (seed:${seed}) specifically about: ${topic}. Make it different from common questions.` }
           ],
         }),
@@ -438,12 +416,30 @@ function TriviaSection() {
       const text = data?.choices?.[0]?.message?.content || "";
       let parsed;
       try {
-        const clean = text.replace(/```json\s*|\s*```/g, "").trim();
+        const clean = text.replace(/\`\`\`json\s*|\s*\`\`\`/g, "").trim();
         parsed = JSON.parse(clean);
         if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length !== 4) throw new Error("Invalid");
-      } catch { parsed = { error: true }; }
+      } catch { 
+        if (retryCount < MAX_RETRIES) {
+          setRetryCount(c => c + 1);
+          setLoading(false);
+          loadTrivia();
+          return;
+        }
+        parsed = { error: true }; 
+      }
       setTrivia(parsed);
-    } catch { setTrivia({ error: true }); }
+      setRetryCount(0);
+    } catch { 
+      if (retryCount < MAX_RETRIES) {
+        setRetryCount(c => c + 1);
+        setLoading(false);
+        loadTrivia();
+        return;
+      }
+      setTrivia({ error: true }); 
+      setRetryCount(0);
+    }
     setLoading(false);
   }
 
@@ -455,7 +451,7 @@ function TriviaSection() {
     setTotal(t => t + 1);
     if (opt.startsWith(trivia.answer)) {
       setScore(s => s + 1);
-      fireConfetti(); // Feature 6: Confetti!
+      fireConfetti();
     }
   }
 
@@ -503,7 +499,6 @@ function TriviaSection() {
   );
 }
 
-// ── Output Actions ───────────────────────────────────────────
 function OutputActions({ text, filename }) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -515,7 +510,6 @@ function OutputActions({ text, filename }) {
   );
 }
 
-// ── Tool Panel (Summarizer + Code Explainer) ─────────────────
 function ToolPanel({ tool }) {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -574,12 +568,12 @@ function ToolPanel({ tool }) {
   );
 }
 
-// ── MCQ Panel ────────────────────────────────────────────────
 function MCQPanel({ tool }) {
   const [input, setInput] = useState("");
   const [rawOutput, setRawOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [history, setHistory] = useState([]);
   const outputRef = useRef(null);
   const isOverLimit = countWords(input) > WORD_LIMIT;
 
@@ -587,14 +581,32 @@ function MCQPanel({ tool }) {
     if (!input.trim() || isOverLimit) return;
     setLoading(true); setRawOutput(""); setError("");
     trackEvent("tool_run", { tool_name: "MCQ Generator" });
+
+    const historyContext = history.length > 0 
+      ? `\n\nPreviously generated questions for similar topics (DO NOT repeat these):\n${history.slice(-3).join("\n\n---\n\n")}` 
+      : "";
+
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1200, messages: [{ role: "system", content: tool.systemPrompt }, { role: "user", content: input }] }),
+        body: JSON.stringify({ 
+          model: "llama-3.3-70b-versatile", 
+          max_tokens: 1200, 
+          temperature: 0.9,
+          messages: [
+            { role: "system", content: tool.systemPrompt + `\n\nCRITICAL: Generate completely different questions from any previously shown. Focus on different sub-topics, angles, and difficulty levels. Use varied question formats (conceptual, application, analytical, comparative).` }, 
+            { role: "user", content: input + historyContext }
+          ] 
+        }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) { setRawOutput(data.choices[0].message.content); setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); }
+      if (data?.choices?.[0]?.message?.content) { 
+        const newOutput = data.choices[0].message.content;
+        setRawOutput(newOutput); 
+        setHistory(prev => [...prev, newOutput].slice(-5));
+        setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); 
+      }
       else if (data?.error) setError(`API Error: ${data.error.message}`);
       else setError("Unexpected response. Please try again.");
     } catch { setError("Connection error. Please try again."); }
@@ -649,7 +661,6 @@ function MCQPanel({ tool }) {
   );
 }
 
-// ── Upload Tool (Document Summarizer / Resume Analyzer) ──────
 function UploadTool({ prompt, filename, icon, label }) {
   const [fileName, setFileName] = useState("");
   const [extractedText, setExtractedText] = useState("");
@@ -737,7 +748,6 @@ function UploadTool({ prompt, filename, icon, label }) {
   );
 }
 
-// ── Tool Card ────────────────────────────────────────────────
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
   return (
     <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : "rgba(255,255,255,0.04)", border: active ? "none" : "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? "0 0 40px rgba(0,255,224,0.25)" : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
@@ -750,7 +760,6 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth }) {
   );
 }
 
-// ── Code Playground ──────────────────────────────────────────
 const LANG_MAP = {
   python: "python-3.14",
   c: "gcc-15",
@@ -761,7 +770,7 @@ const LANG_MAP = {
 
 const LANGUAGES = [
   { label: "Python", value: "python", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
-  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
+  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\n");\n    \n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\n", i);\n    }\n    return 0;\n}` },
   { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
   { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
   { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
@@ -779,7 +788,7 @@ function CodePlayground() {
   const [runError, setRunError] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const sqlLoaded = useRef(false);
-  const sqlDb = useRef(null);  // PERSISTENT DATABASE!
+  const sqlDb = useRef(null);
   const codeAreaRef = useRef(null);
 
   function switchLang(l) {
@@ -788,21 +797,13 @@ function CodePlayground() {
     setOutput("");
     setExplanation("");
     setError("");
-    // Reset SQL database when switching away from SQL
-    if (l.value === "sqlite3") {
-      sqlDb.current = null;
-    }
+    if (l.value === "sqlite3") sqlDb.current = null;
   }
 
-  // Reset SQL database (for the Reset DB button)
   function resetSqlDb() {
     sqlDb.current = null;
-    setOutput("✅ Database reset! Run your SQL again to create a fresh database.");
-    setTimeout(() => {
-      if (output === "✅ Database reset! Run your SQL again to create a fresh database.") {
-        setOutput("");
-      }
-    }, 3000);
+    setOutput("Database reset! Run your SQL again to create a fresh database.");
+    setTimeout(() => setOutput(""), 3000);
   }
 
   function loadExample() {
@@ -812,20 +813,13 @@ function CodePlayground() {
     setOutput("");
     setExplanation("");
     setError("");
-    // Reset SQL DB when loading example to ensure clean state
-    if (lang.value === "sqlite3") {
-      sqlDb.current = null;
-    }
+    if (lang.value === "sqlite3") sqlDb.current = null;
     trackEvent("playground_example", { language: lang.label });
   }
 
   async function runCode() {
     if (!code.trim()) return;
-    setRunning(true);
-    setOutput("");
-    setError("");
-    setExplanation("");
-    setRunError(false);
+    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
     if (lang.value === "sqlite3") {
@@ -834,65 +828,39 @@ function CodePlayground() {
           await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
           sqlLoaded.current = true;
         }
-
-        // Reuse existing database or create new one
         if (!sqlDb.current) {
-          const SQL = await window.initSqlJs({
-            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
-          });
+          const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
           sqlDb.current = new SQL.Database();
-          setOutput("📁 New database created!\n");
+          setOutput("New database created!\n");
         }
-
         const db = sqlDb.current;
         const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
-        let result = "";
-        let hasOutput = false;
-
+        let result = ""; let hasOutput = false;
         for (const stmt of statements) {
           try {
             const isSelect = stmt.toLowerCase().startsWith("select");
             const res = db.exec(stmt + ";");
-
             if (res.length > 0 && isSelect) {
               const { columns, values } = res[0];
               result += columns.join(" | ") + "\n";
               result += columns.map(() => "---").join("-|-") + "\n";
-              values.forEach(row => {
-                result += row.join(" | ") + "\n";
-              });
-              result += "\n";
-              hasOutput = true;
+              values.forEach(row => { result += row.join(" | ") + "\n"; });
+              result += "\n"; hasOutput = true;
             } else if (res.length > 0 && !isSelect) {
               const changes = db.getRowsModified();
-              result += `✓ ${changes} row(s) affected\n`;
-              hasOutput = true;
+              result += `${changes} row(s) affected\n`; hasOutput = true;
             } else if (!isSelect && !res.length) {
-              result += `✓ Query executed successfully\n`;
-              hasOutput = true;
+              result += `Query executed successfully\n`; hasOutput = true;
             }
-          } catch (e) {
-            result += `❌ Error: ${e.message}\n`;
-            hasOutput = true;
-          }
+          } catch (e) { result += `Error: ${e.message}\n`; hasOutput = true; }
         }
-
-        if (hasOutput) {
-          setOutput(prev => prev === "📁 New database created!\n" ? result : prev + result);
-        } else {
-          setOutput(prev => prev + "✅ All queries executed (no output)\n");
-        }
+        if (hasOutput) setOutput(prev => prev === "New database created!\n" ? result : prev + result);
+        else setOutput(prev => prev + "All queries executed (no output)\n");
         setRunError(false);
-      } catch (e) {
-        setOutput(`❌ SQL Error: ${e.message}`);
-        setRunError(true);
-        sqlDb.current = null;
-      }
-      setRunning(false);
-      return;
+      } catch (e) { setOutput(`SQL Error: ${e.message}`); setRunError(true); sqlDb.current = null; }
+      setRunning(false); return;
     }
 
-    // Other languages (Python, C, C++, Java, JavaScript)
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch("/api/run-code", {
@@ -903,52 +871,34 @@ function CodePlayground() {
       const data = await res.json();
       const out = data?.output || "";
       const err = data?.error || data?.message || "";
-      if (out.trim()) {
-        setOutput(out.trim());
-        setRunError(false);
-      } else if (err.trim()) {
-        setOutput(err.trim());
-        setRunError(true);
-      } else if (data?.status === "success") {
-        setOutput("(No output)");
-        setRunError(false);
-      } else {
-        setOutput(`Error: ${data?.status || "Unknown error"}`);
-        setRunError(true);
-      }
-    } catch {
-      setError("Connection error. Please try again.");
-    }
+      if (out.trim()) { setOutput(out.trim()); setRunError(false); }
+      else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
+      else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
+      else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
+    } catch { setError("Connection error. Please try again."); }
     setRunning(false);
   }
 
   async function explainCode() {
     if (!code.trim()) return;
-    setExplaining(true);
-    setExplanation("");
+    setExplaining(true); setExplanation("");
     trackEvent("playground_explain", { language: lang.label });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          max_tokens: 600,
+          model: "llama-3.3-70b-versatile", max_tokens: 600,
           messages: [{
             role: "system",
             content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line simply\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.`
-          }, {
-            role: "user",
-            content: `Explain this ${lang.label} code:\n\n${code}`
-          }]
+          }, { role: "user", content: `Explain this ${lang.label} code:\n\n${code}` }]
         }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) setExplanation(data.choices[0].message.content);
       else setError("Couldn't get explanation. Try again.");
-    } catch {
-      setError("Connection error.");
-    }
+    } catch { setError("Connection error."); }
     setExplaining(false);
   }
 
@@ -965,9 +915,7 @@ function CodePlayground() {
       const s = e.target.selectionStart;
       const newCode = code.substring(0, s) + "  " + code.substring(e.target.selectionEnd);
       setCode(newCode);
-      setTimeout(() => {
-        e.target.selectionStart = e.target.selectionEnd = s + 2;
-      }, 0);
+      setTimeout(() => { e.target.selectionStart = e.target.selectionEnd = s + 2; }, 0);
     }
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
@@ -975,9 +923,7 @@ function CodePlayground() {
     }
   }, [code]);
 
-  function handleCodeScroll(e) {
-    setScrollTop(e.target.scrollTop);
-  }
+  function handleCodeScroll(e) { setScrollTop(e.target.scrollTop); }
 
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
@@ -986,7 +932,6 @@ function CodePlayground() {
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#fff", WebkitTextFillColor: "#fff", marginBottom: "12px" }}>Write. Run. Learn.</h2>
         <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
-
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
           <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.05)", border: lang.value === l.value ? "none" : "1px solid rgba(255,255,255,0.1)", borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }}>
@@ -999,7 +944,6 @@ function CodePlayground() {
           ✨ Try Example
         </button>
       </div>
-
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "20px", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.2)", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1021,20 +965,11 @@ function CodePlayground() {
             </button>
           </div>
         </div>
-
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} />
-          <textarea
-            ref={codeAreaRef}
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            onKeyDown={handleCodeKeyDown}
-            onScroll={handleCodeScroll}
-            spellCheck={false}
-            style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 60px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }}
-          />
+          <textarea ref={codeAreaRef} value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={handleCodeScroll} spellCheck={false}
+            style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 60px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
         </div>
-
         {(output || error) && (
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ padding: "10px 20px", background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1047,7 +982,6 @@ function CodePlayground() {
           </div>
         )}
       </div>
-
       {explanation && (
         <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "16px", padding: "24px 28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>🧠 AI Explanation</div>
@@ -1055,7 +989,6 @@ function CodePlayground() {
           <OutputActions text={explanation} filename="zeroapi-code-explanation" />
         </div>
       )}
-
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.04em" }}>
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
@@ -1076,7 +1009,9 @@ function CodePlayground() {
     </section>
   );
 }
+
 // ── Ask the Author ───────────────────────────────────────────
+// FIX: Warm, approachable tone. No "I am the author" arrogance.
 function AskAuthor() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -1090,7 +1025,30 @@ function AskAuthor() {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 500, messages: [{ role: "system", content: `You are Prof. Abhishek Singh, Assistant Professor of CSE at Baderia Global Institute of Engineering and Management, Jabalpur, India. M.Tech in Data Science and VLSI Design, author of "Agentic AI Systems: Design & Engineering". Answer questions about AI, Agentic Systems, LLMs, Python, research in a friendly, professor-like tone. First person.` }, { role: "user", content: question }] }),
+        body: JSON.stringify({ 
+          model: "llama-3.3-70b-versatile", 
+          max_tokens: 500, 
+          messages: [
+            { 
+              role: "system", 
+              content: `You are Prof. Abhishek Singh, Assistant Professor of CSE at Baderia Global Institute of Engineering and Management, Jabalpur, India. M.Tech in Data Science and VLSI Design, author of "Agentic AI Systems: Design & Engineering". 
+
+TONE GUIDELINES (VERY IMPORTANT):
+- NEVER start with "I am the author" or "I am an expert" or "As a professor" — this sounds arrogant
+- NEVER use phrases like "I know everything" or "Trust me, I wrote the book"
+- Use a warm, humble, conversational tone — like a mentor chatting with a curious student
+- Start responses naturally: "Great question!", "That's an interesting angle...", "From what I've seen in the field..."
+- Use "One way to think about it...", "In my experience...", "I'd suggest..." instead of authoritative declarations
+- Acknowledge uncertainty when appropriate: "This is still evolving, but...", "Different researchers have different views..."
+- Share personal anecdotes lightly: "When I was working on...", "A student once asked me..."
+- Be encouraging: "Keep exploring this!", "You're on the right track thinking about..."
+- Keep answers practical and grounded — avoid ivory tower lecturing
+
+Answer questions about AI, Agentic Systems, LLMs, Python, and research.` 
+            }, 
+            { role: "user", content: question } 
+          ] 
+        }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) setAnswer(data.choices[0].message.content);
@@ -1123,6 +1081,102 @@ function AskAuthor() {
         </div>
       )}
     </div>
+  );
+}
+
+// ── NEW: User Feedback / Comments Section ─────────────────────
+function UserFeedback() {
+  const [name, setName] = useState("");
+  const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("zeroapi_feedback");
+      if (saved) setFeedbacks(JSON.parse(saved));
+    } catch { /* ignore */ }
+  }, []);
+
+  function submitFeedback() {
+    if (!comment.trim() || rating === 0) return;
+    const newFeedback = {
+      id: Date.now(),
+      name: name.trim() || "Anonymous",
+      comment: comment.trim(),
+      rating,
+      date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
+    };
+    const updated = [newFeedback, ...feedbacks].slice(0, 20);
+    setFeedbacks(updated);
+    try { localStorage.setItem("zeroapi_feedback", JSON.stringify(updated)); } catch { /* ignore */ }
+    setSubmitted(true);
+    setName(""); setComment(""); setRating(0);
+    setTimeout(() => setSubmitted(false), 3000);
+  }
+
+  const stars = [1, 2, 3, 4, 5];
+
+  return (
+    <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
+      <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "20px", padding: "36px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
+
+        {!submitted ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", marginRight: "8px" }}>Rate us:</span>
+              {stars.map(s => (
+                <button key={s} onClick={() => setRating(s)} onMouseEnter={() => setHoverRating(s)} onMouseLeave={() => setHoverRating(0)}
+                  style={{ background: "none", border: "none", fontSize: "1.4rem", cursor: "pointer", padding: "0 2px", transition: "transform 0.2s", transform: (hoverRating || rating) >= s ? "scale(1.2)" : "scale(1)" }}>
+                  <span style={{ color: (hoverRating || rating) >= s ? "#febc2e" : "rgba(255,255,255,0.2)" }}>★</span>
+                </button>
+              ))}
+              <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.3)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
+            </div>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+              onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.08)"} />
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
+              style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
+              onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.08)"} />
+            <button onClick={submitFeedback} disabled={!comment.trim() || rating === 0} style={{ alignSelf: "flex-start", background: !comment.trim() || rating === 0 ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: !comment.trim() || rating === 0 ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: !comment.trim() || rating === 0 ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace" }}>
+              Submit Feedback →
+            </button>
+          </div>
+        ) : (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <div style={{ fontSize: "2rem", marginBottom: "10px" }}>🙏</div>
+            <div style={{ color: "#00ffe0", fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>We appreciate you taking the time to share your experience.</div>
+          </div>
+        )}
+
+        {feedbacks.length > 0 && (
+          <div style={{ marginTop: "32px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Recent Feedback</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
+              {feedbacks.map(fb => (
+                <div key={fb.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "14px 18px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#fff" }}>{fb.name}</span>
+                      <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
+                    </div>
+                    <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)", fontFamily: "'Space Mono', monospace" }}>{fb.date}</span>
+                  </div>
+                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>{fb.comment}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -1186,7 +1240,7 @@ function AppInner() {
     if (activeTool === 0) return <ToolPanel tool={TOOLS[0]} />;
     if (activeTool === 1) return <ToolPanel tool={TOOLS[1]} />;
     if (activeTool === 2) return <MCQPanel tool={TOOLS[2]} />;
-    if (activeTool === 3) return <UploadTool icon="📄" label="Summarize Document" filename="doc-summary" prompt={`You are an expert research analyst. Produce a structured summary:\n🎯 Document Type & Purpose (1-2 sentences)\n🔍 Key Points (5-7 bullet points)\n💡 Main Conclusions (2-3 points)\n📌 Important Details (dates, names, figures)\n⚠️ Limitations or Gaps\nKeep under 400 words.`} />;
+    if (activeTool === 3) return <UploadTool icon="📄" label="Summarize Document" filename="doc-summary" prompt={`You are an expert research analyst. Produce a thorough structured summary:\n🎯 Document Type & Purpose (1-2 sentences)\n🔍 Key Points (5-7 bullet points with specifics)\n📊 Methodology (approach, techniques, algorithms, datasets used — be specific)\n💡 Main Conclusions (2-3 points)\n📌 Important Details (dates, names, figures)\n⚠️ Limitations or Gaps\nKeep under 400 words.`} />;
     if (activeTool === 4) return <UploadTool icon="📋" label="Analyze Resume" filename="resume-analysis" prompt={`You are an expert HR consultant and career coach. Analyze this resume and provide:\n✅ Strengths (3-5 points)\n❌ Weaknesses (3-5 points)\n🚀 Improvements (5-7 specific actionable suggestions)\n📈 ATS Score Estimate (out of 10) with reason\n💡 Best-fit Job Roles based on the resume\nBe honest, specific, and constructive.`} />;
   }
 
@@ -1249,7 +1303,6 @@ function AppInner() {
       {privacyOpen && <Modal title="Privacy Policy" content="ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required." onClose={() => setPrivacyOpen(false)} />}
       {termsOpen && <Modal title="Terms of Use" content="ZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time." onClose={() => setTermsOpen(false)} />}
 
-      {/* Feature 7: Scroll to Top floating button */}
       <ScrollToTop />
 
       {/* NAV */}
@@ -1352,7 +1405,6 @@ function AppInner() {
       </section>
 
       <TriviaSection />
-
       <CodePlayground />
 
       {/* ABOUT */}
@@ -1385,16 +1437,18 @@ function AppInner() {
         </div>
       </section>
 
+      {/* USER FEEDBACK — NEW */}
+      <UserFeedback />
+
       {/* FOOTER */}
       <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 80px 28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
-            {/* Feature 8: Back to top link in footer */}
             <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(0,255,224,0.4)", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "#00ffe0"} onMouseLeave={(e) => e.target.style.color = "rgba(0,255,224,0.4)"}>↑ Back to top</span>
           </div>
           <div style={{ display: "flex", gap: "24px" }}>
-            {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
+            {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\\n\\nabhi16.2007@gmail.com\\n\\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = "rgba(255,255,255,0.7)")} onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.3)")}>{label}</span>
             ))}
           </div>
