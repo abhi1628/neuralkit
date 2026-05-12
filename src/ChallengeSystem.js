@@ -230,7 +230,8 @@ print(fib(10))  # Should be cached`,
           explanation: "String literals include implicit null terminator '\0'. 'abc' is {'a','b','c','\0'} → 4 bytes. sizeof('a') is also 4 (int-sized char array in C, though this varies by standard)."
         },
         {
-          question: "What is the output? int a = 5; printf("%d", ++a + ++a);",
+          question: "What is the output? int a = 5; printf(\"%d\", ++a + ++a);",
+
           options: ["A) 12", "B) 13", "C) 14", "D) Undefined Behavior"],
           answer: "D",
           explanation: "MODIFYING 'a' twice between sequence points is UNDEFINED BEHAVIOR in C. The compiler can do anything. Never write ++a + ++a. This is a classic interview trap."
@@ -242,16 +243,19 @@ print(fib(10))  # Should be cached`,
           explanation: "On 64-bit systems, pointers are 64 bits = 8 bytes. This is independent of what they point to. sizeof(char*) == sizeof(int*) == sizeof(double*) == 8 on x86_64."
         },
         {
-          question: "What is the output? int x = 5; printf("%d", x++ + ++x);",
+          question: "What is the output? int x = 5; printf(\"%d\", x++ + ++x);",
+
           options: ["A) 11", "B) 12", "C) 13", "D) Undefined Behavior"],
           answer: "D",
           explanation: "Another undefined behavior! x is modified twice (x++ and ++x) without a sequence point between them. The result varies by compiler. GCC might give 12, but it's not guaranteed."
         },
         {
-          question: "What does this print? char s[] = "hello"; printf("%lu", sizeof(s));",
+          question: "What does this print? char s[] = \"hello\"; printf(\"%lu\", sizeof(s));",
+
           options: ["A) 5", "B) 6", "C) sizeof(char*)", "D) 4"],
           answer: "B",
-          explanation: "char s[] = "hello" creates an array of 6 chars including '\0'. sizeof(s) = 6. But char *s = "hello" would give sizeof(char*) = 8 (pointer size). Array vs pointer matters!"
+          explanation: "char s[] = \"hello\" creates an array of 6 chars including '\0'. sizeof(s) = 6. But char *s = \"hello\" would give sizeof(char*) = 8 (pointer size). Array vs pointer matters!"
+
         },
         {
           question: "What is the value of arr[3] after: int arr[5] = {1, 2};",
@@ -260,13 +264,15 @@ print(fib(10))  # Should be cached`,
           explanation: "Partial array initialization zero-fills the rest. arr = {1, 2, 0, 0, 0}. This is guaranteed by C standard. If it were a local variable without initialization, the rest would be garbage."
         },
         {
-          question: "What does this print? printf("%d", 5 & 3);",
+          question: "What does this print? printf(\"%d\", 5 & 3);",
+
           options: ["A) 8", "B) 1", "C) 7", "D) 2"],
           answer: "B",
           explanation: "5 = 101, 3 = 011 in binary. AND: 101 & 011 = 001 = 1. Bitwise AND only sets bits where BOTH operands have 1."
         },
         {
-          question: "What is the output? int i = 0; printf("%d %d", i++, i++);",
+          question: "What is the output? int i = 0; printf(\"%d %d\", i++, i++);",
+
           options: ["A) 0 1", "B) 1 0", "C) 0 0", "D) Undefined Behavior"],
           answer: "D",
           explanation: "Multiple modifications of 'i' between sequence points = Undefined Behavior. The evaluation order of function arguments is UNSPECIFIED in C. Different compilers give different results."
@@ -278,7 +284,8 @@ print(fib(10))  # Should be cached`,
           explanation: "Integer constant 0 has type int by default. sizeof(0) = sizeof(int) = 4 (typically). To get sizeof(long), use 0L. To get sizeof(long long), use 0LL."
         },
         {
-          question: "What is the output? int a[3] = {1,2,3}; printf("%d", *(a + 1));",
+          question: "What is the output? int a[3] = {1,2,3}; printf(\"%d\", *(a + 1));",
+
           options: ["A) 1", "B) 2", "C) 3", "D) Address of a[1]"],
           answer: "B",
           explanation: "Pointer arithmetic: a + 1 points to a[1]. *(a + 1) dereferences it → 2. Arrays decay to pointers in expressions. a[i] is syntactic sugar for *(a + i)."
@@ -320,25 +327,29 @@ int main() {
     medium: {
       mcqs: [
         {
-          question: "What is the output? union U { int i; char c[4]; }; union U u; u.i = 0x12345678; printf("%x", u.c[0]); on little-endian?",
+          question: "What is the output? union U { int i; char c[4]; }; union U u; u.i = 0x12345678; printf(\"%x\", u.c[0]); on little-endian?",
+
           options: ["A) 12", "B) 78", "C) 56", "D) Depends"],
           answer: "B",
           explanation: "On little-endian, least significant byte (0x78) is at lowest address. u.c[0] reads the first byte → 78. On big-endian it would be 12. This is how you detect endianness!"
         },
         {
-          question: "What does this print? int *p = NULL; printf("%d", sizeof(*p));",
+          question: "What does this print? int *p = NULL; printf(\"%d\", sizeof(*p));",
+
           options: ["A) 0", "B) sizeof(int)", "C) Segmentation fault", "D) sizeof(void*)"],
           answer: "B",
           explanation: "sizeof is a COMPILE-TIME operator (except VLAs). It doesn't evaluate *p, it just determines the type size. sizeof(*p) = sizeof(int) = 4. No runtime dereference happens."
         },
         {
-          question: "What is the output? struct S { char c; int i; }; printf("%lu", sizeof(struct S));",
+          question: "What is the output? struct S { char c; int i; }; printf(\"%lu\", sizeof(struct S));",
+
           options: ["A) 5", "B) 8", "C) 6", "D) Depends on padding"],
           answer: "B",
           explanation: "Structure padding! char (1 byte) + 3 bytes padding + int (4 bytes) = 8. Alignment requires int to start at 4-byte boundary. Use #pragma pack(1) to get 5, but it's slower."
         },
         {
-          question: "What does this print? int x = 1; printf("%d", x << 33);",
+          question: "What does this print? int x = 1; printf(\"%d\", x << 33);",
+
           options: ["A) 2", "B) 0", "C) Undefined Behavior", "D) 4294967296"],
           answer: "C",
           explanation: "Shifting by >= width of type is UNDEFINED BEHAVIOR in C. For 32-bit int, shifting by 33 is UB. The result could be anything. Always ensure shift < sizeof(type)*8."
@@ -356,7 +367,8 @@ int main() {
           explanation: "const int *p means pointer to const int — the DATA is const, not the pointer. *p = 10 tries to modify const data → compile-time error. For pointer const: int *const p."
         },
         {
-          question: "What is the output? int a = 1; int b = a++ + ++a; printf("%d", b);",
+          question: "What is the output? int a = 1; int b = a++ + ++a; printf(\"%d\", b);",
+
           options: ["A) 4", "B) 3", "C) Undefined Behavior", "D) 5"],
           answer: "C",
           explanation: "Same variable 'a' modified twice between sequence points. UB! Even though it looks like it should be 1 + 3 = 4, the standard says this is undefined. Never do this."
@@ -368,16 +380,19 @@ int main() {
           explanation: "offsetof returns the byte offset of member 'b'. Due to padding after char a, b starts at offset 4 (aligned to int boundary). This is a standard macro in <stddef.h>."
         },
         {
-          question: "What is the output? int i = 5; printf("%d %d %d", i, i++, ++i);",
+          question: "What is the output? int i = 5; printf(\"%d %d %d\", i, i++, ++i);",
+
           options: ["A) 5 5 7", "B) 7 6 7", "C) Undefined Behavior", "D) 6 5 7"],
           answer: "C",
           explanation: "Multiple modifications + reads of 'i' without sequence points = UB. The evaluation order of printf arguments is unspecified AND there are multiple modifications."
         },
         {
-          question: "What does this print? char *s = "hello"; s[0] = 'H'; printf("%s", s);",
+          question: "What does this print? char *s = \"hello\"; s[0] = 'H'; printf(\"%s\", s);",
+
           options: ["A) Hello", "B) hello", "C) Compile error", "D) Undefined Behavior/Segfault"],
           answer: "D",
-          explanation: "String literals are stored in READ-ONLY memory. Modifying them causes undefined behavior — typically a segmentation fault. Use char s[] = "hello" for mutable strings."
+          explanation: "String literals are stored in READ-ONLY memory. Modifying them causes undefined behavior — typically a segmentation fault. Use char s[] = \"hello\" for mutable strings."
+
         }
       ],
       coding: [
@@ -448,7 +463,8 @@ int main() {
           explanation: "1 << 3 shifts binary 1 left by 3 positions: 0001 → 1000 = 8. Each left shift doubles the value. 1 << n = 2^n."
         },
         {
-          question: "What is the output? string s = "hello"; cout << s.substr(1, 3);",
+          question: "What is the output? string s = \"hello\"; cout << s.substr(1, 3);",
+
           options: ["A) hell", "B) ell", "C) ello", "D) ellh"],
           answer: "B",
           explanation: "substr(pos, len): starts at index 1 ('e'), takes 3 characters → 'ell'. If len exceeds string length, it takes until the end. s.substr(1) would give 'ello'."
@@ -548,19 +564,23 @@ int main() {
           explanation: "constexpr functions can be used in constant expressions. f() is evaluated at compile-time, so int a[5] is valid VLA alternative. sizeof(a) = 5 * sizeof(int) = 20 (typically)."
         },
         {
-          question: "What is the output? string s = "abc"; cout << s.capacity() >= s.size();",
+          question: "What is the output? string s = \"abc\"; cout << s.capacity() >= s.size();",
+
           options: ["A) 1 (true)", "B) 0 (false)", "C) Compile error", "D) Depends"],
           answer: "A",
           explanation: "capacity() is always >= size() for std::string (or any standard container). Capacity is total allocated space; size is used space. Extra capacity avoids reallocations on growth."
         },
         {
-          question: "What does this print? map<int, string> m; m[1] = "a"; cout << m.size();",
+          question: "What does this print? map<int, string> m; m[1] = \"a\"; cout << m.size();",
+
           options: ["A) 0", "B) 1", "C) 2", "D) Error"],
           answer: "B",
-          explanation: "m[1] inserts key 1 with default value if not present, then assigns "a". Size becomes 1. If key existed, it would just update. operator[] always inserts if key missing."
+          explanation: "m[1] inserts key 1 with default value if not present, then assigns \"a\". Size becomes 1. If key existed, it would just update. operator[] always inserts if key missing."
+
         },
         {
-          question: "What is the output? class A { public: A() { cout << "A"; } ~A() { cout << "~A"; } }; A* p = new A[3]; delete p;",
+          question: "What is the output? class A { public: A() { cout << \"A\"; } ~A() { cout << \"~A\"; } }; A* p = new A[3]; delete p;",
+
           options: ["A) AAA~A~A~A", "B) AAA~A", "C) Compile error", "D) Undefined Behavior"],
           answer: "D",
           explanation: "delete p on array allocated with new[] is UNDEFINED BEHAVIOR! Must use delete[] p. Only first destructor called, memory corrupted. Always match new/new[] with delete/delete[]."
@@ -636,13 +656,15 @@ int main() {
     easy: {
       mcqs: [
         {
-          question: "What is the output? System.out.println("hello".substring(0, 2));",
+          question: "What is the output? System.out.println(\"hello\".substring(0, 2));",
+
           options: ["A) he", "B) hel", "C) el", "D) h"],
           answer: "A",
           explanation: "substring(beginIndex, endIndex) — endIndex is EXCLUSIVE. substring(0,2) takes chars at 0 and 1 → 'he'. Common off-by-one trap!"
         },
         {
-          question: "What does this print? String s = new String("hello"); String t = new String("hello"); System.out.println(s == t);",
+          question: "What does this print? String s = new String(\"hello\"); String t = new String(\"hello\"); System.out.println(s == t);",
+
           options: ["A) true", "B) false", "C) Compile error", "D) Depends"],
           answer: "B",
           explanation: "new String() creates NEW objects in heap. s == t compares references (memory addresses), not content. s.equals(t) would be true. String literals in pool would be ==."
@@ -660,16 +682,20 @@ int main() {
           explanation: "Integer division in Java truncates toward zero. 5/2 = 2. Result is int. For floating-point: 5.0/2 or 5/2.0 = 2.5. Same trap as C/C++."
         },
         {
-          question: "What is the output? String s = null; System.out.println(s + "hello");",
+          question: "What is the output? String s = null; System.out.println(s + \"hello\");",
+
           options: ["A) nullhello", "B) hello", "C) NullPointerException", "D) Compile error"],
           answer: "A",
-          explanation: "String concatenation with null converts null to string "null". So null + "hello" = "nullhello". But s.length() would throw NPE. Concatenation is safe with null."
+          explanation: "String concatenation with null converts null to string \"null\". So null + \"hello\" = \"nullhello\". But s.length() would throw NPE. Concatenation is safe with null."
+
         },
         {
-          question: "What does this print? System.out.println("5" + 3 + 2);",
+          question: "What does this print? System.out.println(\"5\" + 3 + 2);",
+
           options: ["A) 10", "B) 532", "C) 55", "D) Compile error"],
           answer: "B",
-          explanation: "String + int = String concatenation (left to right). "5" + 3 = "53", then "53" + 2 = "532". For math: 3 + 2 + "5" = "55". Operator precedence + left associativity."
+          explanation: "String + int = String concatenation (left to right). \"5\" + 3 = \"53\", then \"53\" + 2 = \"532\". For math: 3 + 2 + \"5\" = \"55\". Operator precedence + left associativity."
+
         },
         {
           question: "What is the output? final int x; x = 5; System.out.println(x);",
@@ -739,31 +765,38 @@ Expected: Build a string of 1000 chars instantly.`,
           explanation: "new Integer(5) creates NEW objects. == compares references, so false. Integer.valueOf(5) == Integer.valueOf(5) is true (uses cache). new is the key difference here."
         },
         {
-          question: "What is the output? String s = "hello"; s.concat(" world"); System.out.println(s);",
+          question: "What is the output? String s = \"hello\"; s.concat(\" world\"); System.out.println(s);",
+
           options: ["A) hello world", "B) hello", "C) Compile error", "D) null"],
           answer: "B",
-          explanation: "Strings are IMMUTABLE in Java! s.concat() returns a NEW string, doesn't modify s. Must do: s = s.concat(" world"). This is a classic Java string immutability trap."
+          explanation: "Strings are IMMUTABLE in Java! s.concat() returns a NEW string, doesn't modify s. Must do: s = s.concat(\" world\"). This is a classic Java string immutability trap."
+
         },
         {
-          question: "What does this print? Map<String, Integer> map = new HashMap<>(); map.put("a", 1); System.out.println(map.get("b"));",
+          question: "What does this print? Map<String, Integer> map = new HashMap<>(); map.put(\"a\", 1); System.out.println(map.get(\"b\"));",
+
           options: ["A) 0", "B) null", "C) Compile error", "D) Exception"],
           answer: "B",
           explanation: "HashMap.get(key) returns null if key not found. No exception thrown. Must check containsKey() or use getOrDefault() to avoid NPE when autounboxing null to int."
         },
         {
-          question: "What is the output? int x = Integer.parseInt("10"); System.out.println(x + 5);",
+          question: "What is the output? int x = Integer.parseInt(\"10\"); System.out.println(x + 5);",
+
           options: ["A) 105", "B) 15", "C) Compile error", "D) NumberFormatException"],
           answer: "B",
-          explanation: "Integer.parseInt("10") returns primitive int 10. x + 5 = 15 (integer addition). Not string concatenation because x is int, not String."
+          explanation: "Integer.parseInt(\"10\") returns primitive int 10. x + 5 = 15 (integer addition). Not string concatenation because x is int, not String."
+
         },
         {
-          question: "What does this print? Thread t = new Thread(() -> System.out.println("run")); t.run();",
+          question: "What does this print? Thread t = new Thread(() -> System.out.println(\"run\")); t.run();",
+
           options: ["A) run (new thread)", "B) run (main thread)", "C) Nothing", "D) Compile error"],
           answer: "B",
           explanation: "t.run() calls run() DIRECTLY on current thread (main). t.start() creates a NEW thread. Calling run() directly is a common bug — it doesn't spawn a thread!"
         },
         {
-          question: "What is the output? System.out.println("\u0041");",
+          question: "What is the output? System.out.println(\"\u0041\");",
+
           options: ["A) \u0041", "B) A", "C) 65", "D) Compile error"],
           answer: "B",
           explanation: "\u0041 is a Unicode escape for 'A' (0x41 = 65 = 'A'). Processed at compile time, not runtime. Anywhere in code, \u0041 becomes 'A' before compilation continues."
@@ -775,13 +808,16 @@ Expected: Build a string of 1000 chars instantly.`,
           explanation: "Java initializes array elements to default values: 0 for int, 0.0 for double, false for boolean, null for objects. a[0] = 0. Local variables (non-array) are NOT initialized."
         },
         {
-          question: "What is the output? String s1 = "hello"; String s2 = "he" + "llo"; System.out.println(s1 == s2);",
+          question: "What is the output? String s1 = \"hello\"; String s2 = \"he\" + \"llo\"; System.out.println(s1 == s2);",
+
           options: ["A) false", "B) true", "C) Compile error", "D) Depends"],
           answer: "B",
-          explanation: "String literals are interned. "he" + "llo" is computed at compile-time to "hello", which is already in the string pool. s1 and s2 reference the SAME interned string."
+          explanation: "String literals are interned. \"he\" + \"llo\" is computed at compile-time to \"hello\", which is already in the string pool. s1 and s2 reference the SAME interned string."
+
         },
         {
-          question: "What does this print? try { return; } finally { System.out.print("F"); }",
+          question: "What does this print? try { return; } finally { System.out.print(\"F\"); }",
+
           options: ["A) Nothing", "B) F", "C) Compile error", "D) Exception"],
           answer: "B",
           explanation: "finally ALWAYS executes before method returns, even if try has return. Output: 'F'. This is how cleanup code guarantees execution. Even System.exit() in try won't stop finally... actually it does."
