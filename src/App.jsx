@@ -1,7 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
-import ChallengeSystem from './ChallengeSystem';
 
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
@@ -1405,7 +1404,6 @@ function AppInner() {
         </div>
       </section>
 
-      <ChallengeSystem />
       <TriviaSection />
       <CodePlayground />
 
