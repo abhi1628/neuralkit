@@ -98,11 +98,11 @@ const CHALLENGE_QUESTIONS = {
       coding: [
         {
           title: "🔥 The Mutable Default Trap",
-          description: "Fix the function below so it returns a NEW list [1] every time, regardless of how many times it's called.
+          description: `Fix the function below so it returns a NEW list [1] every time, regardless of how many times it's called.
 
 The current implementation has a classic Python bug.
 
-Expected: f() → [1], f() → [1], f() → [1]",
+Expected: f() → [1], f() → [1], f() → [1]`,
           starter: `def f(x=[]):
     x.append(1)
     return x
@@ -186,11 +186,11 @@ print(f())`,
       coding: [
         {
           title: "🔥 LRU Cache Decorator",
-          description: "Implement an LRU (Least Recently Used) cache decorator that caches function results.
+          description: `Implement an LRU (Least Recently Used) cache decorator that caches function results.
 
 When cache is full (maxsize), evict the least recently used item.
 
-Test: fib(30) should be near-instant on second call.",
+Test: fib(30) should be near-instant on second call.`,
           starter: `from functools import lru_cache
 
 # DON'T use @lru_cache — implement your own!
@@ -287,11 +287,11 @@ print(fib(10))  # Should be cached`,
       coding: [
         {
           title: "🔥 Swap Without Temp Variable",
-          description: "Swap two integers WITHOUT using a temporary variable.
+          description: `Swap two integers WITHOUT using a temporary variable.
 
 Handle edge cases including when both pointers point to the same memory.
 
-Expected: a=5, b=3 → a=3, b=5",
+Expected: a=5, b=3 → a=3, b=5`,
           starter: `#include <stdio.h>
 
 void swap(int *a, int *b) {
@@ -383,11 +383,11 @@ int main() {
       coding: [
         {
           title: "🔥 Bit Manipulation: Count Set Bits",
-          description: "Count the number of 1 bits in an integer.
+          description: `Count the number of 1 bits in an integer.
 
 Implement Brian Kernighan's algorithm (not the naive loop).
 
-Expected: count_bits(15) → 4, count_bits(0) → 0",
+Expected: count_bits(15) → 4, count_bits(0) → 0`,
           starter: `#include <stdio.h>
 
 int count_bits(unsigned int n) {
@@ -487,11 +487,11 @@ int main() {
       coding: [
         {
           title: "🔥 Smart Pointer Bug Hunt",
-          description: "Fix the memory leak and dangling pointer in this code.
+          description: `Fix the memory leak and dangling pointer in this code.
 
 Use modern C++ smart pointers (unique_ptr/shared_ptr) instead of raw new/delete.
 
-Expected: No leaks, safe access.",
+Expected: No leaks, safe access.`,
           starter: `#include <iostream>
 #include <memory>
 using namespace std;
@@ -587,11 +587,11 @@ int main() {
       coding: [
         {
           title: "🔥 Custom Vector Implementation",
-          description: "Implement a minimal std::vector-like class with proper memory management.
+          description: `Implement a minimal std::vector-like class with proper memory management.
 
 Must support: push_back, size, operator[], and Rule of Three/Five.
 
-Test: push 100 elements, access by index, no leaks.",
+Test: push 100 elements, access by index, no leaks.`,
           starter: `#include <iostream>
 #include <algorithm>
 using namespace std;
@@ -699,11 +699,11 @@ int main() {
       coding: [
         {
           title: "🔥 StringBuilder vs String Trap",
-          description: "Fix the performance bug: concatenating strings in a loop creates O(n²) objects.
+          description: `Fix the performance bug: concatenating strings in a loop creates O(n²) objects.
 
 Use StringBuilder to build the result efficiently.
 
-Expected: Build a string of 1000 chars instantly.",
+Expected: Build a string of 1000 chars instantly.`,
           starter: `public class Main {
     public static void main(String[] args) {
         // FIX: Use StringBuilder instead of String
@@ -790,11 +790,11 @@ Expected: Build a string of 1000 chars instantly.",
       coding: [
         {
           title: "🔥 Thread-Safe Singleton",
-          description: "Implement a thread-safe Singleton using double-checked locking.
+          description: `Implement a thread-safe Singleton using double-checked locking.
 
 Must be lazy-initialized AND work correctly with multiple threads.
 
-Expected: Only one instance ever created.",
+Expected: Only one instance ever created.`,
           starter: `public class Main {
     public static void main(String[] args) {
         // Test: Create 100 threads, all should get same instance
@@ -894,11 +894,11 @@ class Singleton {
       coding: [
         {
           title: "🔥 Closure Trap Fix",
-          description: "Fix the classic closure bug in a loop. All buttons currently alert the same number.
+          description: `Fix the classic closure bug in a loop. All buttons currently alert the same number.
 
 Make each button alert its own index (0, 1, 2).
 
-Use let, IIFE, or forEach to create proper closure scope.",
+Use let, IIFE, or forEach to create proper closure scope.`,
           starter: `// Fix: Each button should alert its own index
 for (var i = 0; i < 3; i++) {
     const btn = document.createElement('button');
@@ -986,11 +986,11 @@ for (var i = 0; i < 3; i++) {
       coding: [
         {
           title: "🔥 Debounce Implementation",
-          description: "Implement a debounce function that delays execution until after wait milliseconds of inactivity.
+          description: `Implement a debounce function that delays execution until after wait milliseconds of inactivity.
 
 Must handle: leading/trailing options, proper this context, argument passing.
 
-Test: rapid calls should only execute once after delay.",
+Test: rapid calls should only execute once after delay.`,
           starter: `function debounce(func, wait, options = {}) {
     // Your implementation
     // Hint: Use setTimeout, clearTimeout
@@ -1086,11 +1086,11 @@ setTimeout(() => console.log('Final count:', count), 200);`,
       coding: [
         {
           title: "🔥 Find Duplicate Emails",
-          description: "Find all duplicate emails in the users table.
+          description: `Find all duplicate emails in the users table.
 
 Return only the duplicate emails (not the original), sorted alphabetically.
 
-Expected: only@example.com appears twice → include it.",
+Expected: only@example.com appears twice → include it.`,
           starter: `-- Create test data
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
@@ -1180,11 +1180,11 @@ INSERT INTO users VALUES
       coding: [
         {
           title: "🔥 Running Total & Rank",
-          description: "Calculate running total of sales and rank employees by total sales.
+          description: `Calculate running total of sales and rank employees by total sales.
 
 Use window functions: SUM() OVER and RANK().
 
-Expected: Each row shows cumulative sales up to that row.",
+Expected: Each row shows cumulative sales up to that row.`,
           starter: `-- Create sales data
 CREATE TABLE sales (
     employee TEXT,
