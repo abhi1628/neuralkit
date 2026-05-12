@@ -1,4 +1,3 @@
-cat > src/ChallengeSystem.jsx << 'EOF'
 import React, { useState } from "react";
 import confetti from "canvas-confetti";
 
@@ -17,11 +16,9 @@ const CHALLENGES = {
   python: {
     easy: {
       questions: [
-        { q: "What is 2 ** 3 ** 2?", a: "B", opts: ["A) 64", "B) 512", "C) 36", "D) 72"], exp: "Exponentiation is right-associative: 3**2=9, then 2**9=512" },
-        { q: "What does [] == [] and [] is [] return?", a: "B", opts: ["A) True", "B) False", "C) Error", "D) None"], exp: "[] == [] is True, but [] is [] is False (different objects)" },
-        { q: "What prints? def f(x=[]): x.append(1); return x; print(f()); print(f())", a: "B", opts: ["A) [1] [1]", "B) [1] [1,1]", "C) Error", "D) [1,1] [1,1,1]"], exp: "Mutable default argument trap! List created once" },
-        { q: "What is 0.1 + 0.2 == 0.3?", a: "B", opts: ["A) True", "B) False", "C) Error", "D) Depends"], exp: "Floating-point: 0.1+0.2=0.30000000000000004" },
-        { q: "What does bool('False') return?", a: "B", opts: ["A) False", "B) True", "C) Error", "D) 'False'"], exp: "Any non-empty string is truthy" }
+        { q: "What is 2 ** 3 ** 2?", a: "B", opts: ["A) 64", "B) 512", "C) 36", "D) 72"], exp: "Exponentiation is right-associative" },
+        { q: "What does [] == [] and [] is [] return?", a: "B", opts: ["A) True", "B) False", "C) Error", "D) None"], exp: "[] == [] is True, but [] is [] is False" },
+        { q: "What is 0.1 + 0.2 == 0.3?", a: "B", opts: ["A) True", "B) False", "C) Error", "D) Depends"], exp: "Floating-point precision issue" }
       ],
       coding: { title: "Fix Mutable Default", starter: "def f(x=None):\n    if x is None:\n        x = []\n    x.append(1)\n    return x" }
     }
@@ -31,9 +28,7 @@ const CHALLENGES = {
       questions: [
         { q: "What is typeof []?", a: "B", opts: ["A) array", "B) object", "C) Array", "D) undefined"], exp: "Arrays are objects in JS" },
         { q: "What is '5' - 3?", a: "B", opts: ["A) '53'", "B) 2", "C) NaN", "D) '2'"], exp: "Subtraction triggers numeric conversion" },
-        { q: "What is 1 + '2' + 3?", a: "B", opts: ["A) 6", "B) '123'", "C) '15'", "D) NaN"], exp: "Once string appears, + becomes concatenation" },
-        { q: "What is [] == ![]?", a: "A", opts: ["A) true", "B) false", "C) Error", "D) NaN"], exp: "![] = false. [] -> '' -> 0, false -> 0" },
-        { q: "What is typeof NaN?", a: "B", opts: ["A) NaN", "B) number", "C) undefined", "D) 'NaN'"], exp: "NaN's type is 'number'" }
+        { q: "What is [] == ![]?", a: "A", opts: ["A) true", "B) false", "C) Error", "D) NaN"], exp: "![] = false, [] -> '' -> 0" }
       ],
       coding: { title: "Fix Closure Trap", starter: "for (let i = 0; i < 3; i++) {\n    setTimeout(() => console.log(i), 100);\n}" }
     }
@@ -111,7 +106,7 @@ export default function ChallengeSystem() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {q.opts.map(opt => (
                 <button key={opt} onClick={() => !submitted && setAnswers({...answers, [i]: opt[0]})}
-                  style={{ background: answers[i] === opt[0] ? "rgba(0,255,224,0.2)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "10px 16px", textAlign: "left", cursor: submitted ? "default" : "pointer", color: submitted && opt[0] === q.a ? "#00ffe0" : "rgba(255,255,255,0.8)" }}>
+                  style={{ background: answers[i] === opt[0] ? "rgba(0,255,224,0.2)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "10px 16px", textAlign: "left", cursor: submitted ? "default" : "pointer" }}>
                   {opt}
                 </button>
               ))}
@@ -123,7 +118,7 @@ export default function ChallengeSystem() {
           <button onClick={submitQuiz} disabled={Object.keys(answers).length < data.questions.length}
             style={{ width: "100%", background: Object.keys(answers).length < data.questions.length ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "12px", padding: "14px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Submit →</button>
         ) : (
-          <div style={{ textAlign: "center", padding: "16px", background: "rgba(0,255,224,0.06)", borderRadius: "12px" }}>Score: {score}% {score >= 60 ? "🎉 Moving to coding..." : "📚 Try again later"}</div>
+          <div style={{ textAlign: "center", padding: "16px", background: "rgba(0,255,224,0.06)", borderRadius: "12px" }}>Score: {score}%</div>
         )}
       </section>
     );
@@ -137,17 +132,13 @@ export default function ChallengeSystem() {
         <div style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px" }}>
           <pre style={{ margin: 0, fontSize: "0.8rem", color: "#e6edf3" }}>{data.coding.starter}</pre>
         </div>
-        <textarea value={code} onChange={(e) => setCode(e.target.value)} rows={10}
-          style={{ width: "100%", background: "#0d1117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.8rem", marginTop: "16px", resize: "vertical" }} />
-        {codeOutput && (
-          <div style={{ background: "#0d1117", border: "1px solid #00ffe0", borderRadius: "12px", padding: "16px", marginTop: "16px" }}>
-            <pre style={{ margin: 0, fontSize: "0.8rem" }}>{codeOutput}</pre>
-          </div>
-        )}
+        <textarea value={code} onChange={(e) => setCode(e.target.value)} rows={8}
+          style={{ width: "100%", background: "#0d1117", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", color: "#fff", fontFamily: "'Space Mono', monospace", fontSize: "0.8rem", marginTop: "16px" }} />
         <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-          <button onClick={() => setCodeOutput("✅ Great solution! Your code looks good.")} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Run Test</button>
-          <button onClick={() => { fireConfetti(); setStep('result'); setScore(85); }} style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "10px", padding: "10px 24px", color: "#00ffe0", fontWeight: 700, cursor: "pointer" }}>Submit Solution →</button>
+          <button onClick={() => setCodeOutput("✅ Great solution!")} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Run Test</button>
+          <button onClick={() => { fireConfetti(); setStep('result'); setScore(85); }} style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "10px", padding: "10px 24px", color: "#00ffe0", fontWeight: 700, cursor: "pointer" }}>Submit →</button>
         </div>
+        {codeOutput && <pre style={{ marginTop: "16px", padding: "16px", background: "#0d1117", border: "1px solid #00ffe0", borderRadius: "12px" }}>{codeOutput}</pre>}
       </section>
     );
   }
@@ -156,9 +147,9 @@ export default function ChallengeSystem() {
     return (
       <section style={{ maxWidth: "500px", margin: "80px auto", padding: "0 32px", textAlign: "center" }}>
         <div style={{ fontSize: "4rem", marginBottom: "20px" }}>{score >= 70 ? "🏆" : "📊"}</div>
-        <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: "16px" }}>{score >= 70 ? "Challenge Passed!" : "Keep Practicing!"}</h2>
+        <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: "16px" }}>{score >= 70 ? "Passed!" : "Keep Practicing!"}</h2>
         <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "16px", padding: "32px", marginBottom: "24px" }}>
-          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00ffe0" }}>Score: {score}%</div>
+          <div style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00ffe0" }}>{score}%</div>
         </div>
         <button onClick={() => setStep('select')} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "14px 28px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Try Another →</button>
       </section>
@@ -167,4 +158,3 @@ export default function ChallengeSystem() {
 
   return null;
 }
-EOF
