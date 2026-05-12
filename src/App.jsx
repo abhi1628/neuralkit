@@ -309,7 +309,7 @@ function ScrollToTop() {
   if (!visible) return null;
   return (
     <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 99, width: "48px", height: "48px", borderRadius: "50%", background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", color: "#000", fontSize: "1.2rem", cursor: "pointer", boxShadow: "0 0 24px rgba(0,255,224,0.4)", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s", animation: "fadeUp 0.3s ease" }}
+      style={{ position: "fixed", bottom: "60px", right: "24px", zIndex: 99, width: "48px", height: "48px", borderRadius: "50%", background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", color: "#000", fontSize: "1.2rem", cursor: "pointer", boxShadow: "0 0 24px rgba(0,255,224,0.4)", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s", animation: "fadeUp 0.3s ease" }}
       aria-label="Scroll to top">
       ↑
     </button>
@@ -1386,7 +1386,7 @@ function AppInner() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 40px" }}>
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 80px 28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.25)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
