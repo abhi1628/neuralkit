@@ -1,81 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SECRET_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false,
-  },
-});
-
+// Proxies visitor count to avoid CORS issues client-side
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  const allowedOrigins = ["https://zeroapi.in", "https://www.zeroapi.in", "http://localhost:5173", "http://localhost:3000"];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
-
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
-    const today = new Date().toISOString().split('T')[0];
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('visitors')
-      .select('*')
-      .eq('date', today)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Supabase fetch error:', fetchError);
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    let visitorCount;
-
-    if (existing) {
-      const { data: updated, error: updateError } = await supabase
-        .from('visitors')
-        .update({ count: existing.count + 1 })
-        .eq('date', today)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('Supabase update error:', updateError);
-        return res.status(500).json({ error: 'Failed to update count' });
-      }
-
-      visitorCount = updated.count;
-    } else {
-      const { data: inserted, error: insertError } = await supabase
-        .from('visitors')
-        .insert([{ date: today, count: 1 }])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Supabase insert error:', insertError);
-        return res.status(500).json({ error: 'Failed to create record' });
-      }
-
-      visitorCount = inserted.count;
-    }
-
-    return res.status(200).json({
-      value: visitorCount,
-      date: today,
-      label: "Today's Visitors",
-    });
-  } catch (err) {
-    console.error('Visitor handler error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    const r = await fetch("https://countapi.mileshilliard.com/api/v1/hit/zeroapi-in-visits");
+    const data = await r.json();
+    return res.status(200).json(data);
+  } catch {
+    return res.status(500).json({ error: "Visitor counter unavailable" });
   }
 }
