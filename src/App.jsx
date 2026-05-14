@@ -222,7 +222,7 @@ function formatOutput(text) {
   return text.split("\n").map((line, i) => {
     const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
     return (
-      <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px" }}>
+      <div key={i} style={{ marginBottom: line === "" ? "14px" : "6px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.88)", fontSize: "0.9rem", lineHeight: 1.85, letterSpacing: "0.01em", paddingLeft: isBold ? "0" : "4px", textAlign: "left" }}>
         {line.replace(/\*\*/g, "")}
       </div>
     );
@@ -624,7 +624,7 @@ function MCQPanel({ tool }) {
       return (
         <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
-          <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
+          <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px", textAlign: "left" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
           <div className="mcq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
             {opts.map((opt, j) => <div key={j} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: "rgba(255,255,255,0.75)" }}>{opt}</div>)}
           </div>
@@ -905,7 +905,7 @@ function CodePlayground() {
   function formatExplanation(text) {
     return text.split("\n").map((line, i) => {
       const isBold = line.startsWith("**") || line.match(/^[1-9]\./);
-      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px" }}>{line.replace(/\*\*/g, "")}</div>;
+      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : "rgba(255,255,255,0.85)", fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
     });
   }
 
@@ -1218,7 +1218,7 @@ function UserFeedback() {
                       {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>{fb.message}</div>
+                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, textAlign: "left" }}>{fb.message}</div>
                 </div>
               ))}
             </div>
