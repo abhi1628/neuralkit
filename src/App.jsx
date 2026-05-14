@@ -186,31 +186,83 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  
+  // Clean the text but PRESERVE line breaks
   const cleaned = text
-    .replace(/[🎯🔍💡⚠️📌✅❌🚀📈◆]/g, m => ({"🎯":"[CORE]","🔍":"[FINDINGS]","💡":"[INFO]","⚠️":"[WARNING]","📌":"[NOTE]","✅":"[+]","❌":"[-]","🚀":"[KEY]","📈":"[GROWTH]","◆":"*"}[m]))
-    .replace(/undefined/g, "")
+    .replace(/[🎯🔍💡⚠️📌✅❌🚀📈◆]/g, m => ({
+      "🎯": "[CORE]",
+      "🔍": "[FINDINGS]",
+      "💡": "[INFO]",
+      "⚠️": "[WARNING]",
+      "📌": "[NOTE]",
+      "✅": "[+]",
+      "❌": "[-]",
+      "🚀": "[KEY]",
+      "📈": "[GROWTH]",
+      "◆": "*"
+    }[m]))
     .replace(/undefineddefined/g, "")
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
-    .replace(/[^\x00-\x7F]/g, "")
-    .replace(/[^\x00-\x7F]/g, "").trim();
+    .replace(/undefined/g, "")
+    .replace(/[^\x00-\x7F\n]/g, ""); // Keep newlines, remove other non-ASCII
+  
   doc.setFont("helvetica");
-  doc.setFontSize(18); doc.setTextColor(0, 0, 0); doc.text("ZeroAPI - AI Output", 10, 20);
-  doc.setFontSize(9); doc.setTextColor(130, 130, 130); doc.text(`zeroapi.in | Generated: ${new Date().toLocaleDateString("en-IN")}`, 10, 28);
-  doc.setDrawColor(0, 200, 180); doc.setLineWidth(0.5); doc.line(10, 32, 200, 32);
+  doc.setFontSize(18);
+  doc.setTextColor(0, 0, 0);
+  doc.text("ZeroAPI - AI Output", 10, 20);
+  
+  doc.setFontSize(9);
+  doc.setTextColor(130, 130, 130);
+  doc.text(`zeroapi.in | Generated: ${new Date().toLocaleDateString("en-IN")}`, 10, 28);
+  
+  doc.setDrawColor(0, 200, 180);
+  doc.setLineWidth(0.5);
+  doc.line(10, 32, 200, 32);
+  
   doc.setFontSize(11);
-  const lines = doc.splitTextToSize(cleaned, 185);
+  
+  // Split by ACTUAL line breaks, not just arbitrary length
+  const lines = cleaned.split('\n');
   let y = 42;
-  lines.forEach(line => {
-    if (y > 280) { doc.addPage(); y = 20; }
-    if (line.startsWith("[")) { doc.setFont("helvetica", "bold"); doc.setTextColor(0, 150, 130); }
-    else { doc.setFont("helvetica", "normal"); doc.setTextColor(30, 30, 30); }
-    doc.text(line, 10, y); y += 7;
-  });
+  
+  for (let line of lines) {
+    if (line.trim() === '') {
+      y += 7;
+      continue;
+    }
+    
+    // Further split long lines to fit page width
+    const wrappedLines = doc.splitTextToSize(line, 185);
+    
+    for (let wrappedLine of wrappedLines) {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      if (wrappedLine.startsWith("[") || wrappedLine.startsWith("Q")) {
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 150, 130);
+      } else if (wrappedLine.startsWith("Answer:") || wrappedLine.startsWith("Explanation:")) {
+        doc.setFont("helvetica", "bolditalic");
+        doc.setTextColor(0, 200, 180);
+      } else {
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(30, 30, 30);
+      }
+      
+      doc.text(wrappedLine, 10, y);
+      y += 7;
+    }
+  }
+  
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i); doc.setFontSize(8); doc.setTextColor(180, 180, 180);
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
     doc.text(`ZeroAPI.in - Free AI Tools | Page ${i} of ${pageCount}`, 10, 290);
   }
+  
   doc.save(`${filename}.pdf`);
 }
 
