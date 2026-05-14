@@ -38,36 +38,36 @@ export default async function handler(req, res) {
   }
 
   // POST — submit new feedback
-  if (req.method === "POST") {
-    const { name, rating, message } = req.body;
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-    if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ error: "Rating must be 1-5" });
-    }
-
-    // Basic spam check — message must be at least 5 chars
-    if (message.trim().length < 5) {
-      return res.status(400).json({ error: "Message too short" });
-    }
-
-    try {
-      const r = await fetch(base, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          name: name?.trim() || "Anonymous",
-          rating: parseInt(rating),
-          message: message.trim().slice(0, 500),
-        }),
-      });
-      const data = await r.json();
-      return res.status(201).json(data);
-    } catch {
-      return res.status(500).json({ error: "Failed to save feedback" });
-    }
+// POST — submit new feedback
+if (req.method === "POST") {
+  const { name, rating, message } = req.body;
+  
+  // Only require message if provided, but at least rating is required
+  if (!rating || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: "Rating must be 1-5" });
   }
+
+  // Message is optional - only validate if provided
+  if (message && message.trim().length < 2) {
+    return res.status(400).json({ error: "Message too short (minimum 2 characters)" });
+  }
+
+  try {
+    const r = await fetch(base, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        name: name?.trim() || "Anonymous",
+        rating: parseInt(rating),
+        message: message?.trim()?.slice(0, 500) || "",  // Allow empty message
+      }),
+    });
+    const data = await r.json();
+    return res.status(201).json(data);
+  } catch {
+    return res.status(500).json({ error: "Failed to save feedback" });
+  }
+}
 
   return res.status(405).json({ error: "Method not allowed" });
 }
