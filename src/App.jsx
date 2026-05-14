@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
+import ChallengeSystem from './ChallengeSystem.jsx';
 
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
@@ -1084,37 +1085,60 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
   );
 }
 
-// ── NEW: User Feedback / Comments Section ─────────────────────
+// ── User Feedback / Comments Section ─────────────────────────
 function UserFeedback() {
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch feedbacks from Supabase on mount and poll every 30s
+  async function fetchFeedbacks() {
+    try {
+      const r = await fetch("/api/feedback");
+      const data = await r.json();
+      if (Array.isArray(data)) setFeedbacks(data);
+    } catch { /* silent fail */ }
+    setLoadingFeedbacks(false);
+  }
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("zeroapi_feedback");
-      if (saved) setFeedbacks(JSON.parse(saved));
-    } catch { /* ignore */ }
+    fetchFeedbacks();
+    const interval = setInterval(fetchFeedbacks, 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  function submitFeedback() {
+  async function submitFeedback() {
     if (!comment.trim() || rating === 0) return;
-    const newFeedback = {
-      id: Date.now(),
-      name: name.trim() || "Anonymous",
-      comment: comment.trim(),
-      rating,
-      date: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-    };
-    const updated = [newFeedback, ...feedbacks].slice(0, 20);
-    setFeedbacks(updated);
-    try { localStorage.setItem("zeroapi_feedback", JSON.stringify(updated)); } catch { /* ignore */ }
-    setSubmitted(true);
-    setName(""); setComment(""); setRating(0);
-    setTimeout(() => setSubmitted(false), 3000);
+    setSubmitting(true); setError("");
+    try {
+      const r = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim() || "Anonymous",
+          rating,
+          message: comment.trim(),
+        }),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setSubmitted(true);
+        setName(""); setComment(""); setRating(0);
+        setTimeout(() => setSubmitted(false), 3000);
+        fetchFeedbacks(); // Refresh immediately
+      } else {
+        setError(data.error || "Failed to submit. Please try again.");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    }
+    setSubmitting(false);
   }
 
   const stars = [1, 2, 3, 4, 5];
@@ -1144,22 +1168,46 @@ function UserFeedback() {
               style={{ width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
               onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
               onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.08)"} />
-            <button onClick={submitFeedback} disabled={!comment.trim() || rating === 0} style={{ alignSelf: "flex-start", background: !comment.trim() || rating === 0 ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: !comment.trim() || rating === 0 ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: !comment.trim() || rating === 0 ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace" }}>
-              Submit Feedback →
+            {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+            <button onClick={submitFeedback} disabled={!comment.trim() || rating === 0 || submitting}
+              style={{ alignSelf: "flex-start", background: !comment.trim() || rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: !comment.trim() || rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: !comment.trim() || rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+              {submitting ? <><span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Submitting...</> : "Submit Feedback →"}
             </button>
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <div style={{ fontSize: "2rem", marginBottom: "10px" }}>🙏</div>
             <div style={{ color: "#00ffe0", fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
-            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>We appreciate you taking the time to share your experience.</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
           </div>
         )}
 
-        {feedbacks.length > 0 && (
-          <div style={{ marginTop: "32px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Recent Feedback</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}>
+        {/* Feedback list */}
+        <div style={{ marginTop: "32px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
+            {feedbacks.length > 0 && (
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(0,255,224,0.4)" }}>
+                {feedbacks.length} review{feedbacks.length !== 1 ? "s" : ""} · live
+              </div>
+            )}
+          </div>
+
+          {loadingFeedbacks && (
+            <div style={{ textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.3)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem" }}>
+              <span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.1)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "8px", verticalAlign: "middle" }} />
+              Loading feedback...
+            </div>
+          )}
+
+          {!loadingFeedbacks && feedbacks.length === 0 && (
+            <div style={{ textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.25)", fontSize: "0.82rem" }}>
+              No feedback yet. Be the first to share! 🌟
+            </div>
+          )}
+
+          {feedbacks.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
               {feedbacks.map(fb => (
                 <div key={fb.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "14px 18px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -1167,14 +1215,16 @@ function UserFeedback() {
                       <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#fff" }}>{fb.name}</span>
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
-                    <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)", fontFamily: "'Space Mono', monospace" }}>{fb.date}</span>
+                    <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)", fontFamily: "'Space Mono', monospace" }}>
+                      {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>{fb.comment}</div>
+                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>{fb.message}</div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );
@@ -1320,7 +1370,7 @@ function AppInner() {
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em" }}>ZeroAPI</span>
         </div>
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-          {[{ label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) }, { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) }, { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }].map(({ label, action }) => (
+          {[{ label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) }, { label: "Challenges", action: () => document.getElementById("challenges").scrollIntoView({ behavior: "smooth" }) }, { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) }, { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }].map(({ label, action }) => (
             <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.55)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = "#fff")} onMouseLeave={(e) => (e.target.style.color = "rgba(255,255,255,0.55)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
@@ -1404,6 +1454,7 @@ function AppInner() {
         </div>
       </section>
 
+      <ChallengeSystem />
       <TriviaSection />
       <CodePlayground />
 
