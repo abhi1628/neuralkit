@@ -1169,7 +1169,7 @@ function UserFeedback() {
               onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.08)"} />
             {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
-              style={{ alignSelf: "flex-start", background: !comment.trim() || rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: !comment.trim() || rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: !comment.trim() || rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+              style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: !comment.trim() || rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: !comment.trim() || rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
               {submitting ? <><span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Submitting...</> : "Submit Feedback →"}
             </button>
           </div>
