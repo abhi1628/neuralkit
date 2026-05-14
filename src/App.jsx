@@ -187,7 +187,11 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const cleaned = text
-    .replace(/[🎯🔍💡⚠️📌✅❌🚀📈◆]/g, m => ({"🎯":"[CORE]","🔍":"[FINDINGS]","💡":"[INSIGHTS]","⚠️":"[WARNING]","📌":"[NOTE]","✅":"[+]","❌":"[-]","🚀":"[KEY]","📈":"[GROWTH]","◆":"*"}[m]))
+    .replace(/[🎯🔍💡⚠️📌✅❌🚀📈◆]/g, m => ({"🎯":"[CORE]","🔍":"[FINDINGS]","💡":"[INFO]","⚠️":"[WARNING]","📌":"[NOTE]","✅":"[+]","❌":"[-]","🚀":"[KEY]","📈":"[GROWTH]","◆":"*"}[m]))
+    .replace(/undefined/g, "")
+    .replace(/undefineddefined/g, "")
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
+    .replace(/[^\x00-\x7F]/g, "")
     .replace(/[^\x00-\x7F]/g, "").trim();
   doc.setFont("helvetica");
   doc.setFontSize(18); doc.setTextColor(0, 0, 0); doc.text("ZeroAPI - AI Output", 10, 20);
@@ -621,15 +625,16 @@ function MCQPanel({ tool }) {
       const opts = lines.filter(l => l.match(/^[A-D]\)/));
       const ansLine = lines.find(l => l.includes("✅")) || "";
       const expLine = lines.find(l => l.includes("💡")) || "";
+      const cleanExpLine = expLine.replace(/undefineddefined/g, "").replace(/undefined/g, "");
       return (
         <div key={i} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
           <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px", textAlign: "left" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
           <div className="mcq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
-            {opts.map((opt, j) => <div key={j} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: "rgba(255,255,255,0.75)" }}>{opt}</div>)}
+            {opts.map((opt, j) => <div key={j} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: "rgba(255,255,255,0.75)", textAlign: "left" }}>{opt}</div>)}
           </div>
           {ansLine && <div style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "0.82rem", color: "#00ffe0", marginBottom: "8px" }}>{ansLine}</div>}
-          {expLine && <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{expLine}</div>}
+          {expLine && <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{cleanExpLine}</div>}
         </div>
       );
     });
