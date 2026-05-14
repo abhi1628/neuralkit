@@ -1272,7 +1272,9 @@ function UserFeedback() {
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
                     <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.3)", fontFamily: "'Space Mono', monospace" }}>
-                      {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric",
+    minute: "numeric",
+    hour12: true }).replace(',', ' at')}
                     </span>
                   </div>
                   <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, textAlign: "left" }}>{fb.message}</div>
