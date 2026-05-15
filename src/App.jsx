@@ -24,16 +24,43 @@ function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    localStorage.setItem('zeroapi_theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  localStorage.setItem('zeroapi_theme', theme);
+  document.documentElement.setAttribute('data-theme', theme);
+  // Added: Force body styles to ensure the background and text color update correctly
+  document.body.style.backgroundColor = theme === 'dark' ? '#0a0a0a' : '#f8f9fa';
+  document.body.style.color = theme === 'dark' ? '#ffffff' : '#1a1a1a';
+}, [theme]);
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  <button
+    onClick={toggleTheme}
+    style={{
+      position: 'fixed',
+      top: '24px',
+      right: '24px',
+      zIndex: 9999, // High z-index ensures it's always visible above your content
+      width: '46px',
+      height: '46px',
+      borderRadius: '12px',
+      border: theme === 'dark' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
+      backgroundColor: theme === 'dark' ? 'rgba(30,30,30,0.9)' : 'rgba(255,255,255,0.9)',
+      backdropFilter: 'blur(10px)',
+      cursor: 'pointer',
+      boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.2rem',
+      transition: 'all 0.3s ease'
+    }}
+  >
+    {theme === 'dark' ? '☀️' : '🌙'}
+  </button>
+  {children}
+</ThemeContext.Provider>
   );
 }
 
@@ -350,7 +377,7 @@ function formatOutput(text, theme) {
       <div key={i} style={{ 
         marginBottom: line === "" ? "14px" : "6px", 
         fontWeight: isBold ? 700 : 400, 
-        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#2c3e50"), 
+        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#1a1a1a"), 
         fontSize: "0.9rem", 
         lineHeight: 1.85, 
         letterSpacing: "0.01em", 
