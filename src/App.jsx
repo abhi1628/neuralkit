@@ -363,13 +363,14 @@ function formatOutput(text, theme) {
   });
 }
 
-function WordCounter({ text, limit = WORD_LIMIT }) {
+// FIXED: WordCounter now receives theme prop and adapts colors
+function WordCounter({ text, limit = WORD_LIMIT, theme }) {
   const words = countWords(text);
   const pct = (words / limit) * 100;
-  let color = "rgba(255,255,255,0.25)";
+  let color = theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)";
   if (pct >= 100) color = "#ff6b6b";
   else if (pct >= 80) color = "#febc2e";
-  else if (words > 0) color = "#00ffe0";
+  else if (words > 0) color = theme === 'dark' ? "#00ffe0" : "#0a6b5e";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color }}>
       <span>{words.toLocaleString()} / {limit.toLocaleString()} words</span>
@@ -394,10 +395,11 @@ function TryExample({ onFill, exampleMap, toolId }) {
   );
 }
 
-function LineNumbers({ code, scrollTop }) {
+// FIXED: LineNumbers receives theme prop
+function LineNumbers({ code, scrollTop, theme }) {
   const lines = code.split("\n").length;
   return (
-    <div style={{ position: "absolute", top: 0, left: 0, width: "48px", padding: "20px 8px 20px 0", background: "#0a0e14", borderRight: "1px solid rgba(255,255,255,0.05)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", lineHeight: 1.8, color: "rgba(255,255,255,0.2)", textAlign: "right", userSelect: "none", overflow: "hidden", height: "100%", boxSizing: "border-box" }}>
+    <div style={{ position: "absolute", top: 0, left: 0, width: "48px", padding: "20px 8px 20px 0", background: "#0a0e14", borderRight: "1px solid rgba(255,255,255,0.05)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", lineHeight: 1.8, color: theme === 'dark' ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)", textAlign: "right", userSelect: "none", overflow: "hidden", height: "100%", boxSizing: "border-box" }}>
       <div style={{ transform: `translateY(-${scrollTop}px)` }}>
         {Array.from({ length: Math.max(lines, 1) }, (_, i) => (
           <div key={i} style={{ height: `${1.8 * 0.85}rem` }}>{i + 1}</div>
@@ -703,7 +705,7 @@ function ToolPanel({ tool, theme }) {
           style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
           onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
           onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
-        <WordCounter text={input} />
+        <WordCounter text={input} theme={theme} />
       </div>
       <button onClick={runTool} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading && input.trim() && !isOverLimit ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
         {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : isOverLimit ? "Over word limit — trim input" : `→ ${tool.cta}`}
@@ -800,7 +802,7 @@ function MCQPanel({ tool, theme }) {
           style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
           onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
           onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
-        <WordCounter text={input} />
+        <WordCounter text={input} theme={theme} />
       </div>
       <button onClick={generate} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
         {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Generating MCQs...</> : isOverLimit ? "Over word limit — trim input" : "→ Generate 5 MCQs"}
@@ -845,7 +847,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     for (let kw of resumeKeywords) {
       if (lowerText.includes(kw)) resumeScore++;
     }
-    // If high paper score and low resume score, it's likely a paper
     return (paperScore >= 3 && resumeScore <= 1);
   }
 
@@ -892,7 +893,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   async function analyze() {
     if (!extractedText) return;
     
-    // --- VALIDATION FOR RESUME ANALYZER ---
     if (label === "Analyze Resume") {
       if (isResearchPaper(extractedText)) {
         setError("❌ This appears to be a research paper or academic document, not a resume. Please upload a CV or resume file.");
@@ -903,7 +903,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         return;
       }
     }
-    // --------------------------------------
 
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
@@ -932,7 +931,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
         {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
       </div>
-      {/* --- ADDED NOTE FOR RESUME ANALYZER --- */}
       {label === "Analyze Resume" && !fileName && (
         <div style={{ marginTop: "-10px", fontSize: "0.7rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", textAlign: "center" }}>
           📄 Please upload a resume/CV (not research papers, articles, or other documents)
@@ -1175,7 +1173,7 @@ function CodePlayground({ theme }) {
           </div>
         </div>
         <div style={{ position: "relative" }}>
-          <LineNumbers code={code} scrollTop={scrollTop} />
+          <LineNumbers code={code} scrollTop={scrollTop} theme={theme} />
           <textarea ref={codeAreaRef} value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={handleCodeScroll} spellCheck={false}
             style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 60px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
         </div>
@@ -1568,6 +1566,9 @@ function AppInner() {
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
           nav { padding: 14px 20px !important; }
           .nav-try-btn { display: block !important; }
+          /* FIX: footer responsive padding */
+          footer { padding: 28px 20px !important; }
+          .hero-stats { gap: 20px !important; }
         }
       `}</style>
 
@@ -1596,8 +1597,10 @@ function AppInner() {
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
+          {/* Theme toggle moved OUTSIDE .nav-links so it's always visible on mobile */}
           <button 
             onClick={toggleTheme}
+            aria-label="Toggle dark/light mode"
             style={{
               background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
               border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
@@ -1725,14 +1728,14 @@ function AppInner() {
 
       <UserFeedback theme={theme} />
 
-      <footer style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "28px 80px 28px 40px" }}>
+      <footer className="site-footer" style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
             <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(0,255,224,0.4)", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "#00ffe0"} onMouseLeave={(e) => e.target.style.color = "rgba(0,255,224,0.4)"}>↑ Back to top</span>
           </div>
           <div style={{ display: "flex", gap: "24px" }}>
-            {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\\n\\nabhi16.2007@gmail.com\\n\\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
+            {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
               <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)")}>{label}</span>
             ))}
           </div>
