@@ -346,11 +346,12 @@ function countWords(text) {
 function formatOutput(text, theme) {
   return text.split("\n").map((line, i) => {
     const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
+    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
     return (
       <div key={i} style={{ 
         marginBottom: line === "" ? "14px" : "6px", 
         fontWeight: isBold ? 700 : 400, 
-        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#2c3e50"), 
+        color: isBold ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#2c3e50"), 
         fontSize: "0.9rem", 
         lineHeight: 1.85, 
         letterSpacing: "0.01em", 
@@ -363,7 +364,7 @@ function formatOutput(text, theme) {
   });
 }
 
-// FIXED: WordCounter now receives theme prop and adapts colors
+// WordCounter – theme‑aware
 function WordCounter({ text, limit = WORD_LIMIT, theme }) {
   const words = countWords(text);
   const pct = (words / limit) * 100;
@@ -395,7 +396,7 @@ function TryExample({ onFill, exampleMap, toolId }) {
   );
 }
 
-// FIXED: LineNumbers receives theme prop
+// LineNumbers – theme‑aware
 function LineNumbers({ code, scrollTop, theme }) {
   const lines = code.split("\n").length;
   return (
@@ -612,21 +613,22 @@ function TriviaSection({ theme }) {
   }
 
   const isCorrect = selected && trivia && !trivia.error && selected.startsWith(trivia.answer);
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
     <section className="trivia-section" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "60px 32px", background: theme === 'dark' ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
       <div style={{ maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "8px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase" }}>◆ Daily AI Trivia</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase" }}>◆ Daily AI Trivia</div>
           {total > 0 && (
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", background: "rgba(0,255,224,0.1)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "3px 12px", color: "#00ffe0" }}>Score: {score}/{total}</div>
-              <button onClick={shareScore} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", background: shared ? "rgba(0,255,224,0.15)" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "100px", padding: "3px 12px", color: shared ? "#00ffe0" : "rgba(255,255,255,0.5)", cursor: "pointer" }}>{shared ? "Copied!" : "Share Score"}</button>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", background: "rgba(0,255,224,0.1)", border: `1px solid ${accentColor}33`, borderRadius: "100px", padding: "3px 12px", color: accentColor }}>Score: {score}/{total}</div>
+              <button onClick={shareScore} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", background: shared ? "rgba(0,255,224,0.15)" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "100px", padding: "3px 12px", color: shared ? accentColor : "rgba(255,255,255,0.5)", cursor: "pointer" }}>{shared ? "Copied!" : "Share Score"}</button>
             </div>
           )}
         </div>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "28px", fontFamily: "'Space Mono', monospace" }}>Test your AI knowledge — new question every time</p>
-        {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />Generating question...</div>}
+        {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: `2px solid ${accentColor}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />Generating question...</div>}
         {trivia && !trivia.error && !loading && (
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
@@ -634,17 +636,17 @@ function TriviaSection({ theme }) {
               {trivia.options.map((opt) => {
                 const isThis = selected === opt, correct = opt.startsWith(trivia.answer);
                 let bg = theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border = `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, color = theme === 'dark' ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)";
-                if (selected) { if (correct) { bg = "rgba(0,255,224,0.12)"; border = "1px solid #00ffe0"; color = "#00ffe0"; } else if (isThis) { bg = "rgba(255,80,80,0.1)"; border = "1px solid #ff6b6b"; color = "#ff6b6b"; } }
+                if (selected) { if (correct) { bg = "rgba(0,255,224,0.12)"; border = `1px solid ${accentColor}`; color = accentColor; } else if (isThis) { bg = "rgba(255,80,80,0.1)"; border = "1px solid #ff6b6b"; color = "#ff6b6b"; } }
                 return <button key={opt} onClick={() => handleAnswer(opt)} style={{ background: bg, border, borderRadius: "10px", padding: "14px 16px", color, fontSize: "0.85rem", cursor: selected ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", textAlign: "left", transition: "all 0.2s" }}>{opt}</button>;
               })}
             </div>
-            {selected && <div style={{ background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)", border: `1px solid ${isCorrect ? "rgba(0,255,224,0.2)" : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.75)", lineHeight: 1.7 }}>
+            {selected && <div style={{ background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)", border: `1px solid ${isCorrect ? `${accentColor}33` : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.75)", lineHeight: 1.7 }}>
               {isCorrect ? "Correct! " : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}
             </div>}
-            <button onClick={loadTrivia} style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "10px", padding: "10px 24px", color: "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", letterSpacing: "0.05em" }}>↻ New Question</button>
+            <button onClick={loadTrivia} style={{ background: "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "10px", padding: "10px 24px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", letterSpacing: "0.05em" }}>↻ New Question</button>
           </div>
         )}
-        {trivia?.error && !loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>Couldn&apos;t load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button></div>}
+        {trivia?.error && !loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>Couldn&apos;t load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: accentColor, cursor: "pointer" }}>Try again</button></div>}
       </div>
     </section>
   );
@@ -695,15 +697,16 @@ function ToolPanel({ tool, theme }) {
   }
 
   const exampleKey = tool.id === "codeExplainer" ? "codeExplainer" : tool.id;
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
-        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
+        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: accentColor, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
         <TryExample onFill={setInput} exampleMap={EXAMPLES} toolId={exampleKey} />
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={8}
           style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
-          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
+          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = `${accentColor}66`)}
           onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
         <WordCounter text={input} theme={theme} />
       </div>
@@ -714,7 +717,7 @@ function ToolPanel({ tool, theme }) {
       {output && (
         <div ref={outputRef}>
           <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ Output</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ Output</div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${tool.id}`} />
@@ -772,6 +775,7 @@ function MCQPanel({ tool, theme }) {
 
   function formatMCQ(text) {
     const blocks = text.split(/\n(?=Q\d+\.\s)/).filter(b => b.trim());
+    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
     return blocks.map((block, i) => {
       const lines = block.trim().split("\n").filter(l => l.trim());
       const qLine = lines[0] || "";
@@ -781,26 +785,28 @@ function MCQPanel({ tool, theme }) {
       const cleanExpLine = expLine.replace(/undefineddefined/g, "").replace(/undefined/g, "");
       return (
         <div key={i} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
           <div style={{ fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px", textAlign: "left" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
           <div className="mcq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
             {opts.map((opt, j) => <div key={j} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", textAlign: "left" }}>{opt}</div>)}
           </div>
-          {ansLine && <div style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "0.82rem", color: "#00ffe0", marginBottom: "8px" }}>{ansLine}</div>}
+          {ansLine && <div style={{ background: "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "10px 14px", fontSize: "0.82rem", color: accentColor, marginBottom: "8px" }}>{ansLine}</div>}
           {expLine && <div style={{ fontSize: "0.82rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", lineHeight: 1.6 }}>{cleanExpLine}</div>}
         </div>
       );
     });
   }
 
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
-        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
+        <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: accentColor, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
         <TryExample onFill={setInput} exampleMap={EXAMPLES} toolId="mcq" />
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={6}
           style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
-          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
+          onFocus={(e) => !isOverLimit && (e.target.style.borderColor = `${accentColor}66`)}
           onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
         <WordCounter text={input} theme={theme} />
       </div>
@@ -810,7 +816,7 @@ function MCQPanel({ tool, theme }) {
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {rawOutput && (
         <div ref={outputRef}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Generated Questions</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Generated Questions</div>
           {formatMCQ(rawOutput)}
           <OutputActions text={rawOutput} filename="zeroapi-mcqs" />
         </div>
@@ -905,16 +911,18 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     setLoading(false);
   }
 
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? "rgba(0,255,224,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? "rgba(0,255,224,0.04)" : "transparent" }}
-        onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(0,255,224,0.3)"}
-        onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? "rgba(0,255,224,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
+      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? `${accentColor}66` : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? `${accentColor}0A` : "transparent" }}
+        onMouseEnter={(e) => e.currentTarget.style.borderColor = `${accentColor}4D`}
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? `${accentColor}66` : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile} />
         <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? icon : "⬆️"}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), marginBottom: "6px" }}>{extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), marginBottom: "6px" }}>{extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}</div>
         {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
-        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
+        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
       </div>
       {label === "Analyze Resume" && !fileName && (
         <div style={{ marginTop: "-10px", fontSize: "0.7rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", textAlign: "center" }}>
@@ -930,7 +938,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
       {output && (
         <div>
           <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${filename}`} />
@@ -941,8 +949,9 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 }
 
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
   return (
-    <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? "0 0 40px rgba(0,255,224,0.25)" : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
+    <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? `0 0 40px ${accentColor}40` : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
       <div style={{ fontSize: "2rem", marginBottom: fullWidth ? 0 : "10px" }}>{icon}</div>
       <div style={{ flex: 1 }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.95rem", fontWeight: 700, color: active ? "#000" : (theme === 'dark' ? "#fff" : "#1a1a1a"), marginBottom: "6px", letterSpacing: "-0.02em" }}>{name}</div>
@@ -1095,9 +1104,10 @@ function CodePlayground({ theme }) {
   }
 
   function formatExplanation(text) {
+    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
     return text.split("\n").map((line, i) => {
       const isBold = line.startsWith("**") || line.match(/^[1-9]\./);
-      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)"), fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
+      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)"), fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
     });
   }
 
@@ -1117,10 +1127,12 @@ function CodePlayground({ theme }) {
 
   function handleCodeScroll(e) { setScrollTop(e.target.scrollTop); }
 
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
@@ -1130,7 +1142,7 @@ function CodePlayground({ theme }) {
             {l.icon} {l.label}
           </button>
         ))}
-        <button onClick={loadExample} style={{ marginLeft: "auto", background: "rgba(0,255,224,0.06)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "100px", padding: "8px 18px", color: "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", transition: "all 0.2s" }}
+        <button onClick={loadExample} style={{ marginLeft: "auto", background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}26`, borderRadius: "100px", padding: "8px 18px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", transition: "all 0.2s" }}
           onMouseEnter={(e) => e.currentTarget.style.background = "rgba(0,255,224,0.12)"}
           onMouseLeave={(e) => e.currentTarget.style.background = "rgba(0,255,224,0.06)"}>
           ✨ Try Example
@@ -1165,8 +1177,8 @@ function CodePlayground({ theme }) {
         {(output || error) && (
           <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : "#00ffe0", letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
-              <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
+              <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
                 {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
               </button>
             </div>
@@ -1175,8 +1187,8 @@ function CodePlayground({ theme }) {
         )}
       </div>
       {explanation && (
-        <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "16px", padding: "24px 28px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: "1px solid rgba(0,255,224,0.1)" }}>🧠 AI Explanation</div>
+        <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "16px", padding: "24px 28px" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${accentColor}1A` }}>🧠 AI Explanation</div>
           {formatExplanation(explanation)}
           <OutputActions text={explanation} filename="zeroapi-code-explanation" />
         </div>
@@ -1186,7 +1198,7 @@ function CodePlayground({ theme }) {
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
         {lang.value === "sqlite3" && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(0,255,224,0.05)", borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(0,255,224,0.6)" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: `${accentColor}0D`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor }}>
             🗄️ SQL database persists across multiple runs! INSERT, UPDATE, DELETE stay until you refresh or click Reset DB.
           </div>
         )}
@@ -1195,7 +1207,7 @@ function CodePlayground({ theme }) {
           <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
           <span>Standard library only</span>
           <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
-          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: "rgba(0,255,224,0.35)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>Use Colab for ML/DL</span>
+          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: `${accentColor}59`, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>Use Colab for ML/DL</span>
         </div>
       </div>
     </section>
@@ -1257,12 +1269,14 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
     setLoading(false);
   }
 
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+
   return (
     <div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", minWidth: 0, position: "relative" }}>
           <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
-            onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.4)"}
+            onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
             onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} />
         </div>
         <button onClick={ask} disabled={loading || !question.trim()} style={{ flex: "0 0 auto", background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}>
@@ -1274,7 +1288,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
       {answer && (
         <div>
           <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: theme === 'dark' ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.8)", lineHeight: 1.85, textAlign: "left", letterSpacing: "0.01em" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#00ffe0", marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: accentColor, marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
           <OutputActions text={answer} filename="zeroapi-ask-author" />
@@ -1340,11 +1354,12 @@ function UserFeedback({ theme }) {
   }
 
   const stars = [1, 2, 3, 4, 5];
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
     <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
       <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
 
         {!submitted ? (
@@ -1360,11 +1375,11 @@ function UserFeedback({ theme }) {
               <span style={{ fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
             </div>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
-              onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
+              onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
               onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
               style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
-              onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
+              onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
               onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
             {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
@@ -1375,7 +1390,7 @@ function UserFeedback({ theme }) {
         ) : (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <div style={{ fontSize: "2rem", marginBottom: "10px" }}>🙏</div>
-            <div style={{ color: "#00ffe0", fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
+            <div style={{ color: accentColor, fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
             <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
           </div>
         )}
@@ -1384,7 +1399,7 @@ function UserFeedback({ theme }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
             {feedbacks.length > 0 && (
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(0,255,224,0.4)" }}>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: `${accentColor}66` }}>
                 {feedbacks.length} review{feedbacks.length !== 1 ? "s" : ""} · live
               </div>
             )}
@@ -1392,7 +1407,7 @@ function UserFeedback({ theme }) {
 
           {loadingFeedbacks && (
             <div style={{ textAlign: "center", padding: "20px", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem" }}>
-              <span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.1)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "8px", verticalAlign: "middle" }} />
+              <span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.1)", borderTop: `2px solid ${accentColor}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "8px", verticalAlign: "middle" }} />
               Loading feedback...
             </div>
           )}
@@ -1499,6 +1514,7 @@ function AppInner() {
   }
 
   const activeInfo = getActiveInfo();
+  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   const Modal = ({ title, content, onClose }) => (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={onClose}>
@@ -1533,7 +1549,7 @@ function AppInner() {
         .tools-section { animation: fadeUp 0.9s ease 0.15s both; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: ${theme === 'dark' ? '#060a0f' : '#e0e0e0'}; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,255,224,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: ${accentColor}4D; border-radius: 3px; }
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
           .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
@@ -1561,7 +1577,7 @@ function AppInner() {
 
       <ScrollToTop />
 
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
@@ -1584,7 +1600,7 @@ function AppInner() {
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
 
-        {/* THEME TOGGLE - always visible, outside .nav-links */}
+        {/* THEME TOGGLE - always visible */}
         <button 
           onClick={toggleTheme}
           aria-label="Toggle dark/light mode"
@@ -1611,22 +1627,22 @@ function AppInner() {
         <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
-      {/* Hero section */}
-      <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 40px 80px", overflow: "hidden" }}>
+      {/* Hero section - reduced padding-top to remove gap */}
+      <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "90px 40px 80px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px)`, backgroundSize: "60px 60px", pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: `radial-gradient(circle, ${theme === 'dark' ? "rgba(0,170,255,0.07)" : "rgba(0,170,255,0.03)"} 0%, transparent 70%)`, top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
         {particles.map((p, i) => <Particle key={i} style={p} />)}
 
-        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: "#00ffe0", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#00ffe0", animation: "pulse 1.5s ease infinite", display: "inline-block" }} />
+        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: theme === 'dark' ? "rgba(0,255,224,0.08)" : "rgba(0,100,90,0.1)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,128,128,0.3)"}`, borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: theme === 'dark' ? "#00ffe0" : "#008080", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: theme === 'dark' ? "#00ffe0" : "#008080", animation: "pulse 1.5s ease infinite", display: "inline-block" }} />
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
         <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1a1a1a", wordBreak: "keep-all" }}>
-          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Your AI </span>
+          <span>Your AI </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", whiteSpace: "nowrap" }}>Superpower</span>
           <br />
-          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Starts Here</span>
+          <span>Starts Here</span>
         </h1>
 
         <p className="hero-sub" style={{ fontSize: "1.15rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
@@ -1651,7 +1667,7 @@ function AppInner() {
       {/* Tools section */}
       <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Pick a Tool. Run It. Free.</h2>
           <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free</p>
         </div>
@@ -1689,14 +1705,14 @@ function AppInner() {
 
       <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>
-          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Built by an </span>
+          <span>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
-          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}> for everyone.</span>
+          <span> for everyone.</span>
         </h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
           ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
-          This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
+          This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: accentColor, fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
         <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
           <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM", "_blank", "noopener,noreferrer")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
@@ -1708,8 +1724,8 @@ function AppInner() {
       </section>
 
       <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 60px" }}>
-        <div style={{ background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "20px", padding: "36px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
+        <div style={{ background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "20px", padding: "36px" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
           <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
           <AskAuthor theme={theme} />
         </div>
@@ -1721,7 +1737,7 @@ function AppInner() {
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
-            <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(0,255,224,0.4)", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "#00ffe0"} onMouseLeave={(e) => e.target.style.color = "rgba(0,255,224,0.4)"}>↑ Back to top</span>
+            <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: `${accentColor}66`, cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = accentColor} onMouseLeave={(e) => e.target.style.color = `${accentColor}66`}>↑ Back to top</span>
           </div>
           <div style={{ display: "flex", gap: "24px" }}>
             {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
