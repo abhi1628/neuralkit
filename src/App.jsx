@@ -1133,50 +1133,107 @@ function CodePlayground({ theme }) {
     trackEvent("playground_example", { language: lang.label });
   }
 
-  async function runCode() {
-    if (!code.trim()) return;
-    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
-    trackEvent("playground_run", { language: lang.label });
-
-    if (lang.value === "sqlite3") {
-      try {
-        if (!sqlLoaded.current) {
-          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
-          sqlLoaded.current = true;
-        }
-        if (!sqlDb.current) {
-          const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
-          sqlDb.current = new SQL.Database();
-          setOutput("New database created!\n");
-        }
-        const db = sqlDb.current;
-        const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
-        let result = ""; let hasOutput = false;
-        for (const stmt of statements) {
-          try {
-            const isSelect = stmt.toLowerCase().startsWith("select");
-            const res = db.exec(stmt + ";");
-            if (res.length > 0 && isSelect) {
-              const { columns, values } = res[0];
-              result += columns.join(" | ") + "\n";
-              result += columns.map(() => "---").join("-|-") + "\n";
-              values.forEach(row => { result += row.join(" | ") + "\n"; });
-              result += "\n"; hasOutput = true;
-            } else if (res.length > 0 && !isSelect) {
-              const changes = db.getRowsModified();
-              result += `${changes} row(s) affected\n`; hasOutput = true;
-            } else if (!isSelect && !res.length) {
-              result += `Query executed successfully\n`; hasOutput = true;
-            }
-          } catch (e) { result += `Error: ${e.message}\n`; hasOutput = true; }
-        }
-        if (hasOutput) setOutput(prev => prev === "New database created!\n" ? result : prev + result);
-        else setOutput(prev => prev + "All queries executed (no output)\n");
-        setRunError(false);
-      } catch (e) { setOutput(`SQL Error: ${e.message}`); setRunError(true); sqlDb.current = null; }
-      setRunning(false); return;
+  // Helper to capture console.log (and warn/error) for JavaScript
+  function captureConsole(fn) {
+    let logs = [];
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    console.log = (...args) => {
+      logs.push(args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' '));
+      originalLog(...args);
+    };
+    console.warn = (...args) => {
+      logs.push(`⚠️ ${args.join(' ')}`);
+      originalWarn(...args);
+    };
+    console.error = (...args) => {
+      logs.push(`❌ ${args.join(' ')}`);
+      originalError(...args);
+    };
+    try {
+      fn();
+    } catch (err) {
+      logs.push(`Error: ${err.message}`);
+    } finally {
+      console.log = originalLog;
+      console.warn = originalWarn;
+      console.error = originalError;
     }
+    return logs;
+  }
 
+  // Run JavaScript locally
+  function runJavaScript() {
+    const logs = captureConsole(() => {
+      // Wrap in async function to allow await
+      const wrapped = `
+        (async () => {
+          try {
+            ${code}
+          } catch (e) {
+            console.error(e.message);
+          }
+        })();
+      `;
+      const asyncFn = new Function(wrapped);
+      return asyncFn();
+    });
+    // Allow async code to finish (e.g., setTimeout)
+    setTimeout(() => {
+      const outputText = logs.join('\n') || '(No output)';
+      setOutput(outputText);
+      setRunError(false);
+    }, 50);
+  }
+
+  // Run SQL via sql.js (local)
+  async function runSQL() {
+    try {
+      if (!sqlLoaded.current) {
+        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+        sqlLoaded.current = true;
+      }
+      if (!sqlDb.current) {
+        const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
+        sqlDb.current = new SQL.Database();
+        setOutput("New database created!\n");
+      }
+      const db = sqlDb.current;
+      const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
+      let result = ""; let hasOutput = false;
+      for (const stmt of statements) {
+        try {
+          const isSelect = stmt.toLowerCase().startsWith("select");
+          const res = db.exec(stmt + ";");
+          if (res.length > 0 && isSelect) {
+            const { columns, values } = res[0];
+            result += columns.join(" | ") + "\n";
+            result += columns.map(() => "---").join("-|-") + "\n";
+            values.forEach(row => { result += row.join(" | ") + "\n"; });
+            result += "\n"; hasOutput = true;
+          } else if (res.length > 0 && !isSelect) {
+            const changes = db.getRowsModified();
+            result += `${changes} row(s) affected\n`; hasOutput = true;
+          } else if (!isSelect && !res.length) {
+            result += `Query executed successfully\n`; hasOutput = true;
+          }
+        } catch (e) { result += `Error: ${e.message}\n`; hasOutput = true; }
+      }
+      if (hasOutput) setOutput(prev => prev === "New database created!\n" ? result : prev + result);
+      else setOutput(prev => prev + "All queries executed (no output)\n");
+      setRunError(false);
+    } catch (e) {
+      setOutput(`SQL Error: ${e.message}`);
+      setRunError(true);
+      sqlDb.current = null;
+    }
+  }
+
+  // Run C/C++/Java/Python via API
+  async function runViaAPI() {
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch("/api/run-code", {
@@ -1191,7 +1248,24 @@ function CodePlayground({ theme }) {
       else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
       else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
       else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
-    } catch { setError("Connection error. Please try again."); }
+    } catch (err) {
+      setOutput(`Connection error: ${err.message}`);
+      setRunError(true);
+    }
+  }
+
+  async function runCode() {
+    if (!code.trim()) return;
+    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
+    trackEvent("playground_run", { language: lang.label });
+
+    if (lang.value === "sqlite3") {
+      await runSQL();
+    } else if (lang.value === "javascript") {
+      runJavaScript();
+    } else {
+      await runViaAPI();
+    }
     setRunning(false);
   }
 
@@ -1318,17 +1392,16 @@ function CodePlayground({ theme }) {
           </div>
         )}
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
-          <span>⚡ Powered by OnlineCompiler.io</span>
+          <span>⚡ JavaScript runs locally in your browser</span>
           <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
-          <span>Standard library only</span>
-          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
-          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: `${accentColor}59`, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>Use Colab for ML/DL</span>
+          <span>C/C++/Java/Python via OnlineCompiler.io (API required)</span>
         </div>
       </div>
     </section>
   );
 }
 
+  
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor({ theme }) {
   const [question, setQuestion] = useState("");
