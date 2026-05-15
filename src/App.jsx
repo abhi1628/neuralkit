@@ -593,21 +593,27 @@ function ToolPanel({ tool }) {
 
   async function runTool() {
     if (!input.trim() || isOverLimit) return;
+    const sanitizedInput = sanitizeInput(input);
     setLoading(true); setOutput(""); setError("");
-    trackEvent("tool_run", { tool_name: tool.name, input_length: input.length });
+    trackEvent("tool_run", { tool_name: tool.name, input_length: sanitizedInput.length });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: tool.systemPrompt }, { role: "user", content: input }] }),
+        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: tool.systemPrompt }, { role: "user", content: sanitizedInput }] }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) { setOutput(data.choices[0].message.content); setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); }
-      else if (data?.error) setError(`API Error: ${data.error.message}`);
-      else setError("Unexpected response. Please try again.");
-    } catch { setError("Connection error. Please try again."); }
-    setLoading(false);
-  }
+    if (data?.choices?.[0]?.message?.content) { 
+      // Sanitize output before displaying
+      const sanitizedOutput = sanitizeOutput(data.choices[0].message.content);
+      setOutput(sanitizedOutput); 
+      setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); 
+    }
+    else if (data?.error) setError(`API Error: ${data.error.message}`);
+    else setError("Unexpected response. Please try again.");
+  } catch { setError("Connection error. Please try again."); }
+  setLoading(false);
+}
 
   const exampleKey = tool.id === "codeExplainer" ? "codeExplainer" : tool.id;
 
@@ -650,39 +656,43 @@ function MCQPanel({ tool }) {
 
   async function generate() {
     if (!input.trim() || isOverLimit) return;
-    setLoading(true); setRawOutput(""); setError("");
-    trackEvent("tool_run", { tool_name: "MCQ Generator" });
+  
+  // Sanitize input before sending
+  const sanitizedInput = sanitizeInput(input);
+  
+  setLoading(true); setRawOutput(""); setError("");
+  trackEvent("tool_run", { tool_name: "MCQ Generator" });
 
-    const historyContext = history.length > 0 
-      ? `\n\nPreviously generated questions for similar topics (DO NOT repeat these):\n${history.slice(-3).join("\n\n---\n\n")}` 
-      : "";
+  const historyContext = history.length > 0 
+    ? `\n\nPreviously generated questions for similar topics (DO NOT repeat these):\n${history.slice(-3).join("\n\n---\n\n")}` 
+    : "";
 
-    try {
-      const res = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          model: "llama-3.3-70b-versatile", 
-          max_tokens: 1200, 
-          temperature: 0.9,
-          messages: [
-            { role: "system", content: tool.systemPrompt + `\n\nCRITICAL: Generate completely different questions from any previously shown. Focus on different sub-topics, angles, and difficulty levels. Use varied question formats (conceptual, application, analytical, comparative).` }, 
-            { role: "user", content: input + historyContext }
-          ] 
-        }),
-      });
-      const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) { 
-        const newOutput = data.choices[0].message.content;
-        setRawOutput(newOutput); 
-        setHistory(prev => [...prev, newOutput].slice(-5));
-        setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); 
-      }
-      else if (data?.error) setError(`API Error: ${data.error.message}`);
-      else setError("Unexpected response. Please try again.");
-    } catch { setError("Connection error. Please try again."); }
-    setLoading(false);
-  }
+  try {
+    const res = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        model: "llama-3.3-70b-versatile", 
+        max_tokens: 1200, 
+        temperature: 0.9,
+        messages: [
+          { role: "system", content: tool.systemPrompt + `\n\nCRITICAL: Generate completely different questions from any previously shown. Focus on different sub-topics, angles, and difficulty levels. Use varied question formats (conceptual, application, analytical, comparative).` }, 
+          { role: "user", content: sanitizedInput + historyContext }
+        ] 
+      }),
+    });
+    const data = await res.json();
+    if (data?.choices?.[0]?.message?.content) { 
+      const sanitizedOutput = sanitizeOutput(data.choices[0].message.content);
+      setRawOutput(sanitizedOutput); 
+      setHistory(prev => [...prev, sanitizedOutput].slice(-5));
+      setTimeout(() => outputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100); 
+    }
+    else if (data?.error) setError(`API Error: ${data.error.message}`);
+    else setError("Unexpected response. Please try again.");
+  } catch { setError("Connection error. Please try again."); }
+  setLoading(false);
+}
 
   function formatMCQ(text) {
     const blocks = text.split(/\n(?=Q\d+\.\s)/).filter(b => b.trim());
@@ -1092,6 +1102,8 @@ function AskAuthor() {
 
   async function ask() {
     if (!question.trim()) return;
+    // Sanitize input before sending
+    const sanitizedQuestion = sanitizeInput(question);
     setLoading(true); setAnswer(""); setError("");
     try {
       const res = await fetch(GROQ_API_URL, {
@@ -1123,16 +1135,19 @@ TONE GUIDELINES (VERY IMPORTANT):
 
 Answer questions about AI, Agentic Systems, LLMs, Python, and research.` 
             }, 
-            { role: "user", content: question } 
+            { role: "user", content: sanitizedQuestion } 
           ] 
         }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) setAnswer(data.choices[0].message.content);
-      else setError("Couldn't get a response. Please try again.");
-    } catch { setError("Connection error."); }
-    setLoading(false);
-  }
+    if (data?.choices?.[0]?.message?.content) {
+      const sanitizedAnswer = sanitizeOutput(data.choices[0].message.content);
+      setAnswer(sanitizedAnswer);
+    }
+    else setError("Couldn't get a response. Please try again.");
+  } catch { setError("Connection error."); }
+  setLoading(false);
+}
 
   return (
     <div>
@@ -1297,7 +1312,7 @@ function UserFeedback() {
     hour12: true }).replace(',', ' at')}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, textAlign: "left" }}>{fb.message}</div>
+                  <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, textAlign: "left" }}>{escapeHtml(fb.message)}</div>
                 </div>
               ))}
             </div>
