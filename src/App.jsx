@@ -144,42 +144,6 @@ public class Main {
         System.out.println("Dijkstra ready - add your graph!");
     }
 }`,
-  sql: `-- Find top 5 customers by total order value
-SELECT 
-    c.customer_id,
-    c.name,
-    COUNT(o.order_id) as total_orders,
-    SUM(o.amount) as total_spent,
-    AVG(o.amount) as avg_order_value
-FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_date >= DATE('now', '-6 months')
-GROUP BY c.customer_id
-HAVING total_orders >= 3
-ORDER BY total_spent DESC
-LIMIT 5;`,
-  javascript: `function NeuralNetwork(inputSize, hiddenSize, outputSize) {
-    this.W1 = Array.from({length: inputSize}, () => 
-        Array.from({length: hiddenSize}, () => Math.random() - 0.5));
-    this.b1 = new Array(hiddenSize).fill(0);
-    this.W2 = Array.from({length: hiddenSize}, () =>
-        Array.from({length: outputSize}, () => Math.random() - 0.5));
-    this.b2 = new Array(outputSize).fill(0);
-}
-
-NeuralNetwork.prototype.sigmoid = function(x) {
-    return 1 / (1 + Math.exp(-x));
-};
-
-NeuralNetwork.prototype.forward = function(x) {
-    this.z1 = x.map((_, i) => this.W1[i].reduce((s, w, j) => s + w * x[j], 0) + this.b1[i]);
-    this.a1 = this.z1.map(z => this.sigmoid(z));
-    this.z2 = this.W2[0].reduce((s, w, j) => s + w * this.a1[j], 0) + this.b2[0];
-    return this.sigmoid(this.z2);
-};
-
-const nn = new NeuralNetwork(2, 4, 1);
-console.log("Prediction:", nn.forward([0.5, 0.3]));`,
 };
 
 // ── Security Functions ─────────────────────────────────────────
@@ -364,7 +328,6 @@ function formatOutput(text, theme) {
   });
 }
 
-// WordCounter – theme‑aware
 function WordCounter({ text, limit = WORD_LIMIT, theme }) {
   const words = countWords(text);
   const pct = (words / limit) * 100;
@@ -396,7 +359,6 @@ function TryExample({ onFill, exampleMap, toolId }) {
   );
 }
 
-// LineNumbers – theme‑aware
 function LineNumbers({ code, scrollTop, theme }) {
   const lines = code.split("\n").length;
   return (
@@ -835,7 +797,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
 
-  // ----- STRICT VALIDATION FUNCTIONS -----
   function isResearchPaperStrict(text) {
     const paperKeywords = [
       "abstract", "introduction", "related work", "methodology",
@@ -847,10 +808,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     ];
     const lowerText = text.toLowerCase();
     let score = 0;
-    for (let kw of paperKeywords) {
-      if (lowerText.includes(kw)) score++;
-    }
-    // If 4 or more research keywords → definitely an academic document
+    for (let kw of paperKeywords) if (lowerText.includes(kw)) score++;
     return score >= 4;
   }
 
@@ -863,20 +821,15 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     ];
     const lowerText = text.toLowerCase();
     let score = 0;
-    for (let kw of resumeKeywords) {
-      if (lowerText.includes(kw)) score++;
-    }
-    // Need at least 3 resume-like sections to pass
+    for (let kw of resumeKeywords) if (lowerText.includes(kw)) score++;
     return score >= 3;
   }
 
-  // Optional: check file name for obvious academic terms
   function isAcademicFileName(name) {
     const academicTerms = ["thesis", "dissertation", "paper", "research", "article", "manuscript", "preprint"];
     const lowerName = name.toLowerCase();
     return academicTerms.some(term => lowerName.includes(term));
   }
-  // ------------------------------
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -920,9 +873,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   async function analyze() {
     if (!extractedText) return;
-    
     if (label === "Analyze Resume") {
-      // Strict check for academic documents (thesis, paper, etc.)
       if (isResearchPaperStrict(extractedText) || isAcademicFileName(fileName)) {
         setError("❌ This appears to be a research paper, thesis, or academic document, not a resume. Please upload a CV/resume file.");
         return;
@@ -932,10 +883,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         return;
       }
     }
-
-    setLoading(true); 
-    setOutput(""); 
-    setError("");
+    setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
       const res = await fetch(GROQ_API_URL, {
@@ -951,9 +899,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
       if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
       else if (data?.error) setError(`API Error: ${data.error.message}`);
       else setError("Unexpected response. Please try again.");
-    } catch { 
-      setError("Connection error. Please try again."); 
-    }
+    } catch { setError("Connection error. Please try again."); }
     setLoading(false);
   }
 
@@ -983,77 +929,24 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         }}>
           {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
         </div>
-        {!fileName && 
-          <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>
-            Supports .pdf · .doc · .docx · Max ~40 pages for best results
-          </div>
-        }
-        {charCount > 0 && 
-          <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
-            {charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}
-          </div>
-        }
+        {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
+        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
       </div>
-
       {label === "Analyze Resume" && !fileName && (
         <div style={{ marginTop: "-10px", fontSize: "0.7rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", textAlign: "center" }}>
           📄 Please upload a resume/CV (not research papers, articles, or other documents)
         </div>
       )}
-
       {extractedText && (
-        <button 
-          onClick={analyze} 
-          disabled={loading} 
-          style={{ 
-            background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
-            border: "none", 
-            borderRadius: "10px", 
-            padding: "14px 28px", 
-            color: loading ? "rgba(255,255,255,0.3)" : "#000", 
-            fontFamily: "'Space Mono', monospace", 
-            fontSize: "0.85rem", 
-            fontWeight: 700, 
-            cursor: loading ? "not-allowed" : "pointer", 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "10px", 
-            justifyContent: "center", 
-            boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" 
-          }}>
-          {loading ? 
-            <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : 
-            `→ ${label}`
-          }
+        <button onClick={analyze} disabled={loading} style={{ background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
+          {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : `→ ${label}`}
         </button>
       )}
-
-      {error && 
-        <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>
-          ⚠ {error}
-        </div>
-      }
-
+      {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {output && (
         <div>
-          <div style={{ 
-            background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", 
-            border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, 
-            borderRadius: "12px", 
-            padding: "24px 28px" 
-          }}>
-            <div style={{ 
-              fontFamily: "'Space Mono', monospace", 
-              fontSize: "0.68rem", 
-              color: accentColor, 
-              letterSpacing: "0.15em", 
-              textTransform: "uppercase", 
-              marginBottom: "20px", 
-              paddingBottom: "12px", 
-              borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` 
-            }}>
-              ◆ {label} Result
-            </div>
+          <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${filename}`} />
@@ -1076,24 +969,23 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
   );
 }
 
+// Simplified languages: C, C++, Python, Java only
+const LANGUAGES = [
+  { label: "Python", value: "python", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
+  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    \n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
+  { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
+  { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
+];
+
 const LANG_MAP = {
   python: "python-3.14",
   c: "gcc-15",
   cpp: "g++-15",
   java: "openjdk-25",
-  javascript: "typescript-deno",
 };
 
-const LANGUAGES = [
-  { label: "Python", value: "python", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
-  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\n");\n    \n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\n", i);\n    }\n    return 0;\n}` },
-  { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    \n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
-  { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        \n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
-  { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
-  { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => \`Hello, \${name}!\`;\nconsole.log(greet("ZeroAPI"));` },
-];
-// ── Playground  ─────────────────────     
- function CodePlayground({ theme }) {
+// Simplified CodePlayground: only API calls, no local runners, no SQL/JS
+function CodePlayground({ theme }) {
   const [lang, setLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].starter);
   const [output, setOutput] = useState("");
@@ -1103,16 +995,7 @@ const LANGUAGES = [
   const [error, setError] = useState("");
   const [runError, setRunError] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
-  const sqlDb = useRef(null);
   const codeAreaRef = useRef(null);
-
-  // Helper: load script with timeout
-  function loadScriptWithTimeout(src, timeout = 10000) {
-    return Promise.race([
-      loadScript(src),
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`Loading ${src} timed out`)), timeout))
-    ]);
-  }
 
   function switchLang(l) {
     setLang(l);
@@ -1120,130 +1003,28 @@ const LANGUAGES = [
     setOutput("");
     setExplanation("");
     setError("");
-    sqlDb.current = null; // reset SQL database
-  }
-
-  function resetSqlDb() {
-    sqlDb.current = null;
-    setOutput("Database reset! Run your SQL again to create a fresh database.");
-    setTimeout(() => setOutput(""), 3000);
   }
 
   function loadExample() {
-    const key = lang.value === "sqlite3" ? "sql" : lang.value;
-    const ex = EXAMPLES[key] || EXAMPLES.python;
+    const ex = EXAMPLES[lang.value] || EXAMPLES.python;
     setCode(ex);
     setOutput("");
     setExplanation("");
     setError("");
-    sqlDb.current = null;
     trackEvent("playground_example", { language: lang.label });
   }
 
-  // ---------- FIXED: JavaScript runner (works with console.log) ----------
-  function runJavaScript() {
-    let logs = [];
-    const originalLog = console.log;
-    const originalWarn = console.warn;
-    const originalError = console.error;
-
-    console.log = (...args) => {
-      logs.push(args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
-      originalLog(...args);
-    };
-    console.warn = (...args) => {
-      logs.push(`⚠️ ${args.join(' ')}`);
-      originalWarn(...args);
-    };
-    console.error = (...args) => {
-      logs.push(`❌ ${args.join(' ')}`);
-      originalError(...args);
-    };
-
-    try {
-      // Create a function from the code and execute it immediately (no async wrapper)
-      const fn = new Function(code);
-      fn();
-    } catch (err) {
-      logs.push(`Error: ${err.message}`);
-    } finally {
-      console.log = originalLog;
-      console.warn = originalWarn;
-      console.error = originalError;
-    }
-
-    const outputText = logs.length ? logs.join('\n') : '(No console output)';
-    setOutput(outputText);
+  async function runCode() {
+    if (!code.trim()) return;
+    setRunning(true);
+    setOutput("");
+    setError("");
+    setExplanation("");
     setRunError(false);
-  }
+    trackEvent("playground_run", { language: lang.label });
 
-  // ---------- FIXED: SQL runner (reliable CDN + proper init) ----------
-  async function runSQL() {
     try {
-      // Use jsdelivr – more reliable than unpkg
-      const SQL_JS_URL = "https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/sql-wasm.js";
-      await loadScriptWithTimeout(SQL_JS_URL, 10000);
-
-      if (typeof window.initSqlJs !== 'function') {
-        throw new Error("sql.js failed to load – initSqlJs not available");
-      }
-
-      if (!sqlDb.current) {
-        const SQL = await window.initSqlJs({
-          locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/${file}`
-        });
-        sqlDb.current = new SQL.Database();
-        setOutput("New SQL database created.\n");
-      }
-
-      const db = sqlDb.current;
-      const statements = code.split(';').map(s => s.trim()).filter(s => s.length > 0);
-      let result = "";
-      let hasOutput = false;
-
-      for (const stmt of statements) {
-        try {
-          const isSelect = stmt.toLowerCase().startsWith("select");
-          const res = db.exec(stmt + ";");
-          if (res.length > 0 && isSelect) {
-            const { columns, values } = res[0];
-            result += columns.join(" | ") + "\n";
-            result += columns.map(() => "---").join("-|-") + "\n";
-            values.forEach(row => { result += row.join(" | ") + "\n"; });
-            result += "\n";
-            hasOutput = true;
-          } else if (res.length > 0 && !isSelect) {
-            const changes = db.getRowsModified();
-            result += `${changes} row(s) affected\n`;
-            hasOutput = true;
-          } else if (!isSelect && !res.length) {
-            result += `Query executed successfully\n`;
-            hasOutput = true;
-          }
-        } catch (e) {
-          result += `Error: ${e.message}\n`;
-          hasOutput = true;
-        }
-      }
-
-      if (hasOutput) {
-        setOutput(prev => (prev === "New SQL database created.\n" ? result : prev + result));
-      } else {
-        setOutput(prev => prev + "All queries executed (no output)\n");
-      }
-      setRunError(false);
-    } catch (err) {
-      console.error("SQL error:", err);
-      setOutput(`SQL Error: ${err.message || "Failed to load or execute SQL"}`);
-      setRunError(true);
-      sqlDb.current = null;
-    }
-  }
-
-  // Run other languages via API
-  async function runViaAPI() {
-    try {
-      const compiler = LANG_MAP[lang.value] || lang.value;
+      const compiler = LANG_MAP[lang.value];
       const res = await fetch("/api/run-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1259,24 +1040,6 @@ const LANGUAGES = [
     } catch (err) {
       setOutput(`Connection error: ${err.message}`);
       setRunError(true);
-    }
-  }
-
-  async function runCode() {
-    if (!code.trim()) return;
-    setRunning(true);
-    setOutput("");
-    setError("");
-    setExplanation("");
-    setRunError(false);
-    trackEvent("playground_run", { language: lang.label });
-
-    if (lang.value === "sqlite3") {
-      await runSQL();
-    } else if (lang.value === "javascript") {
-      runJavaScript();
-    } else {
-      await runViaAPI();
     }
     setRunning(false);
   }
@@ -1330,13 +1093,12 @@ const LANGUAGES = [
 
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
-  // The JSX remains the same as your existing CodePlayground – only the logic above changed.
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 4 languages · AI explanation built-in</p>
       </div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
@@ -1359,13 +1121,8 @@ const LANGUAGES = [
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
-            {lang.value === "sqlite3" && (
-              <button onClick={resetSqlDb} style={{ background: "rgba(255,180,0,0.1)", border: "1px solid rgba(255,180,0,0.3)", borderRadius: "8px", padding: "6px 14px", color: "#febc2e", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>
-                🔄 Reset DB
-              </button>
-            )}
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
             <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
               {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
             </button>
@@ -1399,20 +1156,14 @@ const LANGUAGES = [
         <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", letterSpacing: "0.04em" }}>
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
-        {lang.value === "sqlite3" && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: `${accentColor}0D`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor }}>
-            🗄️ SQL database persists across multiple runs! INSERT, UPDATE, DELETE stay until you refresh or click Reset DB.
-          </div>
-        )}
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
-          <span>⚡ JavaScript runs locally in your browser</span>
-          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
-          <span>C/C++/Java/Python via OnlineCompiler.io (API required)</span>
+          <span>⚡ C, C++, Python, Java via OnlineCompiler.io</span>
         </div>
       </div>
     </section>
   );
-} 
+}
+
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor({ theme }) {
   const [question, setQuestion] = useState("");
