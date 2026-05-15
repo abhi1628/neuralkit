@@ -1092,8 +1092,8 @@ const LANGUAGES = [
   { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
   { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => \`Hello, \${name}!\`;\nconsole.log(greet("ZeroAPI"));` },
 ];
-
-function CodePlayground({ theme }) {
+// ── Playground  ─────────────────────     
+ function CodePlayground({ theme }) {
   const [lang, setLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].starter);
   const [output, setOutput] = useState("");
@@ -1103,11 +1103,10 @@ function CodePlayground({ theme }) {
   const [error, setError] = useState("");
   const [runError, setRunError] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
-  const sqlLoaded = useRef(false);
   const sqlDb = useRef(null);
   const codeAreaRef = useRef(null);
 
-  // Helper: loadScript with timeout to prevent infinite hanging
+  // Helper: load script with timeout
   function loadScriptWithTimeout(src, timeout = 10000) {
     return Promise.race([
       loadScript(src),
@@ -1121,7 +1120,7 @@ function CodePlayground({ theme }) {
     setOutput("");
     setExplanation("");
     setError("");
-    if (l.value === "sqlite3") sqlDb.current = null;
+    sqlDb.current = null; // reset SQL database
   }
 
   function resetSqlDb() {
@@ -1137,20 +1136,19 @@ function CodePlayground({ theme }) {
     setOutput("");
     setExplanation("");
     setError("");
-    if (lang.value === "sqlite3") sqlDb.current = null;
+    sqlDb.current = null;
     trackEvent("playground_example", { language: lang.label });
   }
 
-  // Helper to capture console.log for JavaScript
-  function captureConsole(fn) {
+  // ---------- FIXED: JavaScript runner (works with console.log) ----------
+  function runJavaScript() {
     let logs = [];
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
+
     console.log = (...args) => {
-      logs.push(args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-      ).join(' '));
+      logs.push(args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg))).join(' '));
       originalLog(...args);
     };
     console.warn = (...args) => {
@@ -1161,7 +1159,10 @@ function CodePlayground({ theme }) {
       logs.push(`❌ ${args.join(' ')}`);
       originalError(...args);
     };
+
     try {
+      // Create a function from the code and execute it immediately (no async wrapper)
+      const fn = new Function(code);
       fn();
     } catch (err) {
       logs.push(`Error: ${err.message}`);
@@ -1170,60 +1171,36 @@ function CodePlayground({ theme }) {
       console.warn = originalWarn;
       console.error = originalError;
     }
-    return logs;
+
+    const outputText = logs.length ? logs.join('\n') : '(No console output)';
+    setOutput(outputText);
+    setRunError(false);
   }
 
-  // Run JavaScript locally
-  function runJavaScript() {
-    const logs = captureConsole(() => {
-      const wrapped = `
-        (async () => {
-          try {
-            ${code}
-          } catch (e) {
-            console.error(e.message);
-          }
-        })();
-      `;
-      const asyncFn = new Function(wrapped);
-      return asyncFn();
-    });
-    setTimeout(() => {
-      const outputText = logs.join('\n') || '(No output)';
-      setOutput(outputText);
-      setRunError(false);
-    }, 50);
-  }
-
-  // Run SQL via sql.js with timeout protection
+  // ---------- FIXED: SQL runner (reliable CDN + proper init) ----------
   async function runSQL() {
-  // Create a timeout promise that rejects after 15 seconds
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error("SQL execution timed out (15s). Check your network or refresh.")), 15000);
-  });
-
-  // The actual SQL execution logic
-  const sqlPromise = (async () => {
     try {
-      if (!sqlLoaded.current) {
-        await loadScriptWithTimeout("https://unpkg.com/sql.js@1.10.2/dist/sql-wasm.js", 10000);
-        sqlLoaded.current = true;
+      // Use jsdelivr – more reliable than unpkg
+      const SQL_JS_URL = "https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/sql-wasm.js";
+      await loadScriptWithTimeout(SQL_JS_URL, 10000);
+
+      if (typeof window.initSqlJs !== 'function') {
+        throw new Error("sql.js failed to load – initSqlJs not available");
       }
+
       if (!sqlDb.current) {
-        // Also add a timeout for the initSqlJs call (it fetches the wasm file)
-        const initPromise = window.initSqlJs({ locateFile: file => `https://unpkg.com/sql.js@1.10.2/dist/${file}` });
-        const initWithTimeout = Promise.race([
-          initPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Loading SQL engine (WASM) timed out")), 10000))
-        ]);
-        const SQL = await initWithTimeout;
+        const SQL = await window.initSqlJs({
+          locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/${file}`
+        });
         sqlDb.current = new SQL.Database();
-        setOutput("New database created!\n");
+        setOutput("New SQL database created.\n");
       }
+
       const db = sqlDb.current;
-      const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
+      const statements = code.split(';').map(s => s.trim()).filter(s => s.length > 0);
       let result = "";
       let hasOutput = false;
+
       for (const stmt of statements) {
         try {
           const isSelect = stmt.toLowerCase().startsWith("select");
@@ -1248,26 +1225,22 @@ function CodePlayground({ theme }) {
           hasOutput = true;
         }
       }
+
       if (hasOutput) {
-        setOutput(prev => prev === "New database created!\n" ? result : prev + result);
+        setOutput(prev => (prev === "New SQL database created.\n" ? result : prev + result));
       } else {
         setOutput(prev => prev + "All queries executed (no output)\n");
       }
       setRunError(false);
     } catch (err) {
       console.error("SQL error:", err);
-      setOutput(`SQL Error: ${err.message || "Failed to load SQL engine"}`);
+      setOutput(`SQL Error: ${err.message || "Failed to load or execute SQL"}`);
       setRunError(true);
       sqlDb.current = null;
-      sqlLoaded.current = false;
     }
-  })();
+  }
 
-  // Race between SQL execution and timeout
-  await Promise.race([sqlPromise, timeoutPromise]);
-}
-
-  // Run C/C++/Java/Python via API
+  // Run other languages via API
   async function runViaAPI() {
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
@@ -1291,7 +1264,11 @@ function CodePlayground({ theme }) {
 
   async function runCode() {
     if (!code.trim()) return;
-    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
+    setRunning(true);
+    setOutput("");
+    setError("");
+    setExplanation("");
+    setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
     if (lang.value === "sqlite3") {
@@ -1353,6 +1330,7 @@ function CodePlayground({ theme }) {
 
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
+  // The JSX remains the same as your existing CodePlayground – only the logic above changed.
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
@@ -1386,8 +1364,8 @@ function CodePlayground({ theme }) {
                 🔄 Reset DB
               </button>
             )}
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
             <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
               {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
             </button>
@@ -1434,9 +1412,7 @@ function CodePlayground({ theme }) {
       </div>
     </section>
   );
-}
-  
-  
+} 
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor({ theme }) {
   const [question, setQuestion] = useState("");
