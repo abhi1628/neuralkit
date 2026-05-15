@@ -255,7 +255,7 @@ function loadScript(src) {
 }
 
 async function downloadAsPDF(text, filename = "zeroapi-output") {
-  await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+  await loadScript("https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   
@@ -1206,12 +1206,12 @@ function CodePlayground({ theme }) {
   const sqlPromise = (async () => {
     try {
       if (!sqlLoaded.current) {
-        await loadScriptWithTimeout("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js", 10000);
+        await loadScriptWithTimeout("https://unpkg.com/sql.js@1.10.2/dist/sql-wasm.js", 10000);
         sqlLoaded.current = true;
       }
       if (!sqlDb.current) {
         // Also add a timeout for the initSqlJs call (it fetches the wasm file)
-        const initPromise = window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
+        const initPromise = window.initSqlJs({ locateFile: file => `https://unpkg.com/sql.js@1.10.2/dist/${file}` });
         const initWithTimeout = Promise.race([
           initPromise,
           new Promise((_, reject) => setTimeout(() => reject(new Error("Loading SQL engine (WASM) timed out")), 10000))
