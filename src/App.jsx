@@ -835,24 +835,48 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
 
-  function isResearchPaper(text) {
-    const paperKeywords = ["abstract", "introduction", "related work", "methodology", "experimental setup", "results", "discussion", "conclusion", "references", "bibliography", "acknowledgements", "appendix", "doi", "arxiv", "fig", "table", "equation", "algorithm"];
-    const lowerText = text.toLowerCase();
-    let paperScore = 0;
-    for (let kw of paperKeywords) if (lowerText.includes(kw)) paperScore++;
-    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work"];
-    let resumeScore = 0;
-    for (let kw of resumeKeywords) if (lowerText.includes(kw)) resumeScore++;
-    return (paperScore >= 3 && resumeScore <= 1);
-  }
-
-  function isResumeLike(text) {
-    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work", "profile", "certifications"];
+  // ----- STRICT VALIDATION FUNCTIONS -----
+  function isResearchPaperStrict(text) {
+    const paperKeywords = [
+      "abstract", "introduction", "related work", "methodology",
+      "experimental setup", "results", "discussion", "conclusion",
+      "references", "bibliography", "acknowledgements", "appendix",
+      "doi", "arxiv", "fig", "table", "equation", "algorithm",
+      "thesis", "dissertation", "research question", "hypothesis",
+      "literature review", "experimental design", "data collection"
+    ];
     const lowerText = text.toLowerCase();
     let score = 0;
-    for (let kw of resumeKeywords) if (lowerText.includes(kw)) score++;
-    return score >= 2;
+    for (let kw of paperKeywords) {
+      if (lowerText.includes(kw)) score++;
+    }
+    // If 4 or more research keywords → definitely an academic document
+    return score >= 4;
   }
+
+  function isResumeLikeStrict(text) {
+    const resumeKeywords = [
+      "experience", "education", "skills", "summary", "contact",
+      "employment", "work", "profile", "certifications", "projects",
+      "achievements", "publications", "languages", "hobbies",
+      "objective", "professional summary", "technical skills"
+    ];
+    const lowerText = text.toLowerCase();
+    let score = 0;
+    for (let kw of resumeKeywords) {
+      if (lowerText.includes(kw)) score++;
+    }
+    // Need at least 3 resume-like sections to pass
+    return score >= 3;
+  }
+
+  // Optional: check file name for obvious academic terms
+  function isAcademicFileName(name) {
+    const academicTerms = ["thesis", "dissertation", "paper", "research", "article", "manuscript", "preprint"];
+    const lowerName = name.toLowerCase();
+    return academicTerms.some(term => lowerName.includes(term));
+  }
+  // ------------------------------
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -875,39 +899,61 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
         const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
         text = result.value;
-      } else { setError("Please upload a PDF or Word (.docx) file."); setExtracting(false); return; }
-      if (!text.trim()) { setError("Could not extract text from this file."); setExtracting(false); return; }
+      } else { 
+        setError("Please upload a PDF or Word (.docx) file."); 
+        setExtracting(false); 
+        return; 
+      }
+      if (!text.trim()) { 
+        setError("Could not extract text from this file."); 
+        setExtracting(false); 
+        return; 
+      }
       const trimmed = text.slice(0, WORD_LIMIT_UPLOAD);
-      setExtractedText(trimmed); setCharCount(trimmed.length);
-    } catch { setError("Error reading file. Please try again."); }
+      setExtractedText(trimmed); 
+      setCharCount(trimmed.length);
+    } catch { 
+      setError("Error reading file. Please try again."); 
+    }
     setExtracting(false);
   }
 
   async function analyze() {
     if (!extractedText) return;
+    
     if (label === "Analyze Resume") {
-      if (isResearchPaper(extractedText)) {
-        setError("❌ This appears to be a research paper or academic document, not a resume. Please upload a CV or resume file.");
+      // Strict check for academic documents (thesis, paper, etc.)
+      if (isResearchPaperStrict(extractedText) || isAcademicFileName(fileName)) {
+        setError("❌ This appears to be a research paper, thesis, or academic document, not a resume. Please upload a CV/resume file.");
         return;
       }
-      if (!isResumeLike(extractedText)) {
-        setError("❌ The uploaded file doesn't look like a resume. Please make sure it contains sections like 'Experience', 'Education', 'Skills', etc.");
+      if (!isResumeLikeStrict(extractedText)) {
+        setError("❌ The uploaded file doesn't look like a resume. Make sure it contains sections like 'Experience', 'Education', 'Skills', etc.");
         return;
       }
     }
-    setLoading(true); setOutput(""); setError("");
+
+    setLoading(true); 
+    setOutput(""); 
+    setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: prompt }, { role: "user", content: extractedText }] }),
+        body: JSON.stringify({ 
+          model: "llama-3.3-70b-versatile", 
+          max_tokens: 1000, 
+          messages: [{ role: "system", content: prompt }, { role: "user", content: extractedText }] 
+        }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
       else if (data?.error) setError(`API Error: ${data.error.message}`);
       else setError("Unexpected response. Please try again.");
-    } catch { setError("Connection error. Please try again."); }
+    } catch { 
+      setError("Connection error. Please try again."); 
+    }
     setLoading(false);
   }
 
@@ -915,30 +961,99 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? `${accentColor}66` : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? `${accentColor}0A` : "transparent" }}
+      <div onClick={() => fileRef.current?.click()} 
+        style={{ 
+          border: `2px dashed ${fileName ? `${accentColor}66` : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, 
+          borderRadius: "14px", 
+          padding: "36px 20px", 
+          textAlign: "center", 
+          cursor: "pointer", 
+          transition: "all 0.2s", 
+          background: fileName ? `${accentColor}0A` : "transparent" 
+        }}
         onMouseEnter={(e) => e.currentTarget.style.borderColor = `${accentColor}4D`}
         onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? `${accentColor}66` : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile} />
         <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? icon : "⬆️"}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), marginBottom: "6px" }}>{extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}</div>
-        {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
-        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
+        <div style={{ 
+          fontFamily: "'Space Mono', monospace", 
+          fontSize: "0.85rem", 
+          color: fileName ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), 
+          marginBottom: "6px" 
+        }}>
+          {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
+        </div>
+        {!fileName && 
+          <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>
+            Supports .pdf · .doc · .docx · Max ~40 pages for best results
+          </div>
+        }
+        {charCount > 0 && 
+          <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
+            {charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}
+          </div>
+        }
       </div>
+
       {label === "Analyze Resume" && !fileName && (
         <div style={{ marginTop: "-10px", fontSize: "0.7rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", textAlign: "center" }}>
           📄 Please upload a resume/CV (not research papers, articles, or other documents)
         </div>
       )}
+
       {extractedText && (
-        <button onClick={analyze} disabled={loading} style={{ background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
-          {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : `→ ${label}`}
+        <button 
+          onClick={analyze} 
+          disabled={loading} 
+          style={{ 
+            background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
+            border: "none", 
+            borderRadius: "10px", 
+            padding: "14px 28px", 
+            color: loading ? "rgba(255,255,255,0.3)" : "#000", 
+            fontFamily: "'Space Mono', monospace", 
+            fontSize: "0.85rem", 
+            fontWeight: 700, 
+            cursor: loading ? "not-allowed" : "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "10px", 
+            justifyContent: "center", 
+            boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" 
+          }}>
+          {loading ? 
+            <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : 
+            `→ ${label}`
+          }
         </button>
       )}
-      {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+
+      {error && 
+        <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>
+          ⚠ {error}
+        </div>
+      }
+
       {output && (
         <div>
-          <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
+          <div style={{ 
+            background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", 
+            border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, 
+            borderRadius: "12px", 
+            padding: "24px 28px" 
+          }}>
+            <div style={{ 
+              fontFamily: "'Space Mono', monospace", 
+              fontSize: "0.68rem", 
+              color: accentColor, 
+              letterSpacing: "0.15em", 
+              textTransform: "uppercase", 
+              marginBottom: "20px", 
+              paddingBottom: "12px", 
+              borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` 
+            }}>
+              ◆ {label} Result
+            </div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${filename}`} />
