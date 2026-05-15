@@ -1197,13 +1197,26 @@ function CodePlayground({ theme }) {
 
   // Run SQL via sql.js with timeout protection
   async function runSQL() {
+  // Create a timeout promise that rejects after 15 seconds
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("SQL execution timed out (15s). Check your network or refresh.")), 15000);
+  });
+
+  // The actual SQL execution logic
+  const sqlPromise = (async () => {
     try {
       if (!sqlLoaded.current) {
-        await loadScriptWithTimeout("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+        await loadScriptWithTimeout("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js", 10000);
         sqlLoaded.current = true;
       }
       if (!sqlDb.current) {
-        const SQL = await window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
+        // Also add a timeout for the initSqlJs call (it fetches the wasm file)
+        const initPromise = window.initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}` });
+        const initWithTimeout = Promise.race([
+          initPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Loading SQL engine (WASM) timed out")), 10000))
+        ]);
+        const SQL = await initWithTimeout;
         sqlDb.current = new SQL.Database();
         setOutput("New database created!\n");
       }
@@ -1248,7 +1261,11 @@ function CodePlayground({ theme }) {
       sqlDb.current = null;
       sqlLoaded.current = false;
     }
-  }
+  })();
+
+  // Race between SQL execution and timeout
+  await Promise.race([sqlPromise, timeoutPromise]);
+}
 
   // Run C/C++/Java/Python via API
   async function runViaAPI() {
