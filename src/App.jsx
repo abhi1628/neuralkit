@@ -97,26 +97,7 @@ int main() {
     printf("Element found at index: %d\n", result);
     return 0;
 }`,
-  cpp: `#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-int lis(vector<int>& nums) {
-    vector<int> tails;
-    for (int num : nums) {
-        auto it = lower_bound(tails.begin(), tails.end(), num);
-        if (it == tails.end()) tails.push_back(num);
-        else *it = num;
-    }
-    return tails.size();
-}
-
-int main() {
-    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
-    cout << "LIS length: " << lis(nums) << endl;
-    return 0;
-}`,
+  cpp: "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint lis(vector<int>& nums) {\n    vector<int> tails;\n    for (int num : nums) {\n        auto it = lower_bound(tails.begin(), tails.end(), num);\n        if (it == tails.end()) tails.push_back(num);\n        else *it = num;\n    }\n    return tails.size();\n}\n\nint main() {\n    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};\n    cout << \"LIS length: \" << lis(nums) << endl;\n    return 0;\n}",,
   java: `import java.util.*;
 
 public class Main {
