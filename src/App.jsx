@@ -152,7 +152,50 @@ NeuralNetwork.prototype.forward = function(x) {
 const nn = new NeuralNetwork(2, 4, 1);
 console.log("Prediction:", nn.forward([0.5, 0.3]));`,
 };
+// ── Security Functions ─────────────────────────────────────────
+function sanitizeInput(text) {
+  if (!text) return text;
+  // Remove potential prompt injection patterns
+  const dangerousPatterns = [
+    /ignore previous instructions/gi,
+    /forget your role/gi,
+    /act as if/gi,
+    /system prompt/gi,
+    /you are now/gi,
+    /pretend you are/gi,
+    /from now on/gi,
+    /disregard previous/gi,
+    /override your/gi,
+    /new instruction:/gi
+  ];
+  let cleaned = text;
+  dangerousPatterns.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '[REDACTED]');
+  });
+  return cleaned;
+}
 
+function sanitizeOutput(text) {
+  if (!text) return text;
+  // Remove any residual injection attempts in output
+  const dangerousOutput = [
+    /ignore previous instructions/gi,
+    /you are now a different/gi,
+    /system prompt override/gi
+  ];
+  let cleaned = text;
+  dangerousOutput.forEach(pattern => {
+    cleaned = cleaned.replace(pattern, '[FILTERED]');
+  });
+  return cleaned;
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 function loadGA(id) {
   if (document.getElementById("ga-script")) return;
   const s = document.createElement("script");
