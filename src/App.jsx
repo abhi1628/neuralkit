@@ -350,7 +350,7 @@ function formatOutput(text, theme) {
       <div key={i} style={{ 
         marginBottom: line === "" ? "14px" : "6px", 
         fontWeight: isBold ? 700 : 400, 
-        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.75)"), 
+        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#2c3e50"), 
         fontSize: "0.9rem", 
         lineHeight: 1.85, 
         letterSpacing: "0.01em", 
@@ -1477,7 +1477,7 @@ function AppInner() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: theme === 'dark' ? "#060a0f" : "#f5f5f5", 
+      background: theme === 'dark' ? "#060a0f" : "#f0f2f5", 
       color: theme === 'dark' ? "#fff" : "#1a1a1a", 
       fontFamily: "'DM Sans', sans-serif", 
       overflowX: "hidden" 
