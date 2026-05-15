@@ -578,7 +578,7 @@ function TriviaSection({ theme }) {
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
-    <section className="trivia-section" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "60px 32px", background: theme === 'dark' ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
+    <section className="trivia-section" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "40px 32px", background: theme === 'dark' ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
       <div style={{ maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "8px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase" }}>◆ Daily AI Trivia</div>
@@ -589,7 +589,7 @@ function TriviaSection({ theme }) {
             </div>
           )}
         </div>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "28px", fontFamily: "'Space Mono', monospace" }}>Test your AI knowledge — new question every time</p>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "20px", fontFamily: "'Space Mono', monospace" }}>Test your AI knowledge — new question every time</p>
         {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: `2px solid ${accentColor}`, borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />Generating question...</div>}
         {trivia && !trivia.error && !loading && (
           <div>
@@ -984,7 +984,7 @@ const LANG_MAP = {
   java: "openjdk-25",
 };
 
-// Simplified CodePlayground: only API calls, no local runners, no SQL/JS
+// Simplified CodePlayground: only API calls, no local runners
 function CodePlayground({ theme }) {
   const [lang, setLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].starter);
@@ -1094,7 +1094,7 @@ function CodePlayground({ theme }) {
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
-    <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
+    <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "60px 32px 60px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
@@ -1307,7 +1307,7 @@ function UserFeedback({ theme }) {
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
 
   return (
-    <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
+    <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 60px" }}>
       <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
@@ -1502,23 +1502,22 @@ function AppInner() {
         ::-webkit-scrollbar-thumb { background: ${accentColor}4D; border-radius: 3px; }
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
-          .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
+          .hero-section { padding: 80px 20px 50px !important; min-height: auto !important; }
           .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
-          .hero-stats { gap: 30px !important; }
-          .tools-section { padding: 60px 20px 80px !important; }
+          .hero-stats { gap: 20px !important; }
+          .tools-section { padding: 50px 20px 60px !important; }
           .tool-row { flex-direction: column !important; }
           .tool-panel { padding: 24px !important; }
           .mcq-grid { grid-template-columns: 1fr !important; }
           .trivia-grid { grid-template-columns: 1fr !important; }
-          .trivia-section { padding: 40px 20px !important; }
-          #playground { padding: 60px 20px !important; }
-          .about-section { padding: 60px 20px !important; }
+          .trivia-section { padding: 30px 20px !important; }
+          #playground { padding: 50px 20px 50px !important; }
+          .about-section { padding: 50px 20px 30px !important; }
           .about-buttons { flex-direction: column !important; align-items: center !important; }
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
           nav { padding: 14px 20px !important; }
           .nav-try-btn { display: block !important; }
           footer { padding: 28px 20px !important; }
-          .hero-stats { gap: 20px !important; }
         }
       `}</style>
 
@@ -1577,13 +1576,13 @@ function AppInner() {
         <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
-      {/* Hero section - reduced padding-top to remove gap */}
-      <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "90px 40px 80px", overflow: "hidden" }}>
+      {/* Hero section - reduced padding */}
+      <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "70px 40px 60px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px)`, backgroundSize: "60px 60px", pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: `radial-gradient(circle, ${theme === 'dark' ? "rgba(0,170,255,0.07)" : "rgba(0,170,255,0.03)"} 0%, transparent 70%)`, top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
         {particles.map((p, i) => <Particle key={i} style={p} />)}
 
-        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: theme === 'dark' ? "rgba(0,255,224,0.08)" : "rgba(0,100,90,0.1)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,128,128,0.3)"}`, borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: theme === 'dark' ? "#00ffe0" : "#008080", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
+        <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: theme === 'dark' ? "rgba(0,255,224,0.08)" : "rgba(0,100,90,0.1)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,128,128,0.3)"}`, borderRadius: "100px", padding: "6px 16px", marginBottom: "28px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: theme === 'dark' ? "#00ffe0" : "#008080", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: theme === 'dark' ? "#00ffe0" : "#008080", animation: "pulse 1.5s ease infinite", display: "inline-block" }} />
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
@@ -1595,16 +1594,16 @@ function AppInner() {
           <span>Starts Here</span>
         </h1>
 
-        <p className="hero-sub" style={{ fontSize: "1.15rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
+        <p className="hero-sub" style={{ fontSize: "1.15rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "40px", fontWeight: 300 }}>
           Free, browser-based AI tools for developers, researchers, and engineers. Zero API key. Zero signup. Zero cost. Just intelligence at your fingertips.
         </p>
 
         <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
-          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "16px 36px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Try Tools Free →</button>
-          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "16px 36px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
+          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Try Tools Free →</button>
+          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "14px 32px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
         </div>
 
-        <div className="hero-stats" style={{ marginTop: "56px", display: "flex", gap: "60px", justifyContent: "center", flexWrap: "wrap" }}>
+        <div className="hero-stats" style={{ marginTop: "40px", display: "flex", gap: "60px", justifyContent: "center", flexWrap: "wrap" }}>
           {[{ n: visitorCount ? visitorCount.toLocaleString() : "...", label: "Visitors" }, { n: "0", label: "Signup Required" }, { n: "∞", label: "Possibilities" }].map(({ n, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "2rem", fontWeight: 800, background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
@@ -1614,12 +1613,12 @@ function AppInner() {
         </div>
       </section>
 
-      {/* Tools section */}
-      <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
-        <div style={{ marginBottom: "48px", textAlign: "center" }}>
+      {/* Tools section - reduced padding */}
+      <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "60px 32px 80px" }}>
+        <div style={{ marginBottom: "40px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Pick a Tool. Run It. Free.</h2>
-          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free</p>
+          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "12px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free</p>
         </div>
 
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
@@ -1632,14 +1631,14 @@ function AppInner() {
           <ToolCard icon={TOOLS[2].icon} name={TOOLS[2].name} tagline={TOOLS[2].tagline} active={activeTool === 2} onClick={() => handleToolSwitch(2)} fullWidth={true} theme={theme} />
         </div>
 
-        <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
+        <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "32px" }}>
           {[{ icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — get an instant structured summary." }, { icon: "📋", name: "Resume Analyzer", tagline: "Upload your resume — expert feedback, ATS score & improvements." }].map((t, i) => (
             <ToolCard key={t.name} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === i + 3} onClick={() => handleToolSwitch(i + 3)} fullWidth={false} theme={theme} />
           ))}
         </div>
 
-        <div className="tool-panel" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+        <div className="tool-panel" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "32px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px", paddingBottom: "16px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <span style={{ fontSize: "1.5rem" }}>{activeInfo.icon}</span>
             <div>
               <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{activeInfo.name}</div>
@@ -1653,37 +1652,37 @@ function AppInner() {
       <TriviaSection theme={theme} />
       <CodePlayground theme={theme} />
 
-      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
+      <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 24px 30px", textAlign: "center" }}>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>
           <span>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
           <span> for everyone.</span>
         </h2>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "32px" }}>
           ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
           This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: accentColor, fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
-        <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
-          <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM", "_blank", "noopener,noreferrer")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
-          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "14px 24px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
+        <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "20px" }}>
+          <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM", "_blank", "noopener,noreferrer")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "12px 28px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
+          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "12px 22px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
             pyofpython
           </button>
         </div>
       </section>
 
-      <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 60px" }}>
-        <div style={{ background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "20px", padding: "36px" }}>
+      <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 50px" }}>
+        <div style={{ background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "20px", padding: "28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
-          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
+          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "16px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
           <AskAuthor theme={theme} />
         </div>
       </section>
 
       <UserFeedback theme={theme} />
 
-      <footer className="site-footer" style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "28px 40px" }}>
+      <footer className="site-footer" style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "24px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
