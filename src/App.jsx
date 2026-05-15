@@ -344,14 +344,13 @@ function countWords(text) {
 }
 
 function formatOutput(text, theme) {
-  const isDark = theme === 'dark';
   return text.split("\n").map((line, i) => {
     const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
     return (
       <div key={i} style={{ 
         marginBottom: line === "" ? "14px" : "6px", 
         fontWeight: isBold ? 700 : 400, 
-        color: isBold ? "#00ffe0" : (isDark ? "rgba(255,255,255,0.88)" : "#1a1a1a"), 
+        color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.88)" : "#2c3e50"), 
         fontSize: "0.9rem", 
         lineHeight: 1.85, 
         letterSpacing: "0.01em", 
@@ -513,7 +512,6 @@ Make questions progressively harder. Cover different aspects. Avoid trivial ques
 ];
 
 function TriviaSection({ theme }) {
-  const isDark = theme === 'dark';
   const [trivia, setTrivia] = useState(null);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -614,7 +612,7 @@ function TriviaSection({ theme }) {
   const isCorrect = selected && trivia && !trivia.error && selected.startsWith(trivia.answer);
 
   return (
-    <section className="trivia-section" style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "60px 32px", background: isDark ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
+    <section className="trivia-section" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "60px 32px", background: theme === 'dark' ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
       <div style={{ maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "8px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase" }}>◆ Daily AI Trivia</div>
@@ -625,26 +623,26 @@ function TriviaSection({ theme }) {
             </div>
           )}
         </div>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "28px", fontFamily: "'Space Mono', monospace" }}>Test your AI knowledge — new question every time</p>
-        {loading && <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />Generating question...</div>}
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "28px", fontFamily: "'Space Mono', monospace" }}>Test your AI knowledge — new question every time</p>
+        {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "10px", verticalAlign: "middle" }} />Generating question...</div>}
         {trivia && !trivia.error && !loading && (
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
             <div className="trivia-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
               {trivia.options.map((opt) => {
                 const isThis = selected === opt, correct = opt.startsWith(trivia.answer);
-                let bg = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border = `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, color = isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)";
+                let bg = theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border = `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, color = theme === 'dark' ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)";
                 if (selected) { if (correct) { bg = "rgba(0,255,224,0.12)"; border = "1px solid #00ffe0"; color = "#00ffe0"; } else if (isThis) { bg = "rgba(255,80,80,0.1)"; border = "1px solid #ff6b6b"; color = "#ff6b6b"; } }
                 return <button key={opt} onClick={() => handleAnswer(opt)} style={{ background: bg, border, borderRadius: "10px", padding: "14px 16px", color, fontSize: "0.85rem", cursor: selected ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", textAlign: "left", transition: "all 0.2s" }}>{opt}</button>;
               })}
             </div>
-            {selected && <div style={{ background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)", border: `1px solid ${isCorrect ? "rgba(0,255,224,0.2)" : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.75)", lineHeight: 1.7 }}>
+            {selected && <div style={{ background: isCorrect ? "rgba(0,255,224,0.06)" : "rgba(255,180,0,0.06)", border: `1px solid ${isCorrect ? "rgba(0,255,224,0.2)" : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.75)", lineHeight: 1.7 }}>
               {isCorrect ? "Correct! " : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}
             </div>}
             <button onClick={loadTrivia} style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "10px", padding: "10px 24px", color: "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer", letterSpacing: "0.05em" }}>↻ New Question</button>
           </div>
         )}
-        {trivia?.error && !loading && <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>Couldn&apos;t load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button></div>}
+        {trivia?.error && !loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem" }}>Couldn&apos;t load trivia. <button onClick={loadTrivia} style={{ background: "none", border: "none", color: "#00ffe0", cursor: "pointer" }}>Try again</button></div>}
       </div>
     </section>
   );
@@ -662,7 +660,6 @@ function OutputActions({ text, filename }) {
 }
 
 function ToolPanel({ tool, theme }) {
-  const isDark = theme === 'dark';
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -703,9 +700,9 @@ function ToolPanel({ tool, theme }) {
         <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
         <TryExample onFill={setInput} exampleMap={EXAMPLES} toolId={exampleKey} />
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={8}
-          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
+          style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
           onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
-          onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
+          onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
         <WordCounter text={input} />
       </div>
       <button onClick={runTool} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading && input.trim() && !isOverLimit ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
@@ -714,8 +711,8 @@ function ToolPanel({ tool, theme }) {
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {output && (
         <div ref={outputRef}>
-          <div style={{ background: isDark ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${isDark ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${isDark ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ Output</div>
+          <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ Output</div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${tool.id}`} />
@@ -726,7 +723,6 @@ function ToolPanel({ tool, theme }) {
 }
 
 function MCQPanel({ tool, theme }) {
-  const isDark = theme === 'dark';
   const [input, setInput] = useState("");
   const [rawOutput, setRawOutput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -782,14 +778,14 @@ function MCQPanel({ tool, theme }) {
       const expLine = lines.find(l => l.includes("💡")) || "";
       const cleanExpLine = expLine.replace(/undefineddefined/g, "").replace(/undefined/g, "");
       return (
-        <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
+        <div key={i} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i + 1}</div>
-          <div style={{ fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px", textAlign: "left" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
+          <div style={{ fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px", textAlign: "left" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
           <div className="mcq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
-            {opts.map((opt, j) => <div key={j} style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", textAlign: "left" }}>{opt}</div>)}
+            {opts.map((opt, j) => <div key={j} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "8px", padding: "10px 12px", fontSize: "0.83rem", color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", textAlign: "left" }}>{opt}</div>)}
           </div>
           {ansLine && <div style={{ background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "0.82rem", color: "#00ffe0", marginBottom: "8px" }}>{ansLine}</div>}
-          {expLine && <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", lineHeight: 1.6 }}>{cleanExpLine}</div>}
+          {expLine && <div style={{ fontSize: "0.82rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", lineHeight: 1.6 }}>{cleanExpLine}</div>}
         </div>
       );
     });
@@ -801,9 +797,9 @@ function MCQPanel({ tool, theme }) {
         <label style={{ display: "block", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "#00ffe0", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>{tool.inputLabel}</label>
         <TryExample onFill={setInput} exampleMap={EXAMPLES} toolId="mcq" />
         <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={tool.placeholder} rows={6}
-          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
+          style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "12px", padding: "16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", lineHeight: 1.7, resize: "vertical", outline: "none", boxSizing: "border-box", transition: "border 0.2s" }}
           onFocus={(e) => !isOverLimit && (e.target.style.borderColor = "rgba(0,255,224,0.4)")}
-          onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
+          onBlur={(e) => e.target.style.borderColor = isOverLimit ? "rgba(255,80,80,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")} />
         <WordCounter text={input} />
       </div>
       <button onClick={generate} disabled={loading || !input.trim() || isOverLimit} style={{ background: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading || !input.trim() || isOverLimit ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading || !input.trim() || isOverLimit ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
@@ -822,7 +818,6 @@ function MCQPanel({ tool, theme }) {
 }
 
 function UploadTool({ prompt, filename, icon, label, theme }) {
-  const isDark = theme === 'dark';
   const [fileName, setFileName] = useState("");
   const [extractedText, setExtractedText] = useState("");
   const [output, setOutput] = useState("");
@@ -850,6 +845,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     for (let kw of resumeKeywords) {
       if (lowerText.includes(kw)) resumeScore++;
     }
+    // If high paper score and low resume score, it's likely a paper
     return (paperScore >= 3 && resumeScore <= 1);
   }
 
@@ -927,13 +923,13 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? "rgba(0,255,224,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? "rgba(0,255,224,0.04)" : "transparent" }}
+      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? "rgba(0,255,224,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "14px", padding: "36px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: fileName ? "rgba(0,255,224,0.04)" : "transparent" }}
         onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(0,255,224,0.3)"}
-        onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? "rgba(0,255,224,0.4)" : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
+        onMouseLeave={(e) => e.currentTarget.style.borderColor = fileName ? "rgba(0,255,224,0.4)" : (theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile} />
         <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? icon : "⬆️"}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), marginBottom: "6px" }}>{extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}</div>
-        {!fileName && <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: fileName ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), marginBottom: "6px" }}>{extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}</div>
+        {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
         {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
       </div>
       {/* --- ADDED NOTE FOR RESUME ANALYZER --- */}
@@ -950,8 +946,8 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
       {error && <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "14px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
       {output && (
         <div>
-          <div style={{ background: isDark ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${isDark ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${isDark ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
+          <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,200,180,0.08)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,200,180,0.3)"}`, borderRadius: "12px", padding: "24px 28px" }}>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.1)" : "rgba(0,200,180,0.2)"}` }}>◆ {label} Result</div>
             {formatOutput(output, theme)}
           </div>
           <OutputActions text={output} filename={`zeroapi-${filename}`} />
@@ -962,13 +958,12 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 }
 
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
-  const isDark = theme === 'dark';
   return (
-    <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? "0 0 40px rgba(0,255,224,0.25)" : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
+    <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? "0 0 40px rgba(0,255,224,0.25)" : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
       <div style={{ fontSize: "2rem", marginBottom: fullWidth ? 0 : "10px" }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.95rem", fontWeight: 700, color: active ? "#000" : (isDark ? "#fff" : "#1a1a1a"), marginBottom: "6px", letterSpacing: "-0.02em" }}>{name}</div>
-        <div style={{ fontSize: "0.78rem", color: active ? "rgba(0,0,0,0.65)" : (isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), lineHeight: 1.5 }}>{tagline}</div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.95rem", fontWeight: 700, color: active ? "#000" : (theme === 'dark' ? "#fff" : "#1a1a1a"), marginBottom: "6px", letterSpacing: "-0.02em" }}>{name}</div>
+        <div style={{ fontSize: "0.78rem", color: active ? "rgba(0,0,0,0.65)" : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), lineHeight: 1.5 }}>{tagline}</div>
       </div>
     </button>
   );
@@ -992,7 +987,6 @@ const LANGUAGES = [
 ];
 
 function CodePlayground({ theme }) {
-  const isDark = theme === 'dark';
   const [lang, setLang] = useState(LANGUAGES[0]);
   const [code, setCode] = useState(LANGUAGES[0].starter);
   const [output, setOutput] = useState("");
@@ -1120,7 +1114,7 @@ function CodePlayground({ theme }) {
   function formatExplanation(text) {
     return text.split("\n").map((line, i) => {
       const isBold = line.startsWith("**") || line.match(/^[1-9]\./);
-      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : (isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)"), fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
+      return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? "#00ffe0" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)"), fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
     });
   }
 
@@ -1144,12 +1138,12 @@ function CodePlayground({ theme }) {
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
-          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), border: lang.value === l.value ? "none" : `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }}>
+          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }}>
             {l.icon} {l.label}
           </button>
         ))}
@@ -1159,13 +1153,13 @@ function CodePlayground({ theme }) {
           ✨ Try Example
         </button>
       </div>
-      <div style={{ background: isDark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, background: isDark ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.05)", flexWrap: "wrap", gap: "10px" }}>
+      <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, background: theme === 'dark' ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.05)", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#ff5f57" }} />
             <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#febc2e" }} />
             <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "#28c840" }} />
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
             {lang.value === "sqlite3" && (
@@ -1173,8 +1167,8 @@ function CodePlayground({ theme }) {
                 🔄 Reset DB
               </button>
             )}
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
             <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
               {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
             </button>
@@ -1186,14 +1180,14 @@ function CodePlayground({ theme }) {
             style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 60px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
         </div>
         {(output || error) && (
-          <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
-            <div style={{ padding: "10px 20px", background: isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+            <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : "#00ffe0", letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
               <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : "#00ffe0", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
                 {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
               </button>
             </div>
-            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : (isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)"), lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{output || error}</pre>
+            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)"), lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{output || error}</pre>
           </div>
         )}
       </div>
@@ -1205,7 +1199,7 @@ function CodePlayground({ theme }) {
         </div>
       )}
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", letterSpacing: "0.04em" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", letterSpacing: "0.04em" }}>
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
         {lang.value === "sqlite3" && (
@@ -1213,11 +1207,11 @@ function CodePlayground({ theme }) {
             🗄️ SQL database persists across multiple runs! INSERT, UPDATE, DELETE stay until you refresh or click Reset DB.
           </div>
         )}
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
           <span>⚡ Powered by OnlineCompiler.io</span>
-          <span style={{ color: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
+          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
           <span>Standard library only</span>
-          <span style={{ color: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
+          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
           <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: "rgba(0,255,224,0.35)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>Use Colab for ML/DL</span>
         </div>
       </div>
@@ -1227,7 +1221,6 @@ function CodePlayground({ theme }) {
 
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor({ theme }) {
-  const isDark = theme === 'dark';
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1285,9 +1278,9 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
     <div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", minWidth: 0, position: "relative" }}>
-          <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+          <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
             onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.4)"}
-            onBlur={(e) => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} />
+            onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} />
         </div>
         <button onClick={ask} disabled={loading || !question.trim()} style={{ flex: "0 0 auto", background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}>
           {loading ? "..." : "Ask →"}
@@ -1297,7 +1290,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
       {error && <div style={{ color: "#ff6b6b", fontSize: "0.82rem", marginBottom: "12px" }}>⚠ {error}</div>}
       {answer && (
         <div>
-          <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: isDark ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.8)", lineHeight: 1.85, textAlign: "left", letterSpacing: "0.01em" }}>
+          <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: theme === 'dark' ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.8)", lineHeight: 1.85, textAlign: "left", letterSpacing: "0.01em" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#00ffe0", marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
@@ -1310,7 +1303,6 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
 
 // ── User Feedback / Comments Section ─────────────────────────
 function UserFeedback({ theme }) {
-  const isDark = theme === 'dark';
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
@@ -1368,29 +1360,29 @@ function UserFeedback({ theme }) {
 
   return (
     <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
-      <div style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
+      <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
 
         {!submitted ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              <span style={{ fontSize: "0.78rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", marginRight: "8px" }}>Rate us:</span>
+              <span style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", marginRight: "8px" }}>Rate us:</span>
               {stars.map(s => (
                 <button key={s} onClick={() => setRating(s)} onMouseEnter={() => setHoverRating(s)} onMouseLeave={() => setHoverRating(0)}
                   style={{ background: "none", border: "none", fontSize: "1.4rem", cursor: "pointer", padding: "0 2px", transition: "transform 0.2s", transform: (hoverRating || rating) >= s ? "scale(1.2)" : "scale(1)" }}>
-                  <span style={{ color: (hoverRating || rating) >= s ? "#febc2e" : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)") }}>★</span>
+                  <span style={{ color: (hoverRating || rating) >= s ? "#febc2e" : (theme === 'dark' ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)") }}>★</span>
                 </button>
               ))}
-              <span style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
+              <span style={{ fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
             </div>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
               onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
-              onBlur={(e) => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
+              onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
-              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
+              style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
               onFocus={(e) => e.target.style.borderColor = "rgba(0,255,224,0.3)"}
-              onBlur={(e) => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
+              onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} />
             {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
               style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1401,13 +1393,13 @@ function UserFeedback({ theme }) {
           <div style={{ textAlign: "center", padding: "20px" }}>
             <div style={{ fontSize: "2rem", marginBottom: "10px" }}>🙏</div>
             <div style={{ color: "#00ffe0", fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
-            <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
+            <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
           </div>
         )}
 
-        <div style={{ marginTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, paddingTop: "24px" }}>
+        <div style={{ marginTop: "32px", borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, paddingTop: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
             {feedbacks.length > 0 && (
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: "rgba(0,255,224,0.4)" }}>
                 {feedbacks.length} review{feedbacks.length !== 1 ? "s" : ""} · live
@@ -1416,14 +1408,14 @@ function UserFeedback({ theme }) {
           </div>
 
           {loadingFeedbacks && (
-            <div style={{ textAlign: "center", padding: "20px", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem" }}>
+            <div style={{ textAlign: "center", padding: "20px", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem" }}>
               <span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.1)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginRight: "8px", verticalAlign: "middle" }} />
               Loading feedback...
             </div>
           )}
 
           {!loadingFeedbacks && feedbacks.length === 0 && (
-            <div style={{ textAlign: "center", padding: "20px", color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)", fontSize: "0.82rem" }}>
+            <div style={{ textAlign: "center", padding: "20px", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)", fontSize: "0.82rem" }}>
               No feedback yet. Be the first to share! 🌟
             </div>
           )}
@@ -1431,17 +1423,17 @@ function UserFeedback({ theme }) {
           {feedbacks.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
               {feedbacks.map(fb => (
-                <div key={fb.id} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "14px 18px" }}>
+                <div key={fb.id} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "14px 18px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
-                    <span style={{ fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace" }}>
+                    <span style={{ fontSize: "0.68rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace" }}>
                       {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "numeric", hour12: true }).replace(',', ' at')}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, textAlign: "left" }}>{escapeHtml(fb.message)}</div>
+                  <div style={{ fontSize: "0.82rem", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, textAlign: "left" }}>{escapeHtml(fb.message)}</div>
                 </div>
               ))}
             </div>
@@ -1480,7 +1472,6 @@ class ErrorBoundary extends React.Component {
 // ── Main App ─────────────────────────────────────────────────
 function AppInner() {
   const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
   const [activeTool, setActiveTool] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const [visitorCount, setVisitorCount] = useState(null);
@@ -1539,15 +1530,15 @@ function AppInner() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      background: isDark ? "#060a0f" : "#f8f9fa", 
-      color: isDark ? "#fff" : "#111", 
+      background: theme === 'dark' ? "#060a0f" : "#f0f2f5", 
+      color: theme === 'dark' ? "#fff" : "#1a1a1a", 
       fontFamily: "'DM Sans', sans-serif", 
       overflowX: "hidden" 
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; min-height: 100vh; background: ${isDark ? '#060a0f' : '#f5f5f5'}; overflow-x: hidden; }
+        html, body { width: 100%; min-height: 100vh; background: ${theme === 'dark' ? '#060a0f' : '#f5f5f5'}; overflow-x: hidden; }
         #root { width: 100%; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes float { 0% { transform: translateY(0px) scale(1); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.4; } 100% { transform: translateY(-120vh) scale(0.5); opacity: 0; } }
@@ -1558,7 +1549,7 @@ function AppInner() {
         .hero-cta { animation: fadeUp 0.9s ease 0.4s both; }
         .tools-section { animation: fadeUp 0.9s ease 0.15s both; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: ${isDark ? '#060a0f' : '#e0e0e0'}; }
+        ::-webkit-scrollbar-track { background: ${theme === 'dark' ? '#060a0f' : '#e0e0e0'}; }
         ::-webkit-scrollbar-thumb { background: rgba(0,255,224,0.3); border-radius: 3px; }
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
@@ -1577,7 +1568,6 @@ function AppInner() {
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
           nav { padding: 14px 20px !important; }
           .nav-try-btn { display: block !important; }
-          .hero-stats { gap: 30px !important; }
         }
       `}</style>
 
@@ -1586,7 +1576,7 @@ function AppInner() {
 
       <ScrollToTop />
 
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? (isDark ? "rgba(6,10,15,0.92)" : "rgba(255,255,255,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
@@ -1595,13 +1585,13 @@ function AppInner() {
             <circle cx="60" cy="12" r="4" fill="#00ffe0"/><circle cx="108" cy="60" r="4" fill="#00aaff"/><circle cx="60" cy="108" r="4" fill="#00ffe0"/><circle cx="12" cy="60" r="4" fill="#00aaff"/>
             <line x1="60" y1="12" x2="60" y2="22" stroke="#00ffe0" strokeWidth="2"/><line x1="108" y1="60" x2="98" y2="60" stroke="#00aaff" strokeWidth="2"/><line x1="60" y1="108" x2="60" y2="98" stroke="#00ffe0" strokeWidth="2"/><line x1="12" y1="60" x2="22" y2="60" stroke="#00aaff" strokeWidth="2"/>
             <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
-            <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
+            <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
           </svg>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: isDark ? "#fff" : "#111" }}>ZeroAPI</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[{ label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) }, { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) }, { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }].map(({ label, action }) => (
-            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = isDark ? "#fff" : "#000")} onMouseLeave={(e) => (e.target.style.color = isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
+            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
@@ -1609,8 +1599,8 @@ function AppInner() {
           <button 
             onClick={toggleTheme}
             style={{
-              background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+              background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+              border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
               borderRadius: "50%",
               width: "36px",
               height: "36px",
@@ -1621,10 +1611,10 @@ function AppInner() {
               fontSize: "1.2rem",
               transition: "all 0.3s ease"
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = isDark ? "rgba(0,255,224,0.2)" : "rgba(0,0,0,0.1)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
+            onMouseEnter={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,0,0,0.1)"}
+            onMouseLeave={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
           >
-            {isDark ? '☀️' : '🌙'}
+            {theme === 'dark' ? '☀️' : '🌙'}
           </button>
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
@@ -1632,8 +1622,8 @@ function AppInner() {
       </nav>
 
       <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 40px 80px", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${isDark ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.05)"} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.05)"} 1px, transparent 1px)`, backgroundSize: "60px 60px", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: `radial-gradient(circle, ${isDark ? "rgba(0,170,255,0.07)" : "rgba(0,170,255,0.04)"} 0%, transparent 70%)`, top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px)`, backgroundSize: "60px 60px", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: `radial-gradient(circle, ${theme === 'dark' ? "rgba(0,170,255,0.07)" : "rgba(0,170,255,0.03)"} 0%, transparent 70%)`, top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
         {particles.map((p, i) => <Particle key={i} style={p} />)}
 
         <div className="hero-cta" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(0,255,224,0.08)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "100px", padding: "6px 16px", marginBottom: "32px", fontSize: "0.72rem", fontFamily: "'Space Mono', monospace", color: "#00ffe0", letterSpacing: "0.06em", textAlign: "center", flexWrap: "wrap", justifyContent: "center" }}>
@@ -1641,27 +1631,27 @@ function AppInner() {
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
-        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: isDark ? "#fff" : "#111", wordBreak: "keep-all" }}>
-          <span style={{ color: isDark ? "#fff" : "#111" }}>Your AI </span>
+        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1a1a1a", wordBreak: "keep-all" }}>
+          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Your AI </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", whiteSpace: "nowrap" }}>Superpower</span>
           <br />
-          <span style={{ color: isDark ? "#fff" : "#111" }}>Starts Here</span>
+          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Starts Here</span>
         </h1>
 
-        <p className="hero-sub" style={{ fontSize: "1.15rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
+        <p className="hero-sub" style={{ fontSize: "1.15rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
           Free, browser-based AI tools for developers, researchers, and engineers. Zero API key. Zero signup. Zero cost. Just intelligence at your fingertips.
         </p>
 
         <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "16px 36px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Try Tools Free →</button>
-          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "16px 36px", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
+          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "16px 36px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
         </div>
 
         <div className="hero-stats" style={{ marginTop: "56px", display: "flex", gap: "60px", justifyContent: "center", flexWrap: "wrap" }}>
           {[{ n: visitorCount ? visitorCount.toLocaleString() : "...", label: "Visitors" }, { n: "0", label: "Signup Required" }, { n: "∞", label: "Possibilities" }].map(({ n, label }) => (
             <div key={label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "2rem", fontWeight: 800, background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{n}</div>
-              <div style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>{label}</div>
+              <div style={{ fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'Space Mono', monospace" }}>{label}</div>
             </div>
           ))}
         </div>
@@ -1670,8 +1660,8 @@ function AppInner() {
       <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: isDark ? "#fff" : "#111" }}>Pick a Tool. Run It. Free.</h2>
-          <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free</p>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Pick a Tool. Run It. Free.</h2>
+          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI &nbsp;·&nbsp; No API Key &nbsp;·&nbsp; No Subscription &nbsp;·&nbsp; Always Free</p>
         </div>
 
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
@@ -1679,20 +1669,23 @@ function AppInner() {
             <ToolCard key={tool.id} icon={tool.icon} name={tool.name} tagline={tool.tagline} active={activeTool === i} onClick={() => handleToolSwitch(i)} fullWidth={false} theme={theme} />
           ))}
         </div>
+
         <div style={{ marginBottom: "16px" }}>
           <ToolCard icon={TOOLS[2].icon} name={TOOLS[2].name} tagline={TOOLS[2].tagline} active={activeTool === 2} onClick={() => handleToolSwitch(2)} fullWidth={true} theme={theme} />
         </div>
+
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
           {[{ icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — get an instant structured summary." }, { icon: "📋", name: "Resume Analyzer", tagline: "Upload your resume — expert feedback, ATS score & improvements." }].map((t, i) => (
             <ToolCard key={t.name} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === i + 3} onClick={() => handleToolSwitch(i + 3)} fullWidth={false} theme={theme} />
           ))}
         </div>
-        <div className="tool-panel" style={{ background: isDark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.02)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+
+        <div className="tool-panel" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <span style={{ fontSize: "1.5rem" }}>{activeInfo.icon}</span>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#111" }}>{activeInfo.name}</div>
-              <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{activeInfo.tagline}</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{activeInfo.name}</div>
+              <div style={{ fontSize: "0.8rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{activeInfo.tagline}</div>
             </div>
           </div>
           {renderPanel()}
@@ -1703,19 +1696,19 @@ function AppInner() {
       <CodePlayground theme={theme} />
 
       <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: isDark ? "#fff" : "#111" }}>
-          <span style={{ color: isDark ? "#fff" : "#111" }}>Built by an </span>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>
+          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
-          <span style={{ color: isDark ? "#fff" : "#111" }}> for everyone.</span>
+          <span style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a" }}> for everyone.</span>
         </h2>
-        <p style={{ color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
-          ZeroAPI is built by <strong style={{ color: isDark ? "#fff" : "#111", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
+          ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
           This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: "#00ffe0", fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
         <div className="about-buttons" style={{ display: "flex", gap: "14px", justifyContent: "center", flexWrap: "wrap", marginBottom: "24px" }}>
           <button onClick={() => window.open("https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM", "_blank", "noopener,noreferrer")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "14px 32px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 30px rgba(0,255,224,0.2)" }}>📘 Explore the Book →</button>
-          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "14px 24px", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
+          <button onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "14px 24px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "border-color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(255,0,0,0.5)")} onMouseLeave={(e) => (e.currentTarget.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
             pyofpython
           </button>
@@ -1725,22 +1718,22 @@ function AppInner() {
       <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 60px" }}>
         <div style={{ background: "rgba(0,255,224,0.03)", border: "1px solid rgba(0,255,224,0.12)", borderRadius: "20px", padding: "36px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Ask the Author</div>
-          <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
+          <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "20px" }}>Ask Prof. Abhishek Singh anything about AI, Agentic Systems, LLMs, or research.</p>
           <AskAuthor theme={theme} />
         </div>
       </section>
 
       <UserFeedback theme={theme} />
 
-      <footer style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "28px 80px 28px 40px" }}>
+      <footer style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "28px 80px 28px 40px" }}>
         <div className="footer-inner" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)" }}>© {currentYear} ZeroAPI · Prof. Abhishek Singh · All Rights Reserved</div>
             <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: "rgba(0,255,224,0.4)", cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = "#00ffe0"} onMouseLeave={(e) => e.target.style.color = "rgba(0,255,224,0.4)"}>↑ Back to top</span>
           </div>
           <div style={{ display: "flex", gap: "24px" }}>
             {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\\n\\nabhi16.2007@gmail.com\\n\\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
-              <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")} onMouseLeave={(e) => (e.target.style.color = isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)")}>{label}</span>
+              <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)")}>{label}</span>
             ))}
           </div>
         </div>
