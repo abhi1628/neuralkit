@@ -827,6 +827,39 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
 
+  // ----- VALIDATION FUNCTIONS -----
+  function isResearchPaper(text) {
+    const paperKeywords = [
+      "abstract", "introduction", "related work", "methodology",
+      "experimental setup", "results", "discussion", "conclusion",
+      "references", "bibliography", "acknowledgements", "appendix",
+      "doi", "arxiv", "fig", "table", "equation", "algorithm"
+    ];
+    const lowerText = text.toLowerCase();
+    let paperScore = 0;
+    for (let kw of paperKeywords) {
+      if (lowerText.includes(kw)) paperScore++;
+    }
+    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work"];
+    let resumeScore = 0;
+    for (let kw of resumeKeywords) {
+      if (lowerText.includes(kw)) resumeScore++;
+    }
+    // If high paper score and low resume score, it's likely a paper
+    return (paperScore >= 3 && resumeScore <= 1);
+  }
+
+  function isResumeLike(text) {
+    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work", "profile", "certifications"];
+    const lowerText = text.toLowerCase();
+    let score = 0;
+    for (let kw of resumeKeywords) {
+      if (lowerText.includes(kw)) score++;
+    }
+    return score >= 2;
+  }
+  // ------------------------------
+
   async function handleFile(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -858,6 +891,20 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   async function analyze() {
     if (!extractedText) return;
+    
+    // --- VALIDATION FOR RESUME ANALYZER ---
+    if (label === "Analyze Resume") {
+      if (isResearchPaper(extractedText)) {
+        setError("❌ This appears to be a research paper or academic document, not a resume. Please upload a CV or resume file.");
+        return;
+      }
+      if (!isResumeLike(extractedText)) {
+        setError("❌ The uploaded file doesn't look like a resume. Please make sure it contains sections like 'Experience', 'Education', 'Skills', etc.");
+        return;
+      }
+    }
+    // --------------------------------------
+
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
@@ -885,6 +932,12 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
         {charCount > 0 && <div style={{ fontSize: "0.72rem", color: "rgba(0,255,224,0.6)", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
       </div>
+      {/* --- ADDED NOTE FOR RESUME ANALYZER --- */}
+      {label === "Analyze Resume" && !fileName && (
+        <div style={{ marginTop: "-10px", fontSize: "0.7rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", textAlign: "center" }}>
+          📄 Please upload a resume/CV (not research papers, articles, or other documents)
+        </div>
+      )}
       {extractedText && (
         <button onClick={analyze} disabled={loading} style={{ background: loading ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px 28px", color: loading ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", boxShadow: !loading ? "0 0 24px rgba(0,255,224,0.3)" : "none" }}>
           {loading ? <><span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Analyzing...</> : `→ ${label}`}
@@ -903,7 +956,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     </div>
   );
 }
-
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
   return (
     <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? "0 0 40px rgba(0,255,224,0.25)" : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
