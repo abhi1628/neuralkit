@@ -829,24 +829,14 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
 
-  // ----- VALIDATION FUNCTIONS -----
   function isResearchPaper(text) {
-    const paperKeywords = [
-      "abstract", "introduction", "related work", "methodology",
-      "experimental setup", "results", "discussion", "conclusion",
-      "references", "bibliography", "acknowledgements", "appendix",
-      "doi", "arxiv", "fig", "table", "equation", "algorithm"
-    ];
+    const paperKeywords = ["abstract", "introduction", "related work", "methodology", "experimental setup", "results", "discussion", "conclusion", "references", "bibliography", "acknowledgements", "appendix", "doi", "arxiv", "fig", "table", "equation", "algorithm"];
     const lowerText = text.toLowerCase();
     let paperScore = 0;
-    for (let kw of paperKeywords) {
-      if (lowerText.includes(kw)) paperScore++;
-    }
+    for (let kw of paperKeywords) if (lowerText.includes(kw)) paperScore++;
     const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work"];
     let resumeScore = 0;
-    for (let kw of resumeKeywords) {
-      if (lowerText.includes(kw)) resumeScore++;
-    }
+    for (let kw of resumeKeywords) if (lowerText.includes(kw)) resumeScore++;
     return (paperScore >= 3 && resumeScore <= 1);
   }
 
@@ -854,12 +844,9 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work", "profile", "certifications"];
     const lowerText = text.toLowerCase();
     let score = 0;
-    for (let kw of resumeKeywords) {
-      if (lowerText.includes(kw)) score++;
-    }
+    for (let kw of resumeKeywords) if (lowerText.includes(kw)) score++;
     return score >= 2;
   }
-  // ------------------------------
 
   async function handleFile(e) {
     const file = e.target.files[0];
@@ -892,7 +879,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   async function analyze() {
     if (!extractedText) return;
-    
     if (label === "Analyze Resume") {
       if (isResearchPaper(extractedText)) {
         setError("❌ This appears to be a research paper or academic document, not a resume. Please upload a CV or resume file.");
@@ -903,7 +889,6 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
         return;
       }
     }
-
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
@@ -1566,7 +1551,6 @@ function AppInner() {
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
           nav { padding: 14px 20px !important; }
           .nav-try-btn { display: block !important; }
-          /* FIX: footer responsive padding */
           footer { padding: 28px 20px !important; }
           .hero-stats { gap: 20px !important; }
         }
@@ -1597,33 +1581,37 @@ function AppInner() {
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
-          {/* Theme toggle moved OUTSIDE .nav-links so it's always visible on mobile */}
-          <button 
-            onClick={toggleTheme}
-            aria-label="Toggle dark/light mode"
-            style={{
-              background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
-              borderRadius: "50%",
-              width: "36px",
-              height: "36px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1.2rem",
-              transition: "all 0.3s ease"
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,0,0,0.1)"}
-            onMouseLeave={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
           <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
+
+        {/* THEME TOGGLE - always visible, outside .nav-links */}
+        <button 
+          onClick={toggleTheme}
+          aria-label="Toggle dark/light mode"
+          style={{
+            background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+            border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+            borderRadius: "50%",
+            width: "36px",
+            height: "36px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.2rem",
+            transition: "all 0.3s ease",
+            marginLeft: "auto"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(0,255,224,0.2)" : "rgba(0,0,0,0.1)"}
+          onMouseLeave={(e) => e.currentTarget.style.background = theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
         <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
+      {/* Hero section */}
       <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 40px 80px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'dark' ? "rgba(0,255,224,0.03)" : "rgba(0,200,180,0.03)"} 1px, transparent 1px)`, backgroundSize: "60px 60px", pointerEvents: "none" }} />
         <div style={{ position: "absolute", width: "600px", height: "600px", borderRadius: "50%", background: `radial-gradient(circle, ${theme === 'dark' ? "rgba(0,170,255,0.07)" : "rgba(0,170,255,0.03)"} 0%, transparent 70%)`, top: "10%", left: "50%", transform: "translateX(-50%)", pointerEvents: "none" }} />
@@ -1660,6 +1648,7 @@ function AppInner() {
         </div>
       </section>
 
+      {/* Tools section */}
       <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: "#00ffe0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
