@@ -1107,6 +1107,14 @@ function CodePlayground({ theme }) {
   const sqlDb = useRef(null);
   const codeAreaRef = useRef(null);
 
+  // Helper: loadScript with timeout to prevent infinite hanging
+  function loadScriptWithTimeout(src, timeout = 10000) {
+    return Promise.race([
+      loadScript(src),
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`Loading ${src} timed out`)), timeout))
+    ]);
+  }
+
   function switchLang(l) {
     setLang(l);
     setCode(l.starter);
@@ -1133,14 +1141,14 @@ function CodePlayground({ theme }) {
     trackEvent("playground_example", { language: lang.label });
   }
 
-  // Helper to capture console.log (and warn/error) for JavaScript
+  // Helper to capture console.log for JavaScript
   function captureConsole(fn) {
     let logs = [];
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
     console.log = (...args) => {
-      logs.push(args.map(arg =>
+      logs.push(args.map(arg => 
         typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
       ).join(' '));
       originalLog(...args);
@@ -1168,7 +1176,6 @@ function CodePlayground({ theme }) {
   // Run JavaScript locally
   function runJavaScript() {
     const logs = captureConsole(() => {
-      // Wrap in async function to allow await
       const wrapped = `
         (async () => {
           try {
@@ -1181,7 +1188,6 @@ function CodePlayground({ theme }) {
       const asyncFn = new Function(wrapped);
       return asyncFn();
     });
-    // Allow async code to finish (e.g., setTimeout)
     setTimeout(() => {
       const outputText = logs.join('\n') || '(No output)';
       setOutput(outputText);
@@ -1189,11 +1195,11 @@ function CodePlayground({ theme }) {
     }, 50);
   }
 
-  // Run SQL via sql.js (local)
+  // Run SQL via sql.js with timeout protection
   async function runSQL() {
     try {
       if (!sqlLoaded.current) {
-        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
+        await loadScriptWithTimeout("https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js");
         sqlLoaded.current = true;
       }
       if (!sqlDb.current) {
@@ -1203,7 +1209,8 @@ function CodePlayground({ theme }) {
       }
       const db = sqlDb.current;
       const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
-      let result = ""; let hasOutput = false;
+      let result = "";
+      let hasOutput = false;
       for (const stmt of statements) {
         try {
           const isSelect = stmt.toLowerCase().startsWith("select");
@@ -1213,22 +1220,33 @@ function CodePlayground({ theme }) {
             result += columns.join(" | ") + "\n";
             result += columns.map(() => "---").join("-|-") + "\n";
             values.forEach(row => { result += row.join(" | ") + "\n"; });
-            result += "\n"; hasOutput = true;
+            result += "\n";
+            hasOutput = true;
           } else if (res.length > 0 && !isSelect) {
             const changes = db.getRowsModified();
-            result += `${changes} row(s) affected\n`; hasOutput = true;
+            result += `${changes} row(s) affected\n`;
+            hasOutput = true;
           } else if (!isSelect && !res.length) {
-            result += `Query executed successfully\n`; hasOutput = true;
+            result += `Query executed successfully\n`;
+            hasOutput = true;
           }
-        } catch (e) { result += `Error: ${e.message}\n`; hasOutput = true; }
+        } catch (e) {
+          result += `Error: ${e.message}\n`;
+          hasOutput = true;
+        }
       }
-      if (hasOutput) setOutput(prev => prev === "New database created!\n" ? result : prev + result);
-      else setOutput(prev => prev + "All queries executed (no output)\n");
+      if (hasOutput) {
+        setOutput(prev => prev === "New database created!\n" ? result : prev + result);
+      } else {
+        setOutput(prev => prev + "All queries executed (no output)\n");
+      }
       setRunError(false);
-    } catch (e) {
-      setOutput(`SQL Error: ${e.message}`);
+    } catch (err) {
+      console.error("SQL error:", err);
+      setOutput(`SQL Error: ${err.message || "Failed to load SQL engine"}`);
       setRunError(true);
       sqlDb.current = null;
+      sqlLoaded.current = false;
     }
   }
 
@@ -1400,7 +1418,7 @@ function CodePlayground({ theme }) {
     </section>
   );
 }
-
+  
   
 // ── Ask the Author ───────────────────────────────────────────
 function AskAuthor({ theme }) {
