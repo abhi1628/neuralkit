@@ -185,20 +185,6 @@ public class Main {
         System.out.println("Dijkstra ready - add your graph!");
     }
 }`,
-  sql: `-- Find top 5 customers by total order value
-SELECT 
-    c.customer_id,
-    c.name,
-    COUNT(o.order_id) as total_orders,
-    SUM(o.amount) as total_spent,
-    AVG(o.amount) as avg_order_value
-FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_date >= DATE('now', '-6 months')
-GROUP BY c.customer_id
-HAVING total_orders >= 3
-ORDER BY total_spent DESC
-LIMIT 5;`,
   javascript: `function NeuralNetwork(inputSize, hiddenSize, outputSize) {
     this.W1 = Array.from({length: inputSize}, () => 
         Array.from({length: hiddenSize}, () => Math.random() - 0.5));
@@ -273,10 +259,7 @@ function loadScript(src) {
     s.src = src;
     s.onload = resolve;
     s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
-    s.onload = resolve;
     document.head.appendChild(s);
-    
-    // Timeout after 10 seconds
     setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
   });
 }
@@ -798,14 +781,12 @@ function isResearchPaper(text) {
   for (let kw of ACADEMIC_KEYWORDS) {
     if (lowerText.includes(kw)) academicScore++;
   }
-  // If it has 4 or more strong academic terms, consider it a research paper
   return academicScore >= 4;
 }
 
 function isResumeLike(text) {
   const lowerText = text.toLowerCase();
 
-  // Core sections – broad and forgiving
   const coreSections = [
     "experience", "work experience", "employment", "professional experience",
     "education", "qualification", "qualifications", "academic background",
@@ -820,7 +801,6 @@ function isResumeLike(text) {
     "publications", "training", "workshops"
   ];
 
-  // Only truly academic terms that rarely appear in resumes
   const antiResume = [
     "abstract", "introduction", "methodology", "literature review", "related work",
     "experimental results", "discussion", "conclusion", "references", "bibliography",
@@ -843,7 +823,6 @@ function isResumeLike(text) {
     if (lowerText.includes(kw)) antiScore++;
   }
 
-  // Accept if at least 1 core section AND not too academic
   if (coreScore < 1) return false;
   if (antiScore >= 5) return false;
 
@@ -946,12 +925,7 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
   );
 }
 
-// ── FIXED SQL Code Playground ─────────────────────────────────
-// BUG FIX: Removed pdfjsLib line from SQL section
-// UPDATE: Using sql.js 1.14.0 (latest) via jsDelivr CDN
-// IMPROVEMENT: Better error handling, user-friendly messages
-// IMPROVEMENT: Added IndexedDB persistence option via localStorage backup
-
+// ── Code Playground (5 languages: Python, C, C++, Java, JavaScript) ──
 const LANG_MAP = {
   python: "python-3.14", c: "gcc-15", cpp: "g++-15", java: "openjdk-25", javascript: "typescript-deno",
 };
@@ -961,17 +935,8 @@ const LANGUAGES = [
   { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\n");\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\n", i);\n    }\n    return 0;\n}` },
   { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
   { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
-  { label: "SQL", value: "sqlite3", icon: "🗄️", starter: `-- SQL Playground (SQLite)\nCREATE TABLE students (\n    id INTEGER PRIMARY KEY,\n    name TEXT,\n    marks INTEGER\n);\n\nINSERT INTO students VALUES (1, 'Rahul', 85);\nINSERT INTO students VALUES (2, 'Priya', 92);\nINSERT INTO students VALUES (3, 'Arjun', 78);\n\nSELECT * FROM students ORDER BY marks DESC;` },
   { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => "Hello, " + name + "!";\nconsole.log(greet("ZeroAPI"));` },
 ];
-
-// SQL.js CDN URLs (updated to 1.14.0)
-const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js";
-const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.wasm";
-//const SQL_JS_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.js";
-//const SQL_WASM_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.wasm";
-//const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js";
-//const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.wasm";
 
 function CodePlayground({ theme }) {
   const [lang, setLang] = useState(LANGUAGES[0]);
@@ -983,208 +948,34 @@ function CodePlayground({ theme }) {
   const [error, setError] = useState("");
   const [runError, setRunError] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
-  const [sqlReady, setSqlReady] = useState(false);
-  const [sqlError, setSqlError] = useState("");
-  const sqlLoaded = useRef(false);
-  const sqlDb = useRef(null);
-  const sqlModule = useRef(null);
   const codeAreaRef = useRef(null);
 
-  useEffect(() => {
-  if (lang.value === "sqlite3" && !sqlReady && !sqlLoaded.current) {
-    initSqlJs().catch(err => {
-      console.error("SQL preload failed:", err);
-      setSqlError("Failed to load SQL engine. Please refresh or try again.");
-    });
-  }
-}, [lang, sqlReady]);
-  
   function switchLang(l) {
-    setLang(l); setCode(l.starter); setOutput(""); setExplanation(""); setError(""); setSqlError("");
-    if (l.value === "sqlite3") { sqlDb.current = null; setSqlReady(false); }
-  }
-
-  function resetSqlDb() {
-    sqlDb.current = null;
-    setOutput("Database reset! Run your SQL again to create a fresh database.");
-    setTimeout(() => setOutput(""), 3000);
+    setLang(l);
+    setCode(l.starter);
+    setOutput("");
+    setExplanation("");
+    setError("");
   }
 
   function loadExample() {
-    const key = lang.value === "sqlite3" ? "sql" : lang.value;
-    const ex = EXAMPLES[key] || EXAMPLES.python;
-    setCode(ex); setOutput(""); setExplanation(""); setError(""); setSqlError("");
-    if (lang.value === "sqlite3") { sqlDb.current = null; setSqlReady(false); }
+    const ex = EXAMPLES[lang.value] || EXAMPLES.python;
+    setCode(ex);
+    setOutput("");
+    setExplanation("");
+    setError("");
     trackEvent("playground_example", { language: lang.label });
   }
 
-  // ── FIXED SQL Initialization ──────────────────────────────
-  async function initSqlJs() {
-  if (sqlLoaded.current && sqlModule.current){
-    setSqlReady(true);
-    return sqlModule.current;
-  }
-  try {
-    // Load the main script
-    await loadScript(SQL_JS_CDN);
-    
-    // Wait for initSqlJs to become available (up to 5 seconds)
-    let attempts = 0;
-    while (typeof window.initSqlJs !== 'function' && attempts < 50) {
-      await new Promise(r => setTimeout(r, 100));
-      attempts++;
-    }
-    
-    if (typeof window.initSqlJs !== 'function') {
-      throw new Error("initSqlJs not found after loading script");
-    }
-
-    const SQL = await window.initSqlJs({
-      locateFile: (file) => {
-        // Ensure the wasm file is loaded from the correct CDN
-        if (file.endsWith('.wasm')) return SQL_WASM_CDN;
-        return file;
-      }
-    });
-
-    sqlModule.current = SQL;
-    sqlLoaded.current = true;
-    setSqlReady(true);
-    setSqlError("");
-    return SQL;
-  } catch (err) {
-    console.error("SQL.js init error:", err);
-    setSqlError(`Failed to load SQL engine: ${err.message}. Please refresh the page or try a different browser.`);
-    setSqlReady(false);
-    throw err;
-  }
-}
-
   async function runCode() {
     if (!code.trim()) return;
-    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false); setSqlError("");
+    setRunning(true);
+    setOutput("");
+    setError("");
+    setExplanation("");
+    setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
-    // ── SQL Execution (FIXED) ───────────────────────────────
-    if (lang.value === "sqlite3") {
-  try {
-    // Initialize SQL.js only once
-    const SQL = await initSqlJs();
-
-    // Create a persistent database (reuse if exists)
-    if (!sqlDb.current) {
-      sqlDb.current = new SQL.Database();
-      setOutput("✅ SQLite database ready!\n");
-    }
-
-    const db = sqlDb.current;
-    
-    // Better statement splitting – keep track of quotes and comments
-    const statements = [];
-    let currentStmt = "";
-    let inSingleQuote = false;
-    let inDoubleQuote = false;
-    let inLineComment = false;
-    let inBlockComment = false;
-    
-    for (let i = 0; i < code.length; i++) {
-      const ch = code[i];
-      const nextCh = code[i + 1];
-      
-      // Toggle comment / quote states
-      if (!inSingleQuote && !inDoubleQuote && !inBlockComment) {
-        if (ch === '-' && nextCh === '-') {
-          inLineComment = true;
-          i++;
-          continue;
-        } else if (ch === '/' && nextCh === '*') {
-          inBlockComment = true;
-          i++;
-          continue;
-        }
-      }
-      
-      if (inLineComment && ch === '\n') {
-        inLineComment = false;
-        continue;
-      }
-      if (inBlockComment && ch === '*' && nextCh === '/') {
-        inBlockComment = false;
-        i++;
-        continue;
-      }
-      
-      if (!inLineComment && !inBlockComment) {
-        if (ch === "'" && !inDoubleQuote) inSingleQuote = !inSingleQuote;
-        if (ch === '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote;
-      }
-      
-      // Add character to current statement
-      if (!inLineComment && !inBlockComment) {
-        currentStmt += ch;
-      }
-      
-      // Statement ends on semicolon outside quotes/comments
-      if (ch === ';' && !inSingleQuote && !inDoubleQuote && !inLineComment && !inBlockComment) {
-        const trimmed = currentStmt.trim();
-        if (trimmed) statements.push(trimmed);
-        currentStmt = "";
-      }
-    }
-    // Add any remaining code without trailing semicolon
-    const remaining = currentStmt.trim();
-    if (remaining) statements.push(remaining);
-    
-    let result = "";
-    let hasOutput = false;
-    
-    for (const stmt of statements) {
-      try {
-        const isSelect = stmt.toLowerCase().startsWith("select");
-        const res = db.exec(stmt);
-        
-        if (res.length > 0 && isSelect) {
-          for (const r of res) {
-            const { columns, values } = r;
-            result += columns.join(" | ") + "\n";
-            result += columns.map(() => "---").join("-|-") + "\n";
-            values.forEach(row => { result += row.join(" | ") + "\n"; });
-            result += "\n";
-            hasOutput = true;
-          }
-        } else if (res.length > 0 && !isSelect) {
-          const changes = db.getRowsModified();
-          result += `${changes} row(s) affected\n`;
-          hasOutput = true;
-        } else if (!isSelect && !res.length) {
-          // DDL statements (CREATE, DROP, etc.) succeed without output
-          result += `Query executed successfully\n`;
-          hasOutput = true;
-        }
-      } catch (e) {
-        result += `❌ Error: ${e.message}\n`;
-        hasOutput = true;
-        setRunError(true);
-      }
-    }
-    
-    if (hasOutput) {
-      setOutput(prev => prev === "✅ SQLite database ready!\n" ? result : prev + result);
-    } else {
-      setOutput(prev => prev + "✅ All queries executed (no output)\n");
-    }
-    setRunError(false);
-  } catch (e) {
-    setOutput(`❌ SQL Error: ${e.message}`);
-    setRunError(true);
-    sqlDb.current = null;
-    setSqlReady(false);
-  }
-  setRunning(false);
-  return;
-}
-
-    // ── Other Languages (via API) ────────────────────────────
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch("/api/run-code", {
@@ -1195,24 +986,37 @@ function CodePlayground({ theme }) {
       const data = await res.json();
       const out = data?.output || "";
       const err = data?.error || data?.message || "";
-      if (out.trim()) { setOutput(out.trim()); setRunError(false); }
-      else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
-      else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
-      else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
-    } catch { setError("Connection error. Please try again."); }
+      if (out.trim()) {
+        setOutput(out.trim());
+        setRunError(false);
+      } else if (err.trim()) {
+        setOutput(err.trim());
+        setRunError(true);
+      } else if (data?.status === "success") {
+        setOutput("(No output)");
+        setRunError(false);
+      } else {
+        setOutput(`Error: ${data?.status || "Unknown error"}`);
+        setRunError(true);
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+    }
     setRunning(false);
   }
 
   async function explainCode() {
     if (!code.trim()) return;
-    setExplaining(true); setExplanation("");
+    setExplaining(true);
+    setExplanation("");
     trackEvent("playground_explain", { language: lang.label });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile", max_tokens: 600,
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 600,
           messages: [{
             role: "system",
             content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:
@@ -1221,15 +1025,21 @@ function CodePlayground({ theme }) {
 3. **Key concepts** — what programming concepts are used
 4. **Output** — what will it print/return
 Keep it beginner-friendly and concise.`
-          }, { role: "user", content: `Explain this ${lang.label} code:
-
-${code}` }]
+          }, {
+            role: "user",
+            content: `Explain this ${lang.label} code:\n\n${code}`
+          }]
         }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) setExplanation(data.choices[0].message.content);
-      else setError("Couldn't get explanation. Try again.");
-    } catch { setError("Connection error."); }
+      if (data?.choices?.[0]?.message?.content) {
+        setExplanation(data.choices[0].message.content);
+      } else {
+        setError("Couldn't get explanation. Try again.");
+      }
+    } catch {
+      setError("Connection error.");
+    }
     setExplaining(false);
   }
 
@@ -1263,31 +1073,34 @@ ${code}` }]
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 5 languages · AI explanation built-in</p>
       </div>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
-          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }} aria-label={`Switch to ${l.label}`}>
+          <button
+            key={l.value}
+            onClick={() => switchLang(l)}
+            style={{
+              background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"),
+              border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
+              borderRadius: "100px",
+              padding: "8px 18px",
+              color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"),
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s",
+              boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none"
+            }}
+            aria-label={`Switch to ${l.label}`}
+          >
             {l.icon} {l.label}
           </button>
         ))}
         <button onClick={loadExample} className="try-example-btn" style={{ marginLeft: "auto" }}>✨ Try Example</button>
       </div>
-
-      {/* SQL Error Banner */}
-      {lang.value === "sqlite3" && sqlError && (
-        <div style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", color: "#ff6b6b", fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>
-          ⚠️ {sqlError}
-        </div>
-      )}
-
-      {/* SQL Loading Indicator */}
-      {lang.value === "sqlite3" && !sqlReady && !sqlError && (
-        <div style={{ background: "rgba(0,255,224,0.05)", border: `1px solid ${accentColor}33`, borderRadius: "10px", padding: "12px 16px", marginBottom: "16px", color: accentColor, fontSize: "0.82rem", fontFamily: "'Space Mono', monospace" }}>
-          <span className="spinner" style={{ marginRight: "8px" }} /> Loading SQLite engine (one-time)...
-        </div>
-      )}
 
       <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", overflow: "hidden" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, background: theme === 'dark' ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.05)", flexWrap: "wrap", gap: "10px" }}>
@@ -1298,14 +1111,22 @@ ${code}` }]
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", marginLeft: "8px" }}>{lang.icon} {lang.label} Editor</span>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
-            {lang.value === "sqlite3" && (
-              <button onClick={resetSqlDb} style={{ background: "rgba(255,180,0,0.1)", border: "1px solid rgba(255,180,0,0.3)", borderRadius: "8px", padding: "6px 14px", color: "#febc2e", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }} aria-label="Reset database">
-                🔄 Reset DB
-              </button>
-            )}
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
-            <button onClick={runCode} disabled={running || (lang.value === "sqlite3" && !sqlReady)} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px", opacity: (lang.value === "sqlite3" && !sqlReady) ? 0.5 : 1 }} aria-label="Run code">
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={runCode} disabled={running} style={{
+              background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
+              border: "none",
+              borderRadius: "8px",
+              padding: "6px 20px",
+              color: running ? "rgba(255,255,255,0.3)" : "#000",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              cursor: running ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
+            }} aria-label="Run code">
               {running ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />Running...</> : "▶ Run"}
             </button>
           </div>
@@ -1313,7 +1134,28 @@ ${code}` }]
 
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} theme={theme} />
-          <textarea ref={codeAreaRef} value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={handleCodeScroll} spellCheck={false} className="code-editor" style={{ width: "100%", minHeight: "280px", border: "none", padding: "20px 20px 20px 60px", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} aria-label="Code editor" />
+          <textarea
+            ref={codeAreaRef}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={handleCodeKeyDown}
+            onScroll={handleCodeScroll}
+            spellCheck={false}
+            className="code-editor"
+            style={{
+              width: "100%",
+              minHeight: "280px",
+              border: "none",
+              padding: "20px 20px 20px 60px",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.85rem",
+              lineHeight: 1.8,
+              resize: "vertical",
+              outline: "none",
+              boxSizing: "border-box"
+            }}
+            aria-label="Code editor"
+          />
         </div>
 
         {(output || error) && (
@@ -1343,11 +1185,6 @@ ${code}` }]
         <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", letterSpacing: "0.04em" }}>
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
-        {lang.value === "sqlite3" && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: `${accentColor}0D`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor }}>
-            🗄️ SQL database persists across multiple runs! INSERT, UPDATE, DELETE stay until you refresh or click Reset DB.
-          </div>
-        )}
         <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
           <span>⚡ Powered by OnlineCompiler.io</span>
           <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
