@@ -1000,37 +1000,33 @@ function CodePlayground({ theme }) {
 
   // ── FIXED SQL Initialization ──────────────────────────────
   async function initSqlJs() {
-    if (sqlLoaded.current && sqlModule.current) return sqlModule.current;
-
-    try {
-      // Load sql.js from CDN
-      await loadScript(SQL_JS_CDN);
-
-      // Check if initSqlJs is available
-      if (typeof window.initSqlJs !== 'function') {
-        throw new Error("SQL.js library failed to load. Please check your internet connection.");
-      }
-
-      // Initialize with WASM file location
-      const SQL = await window.initSqlJs({
-        locateFile: (file) => {
-          if (file.endsWith('.wasm')) return SQL_WASM_CDN;
-          return file;
-        }
-      });
-
-      sqlModule.current = SQL;
-      sqlLoaded.current = true;
-      setSqlReady(true);
-      setSqlError("");
-      return SQL;
-    } catch (err) {
-      console.error("SQL.js initialization error:", err);
-      setSqlError(`Failed to load SQL engine: ${err.message}. Please refresh the page and try again.`);
-      setSqlReady(false);
-      throw err;
+  if (sqlLoaded.current && sqlModule.current) return sqlModule.current;
+  
+  try {
+    await loadScript(SQL_JS_CDN);
+    // Wait for initSqlJs to be defined (small delay)
+    for (let i = 0; i < 20; i++) {
+      if (typeof window.initSqlJs === 'function') break;
+      await new Promise(r => setTimeout(r, 100));
     }
+    if (typeof window.initSqlJs !== 'function') {
+      throw new Error("SQL.js failed to initialize");
+    }
+    const SQL = await window.initSqlJs({
+      locateFile: (file) => SQL_WASM_CDN
+    });
+    sqlModule.current = SQL;
+    sqlLoaded.current = true;
+    setSqlReady(true);
+    setSqlError("");
+    return SQL;
+  } catch (err) {
+    console.error(err);
+    setSqlError(`SQL engine error: ${err.message}. Reload page or try different browser.`);
+    setSqlReady(false);
+    throw err;
   }
+}
 
   async function runCode() {
     if (!code.trim()) return;
@@ -1039,62 +1035,122 @@ function CodePlayground({ theme }) {
 
     // ── SQL Execution (FIXED) ───────────────────────────────
     if (lang.value === "sqlite3") {
-      try {
-        // Initialize SQL.js if not already loaded
-        const SQL = await initSqlJs();
+  try {
+    // Initialize SQL.js only once
+    const SQL = await initSqlJs();
 
-        // Create new database if none exists
-        if (!sqlDb.current) {
-          sqlDb.current = new SQL.Database();
-          setOutput("✅ SQLite database ready!\n");
-        }
-
-        const db = sqlDb.current;
-        const statements = code.split(";").map(s => s.trim()).filter(s => s.length > 0);
-        let result = ""; 
-        let hasOutput = false;
-
-        for (const stmt of statements) {
-          try {
-            const isSelect = stmt.toLowerCase().startsWith("select");
-            const res = db.exec(stmt + ";");
-
-            if (res.length > 0 && isSelect) {
-              const { columns, values } = res[0];
-              result += columns.join(" | ") + "\n";
-              result += columns.map(() => "---").join("-|-") + "\n";
-              values.forEach(row => { result += row.join(" | ") + "\n"; });
-              result += "\n"; 
-              hasOutput = true;
-            } else if (res.length > 0 && !isSelect) {
-              const changes = db.getRowsModified();
-              result += `${changes} row(s) affected\n`; 
-              hasOutput = true;
-            } else if (!isSelect && !res.length) {
-              result += `Query executed successfully\n`; 
-              hasOutput = true;
-            }
-          } catch (e) { 
-            result += `❌ Error: ${e.message}\n`; 
-            hasOutput = true; 
-            setRunError(true);
-          }
-        }
-
-        if (hasOutput) {
-          setOutput(prev => prev === "✅ SQLite database ready!\n" ? result : prev + result);
-        } else {
-          setOutput(prev => prev + "All queries executed (no output)\n");
-        }
-        setRunError(false);
-      } catch (e) { 
-        setOutput(`❌ SQL Error: ${e.message}`); 
-        setRunError(true); 
-        sqlDb.current = null;
-      }
-      setRunning(false); 
-      return;
+    // Create a persistent database (reuse if exists)
+    if (!sqlDb.current) {
+      sqlDb.current = new SQL.Database();
+      setOutput("✅ SQLite database ready!\n");
     }
+
+    const db = sqlDb.current;
+    
+    // Better statement splitting – keep track of quotes and comments
+    const statements = [];
+    let currentStmt = "";
+    let inSingleQuote = false;
+    let inDoubleQuote = false;
+    let inLineComment = false;
+    let inBlockComment = false;
+    
+    for (let i = 0; i < code.length; i++) {
+      const ch = code[i];
+      const nextCh = code[i + 1];
+      
+      // Toggle comment / quote states
+      if (!inSingleQuote && !inDoubleQuote && !inBlockComment) {
+        if (ch === '-' && nextCh === '-') {
+          inLineComment = true;
+          i++;
+          continue;
+        } else if (ch === '/' && nextCh === '*') {
+          inBlockComment = true;
+          i++;
+          continue;
+        }
+      }
+      
+      if (inLineComment && ch === '\n') {
+        inLineComment = false;
+        continue;
+      }
+      if (inBlockComment && ch === '*' && nextCh === '/') {
+        inBlockComment = false;
+        i++;
+        continue;
+      }
+      
+      if (!inLineComment && !inBlockComment) {
+        if (ch === "'" && !inDoubleQuote) inSingleQuote = !inSingleQuote;
+        if (ch === '"' && !inSingleQuote) inDoubleQuote = !inDoubleQuote;
+      }
+      
+      // Add character to current statement
+      if (!inLineComment && !inBlockComment) {
+        currentStmt += ch;
+      }
+      
+      // Statement ends on semicolon outside quotes/comments
+      if (ch === ';' && !inSingleQuote && !inDoubleQuote && !inLineComment && !inBlockComment) {
+        const trimmed = currentStmt.trim();
+        if (trimmed) statements.push(trimmed);
+        currentStmt = "";
+      }
+    }
+    // Add any remaining code without trailing semicolon
+    const remaining = currentStmt.trim();
+    if (remaining) statements.push(remaining);
+    
+    let result = "";
+    let hasOutput = false;
+    
+    for (const stmt of statements) {
+      try {
+        const isSelect = stmt.toLowerCase().startsWith("select");
+        const res = db.exec(stmt);
+        
+        if (res.length > 0 && isSelect) {
+          for (const r of res) {
+            const { columns, values } = r;
+            result += columns.join(" | ") + "\n";
+            result += columns.map(() => "---").join("-|-") + "\n";
+            values.forEach(row => { result += row.join(" | ") + "\n"; });
+            result += "\n";
+            hasOutput = true;
+          }
+        } else if (res.length > 0 && !isSelect) {
+          const changes = db.getRowsModified();
+          result += `${changes} row(s) affected\n`;
+          hasOutput = true;
+        } else if (!isSelect && !res.length) {
+          // DDL statements (CREATE, DROP, etc.) succeed without output
+          result += `Query executed successfully\n`;
+          hasOutput = true;
+        }
+      } catch (e) {
+        result += `❌ Error: ${e.message}\n`;
+        hasOutput = true;
+        setRunError(true);
+      }
+    }
+    
+    if (hasOutput) {
+      setOutput(prev => prev === "✅ SQLite database ready!\n" ? result : prev + result);
+    } else {
+      setOutput(prev => prev + "✅ All queries executed (no output)\n");
+    }
+    setRunError(false);
+  } catch (e) {
+    setOutput(`❌ SQL Error: ${e.message}`);
+    setRunError(true);
+    sqlDb.current = null;
+    setSqlReady(false);
+  }
+  setRunning(false);
+  return;
+}
 
     // ── Other Languages (via API) ────────────────────────────
     try {
