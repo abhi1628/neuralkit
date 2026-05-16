@@ -801,18 +801,54 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   }
 
   function isResumeLike(text) {
-    const lowerText = text.toLowerCase();
-    const coreSections = ["experience", "education", "skills", "contact", "projects"];
-    const supporting = ["summary", "profile", "objective", "certifications", "languages", "interests", "references", "achievements", "phone", "email", "address", "linkedin", "github"];
-    let coreScore = 0, supportScore = 0, antiScore = 0;
-    for (let kw of coreSections) { if (lowerText.includes(kw)) coreScore++; }
-    for (let kw of supporting) { if (lowerText.includes(kw)) supportScore++; }
-    for (let kw of ANTI_RESUME_KEYWORDS) { if (lowerText.includes(kw)) antiScore++; }
-    if (coreScore < 2) return false;
-    if (antiScore >= 4) return false;
-    const resumeScore = coreScore + (supportScore * 0.5);
-    return resumeScore >= 2.5 && antiScore < 4;
+  const lowerText = text.toLowerCase();
+  
+  // Expanded core sections with common variations
+  const coreSections = [
+    "experience", "work experience", "employment", "professional experience",
+    "education", "educational qualifications", "academic background", "qualifications",
+    "skills", "technical skills", "core competencies", "expertise",
+    "contact", "contact information", "personal details",
+    "projects", "key projects", "portfolio"
+  ];
+  
+  const supporting = [
+    "summary", "profile", "objective", "certifications", "languages",
+    "interests", "references", "achievements", "phone", "email", "address",
+    "linkedin", "github", "volunteer", "awards", "publications"
+  ];
+  
+  const antiResume = [
+    "abstract", "introduction", "methodology", "literature review", "related work",
+    "experimental results", "discussion", "conclusion", "references", "bibliography",
+    "figure", "table", "equation", "theorem", "proof", "hypothesis", "dataset",
+    "et al", "doi:", "university", "institute", "department of", "supervised by",
+    "submitted in partial fulfillment", "thesis", "dissertation", "declaration",
+    "certificate", "acknowledgement", "chapter", "research gap"
+  ];
+  
+  let coreScore = 0;
+  let supportScore = 0;
+  let antiScore = 0;
+  
+  for (let kw of coreSections) {
+    if (lowerText.includes(kw)) coreScore++;
   }
+  for (let kw of supporting) {
+    if (lowerText.includes(kw)) supportScore++;
+  }
+  for (let kw of antiResume) {
+    if (lowerText.includes(kw)) antiScore++;
+  }
+  
+  // Require at least 2 core sections (more forgiving: 2 instead of 2, but we keep 2)
+  if (coreScore < 2) return false;
+  // If too many academic terms, reject
+  if (antiScore >= 4) return false;
+  
+  const totalScore = coreScore + (supportScore * 0.5);
+  return totalScore >= 2.5;  // unchanged threshold
+}
 
   async function handleFile(e) {
     const file = e.target.files[0];
