@@ -763,74 +763,67 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const fileRef = useRef(null);
 
   const ACADEMIC_KEYWORDS = useMemo(() => [
-    "abstract", "introduction", "literature review", "related work", "methodology", "experimental setup",
-    "results and discussion", "conclusion", "references", "bibliography", "acknowledgements", "appendix",
-    "doi", "arxiv", "issn", "isbn", "keywords:", "figure", "table", "equation", "algorithm", "theorem",
-    "proof", "hypothesis", "dataset", "accuracy", "precision", "recall", "f1-score", "neural network",
-    "deep learning", "proposed method", "baseline", "state-of-the-art", "sota", "benchmark", "ablation study",
-    "et al.", "vol.", "no.", "pp.", "ieee", "acm", "springer", "university", "institute of technology",
-    "department of", "submitted in partial fulfillment", "a thesis", "dissertation", "supervised by",
-    "guided by", "declaration", "certificate", "list of figures", "list of tables", "table of contents",
-    "chapter", "review of literature", "research gap", "objective of study"
-  ], []);
+  "abstract", "introduction", "methodology", "related work", "literature review",
+  "experimental results", "discussion", "conclusion", "references", "bibliography",
+  "figure", "table", "equation", "theorem", "proof", "hypothesis", "dataset",
+  "et al", "doi:", "thesis", "dissertation"
+], []);
 
-  const RESUME_KEYWORDS = useMemo(() => [
-    "work experience", "employment history", "professional experience", "career objective", "personal details",
-    "date of birth", "phone:", "email:", "linkedin", "github", "portfolio", "hobbies", "languages",
-    "soft skills", "hard skills", "technical skills", "certifications", "projects", "internship",
-    "fresher", "years of experience", "current company", "previous company", "designation", "role:",
-    "responsibilities", "achievements", "curriculum vitae", "cv"
-  ], []);
+const RESUME_KEYWORDS = useMemo(() => [
+  "work experience", "employment", "professional experience", "qualifications",
+  "education", "skills", "technical skills", "certifications", "projects",
+  "portfolio", "linkedin", "github", "phone", "email", "achievements", "awards"
+], []);
 
-  const ANTI_RESUME_KEYWORDS = useMemo(() => [
-    "abstract", "introduction", "methodology", "literature review", "related work", "experimental results",
-    "discussion", "conclusion", "references", "bibliography", "figure", "table", "equation", "theorem",
-    "proof", "hypothesis", "dataset", "et al", "doi:", "university", "institute", "department of",
-    "supervised by", "submitted in partial fulfillment", "a thesis", "dissertation", "declaration",
-    "certificate", "acknowledgement", "chapter", "research gap", "objective of study", "scope of work"
-  ], []);
+const ANTI_RESUME_KEYWORDS = useMemo(() => [
+  "abstract", "introduction", "methodology", "literature review", "related work",
+  "experimental results", "discussion", "conclusion", "references", "bibliography",
+  "figure", "table", "equation", "theorem", "proof", "hypothesis", "dataset",
+  "et al", "doi:", "supervised by", "submitted in partial fulfillment",
+  "thesis", "dissertation"
+], []);
 
-  function isResearchPaper(text) {
-    const lowerText = text.toLowerCase();
-    let academicScore = 0, resumeScore = 0;
-    for (let kw of ACADEMIC_KEYWORDS) { if (lowerText.includes(kw)) academicScore++; }
-    for (let kw of RESUME_KEYWORDS) { if (lowerText.includes(kw)) resumeScore++; }
-    const isAcademic = academicScore >= 5, isResume = resumeScore >= 3;
-    if (isAcademic && isResume) return academicScore > resumeScore;
-    return isAcademic;
-  }
-
-  function isResumeLike(text) {
+function isResearchPaper(text) {
   const lowerText = text.toLowerCase();
-  
-  // Expanded core sections with common variations
+  let academicScore = 0;
+  for (let kw of ACADEMIC_KEYWORDS) {
+    if (lowerText.includes(kw)) academicScore++;
+  }
+  // If it has 4 or more strong academic terms, consider it a research paper
+  return academicScore >= 4;
+}
+
+function isResumeLike(text) {
+  const lowerText = text.toLowerCase();
+
+  // Core sections – broad and forgiving
   const coreSections = [
     "experience", "work experience", "employment", "professional experience",
-    "education", "educational qualifications", "academic background", "qualifications",
-    "skills", "technical skills", "core competencies", "expertise",
-    "contact", "contact information", "personal details",
+    "education", "qualification", "qualifications", "academic background",
+    "skills", "technical skills", "core competencies", "expertise", "languages",
+    "contact", "personal details", "address", "phone", "email",
     "projects", "key projects", "portfolio"
   ];
-  
+
   const supporting = [
-    "summary", "profile", "objective", "certifications", "languages",
-    "interests", "references", "achievements", "phone", "email", "address",
-    "linkedin", "github", "volunteer", "awards", "publications"
+    "summary", "profile", "objective", "certifications", "interests",
+    "references", "achievements", "awards", "linkedin", "github",
+    "publications", "training", "workshops"
   ];
-  
+
+  // Only truly academic terms that rarely appear in resumes
   const antiResume = [
     "abstract", "introduction", "methodology", "literature review", "related work",
     "experimental results", "discussion", "conclusion", "references", "bibliography",
     "figure", "table", "equation", "theorem", "proof", "hypothesis", "dataset",
-    "et al", "doi:", "university", "institute", "department of", "supervised by",
-    "submitted in partial fulfillment", "thesis", "dissertation", "declaration",
-    "certificate", "acknowledgement", "chapter", "research gap"
+    "et al", "doi:", "supervised by", "submitted in partial fulfillment",
+    "thesis", "dissertation"
   ];
-  
+
   let coreScore = 0;
   let supportScore = 0;
   let antiScore = 0;
-  
+
   for (let kw of coreSections) {
     if (lowerText.includes(kw)) coreScore++;
   }
@@ -840,14 +833,12 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   for (let kw of antiResume) {
     if (lowerText.includes(kw)) antiScore++;
   }
-  
-  // Require at least 2 core sections (more forgiving: 2 instead of 2, but we keep 2)
-  if (coreScore < 2) return false;
-  // If too many academic terms, reject
-  if (antiScore >= 4) return false;
-  
-  const totalScore = coreScore + (supportScore * 0.5);
-  return totalScore >= 2.5;  // unchanged threshold
+
+  // Accept if at least 1 core section AND not too academic
+  if (coreScore < 1) return false;
+  if (antiScore >= 5) return false;
+
+  return true;
 }
 
   async function handleFile(e) {
