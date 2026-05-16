@@ -1335,7 +1335,7 @@ function CodePlayground({ theme }) {
         </div>
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} theme={theme} />
-          <<textarea 
+          <textarea 
   ref={codeAreaRef} 
   value={code} 
   onChange={(e) => setCode(e.target.value)} 
