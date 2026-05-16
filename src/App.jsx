@@ -648,13 +648,16 @@ function TriviaSection({ theme }) {
 }
 
 // ── Output Actions ────────────────────────────────────────────
-function OutputActions({ text, filename, theme }) {
+function OutputActions({ text, filename, theme, onClear }) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   return (
-    <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-      <button onClick={() => copyToClipboard(text, setCopied)} className={`action-btn ${copied ? 'action-btn-success' : ''}`} aria-label="Copy output to clipboard">{copied ? "Copied!" : "Copy"}</button>
+    <div style={{ display: "flex", gap: "10px", marginTop: "12px", flexWrap: "wrap" }}>
+      <button onClick={() => copyToClipboard(text, setCopied)} className={`action-btn ${copied ? 'action-btn-success' : ''}`} aria-label="Copy output to clipboard">{copied ? "✓ Copied!" : "Copy"}</button>
       <button onClick={async () => { setDownloading(true); await downloadAsPDF(text, filename); setDownloading(false); }} className="action-btn" aria-label="Download as PDF">{downloading ? "Generating..." : "Download PDF"}</button>
+      {onClear && (
+        <button onClick={onClear} className="action-btn" aria-label="Clear output and start over" style={{ marginLeft: "auto", color: "var(--accent)", borderColor: "var(--accent)" }}>↺ New Analysis</button>
+      )}
     </div>
   );
 }
@@ -710,7 +713,7 @@ function ToolPanel({ tool, theme }) {
             <div className="output-header">◆ Output</div>
             {formattedOutput}
           </div>
-          <OutputActions text={output} filename={`zeroapi-${tool.id}`} />
+          <OutputActions text={output} filename={`zeroapi-${tool.id}`} onClear={() => { setInput(""); setOutput(""); setError(""); }} />
         </div>
       )}
     </div>
@@ -785,7 +788,7 @@ function MCQPanel({ tool, theme }) {
         <div ref={outputRef}>
           <div className="output-header-mcq">◆ Generated Questions</div>
           {formattedMCQ}
-          <OutputActions text={rawOutput} filename="zeroapi-mcqs" />
+          <OutputActions text={rawOutput} filename="zeroapi-mcqs" onClear={() => { setInput(""); setRawOutput(""); setError(""); }} />
         </div>
       )}
     </div>
@@ -957,7 +960,7 @@ function isResumeLike(text) {
       {output && (
         <div>
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
-          <OutputActions text={output} filename={`zeroapi-${filename}`} />
+          <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={() => { setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError(""); if (fileRef.current) fileRef.current.value = ""; }} />
         </div>
       )}
     </div>
@@ -1136,11 +1139,14 @@ ${code}` }]
 
         {(output || error) && (
           <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
-            <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
-              <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
-                {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
-              </button>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear output">↺ Clear Output</button>
+                <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
+                  {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
+                </button>
+              </div>
             </div>
             <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)"), lineHeight: 1.7, background: theme === 'dark' ? "#0d1117" : "#f5f5f5", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
               {output}
@@ -1153,7 +1159,7 @@ ${code}` }]
         <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "16px", padding: "24px 28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${accentColor}1A` }}>🧠 AI Explanation</div>
           {formatExplanation(explanation)}
-          <OutputActions text={explanation} filename="zeroapi-code-explanation" />
+          <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(""); setOutput(""); setRunError(false); }} />
         </div>
       )}
 
@@ -1246,7 +1252,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: accentColor, marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
-          <OutputActions text={answer} filename="zeroapi-ask-author" />
+          <OutputActions text={answer} filename="zeroapi-ask-author" onClear={() => { setAnswer(""); setQuestion(""); setError(""); }} />
         </div>
       )}
     </div>
