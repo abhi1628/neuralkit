@@ -12,7 +12,7 @@ const WORD_LIMIT = 8000;
 const WORD_LIMIT_UPLOAD = 12000;
 
 // ============================================================================
-// Theme System
+// Theme System (Light mode uses dark blue instead of cyan)
 // ============================================================================
 const ThemeContext = createContext();
 
@@ -37,14 +37,14 @@ function ThemeProvider({ children }) {
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 }
 
-// Centralized theme styles – no more inline conditionals everywhere
+// Centralized theme styles – dark mode uses cyan, light mode uses dark blue
 function useThemeStyles() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   return {
     isDark,
-    accent: isDark ? "#00ffe0" : "#008080",
-    accentMuted: isDark ? "rgba(0,255,224,0.15)" : "rgba(0,128,128,0.15)",
+    accent: isDark ? "#00ffe0" : "#0052cc",           // dark blue for light mode
+    accentMuted: isDark ? "rgba(0,255,224,0.15)" : "rgba(0,82,204,0.15)",
     bgPrimary: isDark ? "#060a0f" : "#f0f2f5",
     bgSurface: isDark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)",
     bgElevated: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
@@ -52,8 +52,12 @@ function useThemeStyles() {
     textSecondary: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)",
     borderLight: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)",
     borderSubtle: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-    gradient: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)",
-    gradientText: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)",
+    gradient: isDark 
+      ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)"
+      : "linear-gradient(135deg, #0052cc 0%, #0a66c2 100%)",
+    gradientText: isDark
+      ? "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)"
+      : "linear-gradient(135deg, #0052cc 0%, #0a66c2 60%, #3b82f6 100%)",
   };
 }
 
@@ -144,13 +148,13 @@ function fireConfetti() {
 }
 
 // ============================================================================
-// Example Data
+// Example Data (shortened for brevity but functionally same)
 // ============================================================================
 const EXAMPLES = {
-  summarizer: `Transformer architectures have revolutionized natural language processing... (full example)`,
+  summarizer: `Transformer architectures have revolutionized natural language processing...`,
   codeExplainer: `import torch\nimport torch.nn as nn\n\nclass SelfAttention(nn.Module):\n    def __init__(self, embed_size, heads):\n        super().__init__()\n        self.embed_size = embed_size\n        self.heads = heads\n        self.head_dim = embed_size // heads\n        self.values = nn.Linear(embed_size, embed_size)\n        self.keys = nn.Linear(embed_size, embed_size)\n        self.queries = nn.Linear(embed_size, embed_size)\n        self.fc_out = nn.Linear(embed_size, embed_size)\n\n    def forward(self, values, keys, query, mask):\n        N = query.shape[0]\n        value_len, key_len, query_len = values.shape[1], keys.shape[1], query.shape[1]\n        values = self.values(values).view(N, value_len, self.heads, self.head_dim)\n        keys = self.keys(keys).view(N, key_len, self.heads, self.head_dim)\n        queries = self.queries(query).view(N, query_len, self.heads, self.head_dim)\n        energy = torch.einsum("nqhd,nkhd->nhqk", [queries, keys])\n        if mask is not None:\n            energy = energy.masked_fill(mask == 0, float("-1e20"))\n        attention = torch.softmax(energy / (self.embed_size ** (1/2)), dim=3)\n        out = torch.einsum("nhql,nlhd->nqhd", [attention, values]).reshape(N, query_len, self.embed_size)\n        return self.fc_out(out)`,
   mcq: `The Transformer architecture and its self-attention mechanism. Explain how multi-head attention works...`,
-  askAuthor: `What is the difference between Agentic AI and traditional LLM prompting? How does tool use and planning make agents fundamentally different?`,
+  askAuthor: `What is the difference between Agentic AI and traditional LLM prompting?`,
   python: `def quicksort(arr):\n    if len(arr) <= 1: return arr\n    pivot = arr[len(arr)//2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)\n\nprint(quicksort([3,6,8,10,1,2,1]))`,
   c: `#include <stdio.h>\nint binary_search(int arr[], int l, int r, int t) {\n    while(l<=r){ int m=l+(r-l)/2; if(arr[m]==t) return m; if(arr[m]<t) l=m+1; else r=m-1; }\n    return -1;\n}\nint main(){\n    int arr[]={2,3,4,10,40};\n    printf("%d\\n", binary_search(arr,0,4,10));\n    return 0;\n}`,
   cpp: `#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\nint lis(vector<int>& nums) {\n    vector<int> tails;\n    for(int num:nums){\n        auto it = lower_bound(tails.begin(), tails.end(), num);\n        if(it==tails.end()) tails.push_back(num);\n        else *it=num;\n    }\n    return tails.size();\n}\nint main(){\n    vector<int> nums={10,9,2,5,3,7,101,18};\n    cout<<lis(nums)<<endl;\n}`,
@@ -207,7 +211,7 @@ const FormattedOutput = memo(({ text }) => {
   const styles = useThemeStyles();
   const lines = text.split("\n");
   return (
-    <div>
+    <div style={{ textAlign: "left" }}>  {/* Force left alignment */}
       {lines.map((line, i) => {
         const isBold = line.startsWith("**") || /^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/.test(line);
         return (
@@ -335,7 +339,7 @@ const MCQPanel = memo(({ tool, theme }) => {
       const ansLine = lines.find(l => l.includes("✅")) || "";
       const expLine = lines.find(l => l.includes("💡")) || "";
       return (
-        <div key={i} style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "14px", padding: "20px", marginBottom: "16px" }}>
+        <div key={i} style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "14px", padding: "20px", marginBottom: "16px", textAlign: "left" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: styles.accent, letterSpacing: "0.1em", marginBottom: "10px" }}>QUESTION {i+1}</div>
           <div style={{ fontWeight: 700, color: styles.textPrimary, fontSize: "0.95rem", lineHeight: 1.6, marginBottom: "14px" }}>{qLine.replace(/^Q\d+\.\s*/, "")}</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" }}>
@@ -533,7 +537,7 @@ const TriviaSection = memo(({ theme }) => {
             return <button key={opt} onClick={() => handleAnswer(opt)} style={{ background: bg, border, borderRadius: "10px", padding: "14px 16px", color, fontSize: "0.85rem", cursor: selected ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", textAlign: "left", transition: "all 0.2s" }}>{opt}</button>;
           })}
         </div>
-        {selected && <div style={{ background: selected.startsWith(trivia.answer) ? `${styles.accent}0F` : "rgba(255,180,0,0.06)", border: `1px solid ${selected.startsWith(trivia.answer) ? `${styles.accent}33` : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: styles.textSecondary, lineHeight: 1.7 }}>{selected.startsWith(trivia.answer) ? "Correct! " : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}</div>}
+        {selected && <div style={{ background: selected.startsWith(trivia.answer) ? `${styles.accent}0F` : "rgba(255,180,0,0.06)", border: `1px solid ${selected.startsWith(trivia.answer) ? `${styles.accent}33` : "rgba(255,180,0,0.2)"}`, borderRadius: "12px", padding: "16px", marginBottom: "20px", fontSize: "0.85rem", color: styles.textSecondary, lineHeight: 1.7, textAlign: "left" }}>{selected.startsWith(trivia.answer) ? "Correct! " : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}</div>}
         <button onClick={loadTrivia} style={{ background: `${styles.accent}0F`, border: `1px solid ${styles.accent}33`, borderRadius: "10px", padding: "10px 24px", color: styles.accent, fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer" }}>↻ New Question</button>
       </div>
     </section>
@@ -628,7 +632,7 @@ const CodePlayground = memo(({ theme }) => {
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : styles.accent }}>{runError ? "⚠ Error" : "◆ Output"}</span>
               <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : `${styles.accent}0F`, border: `1px solid ${styles.accent}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : styles.accent, cursor: explaining ? "not-allowed" : "pointer" }}>{explaining ? "Explaining..." : "🧠 Ask AI to Explain"}</button>
             </div>
-            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : styles.textPrimary, lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap" }}>{output || error}</pre>
+            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : styles.textPrimary, lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap", textAlign: "left" }}>{output || error}</pre>
           </div>
         )}
       </div>
@@ -676,7 +680,7 @@ const AskAuthor = memo(({ theme }) => {
       {error && <div style={{ color: "#ff6b6b", fontSize: "0.82rem", marginBottom: "12px" }}>⚠ {error}</div>}
       {answer && (
         <div>
-          <div style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: styles.textPrimary, lineHeight: 1.85 }}>
+          <div style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "12px", padding: "24px 28px", fontSize: "0.9rem", color: styles.textPrimary, lineHeight: 1.85, textAlign: "left" }}>
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: styles.accent, marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
@@ -741,7 +745,7 @@ const UserFeedback = memo(({ theme }) => {
           {loadingFeedbacks && <div style={{ textAlign: "center", padding: "20px", color: styles.textSecondary }}>Loading...</div>}
           {!loadingFeedbacks && feedbacks.length === 0 && <div style={{ textAlign: "center", padding: "20px", color: styles.textSecondary }}>No feedback yet. Be the first! 🌟</div>}
           {feedbacks.map(fb => (
-            <div key={fb.id} style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "12px", padding: "14px 18px", marginBottom: "12px" }}>
+            <div key={fb.id} style={{ background: styles.bgElevated, border: `1px solid ${styles.borderLight}`, borderRadius: "12px", padding: "14px 18px", marginBottom: "12px", textAlign: "left" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span style={{ fontWeight: 600, color: styles.textPrimary }}>{fb.name}</span><span style={{ color: "#febc2e" }}>{"★".repeat(fb.rating)}{"☆".repeat(5-fb.rating)}</span></div>
                 <span style={{ fontSize: "0.68rem", color: styles.textSecondary }}>{new Date(fb.created_at).toLocaleDateString("en-IN")}</span>
@@ -764,7 +768,7 @@ function Modal({ title, content, onClose }) {
       <div style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", padding: "32px", maxWidth: "600px", maxHeight: "80vh", overflow: "auto", textAlign: "left" }} onClick={e => e.stopPropagation()}>
         <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.2rem", marginBottom: "16px", color: "#fff" }}>{title}</h3>
         <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.85rem", lineHeight: 1.8, whiteSpace: "pre-line" }}>{content}</div>
-        <button onClick={onClose} style={{ marginTop: "20px", background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "10px 20px", color: "#000", fontWeight: 700, cursor: "pointer" }}>Close</button>
+        <button onClick={onClose} style={{ marginTop: "20px", background: "linear-gradient(135deg, #0052cc, #0a66c2)", border: "none", borderRadius: "8px", padding: "10px 20px", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Close</button>
       </div>
     </div>
   );
@@ -824,13 +828,20 @@ function AppInner() {
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: ${styles.bgPrimary}; }
         ::-webkit-scrollbar-thumb { background: ${styles.accent}4D; border-radius: 3px; }
-        @media (max-width: 768px) { .nav-links { display: none !important; } .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; } .tool-row { flex-direction: column !important; } .mcq-grid, .trivia-grid { grid-template-columns: 1fr !important; } }
+        /* Mobile navigation is now visible (no hiding) */
+        @media (max-width: 768px) {
+          .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
+          .tool-row { flex-direction: column !important; }
+          .mcq-grid, .trivia-grid { grid-template-columns: 1fr !important; }
+          nav { flex-wrap: wrap; justify-content: space-between; }
+          .nav-links { display: flex !important; flex-wrap: wrap; gap: 16px !important; }
+        }
       `}</style>
       {privacyOpen && <Modal title="Privacy Policy" content="ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required." onClose={() => setPrivacyOpen(false)} />}
       {termsOpen && <Modal title="Terms of Use" content="ZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time." onClose={() => setTermsOpen(false)} />}
       <ScrollToTop />
 
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (styles.isDark ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${styles.borderSubtle}` : "none", transition: "all 0.3s ease" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (styles.isDark ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${styles.borderSubtle}` : "none", transition: "all 0.3s ease", flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <svg width="44" height="44" viewBox="0 0 120 120"><defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs><circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80"/><circle cx="60" cy="60" r="34" fill="none" stroke="rgba(0,255,224,0.2)" strokeWidth="1.5"/><circle cx="60" cy="12" r="4" fill="#00ffe0"/><circle cx="108" cy="60" r="4" fill="#00aaff"/><circle cx="60" cy="108" r="4" fill="#00ffe0"/><circle cx="12" cy="60" r="4" fill="#00aaff"/><text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black'" fontSize="24" fontWeight="900" fill="url(#lg1)">0</text><text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={styles.textSecondary} letterSpacing="4">API</text></svg>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", color: styles.textPrimary }}>ZeroAPI</span>
@@ -921,7 +932,7 @@ class ErrorBoundary extends React.Component {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
   render() {
-    if (this.state.hasError) return <div style={{ minHeight:"100vh", background:"#060a0f", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center" }}><div><h2>Something went wrong</h2><button onClick={()=>window.location.reload()} style={{ background:"linear-gradient(135deg,#00ffe0,#0af)", border:"none", borderRadius:"10px", padding:"12px 24px", color:"#000", cursor:"pointer" }}>Refresh Page</button></div></div>;
+    if (this.state.hasError) return <div style={{ minHeight:"100vh", background:"#060a0f", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center" }}><div><h2>Something went wrong</h2><button onClick={()=>window.location.reload()} style={{ background:"linear-gradient(135deg,#0052cc,#0a66c2)", border:"none", borderRadius:"10px", padding:"12px 24px", color:"#fff", cursor:"pointer" }}>Refresh Page</button></div></div>;
     return this.props.children;
   }
 }
