@@ -185,6 +185,53 @@ public class Main {
         System.out.println("Dijkstra ready - add your graph!");
     }
 }`,
+  sql: `-- Find top 5 customers by total order value
+SELECT 
+    c.customer_id,
+    c.name,
+    COUNT(o.order_id) as total_orders,
+    SUM(o.amount) as total_spent,
+    AVG(o.amount) as avg_order_value
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_date >= DATE('now', '-6 months')
+GROUP BY c.customer_id
+HAVING total_orders >= 3
+ORDER BY total_spent DESC
+LIMIT 5;`,
+  typescript: `// TypeScript: Generic Stack implementation
+class Stack<T> {
+  private items: T[] = [];
+
+  push(item: T): void {
+    this.items.push(item);
+  }
+
+  pop(): T | undefined {
+    return this.items.pop();
+  }
+
+  peek(): T | undefined {
+    return this.items[this.items.length - 1];
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  size(): number {
+    return this.items.length;
+  }
+}
+
+const stack = new Stack<number>();
+stack.push(10);
+stack.push(20);
+stack.push(30);
+console.log("Top:", stack.peek());
+console.log("Size:", stack.size());
+console.log("Popped:", stack.pop());
+console.log("New top:", stack.peek());`,
   javascript: `function NeuralNetwork(inputSize, hiddenSize, outputSize) {
     this.W1 = Array.from({length: inputSize}, () => 
         Array.from({length: hiddenSize}, () => Math.random() - 0.5));
@@ -259,7 +306,10 @@ function loadScript(src) {
     s.src = src;
     s.onload = resolve;
     s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
+    s.onload = resolve;
     document.head.appendChild(s);
+    
+    // Timeout after 10 seconds
     setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
   });
 }
@@ -781,12 +831,14 @@ function isResearchPaper(text) {
   for (let kw of ACADEMIC_KEYWORDS) {
     if (lowerText.includes(kw)) academicScore++;
   }
+  // If it has 4 or more strong academic terms, consider it a research paper
   return academicScore >= 4;
 }
 
 function isResumeLike(text) {
   const lowerText = text.toLowerCase();
 
+  // Core sections – broad and forgiving
   const coreSections = [
     "experience", "work experience", "employment", "professional experience",
     "education", "qualification", "qualifications", "academic background",
@@ -801,6 +853,7 @@ function isResumeLike(text) {
     "publications", "training", "workshops"
   ];
 
+  // Only truly academic terms that rarely appear in resumes
   const antiResume = [
     "abstract", "introduction", "methodology", "literature review", "related work",
     "experimental results", "discussion", "conclusion", "references", "bibliography",
@@ -823,6 +876,7 @@ function isResumeLike(text) {
     if (lowerText.includes(kw)) antiScore++;
   }
 
+  // Accept if at least 1 core section AND not too academic
   if (coreScore < 1) return false;
   if (antiScore >= 5) return false;
 
@@ -925,16 +979,18 @@ function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
   );
 }
 
-// ── Code Playground (5 languages: Python, C, C++, Java, JavaScript) ──
+// ── Code Playground ───────────────────────────────────────────
+
 const LANG_MAP = {
-  python: "python-3.14", c: "gcc-15", cpp: "g++-15", java: "openjdk-25", javascript: "typescript-deno",
+  python: "python-3.14", c: "gcc-15", cpp: "g++-15", java: "openjdk-25", javascript: "typescript-deno", typescript: "typescript-deno",
 };
 
 const LANGUAGES = [
   { label: "Python", value: "python", icon: "🐍", starter: `# Python Playground\nprint("Hello from ZeroAPI!")\n\n# Try some code:\nfor i in range(5):\n    print(f"Number: {i}")` },
-  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\n");\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\n", i);\n    }\n    return 0;\n}` },
+  { label: "C", value: "c", icon: "⚙️", starter: `#include <stdio.h>\n\nint main() {\n    printf("Hello from ZeroAPI!\\n");\n    for(int i = 0; i < 5; i++) {\n        printf("Number: %d\\n", i);\n    }\n    return 0;\n}` },
   { label: "C++", value: "cpp", icon: "🔷", starter: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello from ZeroAPI!" << endl;\n    for(int i = 0; i < 5; i++) {\n        cout << "Number: " << i << endl;\n    }\n    return 0;\n}` },
   { label: "Java", value: "java", icon: "☕", starter: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from ZeroAPI!");\n        for(int i = 0; i < 5; i++) {\n            System.out.println("Number: " + i);\n        }\n    }\n}` },
+  { label: "TypeScript", value: "typescript", icon: "🔵", starter: `// TypeScript Playground\nconst greet = (name: string): string => {\n  return "Hello, " + name + "!";\n};\nconsole.log(greet("ZeroAPI"));\n\ninterface Person {\n  name: string;\n  age: number;\n}\n\nconst person: Person = { name: "Abhishek", age: 30 };\nconsole.log(\`Name: \${person.name}, Age: \${person.age}\`);` },
   { label: "JavaScript", value: "javascript", icon: "🌐", starter: `// JavaScript Playground\nconsole.log("Hello from ZeroAPI!");\n\nconst numbers = [1, 2, 3, 4, 5];\nconst doubled = numbers.map(n => n * 2);\nconsole.log("Doubled:", doubled);\n\nconst greet = name => "Hello, " + name + "!";\nconsole.log(greet("ZeroAPI"));` },
 ];
 
@@ -951,31 +1007,21 @@ function CodePlayground({ theme }) {
   const codeAreaRef = useRef(null);
 
   function switchLang(l) {
-    setLang(l);
-    setCode(l.starter);
-    setOutput("");
-    setExplanation("");
-    setError("");
+    setLang(l); setCode(l.starter); setOutput(""); setExplanation(""); setError("");
   }
 
   function loadExample() {
     const ex = EXAMPLES[lang.value] || EXAMPLES.python;
-    setCode(ex);
-    setOutput("");
-    setExplanation("");
-    setError("");
+    setCode(ex); setOutput(""); setExplanation(""); setError("");
     trackEvent("playground_example", { language: lang.label });
   }
 
   async function runCode() {
     if (!code.trim()) return;
-    setRunning(true);
-    setOutput("");
-    setError("");
-    setExplanation("");
-    setRunError(false);
+    setRunning(true); setOutput(""); setError(""); setExplanation(""); setRunError(false);
     trackEvent("playground_run", { language: lang.label });
 
+    // ── All Languages (via API) ──────────────────────────────
     try {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch("/api/run-code", {
@@ -986,37 +1032,24 @@ function CodePlayground({ theme }) {
       const data = await res.json();
       const out = data?.output || "";
       const err = data?.error || data?.message || "";
-      if (out.trim()) {
-        setOutput(out.trim());
-        setRunError(false);
-      } else if (err.trim()) {
-        setOutput(err.trim());
-        setRunError(true);
-      } else if (data?.status === "success") {
-        setOutput("(No output)");
-        setRunError(false);
-      } else {
-        setOutput(`Error: ${data?.status || "Unknown error"}`);
-        setRunError(true);
-      }
-    } catch {
-      setError("Connection error. Please try again.");
-    }
+      if (out.trim()) { setOutput(out.trim()); setRunError(false); }
+      else if (err.trim()) { setOutput(err.trim()); setRunError(true); }
+      else if (data?.status === "success") { setOutput("(No output)"); setRunError(false); }
+      else { setOutput(`Error: ${data?.status || "Unknown error"}`); setRunError(true); }
+    } catch { setError("Connection error. Please try again."); }
     setRunning(false);
   }
 
   async function explainCode() {
     if (!code.trim()) return;
-    setExplaining(true);
-    setExplanation("");
+    setExplaining(true); setExplanation("");
     trackEvent("playground_explain", { language: lang.label });
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          max_tokens: 600,
+          model: "llama-3.3-70b-versatile", max_tokens: 600,
           messages: [{
             role: "system",
             content: `You are an expert ${lang.label} educator. Explain the given code clearly for a student:
@@ -1025,21 +1058,15 @@ function CodePlayground({ theme }) {
 3. **Key concepts** — what programming concepts are used
 4. **Output** — what will it print/return
 Keep it beginner-friendly and concise.`
-          }, {
-            role: "user",
-            content: `Explain this ${lang.label} code:\n\n${code}`
-          }]
+          }, { role: "user", content: `Explain this ${lang.label} code:
+
+${code}` }]
         }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) {
-        setExplanation(data.choices[0].message.content);
-      } else {
-        setError("Couldn't get explanation. Try again.");
-      }
-    } catch {
-      setError("Connection error.");
-    }
+      if (data?.choices?.[0]?.message?.content) setExplanation(data.choices[0].message.content);
+      else setError("Couldn't get explanation. Try again.");
+    } catch { setError("Connection error."); }
     setExplaining(false);
   }
 
@@ -1073,29 +1100,12 @@ Keep it beginner-friendly and concise.`
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
         <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 5 languages · AI explanation built-in</p>
+        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
-          <button
-            key={l.value}
-            onClick={() => switchLang(l)}
-            style={{
-              background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"),
-              border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
-              borderRadius: "100px",
-              padding: "8px 18px",
-              color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"),
-              fontFamily: "'Space Mono', monospace",
-              fontSize: "0.78rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.2s",
-              boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none"
-            }}
-            aria-label={`Switch to ${l.label}`}
-          >
+          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }} aria-label={`Switch to ${l.label}`}>
             {l.icon} {l.label}
           </button>
         ))}
@@ -1113,20 +1123,7 @@ Keep it beginner-friendly and concise.`
           <div style={{ display: "flex", gap: "10px" }}>
             <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
             <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
-            <button onClick={runCode} disabled={running} style={{
-              background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
-              border: "none",
-              borderRadius: "8px",
-              padding: "6px 20px",
-              color: running ? "rgba(255,255,255,0.3)" : "#000",
-              fontFamily: "'Space Mono', monospace",
-              fontSize: "0.78rem",
-              fontWeight: 700,
-              cursor: running ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px"
-            }} aria-label="Run code">
+            <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }} aria-label="Run code">
               {running ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />Running...</> : "▶ Run"}
             </button>
           </div>
@@ -1134,28 +1131,7 @@ Keep it beginner-friendly and concise.`
 
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} theme={theme} />
-          <textarea
-            ref={codeAreaRef}
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            onKeyDown={handleCodeKeyDown}
-            onScroll={handleCodeScroll}
-            spellCheck={false}
-            className="code-editor"
-            style={{
-              width: "100%",
-              minHeight: "280px",
-              border: "none",
-              padding: "20px 20px 20px 60px",
-              fontFamily: "'Space Mono', monospace",
-              fontSize: "0.85rem",
-              lineHeight: 1.8,
-              resize: "vertical",
-              outline: "none",
-              boxSizing: "border-box"
-            }}
-            aria-label="Code editor"
-          />
+          <textarea ref={codeAreaRef} value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={handleCodeScroll} spellCheck={false} className="code-editor" style={{ width: "100%", minHeight: "280px", border: "none", padding: "20px 20px 20px 60px", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} aria-label="Code editor" />
         </div>
 
         {(output || error) && (
