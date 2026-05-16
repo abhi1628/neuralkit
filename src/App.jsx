@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useMemo } from "react";
 import confetti from "canvas-confetti";
+import initSqlJs from 'sql.js';
 
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
