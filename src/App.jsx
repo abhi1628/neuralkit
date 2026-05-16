@@ -185,16 +185,32 @@ public class Main {
         System.out.println("Dijkstra ready - add your graph!");
     }
 }`,
-  sql: `-- Find top 5 customers by total order value
-SELECT 
-    c.customer_id,
-    c.name,
-    COUNT(o.order_id) as total_orders,
-    SUM(o.amount) as total_spent,
-    AVG(o.amount) as avg_order_value
+  sql: `-- Setup sample database
+CREATE TABLE IF NOT EXISTS customers (
+  customer_id INTEGER PRIMARY KEY,
+  name TEXT
+);
+CREATE TABLE IF NOT EXISTS orders (
+  order_id INTEGER PRIMARY KEY,
+  customer_id INTEGER,
+  amount REAL,
+  order_date TEXT
+);
+INSERT INTO customers VALUES (1,'Alice'),(2,'Bob'),(3,'Carol'),(4,'Dan'),(5,'Eve');
+INSERT INTO orders VALUES
+  (1,1,120.0,'2025-01-10'),(2,1,200.0,'2025-02-15'),(3,1,90.0,'2025-03-01'),
+  (4,2,300.0,'2025-01-20'),(5,2,150.0,'2025-02-28'),(6,2,80.0,'2025-04-10'),
+  (7,3,50.0,'2025-03-15'),(8,3,70.0,'2025-04-05'),(9,3,110.0,'2025-05-01'),
+  (10,4,400.0,'2025-02-01'),(11,4,250.0,'2025-03-20'),(12,4,180.0,'2025-04-15'),
+  (13,5,500.0,'2025-01-05'),(14,5,320.0,'2025-02-10'),(15,5,90.0,'2025-03-30');
+
+-- Find top 5 customers by total order value
+SELECT c.customer_id, c.name,
+  COUNT(o.order_id) as total_orders,
+  SUM(o.amount) as total_spent,
+  AVG(o.amount) as avg_order_value
 FROM customers c
 JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_date >= DATE('now', '-6 months')
 GROUP BY c.customer_id
 HAVING total_orders >= 3
 ORDER BY total_spent DESC
@@ -991,10 +1007,13 @@ function CodePlayground({ theme }) {
   const codeAreaRef = useRef(null);
 
   useEffect(() => {
-  if (lang.value === "sqlite3" && !sqlReady && !sqlLoaded.current) {
+  if (lang.value === "sqlite3" && !sqlReady && !sqlLoadingRef.current) {
+    sqlLoadingRef.current = true; // prevent duplicate calls
     initSqlJs().catch(err => {
-      console.error("SQL preload failed:", err);
-      setSqlError("Failed to load SQL engine. Please refresh or try again.");
+      console.error(err);
+      setSqlError("Failed to load SQL engine. Please refresh.");
+    }).finally(() => {
+      sqlLoadingRef.current = false;
     });
   }
 }, [lang, sqlReady]);
@@ -1020,8 +1039,10 @@ function CodePlayground({ theme }) {
 
   // ── FIXED SQL Initialization ──────────────────────────────
   async function initSqlJs() {
-  if (sqlLoaded.current && sqlModule.current) return sqlModule.current;
-
+  if (sqlLoaded.current && sqlModule.current){
+    setSqlReady(true);
+    return sqlModule.current;
+  }
   try {
     // Load the main script
     await loadScript(SQL_JS_CDN);
