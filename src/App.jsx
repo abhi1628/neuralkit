@@ -1380,7 +1380,7 @@ function CodePlayground({ theme }) {
     </pre>
   </div>
 )}
-
+      </div>
       {explanation && (
         <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "16px", padding: "24px 28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${accentColor}1A` }}>🧠 AI Explanation</div>
