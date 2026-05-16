@@ -1365,7 +1365,17 @@ function CodePlayground({ theme }) {
                 {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
               </button>
             </div>
-            <pre style={{ margin: 0, padding: "16px 20px", fontFamily: "'Space Mono', monospace", fontSize: "0.82rem", color: runError ? "#ff6b6b" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)"), lineHeight: 1.7, background: "#0d1117", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{output || error}</pre>
+            <pre style={{ 
+  margin: 0, 
+  padding: "16px 20px", 
+  fontFamily: "'Space Mono', monospace", 
+  fontSize: "0.82rem", 
+  color: runError ? "#ff6b6b" : "rgba(255,255,255,0.85)",  // ← Always light text
+  lineHeight: 1.7, 
+  background: "#0d1117", 
+  whiteSpace: "pre-wrap", 
+  wordBreak: "break-word" 
+}}>
           </div>
         )}
       </div>
