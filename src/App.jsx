@@ -265,10 +265,19 @@ async function fetchVisitorCount() {
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
     const s = document.createElement("script");
-    s.src = src; s.onload = resolve; s.onerror = reject;
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
+    s.onload = resolve;
     document.head.appendChild(s);
+    
+    // Timeout after 10 seconds
+    setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
   });
 }
 
@@ -957,8 +966,10 @@ const LANGUAGES = [
 ];
 
 // SQL.js CDN URLs (updated to 1.14.0)
-const SQL_JS_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.js";
-const SQL_WASM_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.wasm";
+const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js";
+const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.wasm";
+//const SQL_JS_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.js";
+//const SQL_WASM_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.wasm";
 //const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js";
 //const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.wasm";
 
@@ -1010,28 +1021,38 @@ function CodePlayground({ theme }) {
   // ── FIXED SQL Initialization ──────────────────────────────
   async function initSqlJs() {
   if (sqlLoaded.current && sqlModule.current) return sqlModule.current;
-  
+
   try {
+    // Load the main script
     await loadScript(SQL_JS_CDN);
-    // Wait for initSqlJs to be defined (small delay)
-    for (let i = 0; i < 20; i++) {
-      if (typeof window.initSqlJs === 'function') break;
+    
+    // Wait for initSqlJs to become available (up to 5 seconds)
+    let attempts = 0;
+    while (typeof window.initSqlJs !== 'function' && attempts < 50) {
       await new Promise(r => setTimeout(r, 100));
+      attempts++;
     }
+    
     if (typeof window.initSqlJs !== 'function') {
-      throw new Error("SQL.js failed to initialize");
+      throw new Error("initSqlJs not found after loading script");
     }
+
     const SQL = await window.initSqlJs({
-      locateFile: (file) => SQL_WASM_CDN
+      locateFile: (file) => {
+        // Ensure the wasm file is loaded from the correct CDN
+        if (file.endsWith('.wasm')) return SQL_WASM_CDN;
+        return file;
+      }
     });
+
     sqlModule.current = SQL;
     sqlLoaded.current = true;
     setSqlReady(true);
     setSqlError("");
     return SQL;
   } catch (err) {
-    console.error(err);
-    setSqlError(`SQL engine error: ${err.message}. Reload page or try different browser.`);
+    console.error("SQL.js init error:", err);
+    setSqlError(`Failed to load SQL engine: ${err.message}. Please refresh the page or try a different browser.`);
     setSqlReady(false);
     throw err;
   }
