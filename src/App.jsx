@@ -278,8 +278,7 @@ async function downloadAsPDF(text, filename = "zeroapi-output") {
   const doc = new jsPDF();
   const cleaned = text
     .replace(/[🎯🔍💡⚠️📌✅❌🚀📈◆]/g, m => ({"🎯":"[CORE]","🔍":"[FINDINGS]","💡":"[INFO]","⚠️":"[WARNING]","📌":"[NOTE]","✅":"[+]","❌":"[-]","🚀":"[KEY]","📈":"[GROWTH]","◆":"*"}[m]))
-    .replace(/undefineddefined/g, "").replace(/undefined/g, "").replace(/[^�-
-]/g, "");
+    .replace(/undefineddefined/g, "").replace(/undefined/g, "").replace(/[^\x00-\x7F\n]/g, "");
   doc.setFont("helvetica");
   doc.setFontSize(18); doc.setTextColor(0, 0, 0); doc.text("ZeroAPI - AI Output", 10, 20);
   doc.setFontSize(9); doc.setTextColor(130, 130, 130); doc.text(`zeroapi.in | Generated: ${new Date().toLocaleDateString("en-IN")}`, 10, 28);
