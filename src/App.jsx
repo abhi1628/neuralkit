@@ -1370,12 +1370,14 @@ function CodePlayground({ theme }) {
   padding: "16px 20px", 
   fontFamily: "'Space Mono', monospace", 
   fontSize: "0.82rem", 
-  color: runError ? "#ff6b6b" : "rgba(255,255,255,0.85)",  // ← Always light text
+  color: runError ? "#ff6b6b" : "rgba(255,255,255,0.85)",
   lineHeight: 1.7, 
   background: "#0d1117", 
   whiteSpace: "pre-wrap", 
   wordBreak: "break-word" 
 }}>
+  {output}
+</pre>
           </div>
         )}
       </div>
