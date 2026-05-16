@@ -656,7 +656,7 @@ function OutputActions({ text, filename, theme, onClear }) {
       <button onClick={() => copyToClipboard(text, setCopied)} className={`action-btn ${copied ? 'action-btn-success' : ''}`} aria-label="Copy output to clipboard">{copied ? "✓ Copied!" : "Copy"}</button>
       <button onClick={async () => { setDownloading(true); await downloadAsPDF(text, filename); setDownloading(false); }} className="action-btn" aria-label="Download as PDF">{downloading ? "Generating..." : "Download PDF"}</button>
       {onClear && (
-        <button onClick={onClear} className="action-btn" aria-label="Clear output and start over" style={{ marginLeft: "auto", color: "var(--accent)", borderColor: "var(--accent)" }}>↺ New Analysis</button>
+        <button onClick={onClear} className="action-btn" aria-label="Clear and start over" style={{ marginLeft: "auto", color: "var(--accent)", borderColor: "var(--accent)" }}>↺ Clear</button>
       )}
     </div>
   );
@@ -669,6 +669,7 @@ function ToolPanel({ tool, theme }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const outputRef = useRef(null);
+  const topRef = useRef(null);
   const isOverLimit = useMemo(() => countWords(input) > WORD_LIMIT, [input]);
 
   useEffect(() => { setInput(""); setOutput(""); setError(""); }, [tool.id]);
@@ -692,11 +693,16 @@ function ToolPanel({ tool, theme }) {
     setLoading(false);
   }
 
+  function handleClear() {
+    setInput(""); setOutput(""); setError("");
+    setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }
+
   const exampleKey = tool.id === "codeExplainer" ? "codeExplainer" : tool.id;
   const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div>
         <label className="input-label">{tool.inputLabel}</label>
         <TryExample onFill={setInput} exampleMap={EXAMPLES} toolId={exampleKey} />
@@ -713,7 +719,7 @@ function ToolPanel({ tool, theme }) {
             <div className="output-header">◆ Output</div>
             {formattedOutput}
           </div>
-          <OutputActions text={output} filename={`zeroapi-${tool.id}`} onClear={() => { setInput(""); setOutput(""); setError(""); }} />
+          <OutputActions text={output} filename={`zeroapi-${tool.id}`} onClear={handleClear} />
         </div>
       )}
     </div>
@@ -806,6 +812,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [error, setError] = useState("");
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
+  const topRef = useRef(null);
 
   const ACADEMIC_KEYWORDS = useMemo(() => [
   "abstract", "introduction", "methodology", "related work", "literature review",
@@ -939,8 +946,14 @@ function isResumeLike(text) {
   const accentColor = "var(--accent)";
   const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
+  function handleClear() {
+    setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError("");
+    if (fileRef.current) fileRef.current.value = "";
+    setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div onClick={() => fileRef.current?.click()} className="upload-zone" style={{ borderColor: fileName ? `${accentColor}66` : undefined }} role="button" tabIndex={0} aria-label="Upload PDF or Word file">
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }} onChange={handleFile} />
         <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>{fileName ? icon : "⬆️"}</div>
@@ -956,11 +969,18 @@ function isResumeLike(text) {
           {loading ? <><span className="spinner" />Analyzing...</> : `→ ${label}`}
         </button>
       )}
-      {error && <div className="error-box">⚠ {error}</div>}
+      {error && (
+        <div>
+          <div className="error-box">⚠ {error}</div>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+            <button onClick={handleClear} className="action-btn" style={{ color: "var(--accent)", borderColor: "var(--accent)" }} aria-label="Clear and try again">↺ Clear</button>
+          </div>
+        </div>
+      )}
       {output && (
         <div>
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
-          <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={() => { setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError(""); if (fileRef.current) fileRef.current.value = ""; }} />
+          <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={handleClear} />
         </div>
       )}
     </div>
@@ -1142,7 +1162,7 @@ ${code}` }]
             <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear output">↺ Clear Output</button>
+                <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear console">↺ Clear Console</button>
                 <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
                   {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
                 </button>
@@ -1231,12 +1251,18 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
   }
 
   const accentColor = "var(--accent)";
+  const inputRef = useRef(null);
+
+  function handleClear() {
+    setAnswer(""); setQuestion(""); setError("");
+    setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+  }
 
   return (
     <div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", minWidth: 0, position: "relative" }}>
-          <input value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+          <input ref={inputRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
             onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
             onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} aria-label="Ask a question" />
         </div>
@@ -1252,7 +1278,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: accentColor, marginBottom: "10px", letterSpacing: "0.1em" }}>◆ PROF. ABHISHEK SINGH</div>
             {answer}
           </div>
-          <OutputActions text={answer} filename="zeroapi-ask-author" onClear={() => { setAnswer(""); setQuestion(""); setError(""); }} />
+          <OutputActions text={answer} filename="zeroapi-ask-author" onClear={handleClear} />
         </div>
       )}
     </div>
