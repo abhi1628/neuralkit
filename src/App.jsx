@@ -957,8 +957,10 @@ const LANGUAGES = [
 ];
 
 // SQL.js CDN URLs (updated to 1.14.0)
-const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js";
-const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.wasm";
+const SQL_JS_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.js";
+const SQL_WASM_CDN = "https://unpkg.com/sql.js@1.10.3/dist/sql-wasm.wasm";
+//const SQL_JS_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js";
+//const SQL_WASM_CDN = "https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.wasm";
 
 function CodePlayground({ theme }) {
   const [lang, setLang] = useState(LANGUAGES[0]);
