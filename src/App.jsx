@@ -1358,29 +1358,29 @@ function CodePlayground({ theme }) {
 />
 </div>
         {(output || error) && (
-          <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
-            <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
-              <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
-                {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
-              </button>
-            </div>
-            <pre style={{ 
-  margin: 0, 
-  padding: "16px 20px", 
-  fontFamily: "'Space Mono', monospace", 
-  fontSize: "0.82rem", 
-  color: runError ? "#ff6b6b" : "rgba(255,255,255,0.85)",
-  lineHeight: 1.7, 
-  background: "#0d1117", 
-  whiteSpace: "pre-wrap", 
-  wordBreak: "break-word" 
-}}>
-  {output}
-</pre>
-          </div>
-        )}
-      </div>
+  <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+    <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
+      <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }}>
+        {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
+      </button>
+    </div>
+    <pre style={{ 
+      margin: 0, 
+      padding: "16px 20px", 
+      fontFamily: "'Space Mono', monospace", 
+      fontSize: "0.82rem", 
+      color: runError ? "#ff6b6b" : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.8)"),
+      lineHeight: 1.7, 
+      background: theme === 'dark' ? "#0d1117" : "#f5f5f5", 
+      whiteSpace: "pre-wrap", 
+      wordBreak: "break-word" 
+    }}>
+      {output}
+    </pre>
+  </div>
+)}
+
       {explanation && (
         <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.03)", border: `1px solid ${accentColor}1F`, borderRadius: "16px", padding: "24px 28px" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "20px", paddingBottom: "12px", borderBottom: `1px solid ${accentColor}1A` }}>🧠 AI Explanation</div>
