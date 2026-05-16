@@ -1020,8 +1020,10 @@ function CodePlayground({ theme }) {
 
   // ── FIXED SQL Initialization ──────────────────────────────
   async function initSqlJs() {
-  if (sqlLoaded.current && sqlModule.current) return sqlModule.current;
-
+  if (sqlLoaded.current && sqlModule.current){
+    setSqlReady(true);
+    return sqlModule.current;
+  }
   try {
     // Load the main script
     await loadScript(SQL_JS_CDN);
