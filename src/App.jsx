@@ -979,6 +979,15 @@ function CodePlayground({ theme }) {
   const sqlModule = useRef(null);
   const codeAreaRef = useRef(null);
 
+  useEffect(() => {
+  if (lang.value === "sqlite3" && !sqlReady && !sqlLoaded.current) {
+    initSqlJs().catch(err => {
+      console.error("SQL preload failed:", err);
+      setSqlError("Failed to load SQL engine. Please refresh or try again.");
+    });
+  }
+}, [lang, sqlReady]);
+  
   function switchLang(l) {
     setLang(l); setCode(l.starter); setOutput(""); setExplanation(""); setError(""); setSqlError("");
     if (l.value === "sqlite3") { sqlDb.current = null; setSqlReady(false); }
