@@ -346,7 +346,7 @@ function countWords(text) {
 function formatOutput(text, theme) {
   return text.split("\n").map((line, i) => {
     const isBold = line.startsWith("**") || line.match(/^[🎯🔍💡⚠️📌✅❌🚀📈1-9]/);
-    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+    const accentColor = "var(--accent)";
     return (
       <div key={i} style={{ 
         marginBottom: line === "" ? "14px" : "6px", 
@@ -613,7 +613,7 @@ function TriviaSection({ theme }) {
   }
 
   const isCorrect = selected && trivia && !trivia.error && selected.startsWith(trivia.answer);
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <section className="trivia-section" style={{ borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)'}`, padding: "60px 32px", background: theme === 'dark' ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.02)" }}>
@@ -652,16 +652,47 @@ function TriviaSection({ theme }) {
   );
 }
 
-function OutputActions({ text, filename }) {
+function OutputActions({ text, filename, theme }) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   return (
     <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-      <button onClick={() => copyToClipboard(text, setCopied)} style={{ display: "flex", alignItems: "center", gap: "6px", background: copied ? "rgba(0,255,224,0.12)" : "rgba(255,255,255,0.06)", border: `1px solid ${copied ? "rgba(0,255,224,0.3)" : "rgba(255,255,255,0.1)"}`, borderRadius: "8px", padding: "8px 16px", color: copied ? "#00ffe0" : "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer", transition: "all 0.2s" }}>{copied ? "Copied!" : "Copy"}</button>
-      <button onClick={async () => { setDownloading(true); await downloadAsPDF(text, filename); setDownloading(false); }} style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 16px", color: "rgba(255,255,255,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer", transition: "all 0.2s" }}>{downloading ? "Generating..." : "Download PDF"}</button>
+      <button onClick={() => copyToClipboard(text, setCopied)} style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: "6px", 
+        background: copied ? "var(--accent-light)" : "var(--bg-elevated)", 
+        border: `1px solid ${copied ? "var(--accent)" : "var(--border-medium)"}`, 
+        borderRadius: "8px", 
+        padding: "8px 16px", 
+        color: copied ? "var(--accent)" : "var(--text-secondary)", 
+        fontFamily: "'Space Mono', monospace", 
+        fontSize: "0.72rem", 
+        cursor: "pointer", 
+        transition: "all 0.2s" 
+      }}>
+        {copied ? "Copied!" : "Copy"}
+      </button>
+      <button onClick={async () => { setDownloading(true); await downloadAsPDF(text, filename); setDownloading(false); }} style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: "6px", 
+        background: "var(--bg-elevated)", 
+        border: "1px solid var(--border-medium)", 
+        borderRadius: "8px", 
+        padding: "8px 16px", 
+        color: "var(--text-secondary)", 
+        fontFamily: "'Space Mono', monospace", 
+        fontSize: "0.72rem", 
+        cursor: "pointer", 
+        transition: "all 0.2s" 
+      }}>
+        {downloading ? "Generating..." : "Download PDF"}
+      </button>
     </div>
   );
 }
+
 
 function ToolPanel({ tool, theme }) {
   const [input, setInput] = useState("");
@@ -697,7 +728,7 @@ function ToolPanel({ tool, theme }) {
   }
 
   const exampleKey = tool.id === "codeExplainer" ? "codeExplainer" : tool.id;
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -775,7 +806,7 @@ function MCQPanel({ tool, theme }) {
 
   function formatMCQ(text) {
     const blocks = text.split(/\n(?=Q\d+\.\s)/).filter(b => b.trim());
-    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+    const accentColor = "var(--accent)";
     return blocks.map((block, i) => {
       const lines = block.trim().split("\n").filter(l => l.trim());
       const qLine = lines[0] || "";
@@ -797,7 +828,7 @@ function MCQPanel({ tool, theme }) {
     });
   }
 
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -1008,7 +1039,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     setLoading(false);
   }
 
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -1047,17 +1078,52 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
 
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
   return (
-    <button onClick={onClick} style={{ background: active ? "linear-gradient(135deg, #00ffe0 0%, #0af 100%)" : (theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)"), border: active ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "16px", padding: fullWidth ? "18px 24px" : "24px", cursor: "pointer", textAlign: "left", transition: "all 0.3s ease", transform: active ? "scale(1.01)" : "scale(1)", boxShadow: active ? `0 0 40px ${accentColor}40` : "none", flex: fullWidth ? "none" : 1, width: fullWidth ? "100%" : "auto", display: "flex", alignItems: fullWidth ? "center" : "flex-start", gap: fullWidth ? "16px" : "0", flexDirection: fullWidth ? "row" : "column" }}>
+    <button 
+      onClick={onClick} 
+      className={active ? "" : "tool-card-inactive"}
+      style={{ 
+        background: active ? "linear-gradient(135deg, var(--accent), #00aaff)" : "var(--bg-secondary)", 
+        border: active ? "none" : "1px solid var(--border-medium)", 
+        borderRadius: "16px", 
+        padding: fullWidth ? "18px 24px" : "24px", 
+        cursor: "pointer", 
+        textAlign: "left", 
+        transition: "all 0.3s ease", 
+        transform: active ? "scale(1.01)" : "scale(1)", 
+        boxShadow: active ? "0 0 40px var(--accent-glow)" : "none", 
+        flex: fullWidth ? "none" : 1, 
+        width: fullWidth ? "100%" : "auto", 
+        display: "flex", 
+        alignItems: fullWidth ? "center" : "flex-start", 
+        gap: fullWidth ? "16px" : "0", 
+        flexDirection: fullWidth ? "row" : "column" 
+      }}
+    >
       <div style={{ fontSize: "2rem", marginBottom: fullWidth ? 0 : "10px" }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.95rem", fontWeight: 700, color: active ? "#000" : (theme === 'dark' ? "#fff" : "#1a1a1a"), marginBottom: "6px", letterSpacing: "-0.02em" }}>{name}</div>
-        <div style={{ fontSize: "0.78rem", color: active ? "rgba(0,0,0,0.65)" : (theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"), lineHeight: 1.5 }}>{tagline}</div>
+        <div style={{ 
+          fontFamily: "'Space Mono', monospace", 
+          fontSize: "0.95rem", 
+          fontWeight: 700, 
+          color: active ? "var(--text-inverse)" : "var(--text-primary)", 
+          marginBottom: "6px", 
+          letterSpacing: "-0.02em" 
+        }}>
+          {name}
+        </div>
+        <div style={{ 
+          fontSize: "0.78rem", 
+          color: active ? "rgba(0,0,0,0.65)" : "var(--text-secondary)", 
+          lineHeight: 1.5 
+        }}>
+          {tagline}
+        </div>
       </div>
     </button>
   );
 }
+
 
 const LANG_MAP = {
   python: "python-3.14",
@@ -1202,7 +1268,7 @@ function CodePlayground({ theme }) {
   }
 
   function formatExplanation(text) {
-    const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+    const accentColor = "var(--accent)";
     return text.split("\n").map((line, i) => {
       const isBold = line.startsWith("**") || line.match(/^[1-9]\./);
       return <div key={i} style={{ marginBottom: line === "" ? "12px" : "5px", fontWeight: isBold ? 700 : 400, color: isBold ? accentColor : (theme === 'dark' ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)"), fontSize: "0.88rem", lineHeight: 1.8, paddingLeft: isBold ? 0 : "4px", textAlign: "left" }}>{line.replace(/\*\*/g, "")}</div>;
@@ -1225,7 +1291,7 @@ function CodePlayground({ theme }) {
 
   function handleCodeScroll(e) { setScrollTop(e.target.scrollTop); }
 
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
@@ -1260,8 +1326,8 @@ function CodePlayground({ theme }) {
                 🔄 Reset DB
               </button>
             )}
-            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
-            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
+            <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
+            <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); if (lang.value === "sqlite3") sqlDb.current = null; }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
             <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
               {running ? <><span style={{ display: "inline-block", width: "10px", height: "10px", border: "2px solid rgba(255,255,255,0.2)", borderTop: "2px solid #00ffe0", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Running...</> : "▶ Run"}
             </button>
@@ -1269,9 +1335,28 @@ function CodePlayground({ theme }) {
         </div>
         <div style={{ position: "relative" }}>
           <LineNumbers code={code} scrollTop={scrollTop} theme={theme} />
-          <textarea ref={codeAreaRef} value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={handleCodeScroll} spellCheck={false}
-            style={{ width: "100%", minHeight: "280px", background: "#0d1117", border: "none", padding: "20px 20px 20px 60px", color: "#e6edf3", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", lineHeight: 1.8, resize: "vertical", outline: "none", boxSizing: "border-box" }} />
-        </div>
+          <<textarea 
+  ref={codeAreaRef} 
+  value={code} 
+  onChange={(e) => setCode(e.target.value)} 
+  onKeyDown={handleCodeKeyDown} 
+  onScroll={handleCodeScroll} 
+  spellCheck={false}
+  className="code-editor"
+  style={{ 
+    width: "100%", 
+    minHeight: "280px", 
+    border: "none", 
+    padding: "20px 20px 20px 60px", 
+    fontFamily: "'Space Mono', monospace", 
+    fontSize: "0.85rem", 
+    lineHeight: 1.8, 
+    resize: "vertical", 
+    outline: "none", 
+    boxSizing: "border-box" 
+  }} 
+/>
+</div>
         {(output || error) && (
           <div style={{ borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1367,7 +1452,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
     setLoading(false);
   }
 
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <div>
@@ -1452,7 +1537,7 @@ function UserFeedback({ theme }) {
   }
 
   const stars = [1, 2, 3, 4, 5];
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   return (
     <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
@@ -1463,7 +1548,7 @@ function UserFeedback({ theme }) {
         {!submitted ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-              <span style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", marginRight: "8px" }}>Rate us:</span>
+              <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginRight: "8px" }}>Rate us:</span>
               {stars.map(s => (
                 <button key={s} onClick={() => setRating(s)} onMouseEnter={() => setHoverRating(s)} onMouseLeave={() => setHoverRating(0)}
                   style={{ background: "none", border: "none", fontSize: "1.4rem", cursor: "pointer", padding: "0 2px", transition: "transform 0.2s", transform: (hoverRating || rating) >= s ? "scale(1.2)" : "scale(1)" }}>
@@ -1612,7 +1697,7 @@ function AppInner() {
   }
 
   const activeInfo = getActiveInfo();
-  const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
+  const accentColor = "var(--accent)";
 
   const Modal = ({ title, content, onClose }) => (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={onClose}>
@@ -1624,52 +1709,148 @@ function AppInner() {
     </div>
   );
 
-  return (
+    return (
     <div style={{ 
       minHeight: "100vh", 
-      background: theme === 'dark' ? "#060a0f" : "#f0f2f5", 
-      color: theme === 'dark' ? "#fff" : "#1a1a1a", 
+      background: "var(--bg-primary)", 
+      color: "var(--text-primary)", 
       fontFamily: "'DM Sans', sans-serif", 
       overflowX: "hidden" 
     }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; min-height: 100vh; background: ${theme === 'dark' ? '#060a0f' : '#f5f5f5'}; overflow-x: hidden; }
-        #root { width: 100%; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes float { 0% { transform: translateY(0px) scale(1); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.4; } 100% { transform: translateY(-120vh) scale(0.5); opacity: 0; } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        .hero-title { animation: fadeUp 0.9s ease forwards; }
-        .hero-sub { animation: fadeUp 0.9s ease 0.2s both; }
-        .hero-cta { animation: fadeUp 0.9s ease 0.4s both; }
-        .tools-section { animation: fadeUp 0.9s ease 0.15s both; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: ${theme === 'dark' ? '#060a0f' : '#e0e0e0'}; }
-        ::-webkit-scrollbar-thumb { background: ${accentColor}4D; border-radius: 3px; }
-        @media (max-width: 768px) {
-          .nav-links { display: none !important; }
-          .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
-          .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
-          .hero-stats { gap: 30px !important; }
-          .tools-section { padding: 60px 20px 80px !important; }
-          .tool-row { flex-direction: column !important; }
-          .tool-panel { padding: 24px !important; }
-          .mcq-grid { grid-template-columns: 1fr !important; }
-          .trivia-grid { grid-template-columns: 1fr !important; }
-          .trivia-section { padding: 40px 20px !important; }
-          #playground { padding: 60px 20px !important; }
-          .about-section { padding: 60px 20px !important; }
-          .about-buttons { flex-direction: column !important; align-items: center !important; }
-          .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
-          nav { padding: 14px 20px !important; }
-          .nav-try-btn { display: block !important; }
-          footer { padding: 28px 20px !important; }
-          .hero-stats { gap: 20px !important; }
-        }
-      `}</style>
 
+      <style>{`
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+  
+  :root {
+    /* ── Backgrounds ── */
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f0f0f0;
+    --bg-elevated: #ffffff;
+    --bg-code: #1e1e2e;
+    
+    /* ── Text ── */
+    --text-primary: #1a1a2e;
+    --text-secondary: #4a4a5e;
+    --text-muted: #7a7a8e;
+    --text-inverse: #ffffff;
+    
+    /* ── Accent (vibrant teal that passes WCAG AA on both bg) ── */
+    --accent: #00897b;
+    --accent-light: #e0f2f1;
+    --accent-glow: rgba(0, 137, 123, 0.15);
+    
+    /* ── Borders ── */
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-medium: rgba(0, 0, 0, 0.15);
+    --border-strong: rgba(0, 0, 0, 0.25);
+    
+    /* ── Semantic ── */
+    --error: #d32f2f;
+    --error-bg: rgba(211, 47, 47, 0.08);
+    --warning: #f9a825;
+    --success: #2e7d32;
+  }
+
+  [data-theme="dark"] {
+    --bg-primary: #060a0f;
+    --bg-secondary: rgba(255,255,255,0.04);
+    --bg-tertiary: rgba(255,255,255,0.03);
+    --bg-elevated: rgba(255,255,255,0.06);
+    --bg-code: #0d1117;
+    
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255,255,255,0.7);
+    --text-muted: rgba(255,255,255,0.5);
+    --text-inverse: #1a1a2e;
+    
+    --accent: #00ffe0;
+    --accent-light: rgba(0,255,224,0.08);
+    --accent-glow: rgba(0,255,224,0.15);
+    
+    --border-subtle: rgba(255,255,255,0.08);
+    --border-medium: rgba(255,255,255,0.12);
+    --border-strong: rgba(255,255,255,0.2);
+    
+    --error: #ff6b6b;
+    --error-bg: rgba(255,80,80,0.1);
+    --warning: #febc2e;
+    --success: #00ffe0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body { 
+    width: 100%; 
+    min-height: 100vh; 
+    background: var(--bg-primary); 
+    color: var(--text-primary);
+    overflow-x: hidden; 
+  }
+  
+  #root { width: 100%; }
+  
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes float { 
+    0% { transform: translateY(0px) scale(1); opacity: 0; } 
+    10% { opacity: 1; } 
+    90% { opacity: 0.4; } 
+    100% { transform: translateY(-120vh) scale(0.5); opacity: 0; } 
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  
+  .hero-title { animation: fadeUp 0.9s ease forwards; }
+  .hero-sub { animation: fadeUp 0.9s ease 0.2s both; }
+  .hero-cta { animation: fadeUp 0.9s ease 0.4s both; }
+  .tools-section { animation: fadeUp 0.9s ease 0.15s both; }
+  
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); opacity: 0.3; border-radius: 3px; }
+
+  /* ── Light mode specific fixes ── */
+  [data-theme="light"] .tool-card-inactive {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-medium) !important;
+  }
+  
+  [data-theme="light"] .tool-card-inactive:hover {
+    border-color: var(--accent) !important;
+    background: var(--bg-elevated) !important;
+  }
+
+  [data-theme="light"] .output-panel {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-medium) !important;
+  }
+
+  [data-theme="light"] .code-editor {
+    background: var(--bg-code) !important;
+    color: #e6edf3 !important;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none !important; }
+    .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
+    .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
+    .hero-stats { gap: 30px !important; }
+    .tools-section { padding: 60px 20px 80px !important; }
+    .tool-row { flex-direction: column !important; }
+    .tool-panel { padding: 24px !important; }
+    .mcq-grid { grid-template-columns: 1fr !important; }
+    .trivia-grid { grid-template-columns: 1fr !important; }
+    .trivia-section { padding: 40px 20px !important; }
+    #playground { padding: 60px 20px !important; }
+    .about-section { padding: 60px 20px !important; }
+    .about-buttons { flex-direction: column !important; align-items: center !important; }
+    .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
+    nav { padding: 14px 20px !important; }
+    .nav-try-btn { display: block !important; }
+    footer { padding: 28px 20px !important; }
+    .hero-stats { gap: 20px !important; }
+  }
+`}</style>
       {privacyOpen && <Modal title="Privacy Policy" content="ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required." onClose={() => setPrivacyOpen(false)} />}
       {termsOpen && <Modal title="Terms of Use" content="ZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time." onClose={() => setTermsOpen(false)} />}
 
@@ -1743,7 +1924,7 @@ function AppInner() {
           <span>Starts Here</span>
         </h1>
 
-        <p className="hero-sub" style={{ fontSize: "1.15rem", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
+        <p className="hero-sub" style={{ fontSize: "1.15rem", color: "var(--text-secondary)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
           Free, browser-based AI tools for developers, researchers, and engineers. Zero API key. Zero signup. Zero cost. Just intelligence at your fingertips.
         </p>
 
