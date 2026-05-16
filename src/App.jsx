@@ -835,23 +835,115 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [charCount, setCharCount] = useState(0);
   const fileRef = useRef(null);
 
+  // ── Enhanced Document Detection ─────────────────────────────
+  
   function isResearchPaper(text) {
-    const paperKeywords = ["abstract", "introduction", "related work", "methodology", "experimental setup", "results", "discussion", "conclusion", "references", "bibliography", "acknowledgements", "appendix", "doi", "arxiv", "fig", "table", "equation", "algorithm"];
     const lowerText = text.toLowerCase();
-    let paperScore = 0;
-    for (let kw of paperKeywords) if (lowerText.includes(kw)) paperScore++;
-    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work"];
+    
+    // Strong academic indicators (high confidence)
+    const strongAcademic = [
+      "abstract", "introduction", "literature review", "related work",
+      "methodology", "experimental setup", "results and discussion",
+      "conclusion", "references", "bibliography", "acknowledgements",
+      "appendix", "doi", "arxiv", "issn", "isbn", "keywords:",
+      "figure", "table", "equation", "algorithm", "theorem", "proof",
+      "hypothesis", "dataset", "accuracy", "precision", "recall", "f1-score",
+      "neural network", "deep learning", "proposed method", "baseline",
+      "state-of-the-art", "sota", "benchmark", "ablation study",
+      "et al.", "vol.", "no.", "pp.", "ieee", "acm", "springer",
+      "university", "institute of technology", "department of",
+      "submitted in partial fulfillment", "a thesis", "dissertation",
+      "supervised by", "guided by", "declaration", "certificate",
+      "list of figures", "list of tables", "table of contents",
+      "chapter", "review of literature", "research gap", "objective of study"
+    ];
+    
+    // Resume-specific indicators
+    const resumeIndicators = [
+      "work experience", "employment history", "professional experience",
+      "career objective", "personal details", "date of birth", "phone:",
+      "email:", "linkedin", "github", "portfolio", "hobbies", "languages",
+      "soft skills", "hard skills", "technical skills", "certifications",
+      "projects", "internship", "fresher", "years of experience",
+      "current company", "previous company", "designation", "role:",
+      "responsibilities", "achievements", "curriculum vitae", "cv"
+    ];
+    
+    let academicScore = 0;
     let resumeScore = 0;
-    for (let kw of resumeKeywords) if (lowerText.includes(kw)) resumeScore++;
-    return (paperScore >= 3 && resumeScore <= 1);
+    
+    for (let kw of strongAcademic) {
+      if (lowerText.includes(kw)) academicScore++;
+    }
+    
+    for (let kw of resumeIndicators) {
+      if (lowerText.includes(kw)) resumeScore++;
+    }
+    
+    // If strong academic indicators >= 5, it's likely a paper/thesis
+    const isAcademic = academicScore >= 5;
+    const isResume = resumeScore >= 3;
+    
+    // If both detected, use ratio to decide
+    if (isAcademic && isResume) {
+      return academicScore > resumeScore;
+    }
+    
+    return isAcademic;
   }
 
   function isResumeLike(text) {
-    const resumeKeywords = ["experience", "education", "skills", "summary", "contact", "employment", "work", "profile", "certifications"];
     const lowerText = text.toLowerCase();
-    let score = 0;
-    for (let kw of resumeKeywords) if (lowerText.includes(kw)) score++;
-    return score >= 2;
+    
+    // Core resume sections - must have at least 2 of these
+    const coreSections = [
+      "experience", "education", "skills", "contact", "projects"
+    ];
+    
+    // Supporting resume indicators
+    const supporting = [
+      "summary", "profile", "objective", "certifications", 
+      "languages", "interests", "references", "achievements",
+      "phone", "email", "address", "linkedin", "github"
+    ];
+    
+    // Anti-indicators (strong signs it's NOT a resume)
+    const antiIndicators = [
+      "abstract", "introduction", "methodology", "literature review",
+      "related work", "experimental results", "discussion", "conclusion",
+      "references", "bibliography", "figure", "table", "equation",
+      "theorem", "proof", "hypothesis", "dataset", "et al", "doi:",
+      "university", "institute", "department of", "supervised by",
+      "submitted in partial fulfillment", "a thesis", "dissertation",
+      "declaration", "certificate", "acknowledgement", "chapter",
+      "research gap", "objective of study", "scope of work"
+    ];
+    
+    let coreScore = 0;
+    let supportScore = 0;
+    let antiScore = 0;
+    
+    for (let kw of coreSections) {
+      if (lowerText.includes(kw)) coreScore++;
+    }
+    
+    for (let kw of supporting) {
+      if (lowerText.includes(kw)) supportScore++;
+    }
+    
+    for (let kw of antiIndicators) {
+      if (lowerText.includes(kw)) antiScore++;
+    }
+    
+    // Must have at least 2 core sections
+    if (coreScore < 2) return false;
+    
+    // If strong academic indicators present, likely not a resume
+    if (antiScore >= 4) return false;
+    
+    // Resume score should outweigh academic score
+    const resumeScore = coreScore + (supportScore * 0.5);
+    return resumeScore >= 2.5 && antiScore < 4;
   }
 
   async function handleFile(e) {
@@ -885,16 +977,21 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
 
   async function analyze() {
     if (!extractedText) return;
+    
     if (label === "Analyze Resume") {
+      // Check for research paper/thesis FIRST
       if (isResearchPaper(extractedText)) {
-        setError("❌ This appears to be a research paper or academic document, not a resume. Please upload a CV or resume file.");
+        setError("❌ This appears to be an academic document (research paper, thesis, or dissertation). Please upload a CV or resume file.");
         return;
       }
+      
+      // Then check if it's actually a resume
       if (!isResumeLike(extractedText)) {
-        setError("❌ The uploaded file doesn't look like a resume. Please make sure it contains sections like 'Experience', 'Education', 'Skills', etc.");
+        setError("❌ The uploaded file doesn't appear to be a resume. A valid resume should include sections like 'Experience', 'Education', 'Skills', and 'Contact Information'. Please upload a proper CV or resume.");
         return;
       }
     }
+    
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
     try {
@@ -947,6 +1044,7 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
     </div>
   );
 }
+
 
 function ToolCard({ icon, name, tagline, active, onClick, fullWidth, theme }) {
   const accentColor = theme === 'dark' ? "#00ffe0" : "#008080";
