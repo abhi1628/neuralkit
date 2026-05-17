@@ -2079,6 +2079,633 @@ function Modal({ title, content, onClose }) {
   );
 }
 
+// ── Dev Tools ─────────────────────────────────────────────────
+const DEV_TOOLS = [
+  { id: "schema",    icon: "🗄️", name: "Schema Visualizer",  tagline: "Paste SQL → instant ER diagram with relationships" },
+  { id: "csv",       icon: "📊", name: "CSV Visualizer",      tagline: "Paste or upload CSV → interactive bar, line & pie charts" },
+  { id: "interview", icon: "🎤", name: "Mock Interview",      tagline: "Pick a role → AI questions → scored report card" },
+];
+
+// ── Schema Visualizer ─────────────────────────────────────────
+function SchemaVisualizer({ theme }) {
+  const [sql, setSql] = useState("");
+  const [tables, setTables] = useState([]);
+  const [error, setError] = useState("");
+  const svgRef = useRef(null);
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
+
+  const EXAMPLE_SQL = `CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE courses (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(200) NOT NULL,
+  instructor_id INT NOT NULL,
+  FOREIGN KEY (instructor_id) REFERENCES users(id)
+);
+
+CREATE TABLE enrollments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  course_id INT NOT NULL,
+  enrolled_at TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);`;
+
+  function parseSql(input) {
+    setError("");
+    const parsed = [];
+    const fkLinks = [];
+    const tableRe = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"]?(\w+)[`"]?\s*\(([^;]+)\)/gi;
+    let tm;
+    while ((tm = tableRe.exec(input)) !== null) {
+      const tName = tm[1];
+      const body = tm[2];
+      const cols = [];
+      const lines = body.split(/,(?![^()]*\))/);
+      lines.forEach(line => {
+        line = line.trim();
+        const fkRe = /FOREIGN\s+KEY\s*\(\s*[`"]?(\w+)[`"]?\s*\)\s*REFERENCES\s+[`"]?(\w+)[`"]?\s*\(\s*[`"]?(\w+)[`"]?\s*\)/i;
+        const fkM = fkRe.exec(line);
+        if (fkM) { fkLinks.push({ from: tName, fromCol: fkM[1], to: fkM[2], toCol: fkM[3] }); return; }
+        if (/^\s*(PRIMARY\s+KEY|UNIQUE|INDEX|KEY|CHECK|CONSTRAINT)\s*\(/i.test(line)) return;
+        const colRe = /[`"]?(\w+)[`"]?\s+(\w+(?:\s*\([^)]*\))?)\s*(.*)/i;
+        const cm = colRe.exec(line);
+        if (cm) {
+          const rest = cm[3].toUpperCase();
+          cols.push({ name: cm[1], type: cm[2].toUpperCase(), pk: rest.includes("PRIMARY KEY") || rest.includes("PRIMARY"), fk: false, notNull: rest.includes("NOT NULL"), unique: rest.includes("UNIQUE") });
+        }
+      });
+      parsed.push({ name: tName, cols });
+    }
+    if (!parsed.length) { setError("No valid CREATE TABLE statements found. Check your SQL syntax."); return; }
+    fkLinks.forEach(fk => {
+      const t = parsed.find(t => t.name === fk.from);
+      if (t) { const c = t.cols.find(c => c.name === fk.fromCol); if (c) c.fk = { to: fk.to, toCol: fk.toCol }; }
+    });
+    setTables(parsed.map((t, i) => ({ ...t, x: 30 + (i % 3) * 280, y: 30 + Math.floor(i / 3) * 240 })));
+  }
+
+  const COL_H = 28, HEADER_H = 40, PAD = 14, MIN_W = 200;
+  function tableH(t) { return HEADER_H + t.cols.length * COL_H + PAD; }
+  function tableW() { return MIN_W + 60; }
+
+  const links = useMemo(() => {
+    const ls = [];
+    tables.forEach(t => {
+      t.cols.forEach(c => {
+        if (c.fk) {
+          const target = tables.find(x => x.name === c.fk.to);
+          if (target) {
+            const x1 = t.x + tableW(); const y1 = t.y + HEADER_H + t.cols.indexOf(c) * COL_H + COL_H / 2;
+            const x2 = target.x; const y2 = target.y + HEADER_H / 2;
+            ls.push({ x1, y1, x2, y2, label: `${t.name}.${c.name} → ${target.name}.${c.fk.toCol}` });
+          }
+        }
+      });
+    });
+    return ls;
+  }, [tables]);
+
+  const svgW = tables.length ? Math.max(...tables.map(t => t.x + tableW() + 60)) : 600;
+  const svgH = tables.length ? Math.max(...tables.map(t => t.y + tableH(t) + 60)) : 300;
+
+  function downloadSvg() {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const data = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([data], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "schema-diagram.svg";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  async function downloadPng() {
+    const svg = svgRef.current; if (!svg) return;
+    const data = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas"); canvas.width = svgW * 2; canvas.height = svgH * 2;
+      const ctx = canvas.getContext("2d"); ctx.scale(2, 2); ctx.drawImage(img, 0, 0);
+      const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = "schema-diagram.png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    };
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(data)));
+  }
+
+  const bg = isDark ? "#0d1117" : "#f8fafc";
+  const tableBg = isDark ? "#161b22" : "#ffffff";
+  const headerBg = isDark ? "#1f2937" : "#f0fdfa";
+  const border = isDark ? "#30363d" : "#d1fae5";
+  const text = isDark ? "#e6edf3" : "#1a1a2e";
+  const muted = isDark ? "#8b949e" : "#6b7280";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.1em", marginBottom: "8px" }}>PASTE SQL (MySQL · PostgreSQL · SQLite)</div>
+        <textarea value={sql} onChange={e => setSql(e.target.value)} rows={10} placeholder={EXAMPLE_SQL} className="tool-textarea" style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.78rem" }} />
+      </div>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <button onClick={() => parseSql(sql)} className="run-btn" style={{ flex: "0 0 auto", padding: "10px 24px" }}>⚡ Generate Diagram</button>
+        <button onClick={() => { setSql(EXAMPLE_SQL); setTables([]); setError(""); }} className="action-btn">Try Example</button>
+        {tables.length > 0 && <><button onClick={() => { setTables([]); setSql(""); setError(""); }} className="action-btn" style={{ color: ac, borderColor: ac }}>↺ Clear</button><button onClick={downloadSvg} className="action-btn">⬇ SVG</button><button onClick={downloadPng} className="action-btn">⬇ PNG</button></>}
+      </div>
+      {error && <div className="error-box">⚠ {error}</div>}
+      {tables.length > 0 && (
+        <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: "14px", overflow: "auto", padding: "8px" }}>
+          <svg ref={svgRef} width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ display: "block", minWidth: svgW }}>
+            <rect width={svgW} height={svgH} fill={bg} />
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill={ac} /></marker></defs>
+            {links.map((l, i) => {
+              const mx = (l.x1 + l.x2) / 2;
+              return <g key={i}><path d={`M${l.x1},${l.y1} C${mx},${l.y1} ${mx},${l.y2} ${l.x2},${l.y2}`} fill="none" stroke={ac} strokeWidth="1.5" strokeDasharray="6,3" markerEnd="url(#arrow)" opacity="0.7" /><text x={mx} y={(l.y1 + l.y2) / 2 - 5} fill={muted} fontSize="9" fontFamily="monospace" textAnchor="middle">{l.label}</text></g>;
+            })}
+            {tables.map(t => {
+              const tw = tableW(); const th = tableH(t);
+              return (
+                <g key={t.name} transform={`translate(${t.x},${t.y})`}>
+                  <rect width={tw} height={th} rx="8" fill={tableBg} stroke={ac} strokeWidth="1.5" />
+                  <rect width={tw} height={HEADER_H} rx="8" fill={headerBg} stroke={ac} strokeWidth="1.5" />
+                  <rect y={HEADER_H - 8} width={tw} height={8} fill={headerBg} />
+                  <text x={tw / 2} y={HEADER_H / 2 + 5} textAnchor="middle" fill={ac} fontSize="13" fontFamily="monospace" fontWeight="bold">{t.name}</text>
+                  {t.cols.map((c, ci) => {
+                    const cy = HEADER_H + ci * COL_H;
+                    const badge = c.pk ? "PK" : c.fk ? "FK" : null;
+                    const badgeColor = c.pk ? "#f59e0b" : "#a78bfa";
+                    return (
+                      <g key={c.name}>
+                        <rect x={0} y={cy} width={tw} height={COL_H} fill={ci % 2 === 0 ? "transparent" : (isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)")} />
+                        <line x1={0} y1={cy} x2={tw} y2={cy} stroke={border} strokeWidth="0.5" />
+                        {badge && <><rect x={8} y={cy + 7} width={22} height={13} rx="3" fill={badgeColor} opacity="0.2" /><text x={19} y={cy + 18} textAnchor="middle" fill={badgeColor} fontSize="8" fontFamily="monospace" fontWeight="bold">{badge}</text></>}
+                        <text x={badge ? 36 : 12} y={cy + 18} fill={text} fontSize="11" fontFamily="monospace">{c.name}</text>
+                        <text x={tw - 8} y={cy + 18} textAnchor="end" fill={muted} fontSize="10" fontFamily="monospace">{c.type}</text>
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      )}
+      {tables.length > 0 && (
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {tables.map(t => <span key={t.name} style={{ background: isDark ? "rgba(0,255,224,0.08)" : "rgba(0,137,123,0.08)", border: `1px solid ${ac}33`, borderRadius: "100px", padding: "3px 12px", fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: ac }}>{t.name} ({t.cols.length} cols)</span>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── CSV Visualizer ────────────────────────────────────────────
+function CsvVisualizer({ theme }) {
+  const [csv, setCsv] = useState("");
+  const [headers, setHeaders] = useState([]);
+  const [rows, setRows] = useState([]);
+  const [chartType, setChartType] = useState("bar");
+  const [xCol, setXCol] = useState(0);
+  const [yCols, setYCols] = useState([1]);
+  const [error, setError] = useState("");
+  const [parsed, setParsed] = useState(false);
+  const canvasRef = useRef(null);
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
+
+  const EXAMPLE_CSV = `Month,Sales,Expenses,Profit
+Jan,52000,31000,21000
+Feb,61000,28000,33000
+Mar,58000,35000,23000
+Apr,74000,32000,42000
+May,69000,29000,40000
+Jun,82000,38000,44000`;
+
+  const COLORS = ["#00ffe0","#0af","#a78bfa","#f59e0b","#f87171","#34d399","#fb923c","#60a5fa"];
+
+  function parseCsv(input) {
+    setError(""); setParsed(false);
+    const lines = input.trim().split("\n").filter(l => l.trim());
+    if (lines.length < 2) { setError("Need at least a header row and one data row."); return; }
+    const hdrs = lines[0].split(",").map(h => h.trim());
+    const data = lines.slice(1).map(l => l.split(",").map(v => v.trim()));
+    setHeaders(hdrs); setRows(data); setXCol(0); setYCols([1]); setParsed(true);
+  }
+
+  function toggleYCol(i) {
+    setYCols(prev => prev.includes(i) ? (prev.length > 1 ? prev.filter(x => x !== i) : prev) : [...prev, i]);
+  }
+
+  useEffect(() => {
+    if (!parsed || !canvasRef.current || !rows.length) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    const PAD = { top: 30, right: 30, bottom: 60, left: 70 };
+    const chartW = W - PAD.left - PAD.right;
+    const chartH = H - PAD.top - PAD.bottom;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = isDark ? "#0d1117" : "#f8fafc";
+    ctx.fillRect(0, 0, W, H);
+
+    const labels = rows.map(r => r[xCol] || "");
+    const datasets = yCols.map((ci, di) => ({
+      label: headers[ci], color: COLORS[di % COLORS.length],
+      data: rows.map(r => parseFloat(r[ci]) || 0)
+    }));
+    const allVals = datasets.flatMap(d => d.data);
+    const maxV = Math.max(...allVals) * 1.15 || 1;
+    const minV = Math.min(0, ...allVals);
+
+    // Grid
+    const steps = 5;
+    for (let i = 0; i <= steps; i++) {
+      const v = minV + (maxV - minV) * i / steps;
+      const y = PAD.top + chartH - (v - minV) / (maxV - minV) * chartH;
+      ctx.strokeStyle = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+      ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + chartW, y); ctx.stroke();
+      ctx.fillStyle = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)";
+      ctx.font = "11px monospace"; ctx.textAlign = "right";
+      ctx.fillText(v >= 1000 ? `${(v/1000).toFixed(0)}k` : v.toFixed(0), PAD.left - 8, y + 4);
+    }
+
+    if (chartType === "bar") {
+      const grpW = chartW / labels.length;
+      const barW = (grpW - 8) / datasets.length;
+      datasets.forEach((ds, di) => {
+        ds.data.forEach((v, li) => {
+          const x = PAD.left + li * grpW + di * barW + 4;
+          const barH = (v - minV) / (maxV - minV) * chartH;
+          const y = PAD.top + chartH - barH;
+          ctx.fillStyle = ds.color; ctx.globalAlpha = 0.85;
+          ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, barW - 2, barH, [3,3,0,0]) : ctx.rect(x, y, barW - 2, barH);
+          ctx.fill(); ctx.globalAlpha = 1;
+        });
+      });
+    } else if (chartType === "line") {
+      datasets.forEach(ds => {
+        ctx.strokeStyle = ds.color; ctx.lineWidth = 2.5; ctx.lineJoin = "round";
+        ctx.beginPath();
+        ds.data.forEach((v, i) => {
+          const x = PAD.left + (i + 0.5) * (chartW / ds.data.length);
+          const y = PAD.top + chartH - (v - minV) / (maxV - minV) * chartH;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        ds.data.forEach((v, i) => {
+          const x = PAD.left + (i + 0.5) * (chartW / ds.data.length);
+          const y = PAD.top + chartH - (v - minV) / (maxV - minV) * chartH;
+          ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fillStyle = ds.color; ctx.fill();
+        });
+      });
+    } else if (chartType === "pie") {
+      const ds = datasets[0]; const total = ds.data.reduce((a,b) => a+b, 0);
+      let start = -Math.PI / 2;
+      const cx = W / 2, cy = H / 2, r = Math.min(chartW, chartH) / 2.4;
+      ds.data.forEach((v, i) => {
+        const slice = (v / total) * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, start + slice);
+        ctx.closePath(); ctx.fillStyle = COLORS[i % COLORS.length]; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+        ctx.strokeStyle = isDark ? "#0d1117" : "#f8fafc"; ctx.lineWidth = 2; ctx.stroke();
+        const mid = start + slice / 2;
+        const pct = Math.round(v / total * 100);
+        if (pct > 4) { ctx.fillStyle = "#fff"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.fillText(`${pct}%`, cx + Math.cos(mid) * r * 0.65, cy + Math.sin(mid) * r * 0.65 + 4); }
+        start += slice;
+      });
+      ds.data.forEach((v, i) => {
+        const lx = PAD.left + (i % 4) * 120, ly = H - 20;
+        ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fillRect(lx, ly - 10, 12, 12);
+        ctx.fillStyle = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"; ctx.font = "10px monospace"; ctx.textAlign = "left"; ctx.fillText(labels[i], lx + 16, ly);
+      });
+    }
+
+    // X axis labels
+    if (chartType !== "pie") {
+      labels.forEach((l, i) => {
+        const x = chartType === "bar" ? PAD.left + (i + 0.5) * (chartW / labels.length) : PAD.left + (i + 0.5) * (chartW / labels.length);
+        ctx.fillStyle = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
+        ctx.font = "11px monospace"; ctx.textAlign = "center";
+        ctx.fillText(l.length > 10 ? l.slice(0,8)+"…" : l, x, PAD.top + chartH + 20);
+      });
+      // Legend
+      datasets.forEach((ds, i) => {
+        const lx = PAD.left + i * 120, ly = PAD.top + chartH + 44;
+        ctx.fillStyle = ds.color; ctx.fillRect(lx, ly - 10, 12, 12);
+        ctx.fillStyle = isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"; ctx.font = "10px monospace"; ctx.textAlign = "left"; ctx.fillText(ds.label, lx + 16, ly);
+      });
+    }
+  }, [parsed, rows, xCol, yCols, chartType, headers, isDark]);
+
+  function downloadChart() {
+    if (!canvasRef.current) return;
+    const a = document.createElement("a"); a.href = canvasRef.current.toDataURL("image/png"); a.download = "chart-zeroapi.png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.1em", marginBottom: "8px" }}>PASTE CSV DATA</div>
+        <textarea value={csv} onChange={e => setCsv(e.target.value)} rows={8} className="tool-textarea" style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.78rem" }} placeholder={EXAMPLE_CSV} />
+      </div>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <button onClick={() => parseCsv(csv)} className="run-btn" style={{ flex: "0 0 auto", padding: "10px 24px" }}>📊 Visualize</button>
+        <button onClick={() => { setCsv(EXAMPLE_CSV); setParsed(false); setError(""); }} className="action-btn">Try Example</button>
+        {parsed && <button onClick={() => { setCsv(""); setParsed(false); setHeaders([]); setRows([]); setError(""); }} className="action-btn" style={{ color: ac, borderColor: ac }}>↺ Clear</button>}
+      </div>
+      {error && <div className="error-box">⚠ {error}</div>}
+      {parsed && (
+        <>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
+            <div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>CHART TYPE</div>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {["bar","line","pie"].map(t => <button key={t} onClick={() => setChartType(t)} style={{ background: chartType === t ? ac : "transparent", border: `1px solid ${ac}`, borderRadius: "6px", padding: "6px 14px", color: chartType === t ? "#000" : ac, fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", cursor: "pointer", fontWeight: chartType === t ? 700 : 400 }}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>X AXIS</div>
+              <select value={xCol} onChange={e => setXCol(+e.target.value)} style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${ac}33`, borderRadius: "6px", padding: "6px 10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem" }}>
+                {headers.map((h,i) => <option key={i} value={i}>{h}</option>)}
+              </select>
+            </div>
+            {chartType !== "pie" && <div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>Y AXIS (multi-select)</div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {headers.map((h,i) => i !== xCol && <button key={i} onClick={() => toggleYCol(i)} style={{ background: yCols.includes(i) ? ac : "transparent", border: `1px solid ${ac}`, borderRadius: "6px", padding: "5px 12px", color: yCols.includes(i) ? "#000" : ac, fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", cursor: "pointer" }}>{h}</button>)}
+              </div>
+            </div>}
+          </div>
+          <div style={{ background: isDark ? "#0d1117" : "#f8fafc", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, borderRadius: "14px", overflow: "hidden", padding: "8px" }}>
+            <canvas ref={canvasRef} width={700} height={380} style={{ width: "100%", height: "auto", display: "block" }} />
+          </div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button onClick={downloadChart} className="action-btn">⬇ Download PNG</button>
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", display: "flex", alignItems: "center" }}>{rows.length} rows · {headers.length} columns</div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Mock Interview Simulator ──────────────────────────────────
+const INTERVIEW_ROLES = [
+  "Frontend Developer","Backend Developer","Full Stack Developer",
+  "Data Scientist","Machine Learning Engineer","DevOps Engineer",
+  "Product Manager","Android Developer","React Native Developer","Data Analyst"
+];
+const INTERVIEW_LEVELS = ["Junior (0–2 yrs)","Mid-level (2–5 yrs)","Senior (5+ yrs)"];
+
+function MockInterview({ theme }) {
+  const [step, setStep] = useState("setup");
+  const [role, setRole] = useState(INTERVIEW_ROLES[0]);
+  const [level, setLevel] = useState(INTERVIEW_LEVELS[0]);
+  const [qNum, setQNum] = useState(0);
+  const [questions, setQuestions] = useState([]);
+  const [answer, setAnswer] = useState("");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [timerActive, setTimerActive] = useState(false);
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
+  const timerRef = useRef(null);
+  const topRef = useRef(null);
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
+  const TOTAL_Q = 7;
+
+  useEffect(() => {
+    if (timerActive && timeLeft > 0) { timerRef.current = setInterval(() => setTimeLeft(t => t - 1), 1000); }
+    else if (timeLeft === 0) { clearInterval(timerRef.current); }
+    return () => clearInterval(timerRef.current);
+  }, [timerActive, timeLeft]);
+
+  useEffect(() => { topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [step]);
+
+  async function startInterview() {
+    setLoading(true); setError("");
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 800,
+          messages: [{ role: "system", content: `You are a technical interviewer. Generate exactly ${TOTAL_Q} interview questions for a ${level} ${role} position. Return ONLY a JSON array of strings — no numbering, no preamble, no markdown. Example: ["Question one?","Question two?"]` }, { role: "user", content: `Generate ${TOTAL_Q} varied interview questions covering technical knowledge, problem solving, and situational scenarios for ${level} ${role}.` }]
+        })
+      });
+      const data = await res.json();
+      const raw = data?.choices?.[0]?.message?.content || "[]";
+      const qs = JSON.parse(raw.replace(/```json|```/g, "").trim());
+      setQuestions(qs); setQNum(0); setResults([]); setAnswer("");
+      setTimeLeft(120); setTimerActive(true); setStep("interview");
+    } catch { setError("Failed to load questions. Please try again."); }
+    setLoading(false);
+  }
+
+  async function submitAnswer() {
+    if (!answer.trim()) return;
+    setTimerActive(false); clearInterval(timerRef.current);
+    setLoading(true);
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 500,
+          messages: [{ role: "system", content: `You are a senior technical interviewer evaluating a ${level} ${role} candidate. Respond ONLY with valid JSON: {"score":7,"feedback":"...","strength":"...","improvement":"..."}. Score is 1-10. Keep feedback under 60 words.` }, { role: "user", content: `Question: ${questions[qNum]}\n\nCandidate answer: ${answer}\n\nTime taken: ${120 - timeLeft} seconds of 120.` }]
+        })
+      });
+      const data = await res.json();
+      const raw = data?.choices?.[0]?.message?.content || "{}";
+      const eval_ = JSON.parse(raw.replace(/```json|```/g, "").trim());
+      const newResult = { q: questions[qNum], a: answer, score: eval_.score || 5, feedback: eval_.feedback || "", strength: eval_.strength || "", improvement: eval_.improvement || "", time: 120 - timeLeft };
+      setResults(prev => [...prev, newResult]);
+      if (qNum + 1 >= questions.length) { setStep("report"); }
+      else { setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
+    } catch { setError("Evaluation failed. Skipping to next question."); setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
+    setLoading(false);
+  }
+
+  function skipQuestion() {
+    setTimerActive(false); clearInterval(timerRef.current);
+    const skipped = { q: questions[qNum], a: "(Skipped)", score: 0, feedback: "Question was skipped.", strength: "—", improvement: "Attempt all questions.", time: 120 - timeLeft };
+    setResults(prev => [...prev, skipped]);
+    if (qNum + 1 >= questions.length) setStep("report");
+    else { setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
+  }
+
+  async function downloadReport() {
+    setDownloadingDocx(true);
+    try {
+      await loadScript(DOCX_CDN);
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = window.docx;
+      const avg = (results.reduce((a, r) => a + r.score, 0) / results.length).toFixed(1);
+      const children = [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: "Mock Interview Report", bold: true, size: 48, font: "Arial", color: "1F6FEB" })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: `${role}  ·  ${level}  ·  Overall Score: ${avg}/10`, size: 22, font: "Arial", color: "555555" })] }),
+      ];
+      results.forEach((r, i) => {
+        const scoreColor = r.score >= 7 ? "2e7d32" : r.score >= 5 ? "f9a825" : "d32f2f";
+        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "1F6FEB" } }, spacing: { before: 200, after: 160 }, children: [new TextRun({ text: `Q${i+1}. ${r.q}`, bold: true, size: 22, font: "Arial" })] }));
+        children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `Score: ${r.score}/10`, bold: true, size: 20, font: "Arial", color: scoreColor }), new TextRun({ text: `   Time: ${r.time}s`, size: 18, font: "Arial", color: "888888", italics: true })] }));
+        children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Your Answer: ", bold: true, size: 19, font: "Arial" }), new TextRun({ text: r.a, size: 19, font: "Arial", color: "444444" })] }));
+        children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Feedback: ", bold: true, size: 19, font: "Arial" }), new TextRun({ text: r.feedback, size: 19, font: "Arial" })] }));
+        if (r.strength !== "—") children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "✓ Strength: ", bold: true, size: 18, font: "Arial", color: "2e7d32" }), new TextRun({ text: r.strength, size: 18, font: "Arial" })] }));
+        children.push(new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: "↑ Improve: ", bold: true, size: 18, font: "Arial", color: "d32f2f" }), new TextRun({ text: r.improvement, size: 18, font: "Arial" })] }));
+      });
+      children.push(new Paragraph({ spacing: { before: 300 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Generated by ZeroAPI.in  ·  Zero Signup · Zero Storage`, size: 16, font: "Arial", color: "aaaaaa", italics: true })] }));
+      const doc = new Document({ sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }] });
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `interview-report-${role.replace(/\s+/g,"-").toLowerCase()}.docx`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch(e) { console.error(e); setError("Report download failed."); }
+    setDownloadingDocx(false);
+  }
+
+  const timerColor = timeLeft <= 30 ? "#ff6b6b" : timeLeft <= 60 ? "#febc2e" : ac;
+  const mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
+
+  // ── Report Screen
+  if (step === "report") {
+    const avg = (results.reduce((a, r) => a + r.score, 0) / results.length).toFixed(1);
+    const grade = avg >= 8 ? { label: "Excellent", color: "#00ffe0" } : avg >= 6 ? { label: "Good", color: "#34d399" } : avg >= 4 ? { label: "Average", color: "#febc2e" } : { label: "Needs Work", color: "#ff6b6b" };
+    return (
+      <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "14px", padding: "24px", textAlign: "center" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "8px" }}>◆ INTERVIEW COMPLETE</div>
+          <div style={{ fontSize: "3rem", fontWeight: 800, fontFamily: "'Syne',sans-serif", color: grade.color }}>{avg}<span style={{ fontSize: "1.2rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)" }}>/10</span></div>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.85rem", color: grade.color, marginBottom: "4px" }}>{grade.label}</div>
+          <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)" }}>{role} · {level}</div>
+        </div>
+        {results.map((r, i) => {
+          const sc = r.score >= 7 ? "#00ffe0" : r.score >= 5 ? "#febc2e" : "#ff6b6b";
+          return (
+            <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px", gap: "10px" }}>
+                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5 }}>Q{i+1}. {r.q}</div>
+                <div style={{ background: `${sc}20`, border: `1px solid ${sc}`, borderRadius: "8px", padding: "3px 12px", fontFamily: "'Space Mono',monospace", fontSize: "0.75rem", color: sc, flexShrink: 0, fontWeight: 700 }}>{r.score}/10</div>
+              </div>
+              <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "8px", fontStyle: "italic" }}>"{r.a}"</div>
+              <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", marginBottom: "6px" }}>📝 {r.feedback}</div>
+              {r.strength !== "—" && <div style={{ fontSize: "0.78rem", color: "#34d399" }}>✓ {r.strength}</div>}
+              <div style={{ fontSize: "0.78rem", color: "#f87171", marginTop: "4px" }}>↑ {r.improvement}</div>
+              <div style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)", marginTop: "8px", fontFamily: "'Space Mono',monospace" }}>⏱ {r.time}s</div>
+            </div>
+          );
+        })}
+        {error && <div className="error-box">⚠ {error}</div>}
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <button onClick={downloadReport} disabled={downloadingDocx} className="run-btn" style={{ padding: "10px 22px" }}>
+            {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download Report (DOCX)"}
+          </button>
+          <button onClick={() => { setStep("setup"); setResults([]); setQuestions([]); setQNum(0); setAnswer(""); setError(""); }} className="action-btn" style={{ color: ac, borderColor: ac }}>↺ New Interview</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Interview Screen
+  if (step === "interview") return (
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac }}>QUESTION {qNum + 1} OF {questions.length} · {role}</div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.9rem", color: timerColor, fontWeight: 700 }}>⏱ {String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}</div>
+      </div>
+      <div style={{ height: "4px", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", borderRadius: "2px" }}>
+        <div style={{ width: `${((qNum + 1) / questions.length) * 100}%`, height: "100%", background: "linear-gradient(90deg, #00ffe0, #0af)", borderRadius: "2px", transition: "width 0.4s" }} />
+      </div>
+      <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "20px" }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "10px" }}>◆ INTERVIEWER ASKS</div>
+        <div style={{ fontSize: "1rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.6 }}>{questions[qNum]}</div>
+      </div>
+      <div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "8px" }}>YOUR ANSWER</div>
+        <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={6} className="tool-textarea" placeholder="Type your answer here. Be specific and use examples where possible..." style={{ fontFamily: "'DM Sans',sans-serif" }} />
+      </div>
+      {error && <div className="error-box">⚠ {error}</div>}
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <button onClick={submitAnswer} disabled={loading || !answer.trim()} className={`run-btn ${loading || !answer.trim() ? "run-btn-disabled" : ""}`} style={{ padding: "10px 24px" }}>
+          {loading ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Evaluating...</> : qNum + 1 === questions.length ? "Submit & See Report →" : "Submit Answer →"}
+        </button>
+        <button onClick={skipQuestion} className="action-btn">Skip →</button>
+      </div>
+    </div>
+  );
+
+  // ── Setup Screen
+  return (
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "10px" }}>SELECT ROLE</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {INTERVIEW_ROLES.map(r => <button key={r} onClick={() => setRole(r)} style={{ background: role === r ? ac : "transparent", border: `1px solid ${role === r ? ac : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "8px", padding: "7px 14px", color: role === r ? "#000" : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"), fontSize: "0.82rem", cursor: "pointer", fontWeight: role === r ? 700 : 400, transition: "all 0.15s" }}>{r}</button>)}
+        </div>
+      </div>
+      <div>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "10px" }}>EXPERIENCE LEVEL</div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {INTERVIEW_LEVELS.map(l => <button key={l} onClick={() => setLevel(l)} style={{ background: level === l ? ac : "transparent", border: `1px solid ${level === l ? ac : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)")}`, borderRadius: "8px", padding: "7px 14px", color: level === l ? "#000" : (isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"), fontSize: "0.82rem", cursor: "pointer", fontWeight: level === l ? 700 : 400, transition: "all 0.15s" }}>{l}</button>)}
+        </div>
+      </div>
+      <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "16px", display: "flex", gap: "24px", flexWrap: "wrap" }}>
+        {[["📋", `${TOTAL_Q} Questions`], ["⏱", "2 min / question"], ["🧠", "AI-scored"], ["⬇", "DOCX report"]].map(([icon, label]) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "1rem" }}>{icon}</span>
+            <span style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.55)" }}>{label}</span>
+          </div>
+        ))}
+      </div>
+      {error && <div className="error-box">⚠ {error}</div>}
+      <button onClick={startInterview} disabled={loading} className={`run-btn ${loading ? "run-btn-disabled" : ""}`}>
+        {loading ? <><span className="spinner" />Loading Questions...</> : `🎤 Start ${role} Interview →`}
+      </button>
+    </div>
+  );
+}
+
+// ── Dev Tools Panel ───────────────────────────────────────────
+function DevToolsPanel({ theme }) {
+  const [active, setActive] = useState(0);
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
+  const info = DEV_TOOLS[active];
+
+  return (
+    <div style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
+      <div style={{ marginBottom: "48px", textAlign: "center" }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.7rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Dev Tools</div>
+        <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a1a" }}>Visual. Interactive. Zero Signup.</h2>
+        <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Tools that go beyond text — diagrams, charts, and simulations that ChatGPT can't render.</p>
+      </div>
+      <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
+        {DEV_TOOLS.map((t, i) => (
+          <ToolCard key={t.id} icon={t.icon} name={t.name} tagline={t.tagline} active={active === i} onClick={() => setActive(i)} fullWidth={false} theme={theme} />
+        ))}
+      </div>
+      <div className="tool-panel" style={{ background: isDark ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+          <span style={{ fontSize: "1.5rem" }}>{info.icon}</span>
+          <div>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a" }}>{info.name}</div>
+            <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{info.tagline}</div>
+          </div>
+        </div>
+        {active === 0 && <SchemaVisualizer theme={theme} />}
+        {active === 1 && <CsvVisualizer theme={theme} />}
+        {active === 2 && <MockInterview theme={theme} />}
+      </div>
+    </div>
+  );
+}
+
 // ── Error Boundary ───────────────────────────────────────────
 class ErrorBoundary extends React.Component {
   state = { hasError: false };
@@ -2104,6 +2731,7 @@ class ErrorBoundary extends React.Component {
 function AppInner() {
   const { theme, toggleTheme } = useTheme();
   const [activeTool, setActiveTool] = useState(0);
+  const [activeSection, setActiveSection] = useState("ai"); // "ai" | "dev"
   const [scrolled, setScrolled] = useState(false);
   const [visitorCount, setVisitorCount] = useState(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -2281,7 +2909,12 @@ Be honest, specific, and constructive.`} />;
         </div>
 
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-          {[{ label: "Tools", action: () => document.getElementById("tools").scrollIntoView({ behavior: "smooth" }) }, { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) }, { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }].map(({ label, action }) => (
+          {[
+            { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); } },
+            { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); } },
+            { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
+            { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
+          ].map(({ label, action }) => (
             <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
@@ -2369,6 +3002,11 @@ Be honest, specific, and constructive.`} />;
           </div>
           {renderPanel()}
         </div>
+      </section>
+
+      {/* Dev Tools Section */}
+      <section id="devtools">
+        <DevToolsPanel theme={theme} />
       </section>
 
       <TriviaSection theme={theme} />
