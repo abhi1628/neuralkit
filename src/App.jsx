@@ -802,6 +802,660 @@ function MCQPanel({ tool, theme }) {
 }
 
 
+// ── Resume Builder ────────────────────────────────────────────
+const DOCX_CDN = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js";
+
+function ResumeBuilder({ originalText, analysisText, theme }) {
+  const [step, setStep] = useState("prompt");
+  const [agreed, setAgreed] = useState(false);
+  const [resumeData, setResumeData] = useState(null);
+  const [buildError, setBuildError] = useState("");
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const accentColor = "var(--accent)";
+
+  async function generateResume() {
+    setStep("generating"); setBuildError("");
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 2000,
+          messages: [{
+            role: "system",
+            content: `You are an expert resume writer and ATS optimization specialist. Given original resume text and analysis feedback, generate an improved resume.
+
+CRITICAL: Respond ONLY with a valid JSON object. No preamble, no markdown backticks, no explanation — just raw JSON.
+
+Format:
+{
+  "name": "Full Name",
+  "contact": { "email": "", "phone": "", "location": "", "linkedin": "" },
+  "summary": "2-3 sentence professional summary",
+  "experience": [{ "title": "", "company": "", "dates": "", "bullets": ["action verb + achievement"] }],
+  "education": [{ "degree": "", "institution": "", "dates": "", "gpa": "" }],
+  "skills": { "technical": [], "soft": [], "tools": [] },
+  "certifications": [],
+  "projects": [{ "name": "", "description": "", "tech": "" }]
+}
+
+Rules:
+- Extract ONLY information from the original resume. Never invent or add fake data.
+- Improve bullet points to start with strong action verbs.
+- Add metrics where they exist in the original.
+- Omit sections with no data (e.g. no certifications → omit that key entirely).
+- Return ONLY valid JSON. Nothing else.`
+          }, {
+            role: "user",
+            content: `Original Resume:\n${originalText}\n\nAnalysis Feedback:\n${analysisText}`
+          }]
+        })
+      });
+      const data = await res.json();
+      const raw = data?.choices?.[0]?.message?.content || "";
+      const cleaned = raw.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      setResumeData(parsed);
+      setStep("done");
+    } catch (e) {
+      setBuildError("Failed to generate resume. Please try again.");
+      setStep("error");
+    }
+  }
+
+  async function downloadDocx() {
+    if (!resumeData) return;
+    setDownloadingDocx(true);
+    try {
+      await loadScript(DOCX_CDN);
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat, BorderStyle } = window.docx;
+      const accent = "1F6FEB";
+      const children = [];
+
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
+
+      const c = resumeData.contact || {};
+      const contactParts = [c.email, c.phone, c.location, c.linkedin].filter(Boolean);
+      if (contactParts.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: contactParts.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
+
+      const divider = () => new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+      const sectionHeader = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
+
+      if (resumeData.summary) {
+        children.push(divider());
+        children.push(sectionHeader("Professional Summary"));
+        children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] }));
+      }
+
+      if (resumeData.experience?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Experience"));
+        resumeData.experience.forEach(exp => {
+          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
+        });
+      }
+
+      if (resumeData.education?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Education"));
+        resumeData.education.forEach(edu => {
+          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
+        });
+      }
+
+      if (resumeData.skills) {
+        children.push(divider());
+        children.push(sectionHeader("Skills"));
+        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
+          .filter(s => s.items?.length)
+          .forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
+      }
+
+      if (resumeData.projects?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Projects"));
+        resumeData.projects.forEach(p => {
+          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] }));
+          if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] }));
+        });
+      }
+
+      if (resumeData.certifications?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Certifications"));
+        resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] })));
+      }
+
+      const doc = new Document({
+        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
+        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-improved.docx`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (e) { console.error(e); setBuildError("DOCX generation failed. Try PDF instead."); }
+    setDownloadingDocx(false);
+  }
+
+  async function downloadResumePdf() {
+    if (!resumeData) return;
+    setDownloadingPdf(true);
+    try {
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const c = resumeData.contact || {};
+      let y = 22;
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(26, 26, 26);
+      doc.text(resumeData.name || "Your Name", 105, y, { align: "center" }); y += 9;
+
+      const contactStr = [c.email, c.phone, c.location, c.linkedin].filter(Boolean).join("  |  ");
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
+      doc.text(contactStr, 105, y, { align: "center" }); y += 7;
+      doc.setDrawColor(31, 111, 235); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
+
+      const section = (title) => {
+        if (y > 270) { doc.addPage(); y = 18; }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(31, 111, 235);
+        doc.text(title.toUpperCase(), 10, y); y += 4;
+        doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(10, y, 200, y); y += 5;
+      };
+
+      const body = (text, indent = 10) => {
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+        const lines = doc.splitTextToSize(text, 190 - (indent - 10));
+        lines.forEach(line => { if (y > 278) { doc.addPage(); y = 18; } doc.text(line, indent, y); y += 5; });
+      };
+
+      if (resumeData.summary) { section("Professional Summary"); body(resumeData.summary); y += 3; }
+
+      if (resumeData.experience?.length) {
+        section("Experience");
+        resumeData.experience.forEach(exp => {
+          if (y > 270) { doc.addPage(); y = 18; }
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
+          doc.text(`${exp.title || ""}${exp.company ? `  —  ${exp.company}` : ""}`, 10, y);
+          doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(120, 120, 120);
+          doc.text(exp.dates || "", 200, y, { align: "right" }); y += 5;
+          (exp.bullets || []).forEach(b => body(`• ${b}`, 14)); y += 2;
+        });
+      }
+
+      if (resumeData.education?.length) {
+        section("Education");
+        resumeData.education.forEach(edu => {
+          if (y > 270) { doc.addPage(); y = 18; }
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
+          doc.text(`${edu.degree || ""}${edu.institution ? `  —  ${edu.institution}` : ""}`, 10, y);
+          doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(120, 120, 120);
+          doc.text(edu.dates || "", 200, y, { align: "right" }); y += 5;
+          if (edu.gpa) body(`GPA: ${edu.gpa}`, 14); y += 2;
+        });
+      }
+
+      if (resumeData.skills) {
+        section("Skills");
+        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
+          .filter(s => s.items?.length)
+          .forEach(s => {
+            if (y > 278) { doc.addPage(); y = 18; }
+            doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+            const lw = doc.getTextWidth(`${s.label}: `);
+            doc.text(`${s.label}: `, 10, y);
+            doc.setFont("helvetica", "normal");
+            const rest = doc.splitTextToSize(s.items.join(", "), 188 - lw);
+            doc.text(rest[0], 10 + lw, y); y += 5;
+            if (rest.length > 1) rest.slice(1).forEach(l => body(l, 10));
+          }); y += 2;
+      }
+
+      if (resumeData.projects?.length) {
+        section("Projects");
+        resumeData.projects.forEach(p => {
+          if (y > 270) { doc.addPage(); y = 18; }
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
+          doc.text(`${p.name || ""}${p.tech ? `  (${p.tech})` : ""}`, 10, y); y += 5;
+          if (p.description) body(`• ${p.description}`, 14); y += 2;
+        });
+      }
+
+      if (resumeData.certifications?.length) {
+        section("Certifications");
+        resumeData.certifications.forEach(cert => body(`• ${cert}`, 14));
+      }
+
+      const pages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i); doc.setFontSize(7); doc.setTextColor(180, 180, 180);
+        doc.text(`Generated by ZeroAPI.in  |  Review carefully before sending to employers  |  Page ${i} of ${pages}`, 105, 291, { align: "center" });
+      }
+      doc.save(`${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-improved.pdf`);
+    } catch (e) { console.error(e); setBuildError("PDF generation failed. Please try again."); }
+    setDownloadingPdf(false);
+  }
+
+  if (step === "prompt") return (
+    <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "14px", padding: "20px 24px" }}>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "10px" }}>◆ NEXT STEP</div>
+      <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", fontSize: "0.9rem", marginBottom: "16px", lineHeight: 1.6 }}>Want to build an <strong>improved, ATS-optimized resume</strong> based on this analysis?</p>
+      <button onClick={() => setStep("disclaimer")} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'Space Mono', monospace" }}>✨ Build Improved Resume →</button>
+    </div>
+  );
+
+  if (step === "disclaimer") return (
+    <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: "#febc2e", letterSpacing: "0.12em", marginBottom: "14px" }}>⚠ BEFORE YOU PROCEED</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+        {["Your resume text will be sent to Groq AI to generate an improved version.", "Groq processes your data in real-time and does not store it permanently.", "ZeroAPI does not store, save, or retain your resume or any personal data.", "The generated resume stays in your browser only — gone when you close the tab.", "Always review AI-generated content carefully before sending to employers."]
+          .map((item, i) => (
+            <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <span style={{ color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.75rem", marginTop: "2px", flexShrink: 0 }}>✓</span>
+              <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.7)", fontSize: "0.85rem", lineHeight: 1.6 }}>{item}</span>
+            </div>
+          ))}
+      </div>
+      <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", marginBottom: "20px" }}>
+        <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ width: "18px", height: "18px", accentColor: "var(--accent)", cursor: "pointer" }} />
+        <span style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)", fontWeight: 500 }}>I understand and agree to proceed</span>
+      </label>
+      <div style={{ display: "flex", gap: "12px" }}>
+        <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: agreed ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: agreed ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", transition: "all 0.2s" }}>Generate Resume →</button>
+        <button onClick={() => { setStep("prompt"); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", cursor: "pointer" }}>Cancel</button>
+      </div>
+    </div>
+  );
+
+  if (step === "generating") return (
+    <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "14px", padding: "32px 24px", textAlign: "center" }}>
+      <span className="spinner" style={{ width: "20px", height: "20px", display: "block", margin: "0 auto 14px" }} />
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.85rem", color: accentColor }}>Generating your improved resume...</div>
+      <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)", marginTop: "8px" }}>This may take 10–20 seconds</div>
+    </div>
+  );
+
+  if (step === "error") return (
+    <div style={{ marginTop: "20px" }}>
+      <div className="error-box">⚠ {buildError}</div>
+      <button onClick={() => setStep("prompt")} style={{ marginTop: "10px", background: "transparent", border: "1px solid var(--accent)", borderRadius: "8px", padding: "8px 18px", color: "var(--accent)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer" }}>↺ Try Again</button>
+    </div>
+  );
+
+  return (
+    <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
+      <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData?.name}</div>
+      <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
+        {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
+      </div>
+      <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
+        ⚠ Review all content before sending. AI may not capture every nuance of your experience.
+      </div>
+      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <button onClick={downloadDocx} disabled={downloadingDocx} style={{ background: downloadingDocx ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingDocx ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingDocx ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+          {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download DOCX"}
+        </button>
+        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: "transparent", border: `1px solid ${accentColor}`, borderRadius: "10px", padding: "10px 22px", color: downloadingPdf ? "rgba(255,255,255,0.3)" : accentColor, fontWeight: 700, fontSize: "0.82rem", cursor: downloadingPdf ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+          {downloadingPdf ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download PDF"}
+        </button>
+        <button onClick={() => { setStep("prompt"); setResumeData(null); setBuildError(""); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Regenerate</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Resume Builder Tool (from scratch) ───────────────────────
+function ResumeBuilderTool({ theme }) {
+  const STEPS = ["Personal Info", "Summary & Target", "Experience", "Education", "Skills", "Projects & Extras", "Review & Generate"];
+  const [step, setStep] = useState(0);
+  const [data, setData] = useState({
+    name: "", email: "", phone: "", location: "", linkedin: "", github: "",
+    target: "", summary: "",
+    experience: [{ id: 1, title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }],
+    education: [{ id: 1, degree: "", field: "", institution: "", year: "", gpa: "" }],
+    techSkills: "", tools: "", softSkills: "",
+    projects: [{ id: 1, name: "", tech: "", description: "" }],
+    certs: "", languages: "", achievements: ""
+  });
+  const [agreed, setAgreed] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [resumeData, setResumeData] = useState(null);
+  const [buildError, setBuildError] = useState("");
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
+  const topRef = useRef(null);
+  const isDark = theme === "dark";
+  const ac = "var(--accent)";
+
+  const inp = (extra = {}) => ({
+    style: {
+      width: "100%", boxSizing: "border-box",
+      background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+      border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
+      borderRadius: "10px", padding: "10px 14px",
+      color: isDark ? "#fff" : "#1a1a1a",
+      fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none",
+      ...extra
+    }
+  });
+
+  const lbl = (text) => <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.08em", marginBottom: "6px", textTransform: "uppercase" }}>{text}</div>;
+  const secLbl = (text) => <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.1em", marginBottom: "10px" }}>{text}</div>;
+  const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" };
+  const cardStyle = { background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "16px" };
+  const removeBtn = (onClick) => <button onClick={onClick} style={{ background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.3)", borderRadius: "6px", padding: "3px 10px", color: "#ff6b6b", fontSize: "0.72rem", cursor: "pointer" }}>Remove</button>;
+  const addBtn = (onClick, text) => <button onClick={onClick} style={{ background: "rgba(0,255,224,0.06)", border: `1px dashed ${ac}`, borderRadius: "10px", padding: "10px", color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.75rem", cursor: "pointer", width: "100%" }}>{text}</button>;
+
+  const upd = (key, val) => setData(d => ({ ...d, [key]: val }));
+  const updExp = (id, k, v) => setData(d => ({ ...d, experience: d.experience.map(e => e.id === id ? { ...e, [k]: v } : e) }));
+  const updEdu = (id, k, v) => setData(d => ({ ...d, education: d.education.map(e => e.id === id ? { ...e, [k]: v } : e) }));
+  const updProj = (id, k, v) => setData(d => ({ ...d, projects: d.projects.map(p => p.id === id ? { ...p, [k]: v } : p) }));
+
+  useEffect(() => { topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [step]);
+
+  function addExp() { setData(d => ({ ...d, experience: [...d.experience, { id: Date.now(), title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }] })); }
+  function removeExp(id) { setData(d => ({ ...d, experience: d.experience.filter(e => e.id !== id) })); }
+  function addEdu() { setData(d => ({ ...d, education: [...d.education, { id: Date.now(), degree: "", field: "", institution: "", year: "", gpa: "" }] })); }
+  function removeEdu(id) { setData(d => ({ ...d, education: d.education.filter(e => e.id !== id) })); }
+  function addProj() { setData(d => ({ ...d, projects: [...d.projects, { id: Date.now(), name: "", tech: "", description: "" }] })); }
+  function removeProj(id) { setData(d => ({ ...d, projects: d.projects.filter(p => p.id !== id) })); }
+
+  async function generate() {
+    setGenerating(true); setBuildError("");
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 2000,
+          messages: [{
+            role: "system",
+            content: `You are an expert resume writer and ATS specialist. Given structured form data, produce a polished, ATS-optimized resume as JSON.
+CRITICAL: Return ONLY valid JSON — no markdown backticks, no preamble, no explanation.
+Rules:
+- Rewrite bullet points with strong action verbs and quantify where context implies metrics
+- Polish the summary into 2-3 compelling sentences for the target role
+- Keep ALL information exactly. Never fabricate any detail.
+- Omit empty sections entirely.
+Output format: {"name":"","contact":{"email":"","phone":"","location":"","linkedin":"","github":""},"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"soft":[],"tools":[]},"certifications":[],"projects":[{"name":"","description":"","tech":""}],"languages":[],"achievements":[]}`
+          }, {
+            role: "user",
+            content: `Target Role: ${data.target}\nName: ${data.name} | Email: ${data.email} | Phone: ${data.phone} | Location: ${data.location}\nLinkedIn: ${data.linkedin} | GitHub: ${data.github}\n\nSummary: ${data.summary}\n\nExperience:\n${data.experience.map(e => `${e.title} at ${e.company} (${e.startDate}–${e.current ? "Present" : e.endDate})\n${e.bullets}`).join("\n\n")}\n\nEducation:\n${data.education.map(e => `${e.degree} in ${e.field}, ${e.institution}, ${e.year}, GPA: ${e.gpa}`).join("\n")}\n\nTechnical Skills: ${data.techSkills}\nTools: ${data.tools}\nSoft Skills: ${data.softSkills}\n\nProjects:\n${data.projects.map(p => `${p.name} (${p.tech}): ${p.description}`).join("\n")}\n\nCertifications:\n${data.certs}\nLanguages: ${data.languages}\nAchievements:\n${data.achievements}`
+          }]
+        })
+      });
+      const json = await res.json();
+      const raw = json?.choices?.[0]?.message?.content || "";
+      const parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
+      setResumeData(parsed); setStep(7);
+    } catch (e) { setBuildError("Generation failed. Please check your inputs and try again."); }
+    setGenerating(false);
+  }
+
+  async function downloadDocx() {
+    if (!resumeData) return;
+    setDownloadingDocx(true);
+    try {
+      await loadScript(DOCX_CDN);
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat, BorderStyle } = window.docx;
+      const accent = "1F6FEB";
+      const children = [];
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
+      const c = resumeData.contact || {};
+      const cp = [c.email, c.phone, c.location, c.linkedin, c.github].filter(Boolean);
+      if (cp.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: cp.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
+      const div = () => new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+      const sh = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
+      if (resumeData.summary) { children.push(div()); children.push(sh("Professional Summary")); children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] })); }
+      if (resumeData.experience?.length) {
+        children.push(div()); children.push(sh("Experience"));
+        resumeData.experience.forEach(exp => {
+          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
+        });
+      }
+      if (resumeData.education?.length) {
+        children.push(div()); children.push(sh("Education"));
+        resumeData.education.forEach(edu => {
+          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
+        });
+      }
+      if (resumeData.skills) {
+        children.push(div()); children.push(sh("Skills"));
+        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }].filter(s => s.items?.length).forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
+      }
+      if (resumeData.projects?.length) {
+        children.push(div()); children.push(sh("Projects"));
+        resumeData.projects.forEach(p => { children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] })); if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] })); });
+      }
+      if (resumeData.certifications?.length) { children.push(div()); children.push(sh("Certifications")); resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] }))); }
+      if (resumeData.languages?.length) { children.push(div()); children.push(sh("Languages")); children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: Array.isArray(resumeData.languages) ? resumeData.languages.join(", ") : resumeData.languages, size: 20, font: "Arial" })] })); }
+      if (resumeData.achievements?.length) { children.push(div()); children.push(sh("Achievements")); (Array.isArray(resumeData.achievements) ? resumeData.achievements : [resumeData.achievements]).forEach(a => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: a, size: 20, font: "Arial" })] }))); }
+      const doc = new Document({
+        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
+        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
+      });
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-zeroapi.docx`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (e) { console.error(e); setBuildError("DOCX download failed. Please try again."); }
+    setDownloadingDocx(false);
+  }
+
+  const navBtns = (canNext = true) => (
+    <div style={{ display: "flex", gap: "12px", marginTop: "24px", paddingTop: "16px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}` }}>
+      {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>}
+      <button onClick={() => setStep(s => s + 1)} disabled={!canNext} style={{ background: canNext ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: canNext ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: canNext ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace" }}>Next →</button>
+    </div>
+  );
+
+  // ── Done Screen ──────────────────────────────────────────────
+  if (step === 7 && resumeData) return (
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "14px", padding: "24px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
+        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData.name}</div>
+        <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
+          {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
+        </div>
+        <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: "#febc2e", lineHeight: 1.6 }}>
+          ⚠ Review carefully before sending. Download DOCX to edit in Word or Google Docs.
+        </div>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <button onClick={downloadDocx} disabled={downloadingDocx} style={{ background: downloadingDocx ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingDocx ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingDocx ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+            {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download DOCX"}
+          </button>
+          <button onClick={() => { setStep(0); setResumeData(null); setBuildError(""); setAgreed(false); setData({ name: "", email: "", phone: "", location: "", linkedin: "", github: "", target: "", summary: "", experience: [{ id: Date.now(), title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }], education: [{ id: Date.now()+1, degree: "", field: "", institution: "", year: "", gpa: "" }], techSkills: "", tools: "", softSkills: "", projects: [{ id: Date.now()+2, name: "", tech: "", description: "" }], certs: "", languages: "", achievements: "" }); }} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Build New Resume</button>
+        </div>
+        {buildError && <div className="error-box" style={{ marginTop: "12px" }}>⚠ {buildError}</div>}
+      </div>
+    </div>
+  );
+
+  // ── Progress Bar ─────────────────────────────────────────────
+  const progressBar = (
+    <div style={{ marginBottom: "24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.08em" }}>STEP {step + 1} OF 7 — {STEPS[step].toUpperCase()}</span>
+        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>{Math.round(((step + 1) / 7) * 100)}%</span>
+      </div>
+      <div style={{ height: "4px", background: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)", borderRadius: "2px" }}>
+        <div style={{ width: `${((step + 1) / 7) * 100}%`, height: "100%", background: "linear-gradient(90deg, #00ffe0, #0af)", borderRadius: "2px", transition: "width 0.4s ease" }} />
+      </div>
+    </div>
+  );
+
+  function renderStep() {
+    if (step === 0) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div style={grid2}>
+          <div>{lbl("Full Name *")}<input {...inp()} placeholder="e.g. Priya Sharma" value={data.name} onChange={e => upd("name", e.target.value)} /></div>
+          <div>{lbl("Email *")}<input {...inp()} type="email" placeholder="priya@email.com" value={data.email} onChange={e => upd("email", e.target.value)} /></div>
+          <div>{lbl("Phone")}<input {...inp()} placeholder="+91 98765 43210" value={data.phone} onChange={e => upd("phone", e.target.value)} /></div>
+          <div>{lbl("Location")}<input {...inp()} placeholder="Mumbai, Maharashtra" value={data.location} onChange={e => upd("location", e.target.value)} /></div>
+          <div>{lbl("LinkedIn URL")}<input {...inp()} placeholder="linkedin.com/in/priya" value={data.linkedin} onChange={e => upd("linkedin", e.target.value)} /></div>
+          <div>{lbl("GitHub / Portfolio")}<input {...inp()} placeholder="github.com/priya" value={data.github} onChange={e => upd("github", e.target.value)} /></div>
+        </div>
+        {navBtns(!!data.name.trim() && !!data.email.trim())}
+      </div>
+    );
+
+    if (step === 1) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div>{lbl("Target Job Role / Industry *")}<input {...inp()} placeholder="e.g. Full Stack Developer, Data Scientist, Product Manager" value={data.target} onChange={e => upd("target", e.target.value)} /></div>
+        <div>
+          {lbl("Professional Summary (AI will enhance this)")}
+          <textarea {...inp({ minHeight: "100px", resize: "vertical" })} placeholder="Brief overview of your experience, strengths, and career goals..." value={data.summary} onChange={e => upd("summary", e.target.value)} />
+          <div style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>Tip: Even a rough draft works — AI will polish it for your target role</div>
+        </div>
+        {navBtns(!!data.target.trim())}
+      </div>
+    );
+
+    if (step === 2) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {data.experience.map((exp, idx) => (
+          <div key={exp.id} style={cardStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              {secLbl(`ROLE ${idx + 1}`)}
+              {data.experience.length > 1 && removeBtn(() => removeExp(exp.id))}
+            </div>
+            <div style={grid2}>
+              <div>{lbl("Job Title *")}<input {...inp()} placeholder="Software Engineer" value={exp.title} onChange={e => updExp(exp.id, "title", e.target.value)} /></div>
+              <div>{lbl("Company")}<input {...inp()} placeholder="Infosys Ltd." value={exp.company} onChange={e => updExp(exp.id, "company", e.target.value)} /></div>
+              <div>{lbl("Start Date")}<input {...inp()} placeholder="Jun 2022" value={exp.startDate} onChange={e => updExp(exp.id, "startDate", e.target.value)} /></div>
+              <div>{lbl(exp.current ? "End Date (Present)" : "End Date")}<input {...inp()} placeholder={exp.current ? "Present" : "Mar 2024"} value={exp.current ? "Present" : exp.endDate} disabled={exp.current} onChange={e => updExp(exp.id, "endDate", e.target.value)} /></div>
+            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", margin: "10px 0 12px", cursor: "pointer" }}>
+              <input type="checkbox" checked={exp.current} onChange={e => updExp(exp.id, "current", e.target.checked)} style={{ accentColor: "var(--accent)" }} />
+              <span style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)" }}>Currently working here</span>
+            </label>
+            <div>{lbl("Key Responsibilities & Achievements")}
+              <textarea {...inp({ minHeight: "90px", resize: "vertical" })} placeholder={"• Led development of payment module\n• Reduced API latency by 40%\n• Mentored 3 junior developers"} value={exp.bullets} onChange={e => updExp(exp.id, "bullets", e.target.value)} />
+            </div>
+          </div>
+        ))}
+        {addBtn(addExp, "+ Add Another Role")}
+        {navBtns(data.experience.some(e => e.title.trim()))}
+      </div>
+    );
+
+    if (step === 3) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {data.education.map((edu, idx) => (
+          <div key={edu.id} style={cardStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              {secLbl(`DEGREE ${idx + 1}`)}
+              {data.education.length > 1 && removeBtn(() => removeEdu(edu.id))}
+            </div>
+            <div style={grid2}>
+              <div>{lbl("Degree")}<input {...inp()} placeholder="B.Tech / M.Tech / BCA" value={edu.degree} onChange={e => updEdu(edu.id, "degree", e.target.value)} /></div>
+              <div>{lbl("Field of Study")}<input {...inp()} placeholder="Computer Science & Engineering" value={edu.field} onChange={e => updEdu(edu.id, "field", e.target.value)} /></div>
+              <div>{lbl("Institution")}<input {...inp()} placeholder="IIT Delhi / BITS Pilani" value={edu.institution} onChange={e => updEdu(edu.id, "institution", e.target.value)} /></div>
+              <div>{lbl("Graduation Year")}<input {...inp()} placeholder="2024" value={edu.year} onChange={e => updEdu(edu.id, "year", e.target.value)} /></div>
+              <div style={{ gridColumn: "span 2" }}>{lbl("CGPA / Percentage (optional)")}<input {...inp()} placeholder="8.5 CGPA / 85%" value={edu.gpa} onChange={e => updEdu(edu.id, "gpa", e.target.value)} /></div>
+            </div>
+          </div>
+        ))}
+        {addBtn(addEdu, "+ Add Another Degree")}
+        {navBtns(data.education.some(e => e.degree.trim() || e.institution.trim()))}
+      </div>
+    );
+
+    if (step === 4) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        <div>
+          {lbl("Technical Skills *")}
+          <textarea {...inp({ minHeight: "80px", resize: "vertical" })} placeholder="Python, Java, React, Node.js, SQL, Machine Learning, Docker..." value={data.techSkills} onChange={e => upd("techSkills", e.target.value)} />
+          <div style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>Comma-separated — be specific, these drive ATS keyword matching</div>
+        </div>
+        <div>{lbl("Tools & Technologies")}<textarea {...inp({ minHeight: "70px", resize: "vertical" })} placeholder="VS Code, Git, Jira, AWS, Figma, Postman, Jenkins, Tableau..." value={data.tools} onChange={e => upd("tools", e.target.value)} /></div>
+        <div>{lbl("Soft Skills (optional)")}<input {...inp()} placeholder="Leadership, Communication, Problem Solving, Team Collaboration" value={data.softSkills} onChange={e => upd("softSkills", e.target.value)} /></div>
+        {navBtns(!!data.techSkills.trim())}
+      </div>
+    );
+
+    if (step === 5) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {secLbl("PROJECTS — OPTIONAL BUT RECOMMENDED")}
+        {data.projects.map((proj, idx) => (
+          <div key={proj.id} style={cardStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              {secLbl(`PROJECT ${idx + 1}`)}
+              {data.projects.length > 1 && removeBtn(() => removeProj(proj.id))}
+            </div>
+            <div style={grid2}>
+              <div>{lbl("Project Name")}<input {...inp()} placeholder="E-Commerce Platform" value={proj.name} onChange={e => updProj(proj.id, "name", e.target.value)} /></div>
+              <div>{lbl("Tech Stack")}<input {...inp()} placeholder="React, Node.js, MongoDB" value={proj.tech} onChange={e => updProj(proj.id, "tech", e.target.value)} /></div>
+            </div>
+            <div style={{ marginTop: "10px" }}>{lbl("Brief Description")}<textarea {...inp({ minHeight: "70px", resize: "vertical" })} placeholder="Built a full-stack e-commerce app with payment integration, serving 500+ users..." value={proj.description} onChange={e => updProj(proj.id, "description", e.target.value)} /></div>
+          </div>
+        ))}
+        {addBtn(addProj, "+ Add Another Project")}
+        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, paddingTop: "16px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          {secLbl("EXTRAS — ALL OPTIONAL")}
+          <div>{lbl("Certifications")}<textarea {...inp({ minHeight: "70px", resize: "vertical" })} placeholder={"AWS Certified Developer — Amazon, 2024\nGoogle Data Analytics Certificate, 2023"} value={data.certs} onChange={e => upd("certs", e.target.value)} /></div>
+          <div>{lbl("Languages Known")}<input {...inp()} placeholder="English (Fluent), Hindi (Native), French (Basic)" value={data.languages} onChange={e => upd("languages", e.target.value)} /></div>
+          <div>{lbl("Achievements / Awards")}<textarea {...inp({ minHeight: "70px", resize: "vertical" })} placeholder={"National Coding Olympiad Winner 2022\nBest Employee Award — Q3 2023"} value={data.achievements} onChange={e => upd("achievements", e.target.value)} /></div>
+        </div>
+        {navBtns(true)}
+      </div>
+    );
+
+    if (step === 6) return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={cardStyle}>
+          {secLbl("◆ REVIEW YOUR INPUTS")}
+          {[["Name", data.name || "—"], ["Email", data.email || "—"], ["Target Role", data.target || "—"], ["Experience", `${data.experience.filter(e => e.title.trim()).length} role(s)`], ["Education", `${data.education.filter(e => (e.degree + e.institution).trim()).length} degree(s)`], ["Technical Skills", data.techSkills ? "✓ Added" : "— Not added"], ["Projects", data.projects.filter(p => p.name.trim()).length > 0 ? `${data.projects.filter(p => p.name.trim()).length} project(s)` : "— None"]].map(([k, v]) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
+              <span style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem" }}>{k}</span>
+              <span style={{ color: isDark ? "#fff" : "#1a1a1a", fontWeight: 500, fontSize: "0.85rem" }}>{v}</span>
+            </div>
+          ))}
+          <button onClick={() => setStep(0)} style={{ marginTop: "12px", background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)"}`, borderRadius: "8px", padding: "6px 14px", color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }}>← Edit Inputs</button>
+        </div>
+        <div style={{ background: "rgba(255,180,0,0.06)", border: "1px solid rgba(255,180,0,0.2)", borderRadius: "12px", padding: "16px" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#febc2e", marginBottom: "10px" }}>⚠ BEFORE YOU GENERATE</div>
+          {["Your data will be sent to Groq AI to build your resume.", "Groq processes data in real-time — not stored permanently.", "ZeroAPI does not store, save, or retain any of your personal data.", "Resume stays in your browser only — clears when you close the tab.", "Always review the generated resume carefully before submitting."].map((item, i) => (
+            <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginBottom: "8px" }}>
+              <span style={{ color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", flexShrink: 0, marginTop: "2px" }}>✓</span>
+              <span style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.65)", lineHeight: 1.5 }}>{item}</span>
+            </div>
+          ))}
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+          <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ width: "18px", height: "18px", accentColor: "var(--accent)", cursor: "pointer" }} />
+          <span style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)", fontWeight: 500 }}>I understand and agree to proceed</span>
+        </label>
+        {buildError && <div className="error-box">⚠ {buildError}</div>}
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button onClick={() => setStep(5)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>
+          <button onClick={generate} disabled={!agreed || generating} style={{ background: agreed && !generating ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 28px", color: agreed && !generating ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: agreed && !generating ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+            {generating ? <><span className="spinner" style={{ width: "14px", height: "14px" }} />Generating Resume...</> : "✨ Generate My Resume →"}
+          </button>
+        </div>
+      </div>
+    );
+    return null;
+  }
+
+  return (
+    <div ref={topRef} style={{ display: "flex", flexDirection: "column" }}>
+      {progressBar}
+      {renderStep()}
+    </div>
+  );
+}
+
 // ── Upload Tool ──────────────────────────────────────────────
 function UploadTool({ prompt, filename, icon, label, theme }) {
   const [fileName, setFileName] = useState("");
@@ -981,6 +1635,9 @@ function isResumeLike(text) {
         <div>
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
           <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={handleClear} />
+          {label === "Analyze Resume" && (
+            <ResumeBuilder originalText={extractedText} analysisText={output} theme={theme} />
+          )}
         </div>
       )}
     </div>
@@ -1162,7 +1819,7 @@ ${code}` }]
             <div style={{ padding: "10px 20px", background: theme === 'dark' ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.05)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear Output">↺ Clear Console</button>
+                <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear console">↺ Clear Console</button>
                 <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
                   {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
                 </button>
@@ -1463,7 +2120,7 @@ function AppInner() {
 
   const handleToolSwitch = useCallback((index) => {
     setActiveTool(index);
-    const names = [...TOOLS.map(t => t.name), "Document Summarizer", "Resume Analyzer"];
+    const names = [...TOOLS.map(t => t.name), "Document Summarizer", "Resume Analyzer & Enhancer", "Resume Builder"];
     trackEvent("tool_selected", { tool_name: names[index] });
   }, []);
 
@@ -1487,19 +2144,21 @@ function AppInner() {
 📌 Important Details (dates, names, figures)
 ⚠️ Limitations or Gaps
 Keep under 400 words.`} />;
-    return <UploadTool icon="📋" label="Analyze Resume" filename="resume-analysis" theme={theme} prompt={`You are an expert HR consultant and career coach. Analyze this resume and provide:
+    if (activeTool === 4) return <UploadTool icon="📋" label="Analyze Resume" filename="resume-analysis" theme={theme} prompt={`You are an expert HR consultant and career coach. Analyze this resume and provide:
 ✅ Strengths (3-5 points)
 ❌ Weaknesses (3-5 points)
 🚀 Improvements (5-7 specific actionable suggestions)
 📈 ATS Score Estimate (out of 10) with reason
 💡 Best-fit Job Roles based on the resume
 Be honest, specific, and constructive.`} />;
+    return <ResumeBuilderTool theme={theme} />;
   }, [activeTool, theme]);
 
   const activeInfo = useMemo(() => {
     if (activeTool < 3) return { icon: TOOLS[activeTool].icon, name: TOOLS[activeTool].name, tagline: TOOLS[activeTool].tagline };
     if (activeTool === 3) return { icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — instant AI structured summary" };
-    return { icon: "📋", name: "Resume Analyzer", tagline: "Upload your resume — get expert feedback & ATS score" };
+    if (activeTool === 4) return { icon: "📋", name: "Resume Analyzer & Enhancer", tagline: "Upload your resume — expert feedback, ATS score & AI-improved download" };
+    return { icon: "🏗️", name: "Resume Builder", tagline: "Build a professional ATS-optimized resume from scratch — step by step" };
   }, [activeTool]);
 
   const accentColor = "var(--accent)";
@@ -1691,8 +2350,12 @@ Be honest, specific, and constructive.`} />;
           <ToolCard icon={TOOLS[2].icon} name={TOOLS[2].name} tagline={TOOLS[2].tagline} active={activeTool === 2} onClick={() => handleToolSwitch(2)} fullWidth={true} theme={theme} />
         </div>
         <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
-          {[{ icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — get an instant structured summary." }, { icon: "📋", name: "Resume Analyzer", tagline: "Upload your resume — expert feedback, ATS score & improvements." }].map((t, i) => (
-            <ToolCard key={t.name} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === i + 3} onClick={() => handleToolSwitch(i + 3)} fullWidth={false} theme={theme} />
+          {[
+            { icon: "📄", name: "Document Summarizer", tagline: "Upload PDF or Word — get an instant structured summary.", idx: 3 },
+            { icon: "📋", name: "Resume Analyzer & Enhancer", tagline: "Upload your resume — expert feedback, ATS score & AI-improved download.", idx: 4 },
+            { icon: "🏗️", name: "Resume Builder", tagline: "No resume yet? Build one from scratch with AI — step-by-step wizard.", idx: 5 },
+          ].map(t => (
+            <ToolCard key={t.name} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === t.idx} onClick={() => handleToolSwitch(t.idx)} fullWidth={false} theme={theme} />
           ))}
         </div>
 
