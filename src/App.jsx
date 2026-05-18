@@ -2009,6 +2009,7 @@ function UserFeedback({ theme }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
+  const [localReactions, setLocalReactions] = useState({});
   const isDark = theme === "dark";
   const ac = isDark ? "#00ffe0" : "#00897b";
 
@@ -2046,18 +2047,21 @@ function UserFeedback({ theme }) {
   }
 
   async function handleClap(id, type) {
-    // Optimistic UI — update count immediately
-    setFeedbacks(prev => prev.map(fb =>
-      fb.id === id
-        ? { ...fb, likes: type === "up" ? (fb.likes || 0) + 1 : (fb.likes || 0), dislikes: type === "down" ? (fb.dislikes || 0) + 1 : (fb.dislikes || 0) }
-        : fb
-    ));
+    // Store locally — never overwritten by fetchFeedbacks interval
+    setLocalReactions(prev => ({
+      ...prev,
+      [id]: {
+        likes:    (prev[id]?.likes    || 0) + (type === "up"   ? 1 : 0),
+        dislikes: (prev[id]?.dislikes || 0) + (type === "down" ? 1 : 0),
+      }
+    }));
+    // Fire to backend silently
     try {
       await fetch("/api/feedback/react", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, type }),
       });
-    } catch { /* silent — optimistic already shown */ }
+    } catch { /* silent */ }
   }
 
   const stars = [1, 2, 3, 4, 5];
@@ -2127,8 +2131,8 @@ function UserFeedback({ theme }) {
                   {/* 👍 👎 Clap Buttons */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "10px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
                     <span style={{ fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", fontFamily: "'Space Mono',monospace" }}>Helpful?</span>
-                    {[{ type: "up", emoji: "👍", count: fb.likes || 0, hoverBg: "rgba(0,200,100,0.12)", hoverBorder: "rgba(0,200,100,0.3)" },
-                      { type: "down", emoji: "👎", count: fb.dislikes || 0, hoverBg: "rgba(255,80,80,0.1)", hoverBorder: "rgba(255,80,80,0.3)" }].map(btn => (
+                    {[{ type: "up", emoji: "👍", count: (fb.likes || 0) + (localReactions[fb.id]?.likes || 0), hoverBg: "rgba(0,200,100,0.12)", hoverBorder: "rgba(0,200,100,0.3)" },
+                      { type: "down", emoji: "👎", count: (fb.dislikes || 0) + (localReactions[fb.id]?.dislikes || 0), hoverBg: "rgba(255,80,80,0.1)", hoverBorder: "rgba(255,80,80,0.3)" }].map(btn => (
                       <button key={btn.type} onClick={() => handleClap(fb.id, btn.type)}
                         style={{ display: "flex", alignItems: "center", gap: "5px", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "4px 12px", cursor: "pointer", transition: "all 0.15s", userSelect: "none" }}
                         onMouseEnter={e => { e.currentTarget.style.background = btn.hoverBg; e.currentTarget.style.borderColor = btn.hoverBorder; e.currentTarget.style.transform = "scale(1.08)"; }}
