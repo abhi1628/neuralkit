@@ -2,6 +2,16 @@ import React from 'react';
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useMemo } from "react";
 import confetti from "canvas-confetti";
 
+// Force correct GA ID even if extension tries to change it
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+  if (args[0] && typeof args[0] === 'string' && args[0].includes('google-analytics')) {
+    args[0] = args[0].replace(/id=G-[A-Z0-9]+/i, 'id=G-FTQS5X9WF3');
+  }
+  return originalFetch.apply(this, args);
+};
+// ===== END OF ADDED CODE =====
+
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
 const GA_ID = "G-FTQS5X9WF3";
