@@ -277,59 +277,35 @@ function escapeHtml(text) {
 }
 
 function loadGA(id) {
-  // Don't load if GA is disabled or in development
-  if (!id || id === "G-FTQS5X9WF3" && window.location.hostname === "localhost") {
-    console.log("GA disabled in development");
-    return;
-  }
-  
-  // Check if already loaded
   if (document.getElementById("ga-script")) return;
   
-  // Validate the ID format (basic check)
-  if (!id.match(/^G-[A-Z0-9]+$/)) {
-    console.warn("Invalid GA ID format:", id);
-    return;
-  }
+  // Force the correct ID
+  const CORRECT_ID = "G-FTQS5X9WF3";
   
-  try {
-    // Create the script element securely
-    const s = document.createElement("script");
-    s.id = "ga-script";
-    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
-    s.async = true;
-    s.integrity = ""; // You could add SRI hash here for extra security
-    s.crossOrigin = "anonymous";
-    
-    // Add error handling
-    s.onerror = () => {
-      console.warn("Failed to load Google Analytics");
-      window.gaDisabled = true;
-    };
-    
-    document.head.appendChild(s);
-    
-    // Initialize dataLayer and gtag
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function() { 
-      window.dataLayer.push(arguments); 
-    };
-    
-    // Set a timeout to ensure gtag is available
-    setTimeout(() => {
-      if (window.gtag) {
-        window.gtag("js", new Date());
-        window.gtag("config", id, { 
-          send_page_view: false,  // Prevent automatic page view
-          anonymize_ip: true,
-          cookie_flags: "SameSite=None;Secure"
-        });
-      }
-    }, 100);
-    
-  } catch (e) {
-    console.warn("GA initialization error:", e);
-  }
+  // Create script with hardcoded correct ID
+  const s = document.createElement("script");
+  s.id = "ga-script";
+  s.src = `https://www.googletagmanager.com/gtag/js?id=${CORRECT_ID}`;
+  s.async = true;
+  
+  // Add integrity check
+  s.onload = () => {
+    // Verify the ID wasn't tampered
+    if (window.gtag) {
+      // Re-initialize with correct ID
+      window.gtag('config', CORRECT_ID);
+    }
+  };
+  
+  document.head.appendChild(s);
+  
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() { 
+    window.dataLayer.push(arguments); 
+  };
+  
+  window.gtag("js", new Date());
+  window.gtag("config", CORRECT_ID);
 }
 function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
