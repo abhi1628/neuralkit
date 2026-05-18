@@ -1953,6 +1953,7 @@ function UserFeedback({ theme }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
+  const isDark = theme === "dark";
   const ac = isDark ? "#00ffe0" : "#00897b";
 
   async function fetchFeedbacks() {
@@ -2052,7 +2053,7 @@ function UserFeedback({ theme }) {
                     </span>
                   </div>
                   {/* Comment */}
-                  {fb.message && <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, marginBottom: "12px" }}>{escapeHtml(fb.message)}</div>}
+                  {fb.message && <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6 }}>{escapeHtml(fb.message)}</div>}
                 </div>
               ))}
             </div>
