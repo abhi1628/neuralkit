@@ -277,17 +277,59 @@ function escapeHtml(text) {
 }
 
 function loadGA(id) {
+  // Don't load if GA is disabled or in development
+  if (!id || id === "G-FTQS5X9WF3" && window.location.hostname === "localhost") {
+    console.log("GA disabled in development");
+    return;
+  }
+  
+  // Check if already loaded
   if (document.getElementById("ga-script")) return;
-  const s = document.createElement("script");
-  s.id = "ga-script";
-  s.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
-  s.async = true;
-  document.head.appendChild(s);
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { window.dataLayer.push(arguments); }
-  window.gtag = gtag;
-  gtag("js", new Date());
-  gtag("config", id);
+  
+  // Validate the ID format (basic check)
+  if (!id.match(/^G-[A-Z0-9]+$/)) {
+    console.warn("Invalid GA ID format:", id);
+    return;
+  }
+  
+  try {
+    // Create the script element securely
+    const s = document.createElement("script");
+    s.id = "ga-script";
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`;
+    s.async = true;
+    s.integrity = ""; // You could add SRI hash here for extra security
+    s.crossOrigin = "anonymous";
+    
+    // Add error handling
+    s.onerror = () => {
+      console.warn("Failed to load Google Analytics");
+      window.gaDisabled = true;
+    };
+    
+    document.head.appendChild(s);
+    
+    // Initialize dataLayer and gtag
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function() { 
+      window.dataLayer.push(arguments); 
+    };
+    
+    // Set a timeout to ensure gtag is available
+    setTimeout(() => {
+      if (window.gtag) {
+        window.gtag("js", new Date());
+        window.gtag("config", id, { 
+          send_page_view: false,  // Prevent automatic page view
+          anonymize_ip: true,
+          cookie_flags: "SameSite=None;Secure"
+        });
+      }
+    }, 100);
+    
+  } catch (e) {
+    console.warn("GA initialization error:", e);
+  }
 }
 function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
@@ -2742,7 +2784,12 @@ function AppInner() {
   const [termsOpen, setTermsOpen] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => { loadGA(GA_ID); }, []);
+  useEffect(() => { 
+  // Only load GA in production and if not blocked
+  if (process.env.NODE_ENV === 'production' && !window.gaDisabled) {
+    loadGA(GA_ID);
+  }
+}, []);
   useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
