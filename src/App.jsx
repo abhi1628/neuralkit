@@ -2,16 +2,6 @@ import React from 'react';
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useMemo } from "react";
 import confetti from "canvas-confetti";
 
-// Force correct GA ID even if extension tries to change it
-const originalFetch = window.fetch;
-window.fetch = function(...args) {
-  if (args[0] && typeof args[0] === 'string' && args[0].includes('google-analytics')) {
-    args[0] = args[0].replace(/id=G-[A-Z0-9]+/i, 'id=G-FTQS5X9WF3');
-  }
-  return originalFetch.apply(this, args);
-};
-// ===== END OF ADDED CODE =====
-
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
 const GA_ID = "G-FTQS5X9WF3";
@@ -61,31 +51,29 @@ function useThemeStyles() {
   return useMemo(() => ({
     isDark: theme === 'dark',
     bg: {
-      primary: theme === 'dark' ? '#060a0f' : '#fafafa',
+      primary: theme === 'dark' ? '#060a0f' : '#f5f5f5',
       secondary: theme === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
-      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f3f4f6',
+      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f0f0f0',
       elevated: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#ffffff',
-      code: theme === 'dark' ? '#0d1117' : '#f8f9fa',
-      card: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#ffffff',
+      code: theme === 'dark' ? '#0d1117' : '#f5f5f5',
     },
     text: {
-      primary: theme === 'dark' ? '#ffffff' : '#111827',
-      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4b5563',
-      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#6b7280',
+      primary: theme === 'dark' ? '#ffffff' : '#1a1a2e',
+      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4a4a5e',
+      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#7a7a8e',
       inverse: theme === 'dark' ? '#1a1a2e' : '#ffffff',
     },
     border: {
-      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e5e7eb',
-      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : '#d1d5db',
-      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : '#9ca3af',
+      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
+      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)',
     },
-    accent: theme === 'dark' ? '#00ffe0' : '#0d9488',
-    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#ccfbf1',
-    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(13,148,136,0.1)',
-    error: theme === 'dark' ? '#ff6b6b' : '#dc2626',
-    warning: '#f59e0b',
-    success: theme === 'dark' ? '#00ffe0' : '#059669',
-    shadow: theme === 'dark' ? 'none' : '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)',
+    accent: theme === 'dark' ? '#00ffe0' : '#00897b',
+    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#e0f2f1',
+    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(0,137,123,0.15)',
+    error: theme === 'dark' ? '#ff6b6b' : '#d32f2f',
+    warning: '#febc2e',
+    success: theme === 'dark' ? '#00ffe0' : '#2e7d32',
   }), [theme]);
 }
 
@@ -290,34 +278,16 @@ function escapeHtml(text) {
 
 function loadGA(id) {
   if (document.getElementById("ga-script")) return;
-  
-  // Force the correct ID
-  const CORRECT_ID = "G-FTQS5X9WF3";
-  
-  // Create script with hardcoded correct ID
   const s = document.createElement("script");
   s.id = "ga-script";
-  s.src = `https://www.googletagmanager.com/gtag/js?id=${CORRECT_ID}`;
+  s.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
   s.async = true;
-  
-  // Add integrity check
-  s.onload = () => {
-    // Verify the ID wasn't tampered
-    if (window.gtag) {
-      // Re-initialize with correct ID
-      window.gtag('config', CORRECT_ID);
-    }
-  };
-  
   document.head.appendChild(s);
-  
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function() { 
-    window.dataLayer.push(arguments); 
-  };
-  
-  window.gtag("js", new Date());
-  window.gtag("config", CORRECT_ID);
+  function gtag() { window.dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag("js", new Date());
+  gtag("config", id);
 }
 function trackEvent(n, p = {}) { if (window.gtag) window.gtag("event", n, p); }
 
@@ -1815,7 +1785,8 @@ ${code}` }]
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {LANGUAGES.map(l => (
-          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.08)" : "#f3f4f6"), border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "#d1d5db"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.8)" : "#374151"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: lang.value === l.value ? 700 : 500, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }} aria-label={`Switch to ${l.label}`}>
+          <button key={l.value} onClick={() => switchLang(l)} style={{ background: lang.value === l.value ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"), border: lang.value === l.value ? "none" : `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "100px", padding: "8px 18px", color: lang.value === l.value ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"), fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", boxShadow: lang.value === l.value ? "0 0 16px rgba(0,255,224,0.3)" : "none" }} aria-label={`Switch to ${l.label}`}>
+            {l.icon} {l.label}
           </button>
         ))}
         <button onClick={loadExample} className="try-example-btn" style={{ marginLeft: "auto" }}>✨ Try Example</button>
@@ -2766,18 +2737,12 @@ function AppInner() {
   const [activeTool, setActiveTool] = useState(0);
   const [activeSection, setActiveSection] = useState("ai"); // "ai" | "dev"
   const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [visitorCount, setVisitorCount] = useState(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => { 
-  // Only load GA in production and if not blocked
-  if (process.env.NODE_ENV === 'production' && !window.gaDisabled) {
-    loadGA(GA_ID);
-  }
-}, []);
+  useEffect(() => { loadGA(GA_ID); }, []);
   useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -2836,14 +2801,13 @@ Be honest, specific, and constructive.`} />;
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
 
         :root {
-  --bg-primary: #fafafa; --bg-secondary: #ffffff; --bg-tertiary: #f3f4f6;
-  --bg-elevated: #ffffff; --bg-code: #f8f9fa;
-  --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #6b7280; --text-inverse: #ffffff;
-  --accent: #0d9488; --accent-light: #ccfbf1; --accent-glow: rgba(13, 148, 136, 0.1);
-  --border-subtle: #e5e7eb; --border-medium: #d1d5db; --border-strong: #9ca3af;
-  --error: #dc2626; --error-bg: rgba(220, 38, 38, 0.08); --warning: #f59e0b; --success: #059669;
-  --card-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-}
+          --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --bg-tertiary: #f0f0f0;
+          --bg-elevated: #ffffff; --bg-code: #1e1e2e;
+          --text-primary: #1a1a2e; --text-secondary: #4a4a5e; --text-muted: #7a7a8e; --text-inverse: #ffffff;
+          --accent: #00897b; --accent-light: #e0f2f1; --accent-glow: rgba(0, 137, 123, 0.15);
+          --border-subtle: rgba(0, 0, 0, 0.08); --border-medium: rgba(0, 0, 0, 0.15); --border-strong: rgba(0, 0, 0, 0.25);
+          --error: #d32f2f; --error-bg: rgba(211, 47, 47, 0.08); --warning: #f9a825; --success: #2e7d32;
+        }
         [data-theme="dark"] {
           --bg-primary: #060a0f; --bg-secondary: rgba(255,255,255,0.04); --bg-tertiary: rgba(255,255,255,0.03);
           --bg-elevated: rgba(255,255,255,0.06); --bg-code: #0d1117;
@@ -2868,11 +2832,8 @@ Be honest, specific, and constructive.`} />;
         ::-webkit-scrollbar-thumb { background: var(--accent); opacity: 0.3; border-radius: 3px; }
 
         /* Component Styles */
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top: 2px solid #0d9488; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
-[data-theme="dark"] .spinner { border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; }
-        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.08); border: 1px solid rgba(0,255,224,0.25); border-radius: 8px; padding: 6px 14px; color: #0d9488; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
-[data-theme="dark"] .try-example-btn { color: #00ffe0; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); }
-.try-example-btn:hover { background: rgba(0,255,224,0.15); }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #00ffe0; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
         .try-example-btn:hover { background: rgba(0,255,224,0.12); }
         .scroll-to-top { position: fixed; bottom: 60px; right: 24px; z-index: 99; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #00ffe0, #0af); border: none; color: #000; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 24px rgba(0,255,224,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; animation: fadeUp 0.3s ease; }
         .scroll-to-top:hover { transform: scale(1.1); }
@@ -2881,8 +2842,7 @@ Be honest, specific, and constructive.`} />;
         .tool-textarea:focus { border-color: var(--accent); }
         .tool-textarea-error { border-color: rgba(255,80,80,0.4) !important; }
         .run-btn { background: linear-gradient(135deg, #00ffe0 0%, #0af 100%); border: none; border-radius: 10px; padding: 14px 28px; color: #000; font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; justify-content: center; box-shadow: 0 0 24px rgba(0,255,224,0.3); }
-.run-btn-disabled { background: #e5e7eb !important; color: #9ca3af !important; cursor: not-allowed !important; box-shadow: none !important; }
-[data-theme="dark"] .run-btn-disabled { background: rgba(255,255,255,0.08) !important; color: rgba(255,255,255,0.3) !important; }
+        .run-btn-disabled { background: rgba(255,255,255,0.08) !important; color: rgba(255,255,255,0.3) !important; cursor: not-allowed !important; box-shadow: none !important; }
         .error-box { background: var(--error-bg); border: 1px solid rgba(255,80,80,0.3); border-radius: 10px; padding: 14px; color: var(--error); font-size: 0.82rem; font-family: 'Space Mono', monospace; }
         .output-panel { background: var(--accent-light); border: 1px solid var(--border-medium); border-radius: 12px; padding: 24px 28px; }
         .output-header { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
@@ -2905,8 +2865,7 @@ Be honest, specific, and constructive.`} />;
         .new-question-btn { background: rgba(0,255,224,0.08); border: 1px solid var(--accent); border-radius: 10px; padding: 10px 24px; color: var(--accent); font-family: 'Space Mono', monospace; font-size: 0.78rem; cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
         .new-question-btn:hover { background: rgba(0,255,224,0.15); }
         .text-link { background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline; }
-        .code-editor { background: #1e1e2e; color: #e6edf3; }
-        [data-theme="light"] .code-editor { background: #f8f9fa !important; color: #1f2937 !important; border: 1px solid #e5e7eb !important; }
+        .code-editor { background: #0d1117; color: #e6edf3; }
 
         [data-theme="light"] .tool-card-inactive { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
         [data-theme="light"] .tool-card-inactive:hover { border-color: var(--accent) !important; background: var(--bg-elevated) !important; }
@@ -2915,9 +2874,6 @@ Be honest, specific, and constructive.`} />;
 
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
-          .hamburger-btn { display: flex !important; }
-          .nav-links { display: none !important; }
-           nav button:first-of-type { display: none; }
           .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
           .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
           .tools-section { padding: 60px 20px 80px !important; }
@@ -2941,8 +2897,8 @@ Be honest, specific, and constructive.`} />;
 
       <ScrollToTop />
 
-     {/* Navigation */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(250,250,250,0.95)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+      {/* Navigation */}
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
@@ -2953,59 +2909,29 @@ Be honest, specific, and constructive.`} />;
             <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
             <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
           </svg>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#111827" }}>ZeroAPI</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
 
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[
-            { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-            { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-            { label: "Playground", action: () => { document.getElementById("playground").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-            { label: "About", action: () => { document.getElementById("about").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } }
+            { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); } },
+            { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); } },
+            { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
+            { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
           ].map(({ label, action }) => (
-            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#111827")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
+            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
-          <button onClick={() => { document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); }} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
+          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
 
-        {/* Theme Toggle - Desktop */}
-        <button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease", marginLeft: "auto" }}>
+        <button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease", marginLeft: "auto" }}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
 
-        {/* Hamburger Button - Mobile Only */}
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="hamburger-btn" aria-label="Menu" style={{ display: "none", background: "transparent", border: "none", fontSize: "1.6rem", cursor: "pointer", color: theme === 'dark' ? "#fff" : "#111827", marginLeft: "auto" }}>
-          {mobileMenuOpen ? '✕' : '☰'}
-        </button>
-
-        {/* Mobile Sidebar Menu */}
-        {mobileMenuOpen && (
-          <>
-            <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 99 }} />
-            <div className="mobile-menu" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "280px", background: theme === 'dark' ? "#0d1117" : "#ffffff", borderLeft: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "#e5e7eb"}`, padding: "80px 24px 40px", zIndex: 100, display: "flex", flexDirection: "column", gap: "24px", boxShadow: "-4px 0 20px rgba(0,0,0,0.1)" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                {[
-                  { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-                  { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-                  { label: "Playground", action: () => { document.getElementById("playground").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } },
-                  { label: "About", action: () => { document.getElementById("about").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); } }
-                ].map(({ label, action }) => (
-                  <button key={label} onClick={action} style={{ background: "transparent", border: "none", fontSize: "1.1rem", color: theme === 'dark' ? "rgba(255,255,255,0.8)" : "#111827", padding: "12px 0", textAlign: "left", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontWeight: 500, borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "#e5e7eb"}` }}>{label}</button>
-                ))}
-                <button onClick={() => { window.open("https://www.youtube.com/@pyofpython9668", "_blank"); setMobileMenuOpen(false); }} style={{ background: "transparent", border: "none", fontSize: "1rem", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "#4b5563", padding: "12px 0", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>▶ YouTube</button>
-                <button onClick={() => { document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); setMobileMenuOpen(false); }} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "10px", padding: "14px", color: "#000", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", marginTop: "8px" }}>Try Free →</button>
-                <div style={{ paddingTop: "16px", borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "#e5e7eb"}` }}>
-                  <button onClick={() => { toggleTheme(); setMobileMenuOpen(false); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "#e5e7eb"}`, borderRadius: "10px", padding: "10px", width: "100%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "0.9rem", color: theme === 'dark' ? "#fff" : "#111827" }}>
-                    {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
       {/* Hero */}
