@@ -1583,8 +1583,6 @@ function isResumeLike(text) {
     }
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
-    if (label === "Analyze Resume") { fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "resumes" }) }).catch(() => {}); }
-    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {});
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
@@ -1944,60 +1942,6 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
   );
 }
 
-// ── Usage Stats ──────────────────────────────────────────────
-function UsageStats({ theme }) {
-  const [stats, setStats] = useState(null);
-  const [displayed, setDisplayed] = useState({ resumes: 0, schemas: 0, interviews: 0, total: 0 });
-  const isDark = theme === "dark";
-  const ac = isDark ? "#00ffe0" : "#00897b";
-
-  useEffect(() => {
-    fetch("/api/stats").then(r => r.json()).then(d => setStats(d)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!stats) return;
-    const targets = { resumes: stats.resumes || 0, schemas: stats.schemas || 0, interviews: stats.interviews || 0, total: stats.total || 0 };
-    const steps = 60; const stepTime = 1800 / steps; let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      const ease = 1 - Math.pow(1 - step / steps, 3);
-      setDisplayed({ resumes: Math.round(targets.resumes * ease), schemas: Math.round(targets.schemas * ease), interviews: Math.round(targets.interviews * ease), total: Math.round(targets.total * ease) });
-      if (step >= steps) clearInterval(timer);
-    }, stepTime);
-    return () => clearInterval(timer);
-  }, [stats]);
-
-  const items = [
-    { icon: "📋", label: "Resumes Analyzed", value: displayed.resumes },
-    { icon: "🗄️", label: "ER Diagrams Generated", value: displayed.schemas },
-    { icon: "🎤", label: "Interviews Completed", value: displayed.interviews },
-    { icon: "⚡", label: "Total Tool Uses", value: displayed.total },
-  ];
-
-  return (
-    <section style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "48px 32px", background: isDark ? "rgba(0,255,224,0.02)" : "rgba(0,137,123,0.03)" }}>
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Live Usage Stats</div>
-          <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem" }}>Real numbers — updated every time someone uses a tool.</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px" }}>
-          {items.map(item => (
-            <div key={item.label} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)"}`, borderRadius: "14px", padding: "20px 16px", textAlign: "center" }}>
-              <div style={{ fontSize: "1.6rem", marginBottom: "8px" }}>{item.icon}</div>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.8rem", fontWeight: 800, background: `linear-gradient(135deg,${ac},#0af)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "6px" }}>
-                {stats ? item.value.toLocaleString() : "—"}
-              </div>
-              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{item.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ── User Feedback ───────────────────────────────────────────
 function UserFeedback({ theme }) {
   const [name, setName] = useState("");
@@ -2009,16 +1953,6 @@ function UserFeedback({ theme }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
-  const [localReactions, setLocalReactions] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("zeroapi_reactions") || "{}"); }
-    catch { return {}; }
-  });
-
-  useEffect(() => {
-    try { localStorage.setItem("zeroapi_reactions", JSON.stringify(localReactions)); }
-    catch { /* silent */ }
-  }, [localReactions]);
-  const isDark = theme === "dark";
   const ac = isDark ? "#00ffe0" : "#00897b";
 
   async function fetchFeedbacks() {
@@ -2054,23 +1988,6 @@ function UserFeedback({ theme }) {
     setSubmitting(false);
   }
 
-  async function handleClap(id, type) {
-    // Store locally — never overwritten by fetchFeedbacks interval
-    setLocalReactions(prev => ({
-      ...prev,
-      [id]: {
-        likes:    (prev[id]?.likes    || 0) + (type === "up"   ? 1 : 0),
-        dislikes: (prev[id]?.dislikes || 0) + (type === "down" ? 1 : 0),
-      }
-    }));
-    // Fire to backend silently
-    try {
-      await fetch("/api/feedback/react", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, type }),
-      });
-    } catch { /* silent */ }
-  }
 
   const stars = [1, 2, 3, 4, 5];
 
@@ -2136,24 +2053,6 @@ function UserFeedback({ theme }) {
                   </div>
                   {/* Comment */}
                   {fb.message && <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, marginBottom: "12px" }}>{escapeHtml(fb.message)}</div>}
-                  {/* 👍 👎 Clap Buttons */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "10px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
-                    <span style={{ fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", fontFamily: "'Space Mono',monospace" }}>Helpful?</span>
-                    {[{ type: "up", emoji: "👍", count: (fb.likes || 0) + (localReactions[fb.id]?.likes || 0), hoverBg: "rgba(0,200,100,0.12)", hoverBorder: "rgba(0,200,100,0.3)" },
-                      { type: "down", emoji: "👎", count: (fb.dislikes || 0) + (localReactions[fb.id]?.dislikes || 0), hoverBg: "rgba(255,80,80,0.1)", hoverBorder: "rgba(255,80,80,0.3)" }].map(btn => (
-                      <button key={btn.type} onClick={() => handleClap(fb.id, btn.type)}
-                        style={{ display: "flex", alignItems: "center", gap: "5px", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "4px 12px", cursor: "pointer", transition: "all 0.15s", userSelect: "none" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = btn.hoverBg; e.currentTarget.style.borderColor = btn.hoverBorder; e.currentTarget.style.transform = "scale(1.08)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"; e.currentTarget.style.transform = "scale(1)"; }}
-                        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.94)"; }}
-                        onMouseUp={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
-                        aria-label={btn.type === "up" ? "Thumbs up" : "Thumbs down"}>
-                        <span style={{ fontSize: "0.88rem" }}>{btn.emoji}</span>
-                        <span style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.6)", minWidth: "12px" }}>{btn.count}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               ))}
             </div>
           )}
@@ -2253,8 +2152,6 @@ CREATE TABLE enrollments (
       if (t) { const c = t.cols.find(c => c.name === fk.fromCol); if (c) c.fk = { to: fk.to, toCol: fk.toCol }; }
     });
     setTables(parsed.map((t, i) => ({ ...t, x: 30 + (i % 3) * 280, y: 30 + Math.floor(i / 3) * 240 })));
-    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "schemas" }) }).catch(() => {});
-    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {});
   }
 
   const COL_H = 28, HEADER_H = 40, PAD = 14, MIN_W = 200;
@@ -2631,7 +2528,7 @@ function MockInterview({ theme }) {
       const eval_ = JSON.parse(raw.replace(/```json|```/g, "").trim());
       const newResult = { q: questions[qNum], a: answer, score: eval_.score || 5, feedback: eval_.feedback || "", strength: eval_.strength || "", improvement: eval_.improvement || "", time: 120 - timeLeft };
       setResults(prev => [...prev, newResult]);
-      if (qNum + 1 >= questions.length) { setStep("report"); fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "interviews" }) }).catch(() => {}); fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {}); }
+      if (qNum + 1 >= questions.length) { setStep("report"); }
       else { setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
     } catch { setError("Evaluation failed. Skipping to next question."); setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
     setLoading(false);
@@ -3115,7 +3012,6 @@ Be honest, specific, and constructive.`} />;
       </section>
 
       <TriviaSection theme={theme} />
-      <UsageStats theme={theme} />
       <CodePlayground theme={theme} />
 
       {/* About */}
