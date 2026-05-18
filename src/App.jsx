@@ -2009,7 +2009,15 @@ function UserFeedback({ theme }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
-  const [localReactions, setLocalReactions] = useState({});
+  const [localReactions, setLocalReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("zeroapi_reactions") || "{}"); }
+    catch { return {}; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem("zeroapi_reactions", JSON.stringify(localReactions)); }
+    catch { /* silent */ }
+  }, [localReactions]);
   const isDark = theme === "dark";
   const ac = isDark ? "#00ffe0" : "#00897b";
 
