@@ -1583,6 +1583,8 @@ function isResumeLike(text) {
     }
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
+    if (label === "Analyze Resume") { fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "resumes" }) }).catch(() => {}); }
+    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {});
     try {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
@@ -1942,6 +1944,60 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
   );
 }
 
+// ── Usage Stats ──────────────────────────────────────────────
+function UsageStats({ theme }) {
+  const [stats, setStats] = useState(null);
+  const [displayed, setDisplayed] = useState({ resumes: 0, schemas: 0, interviews: 0, total: 0 });
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
+
+  useEffect(() => {
+    fetch("/api/stats").then(r => r.json()).then(d => setStats(d)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!stats) return;
+    const targets = { resumes: stats.resumes || 0, schemas: stats.schemas || 0, interviews: stats.interviews || 0, total: stats.total || 0 };
+    const steps = 60; const stepTime = 1800 / steps; let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      const ease = 1 - Math.pow(1 - step / steps, 3);
+      setDisplayed({ resumes: Math.round(targets.resumes * ease), schemas: Math.round(targets.schemas * ease), interviews: Math.round(targets.interviews * ease), total: Math.round(targets.total * ease) });
+      if (step >= steps) clearInterval(timer);
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [stats]);
+
+  const items = [
+    { icon: "📋", label: "Resumes Analyzed", value: displayed.resumes },
+    { icon: "🗄️", label: "ER Diagrams Generated", value: displayed.schemas },
+    { icon: "🎤", label: "Interviews Completed", value: displayed.interviews },
+    { icon: "⚡", label: "Total Tool Uses", value: displayed.total },
+  ];
+
+  return (
+    <section style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`, padding: "48px 32px", background: isDark ? "rgba(0,255,224,0.02)" : "rgba(0,137,123,0.03)" }}>
+      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Live Usage Stats</div>
+          <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem" }}>Real numbers — updated every time someone uses a tool.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px" }}>
+          {items.map(item => (
+            <div key={item.label} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)", border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)"}`, borderRadius: "14px", padding: "20px 16px", textAlign: "center" }}>
+              <div style={{ fontSize: "1.6rem", marginBottom: "8px" }}>{item.icon}</div>
+              <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.8rem", fontWeight: 800, background: `linear-gradient(135deg,${ac},#0af)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "6px" }}>
+                {stats ? item.value.toLocaleString() : "—"}
+              </div>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── User Feedback ───────────────────────────────────────────
 function UserFeedback({ theme }) {
   const [name, setName] = useState("");
@@ -1953,6 +2009,8 @@ function UserFeedback({ theme }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loadingFeedbacks, setLoadingFeedbacks] = useState(true);
   const [error, setError] = useState("");
+  const isDark = theme === "dark";
+  const ac = isDark ? "#00ffe0" : "#00897b";
 
   async function fetchFeedbacks() {
     try {
@@ -1974,8 +2032,7 @@ function UserFeedback({ theme }) {
     setSubmitting(true); setError("");
     try {
       const r = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim() || "Anonymous", rating, message: comment.trim() }),
       });
       const data = await r.json();
@@ -1988,14 +2045,28 @@ function UserFeedback({ theme }) {
     setSubmitting(false);
   }
 
+  async function handleClap(id, type) {
+    // Optimistic UI — update count immediately
+    setFeedbacks(prev => prev.map(fb =>
+      fb.id === id
+        ? { ...fb, likes: type === "up" ? (fb.likes || 0) + 1 : (fb.likes || 0), dislikes: type === "down" ? (fb.dislikes || 0) + 1 : (fb.dislikes || 0) }
+        : fb
+    ));
+    try {
+      await fetch("/api/feedback/react", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, type }),
+      });
+    } catch { /* silent — optimistic already shown */ }
+  }
+
   const stars = [1, 2, 3, 4, 5];
-  const accentColor = "var(--accent)";
 
   return (
     <section style={{ maxWidth: "700px", margin: "0 auto", padding: "0 24px 80px" }}>
-      <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
-        <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
+      <div style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "20px", padding: "36px" }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "8px" }}>◆ Share Your Experience</div>
+        <p style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem", marginBottom: "24px" }}>How was your experience with ZeroAPI? Your feedback helps us improve.</p>
 
         {!submitted ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -2004,53 +2075,72 @@ function UserFeedback({ theme }) {
               {stars.map(s => (
                 <button key={s} onClick={() => setRating(s)} onMouseEnter={() => setHoverRating(s)} onMouseLeave={() => setHoverRating(0)}
                   style={{ background: "none", border: "none", fontSize: "1.4rem", cursor: "pointer", padding: "0 2px", transition: "transform 0.2s", transform: (hoverRating || rating) >= s ? "scale(1.2)" : "scale(1)" }} aria-label={`Rate ${s} stars`}>
-                  <span style={{ color: (hoverRating || rating) >= s ? "#febc2e" : (theme === 'dark' ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)") }}>★</span>
+                  <span style={{ color: (hoverRating || rating) >= s ? "#febc2e" : (isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)") }}>★</span>
                 </button>
               ))}
-              <span style={{ fontSize: "0.72rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
+              <span style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
             </div>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
-              onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
-              onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your name" />
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
-              style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
-              onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
-              onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your feedback" />
-            {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono', monospace" }}>⚠ {error}</div>}
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name (optional)"
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+              onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your name" />
+            <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
+              onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your feedback" />
+            {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono',monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
-              style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }} aria-label="Submit feedback">
+              style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#00ffe0,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono',monospace", display: "flex", alignItems: "center", gap: "8px" }} aria-label="Submit feedback">
               {submitting ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Submitting...</> : "Submit Feedback →"}
             </button>
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "20px" }}>
             <div style={{ fontSize: "2rem", marginBottom: "10px" }}>🙏</div>
-            <div style={{ color: accentColor, fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
-            <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
+            <div style={{ color: ac, fontSize: "1rem", fontWeight: 600, marginBottom: "6px" }}>Thank you for your feedback!</div>
+            <div style={{ color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", fontSize: "0.8rem" }}>Your experience is now visible to everyone.</div>
           </div>
         )}
 
-        <div style={{ marginTop: "32px", borderTop: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, paddingTop: "24px" }}>
+        {/* ── Recent Feedback ── */}
+        <div style={{ marginTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, paddingTop: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
-            {feedbacks.length > 0 && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: `${accentColor}66` }}>{feedbacks.length} review{feedbacks.length !== 1 ? "s" : ""} · live</div>}
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", letterSpacing: "0.15em", textTransform: "uppercase" }}>◆ Recent Feedback</div>
+            {feedbacks.length > 0 && <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: `${ac}88` }}>{feedbacks.length} review{feedbacks.length !== 1 ? "s" : ""} · live</div>}
           </div>
-          {loadingFeedbacks && <div style={{ textAlign: "center", padding: "20px", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem" }}><span className="spinner" style={{ marginRight: "8px" }} />Loading feedback...</div>}
-          {!loadingFeedbacks && feedbacks.length === 0 && <div style={{ textAlign: "center", padding: "20px", color: theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)", fontSize: "0.82rem" }}>No feedback yet. Be the first to share! 🌟</div>}
+          {loadingFeedbacks && <div style={{ textAlign: "center", padding: "20px", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace", fontSize: "0.78rem" }}><span className="spinner" style={{ marginRight: "8px" }} />Loading feedback...</div>}
+          {!loadingFeedbacks && feedbacks.length === 0 && <div style={{ textAlign: "center", padding: "20px", color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.35)", fontSize: "0.82rem" }}>No feedback yet. Be the first to share! 🌟</div>}
           {feedbacks.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "400px", overflowY: "auto", paddingRight: "4px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "480px", overflowY: "auto", paddingRight: "4px" }}>
               {feedbacks.map(fb => (
-                <div key={fb.id} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "14px 18px" }}>
+                <div key={fb.id} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "14px 18px" }}>
+                  {/* Header */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
-                    <span style={{ fontSize: "0.68rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono', monospace" }}>
-                      {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "numeric", hour12: true }).replace(',', ' at')}
+                    <span style={{ fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>
+                      {new Date(fb.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, textAlign: "left" }}>{escapeHtml(fb.message)}</div>
+                  {/* Comment */}
+                  {fb.message && <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6, marginBottom: "12px" }}>{escapeHtml(fb.message)}</div>}
+                  {/* 👍 👎 Clap Buttons */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingTop: "10px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
+                    <span style={{ fontSize: "0.62rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", fontFamily: "'Space Mono',monospace" }}>Helpful?</span>
+                    {[{ type: "up", emoji: "👍", count: fb.likes || 0, hoverBg: "rgba(0,200,100,0.12)", hoverBorder: "rgba(0,200,100,0.3)" },
+                      { type: "down", emoji: "👎", count: fb.dislikes || 0, hoverBg: "rgba(255,80,80,0.1)", hoverBorder: "rgba(255,80,80,0.3)" }].map(btn => (
+                      <button key={btn.type} onClick={() => handleClap(fb.id, btn.type)}
+                        style={{ display: "flex", alignItems: "center", gap: "5px", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "4px 12px", cursor: "pointer", transition: "all 0.15s", userSelect: "none" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = btn.hoverBg; e.currentTarget.style.borderColor = btn.hoverBorder; e.currentTarget.style.transform = "scale(1.08)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"; e.currentTarget.style.transform = "scale(1)"; }}
+                        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.94)"; }}
+                        onMouseUp={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+                        aria-label={btn.type === "up" ? "Thumbs up" : "Thumbs down"}>
+                        <span style={{ fontSize: "0.88rem" }}>{btn.emoji}</span>
+                        <span style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.6)", minWidth: "12px" }}>{btn.count}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -2060,6 +2150,7 @@ function UserFeedback({ theme }) {
     </section>
   );
 }
+
 
 // ── Particle ─────────────────────────────────────────────────
 function Particle({ style }) {
@@ -2150,6 +2241,8 @@ CREATE TABLE enrollments (
       if (t) { const c = t.cols.find(c => c.name === fk.fromCol); if (c) c.fk = { to: fk.to, toCol: fk.toCol }; }
     });
     setTables(parsed.map((t, i) => ({ ...t, x: 30 + (i % 3) * 280, y: 30 + Math.floor(i / 3) * 240 })));
+    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "schemas" }) }).catch(() => {});
+    fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {});
   }
 
   const COL_H = 28, HEADER_H = 40, PAD = 14, MIN_W = 200;
@@ -2526,7 +2619,7 @@ function MockInterview({ theme }) {
       const eval_ = JSON.parse(raw.replace(/```json|```/g, "").trim());
       const newResult = { q: questions[qNum], a: answer, score: eval_.score || 5, feedback: eval_.feedback || "", strength: eval_.strength || "", improvement: eval_.improvement || "", time: 120 - timeLeft };
       setResults(prev => [...prev, newResult]);
-      if (qNum + 1 >= questions.length) { setStep("report"); }
+      if (qNum + 1 >= questions.length) { setStep("report"); fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "interviews" }) }).catch(() => {}); fetch("/api/stats/increment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: "total" }) }).catch(() => {}); }
       else { setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
     } catch { setError("Evaluation failed. Skipping to next question."); setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
     setLoading(false);
@@ -3010,6 +3103,7 @@ Be honest, specific, and constructive.`} />;
       </section>
 
       <TriviaSection theme={theme} />
+      <UsageStats theme={theme} />
       <CodePlayground theme={theme} />
 
       {/* About */}
