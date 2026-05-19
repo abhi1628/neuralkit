@@ -306,6 +306,7 @@ function loadScript(src) {
     s.src = src;
     s.onload = resolve;
     s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
+    s.onload = resolve;
     document.head.appendChild(s);
     
     // Timeout after 10 seconds
@@ -3018,18 +3019,14 @@ function AppInner() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const currentYear = new Date().getFullYear();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => { loadGA(GA_ID); }, []);
   useEffect(() => { fetchVisitorCount().then(setVisitorCount); }, []);
   useEffect(() => {
-  const handler = () => {
-    setScrolled(window.scrollY > 40);
-    if (menuOpen) setMenuOpen(false);
-  };
-  window.addEventListener("scroll", handler);
-  return () => window.removeEventListener("scroll", handler);
-}, [menuOpen]);
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
 
   const handleToolSwitch = useCallback((index) => {
     setActiveTool(index);
@@ -3154,85 +3151,23 @@ Be honest, specific, and constructive.`} />;
         [data-theme="light"] .code-editor { background: #1e1e2e !important; color: #e6edf3 !important; }
 
         @media (max-width: 768px) {
-  /* Hamburger button - show on mobile */
-  .hamburger-btn { 
-    display: flex !important; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-  }
-  /* ADD THIS: Show the Try Free button on mobile */
-  .nav-try-btn {
-    display: block !important;
-    padding: 6px 12px !important;  /* Make it compact */
-    font-size: 0.75rem !important;
-    white-space: nowrap;
-  }
-  /* Nav links - hidden by default, full-screen overlay when open */
-  .nav-links { 
-    display: none !important;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bg-primary);
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 0 !important;
-    padding: 20px 24px;
-    z-index: 99;
-    border-top: 1px solid var(--border-subtle);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-  
-  /* Show nav links when menu is open */
-  .nav-links-open { 
-    display: flex !important; 
-  }
-  
-  /* Style each nav item in mobile menu */
-  .nav-links span, 
-  .nav-links button:not(.nav-try-btn) {
-    width: 100%;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 1.1rem !important;
-    color: var(--text-primary) !important;
-  }
-  
-  /* YouTube icon in mobile menu */
-  .nav-links span[title="YouTube: pyofpython"] {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  
-  /* Try Free button in mobile menu */
-  .nav-links button.nav-try-btn {
-    width: 100%;
-    margin-top: 20px;
-    justify-content: center;
-    padding: 14px 24px;
-    font-size: 0.95rem !important;
-  }
-  
-  .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
-  .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
-  .tools-section { padding: 60px 20px 80px !important; }
-  .tool-row { flex-direction: column !important; }
-  .tool-panel { padding: 24px !important; }
-  .mcq-grid { grid-template-columns: 1fr !important; }
-  .trivia-grid { grid-template-columns: 1fr !important; }
-  .trivia-section { padding: 40px 20px !important; }
-  #playground { padding: 60px 20px !important; }
-  .about-section { padding: 60px 20px !important; }
-  .about-buttons { flex-direction: column !important; align-items: center !important; }
-  .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
-  nav { padding: 14px 20px !important; }
-  .nav-try-btn { display: block !important; }
-  footer { padding: 28px 20px !important; }
-}
+          .nav-links { display: none !important; }
+          .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
+          .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
+          .tools-section { padding: 60px 20px 80px !important; }
+          .tool-row { flex-direction: column !important; }
+          .tool-panel { padding: 24px !important; }
+          .mcq-grid { grid-template-columns: 1fr !important; }
+          .trivia-grid { grid-template-columns: 1fr !important; }
+          .trivia-section { padding: 40px 20px !important; }
+          #playground { padding: 60px 20px !important; }
+          .about-section { padding: 60px 20px !important; }
+          .about-buttons { flex-direction: column !important; align-items: center !important; }
+          .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
+          nav { padding: 14px 20px !important; }
+          .nav-try-btn { display: block !important; }
+          footer { padding: 28px 20px !important; }
+        }
       `}</style>
 
       {privacyOpen && <Modal title="Privacy Policy" content="ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required." onClose={() => setPrivacyOpen(false)} />}
@@ -3241,8 +3176,8 @@ Be honest, specific, and constructive.`} />;
       <ScrollToTop />
 
       {/* Navigation */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0  }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
@@ -3255,86 +3190,26 @@ Be honest, specific, and constructive.`} />;
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
 
-        <div className={`nav-links ${menuOpen ? 'nav-links-open' : ''}`} style={{ display: "flex", gap: "32px", alignItems: "center", minWidth: 0 }}>
+        <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
           {[
             { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); } },
             { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); } },
             { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
           ].map(({ label, action }) => (
-            <span key={label} onClick={() => { action(); setMenuOpen(false); }} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
+            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
-          <button 
-  onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
-  className="mobile-cta-btn"
-  style={{ 
-    display: "none", // hidden on desktop, shown on mobile via CSS
-    background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
-    border: "none", 
-    borderRadius: "8px", 
-    padding: "8px 14px", 
-    color: "#000", 
-    fontWeight: 700, 
-    fontSize: "0.75rem", 
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-    fontFamily: "'Space Mono', monospace"
-  }}
->
-  Try Free →
-</button>
+          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
         </div>
 
-        {/* Right-side controls: hamburger + theme + try */}
-<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-        {/* Hamburger - mobile only */}
-<button 
-  onClick={() => setMenuOpen(!menuOpen)} 
-  aria-label="Toggle menu"
-  style={{ 
-    display: "none",  // hidden on desktop
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    padding: "8px",
-    //marginLeft: "auto",
-    //marginRight: "12px"
-  }}
-  className="hamburger-btn"
->
-  <div style={{ 
-    width: "22px", 
-    height: "2px", 
-    background: theme === 'dark' ? "#fff" : "#1a1a1a",
-    marginBottom: menuOpen ? "0" : "6px",
-    transform: menuOpen ? "rotate(45deg) translate(0, 2px)" : "none",
-    transition: "all 0.3s ease"
-  }} />
-  <div style={{ 
-    width: "22px", 
-    height: "2px", 
-    background: theme === 'dark' ? "#fff" : "#1a1a1a",
-    marginBottom: menuOpen ? "0" : "6px",
-    opacity: menuOpen ? "0" : "1",
-    transition: "all 0.3s ease"
-  }} />
-  <div style={{ 
-    width: "22px", 
-    height: "2px", 
-    background: theme === 'dark' ? "#fff" : "#1a1a1a",
-    transform: menuOpen ? "rotate(-45deg) translate(0, -2px)" : "none",
-    transition: "all 0.3s ease"
-  }} />
-</button>
+        <button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease", marginLeft: "auto" }}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
 
-<button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease" }}>
-  {theme === 'dark' ? '☀️' : '🌙'}
-</button>
-
-        //<button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
+        <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
       {/* Hero */}
