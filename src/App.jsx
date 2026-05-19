@@ -3334,7 +3334,7 @@ Be honest, specific, and constructive.`} />;
   {theme === 'dark' ? '☀️' : '🌙'}
 </button>
 
-        //<button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
+        /*<button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>*/
       </nav>
 
       {/* Hero */}
