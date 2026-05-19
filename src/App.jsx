@@ -3161,7 +3161,13 @@ Be honest, specific, and constructive.`} />;
     align-items: center; 
     justify-content: center; 
   }
-  
+  /* ADD THIS: Show the Try Free button on mobile */
+  .nav-try-btn {
+    display: block !important;
+    padding: 6px 12px !important;  /* Make it compact */
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+  }
   /* Nav links - hidden by default, full-screen overlay when open */
   .nav-links { 
     display: none !important;
@@ -3235,8 +3241,8 @@ Be honest, specific, and constructive.`} />;
       <ScrollToTop />
 
       {/* Navigation */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0  }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
@@ -3249,7 +3255,7 @@ Be honest, specific, and constructive.`} />;
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
 
-        <div className={`nav-links ${menuOpen ? 'nav-links-open' : ''}`} style={{ display: "flex", gap: "32px", alignItems: "center" }}>
+        <div className={`nav-links ${menuOpen ? 'nav-links-open' : ''}`} style={{ display: "flex", gap: "32px", alignItems: "center", minWidth: 0 }}>
           {[
             { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); } },
             { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); } },
@@ -3261,9 +3267,29 @@ Be honest, specific, and constructive.`} />;
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
-          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#000", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", letterSpacing: "0.03em" }}>Try Free →</button>
+          <button 
+  onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
+  className="mobile-cta-btn"
+  style={{ 
+    display: "none", // hidden on desktop, shown on mobile via CSS
+    background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
+    border: "none", 
+    borderRadius: "8px", 
+    padding: "8px 14px", 
+    color: "#000", 
+    fontWeight: 700, 
+    fontSize: "0.75rem", 
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    fontFamily: "'Space Mono', monospace"
+  }}
+>
+  Try Free →
+</button>
         </div>
 
+        {/* Right-side controls: hamburger + theme + try */}
+<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
         {/* Hamburger - mobile only */}
 <button 
   onClick={() => setMenuOpen(!menuOpen)} 
@@ -3274,8 +3300,8 @@ Be honest, specific, and constructive.`} />;
     border: "none",
     cursor: "pointer",
     padding: "8px",
-    marginLeft: "auto",
-    marginRight: "12px"
+    //marginLeft: "auto",
+    //marginRight: "12px"
   }}
   className="hamburger-btn"
 >
@@ -3308,7 +3334,7 @@ Be honest, specific, and constructive.`} />;
   {theme === 'dark' ? '☀️' : '🌙'}
 </button>
 
-        <button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
+        //<button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
       {/* Hero */}
