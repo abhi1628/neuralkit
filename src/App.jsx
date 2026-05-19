@@ -3113,8 +3113,10 @@ Be honest, specific, and constructive.`} />;
         ::-webkit-scrollbar-thumb { background: var(--accent); opacity: 0.3; border-radius: 3px; }
 
         /* Component Styles */
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
-        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #00ffe0; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top: 2px solid #0d9488; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+[data-theme="dark"] .spinner { border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; }
+        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #0d9488; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+[data-theme="dark"] .try-example-btn { color: #00ffe0; }
         .try-example-btn:hover { background: rgba(0,255,224,0.12); }
         .scroll-to-top { position: fixed; bottom: 60px; right: 24px; z-index: 99; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #00ffe0, #0af); border: none; color: #000; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 24px rgba(0,255,224,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; animation: fadeUp 0.3s ease; }
         .scroll-to-top:hover { transform: scale(1.1); }
@@ -3153,55 +3155,43 @@ Be honest, specific, and constructive.`} />;
         [data-theme="light"] .output-panel { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
         [data-theme="light"] .code-editor { background: #1e1e2e !important; color: #e6edf3 !important; }
 
-        @media (max-width: 768px) {
-  /* Hamburger button - show on mobile */
-  .hamburger-btn { 
-    display: flex !important; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-  }
+       @media (max-width: 768px) {
+  .hamburger-btn { display: flex !important; flex-direction: column; }
   
-  /* Hide desktop theme toggle on mobile (hamburger takes its place) */
-  nav > div:last-child button:first-child {
-    display: flex !important; /* Keep hamburger visible */
-  }
-  
-  /* Mobile CTA button - show in mobile menu */
-  .mobile-cta-btn {
-    display: block !important;
-    width: 100% !important;
-    margin-top: 20px !important;
-    padding: 12px !important;
-    font-size: 0.9rem !important;
-  }
-  
-  /* Nav links - slide out from right */
-  .nav-links { 
+  .menu-overlay {
     position: fixed;
-    top: 70px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 98;
+  }
+  
+  .nav-links {
+    position: fixed;
+    top: 0;
     right: 0;
     bottom: 0;
     width: 280px;
-    background: var(--bg-primary);
+    background: var(--bg-primary) !important;
+    backdrop-filter: none !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 0 !important;
-    padding: 20px 24px;
+    padding: 80px 24px 24px;
     z-index: 99;
-    border-left: 1px solid var(--border-subtle);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.15);
     transform: translateX(100%);
     transition: transform 0.3s ease;
     display: flex !important;
+    /*backdrop-filter: none !important;*/
   }
   
-  /* Show nav links when menu is open */
-  .nav-links-open { 
-    transform: translateX(0) !important; 
+  .nav-links-open {
+    transform: translateX(0) !important;
   }
-  
+    
   /* Style each nav item in mobile menu */
   .nav-links span, 
   .nav-links .mobile-cta-btn {
@@ -3247,7 +3237,24 @@ Be honest, specific, and constructive.`} />;
 
       {/* Navigation */}
             <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+          {/* ← ADD OVERLAY HERE, RIGHT AFTER nav opens */}
+  {menuOpen && (
+    <div 
+      className="menu-overlay"
+      onClick={() => setMenuOpen(false)}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0,0,0,0.5)",
+        zIndex: 98,
+        transition: "all 0.3s ease"
+      }}
+    />
+  )}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
