@@ -306,7 +306,6 @@ function loadScript(src) {
     s.src = src;
     s.onload = resolve;
     s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
-    s.onload = resolve;
     document.head.appendChild(s);
     
     // Timeout after 10 seconds
