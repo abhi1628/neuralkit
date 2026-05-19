@@ -2085,8 +2085,8 @@ function Modal({ title, content, onClose }) {
 
 // ── Dev Tools ─────────────────────────────────────────────────
 const DEV_TOOLS = [
-  { id: "schema",    icon: "🗄️", name: "Schema Visualizer",  tagline: "Paste SQL → instant ER diagram with relationships" },
-  { id: "csv",       icon: "📊", name: "CSV Visualizer",      tagline: "Paste or upload CSV → interactive bar, line & pie charts" },
+  { id: "schema",    icon: "🗄️", name: "Schema Visualizer",  tagline: "Upload .sql file or paste SQL → instant ER diagram with relationships" },
+  { id: "csv",       icon: "📊", name: "CSV Visualizer",      tagline: "Upload or paste CSV → 9 chart types: Bar, Line, Area, Pie, Donut, Scatter, H-Bar, Stacked & Table" },
   { id: "interview", icon: "🎤", name: "Mock Interview",      tagline: "Pick a role → AI questions → scored report card" },
 ];
 
