@@ -3113,10 +3113,8 @@ Be honest, specific, and constructive.`} />;
         ::-webkit-scrollbar-thumb { background: var(--accent); opacity: 0.3; border-radius: 3px; }
 
         /* Component Styles */
-        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.1); border-top: 2px solid #0d9488; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
-[data-theme="dark"] .spinner { border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; }
-        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #0d9488; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
-[data-theme="dark"] .try-example-btn { color: #00ffe0; }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
+        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #00ffe0; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
         .try-example-btn:hover { background: rgba(0,255,224,0.12); }
         .scroll-to-top { position: fixed; bottom: 60px; right: 24px; z-index: 99; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #00ffe0, #0af); border: none; color: #000; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 24px rgba(0,255,224,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; animation: fadeUp 0.3s ease; }
         .scroll-to-top:hover { transform: scale(1.1); }
@@ -3155,63 +3153,70 @@ Be honest, specific, and constructive.`} />;
         [data-theme="light"] .output-panel { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
         [data-theme="light"] .code-editor { background: #1e1e2e !important; color: #e6edf3 !important; }
 
-       @media (max-width: 768px) {
-  .hamburger-btn { display: flex !important; flex-direction: column; }
-  
-  .menu-overlay {
+        @media (max-width: 768px) {
+  /* Hamburger button - show on mobile */
+  .hamburger-btn { 
+    display: flex !important; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+  }
+  /* ADD THIS: Show the Try Free button on mobile */
+  .nav-try-btn {
+    display: block !important;
+    padding: 6px 12px !important;  /* Make it compact */
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+  }
+  /* Nav links - hidden by default, full-screen overlay when open */
+  .nav-links { 
+    display: none !important;
     position: fixed;
-    top: 0;
+    top: 60px;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 98;
-  }
-  
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 280px;
-    background: var(--bg-primary) !important;
-    backdrop-filter: none !important;
+    background: var(--bg-primary);
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 0 !important;
-    padding: 80px 24px 24px;
+    padding: 20px 24px;
     z-index: 99;
-    box-shadow: -4px 0 20px rgba(0,0,0,0.15);
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    display: flex !important;
-    /*backdrop-filter: none !important;*/
+    border-top: 1px solid var(--border-subtle);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
   
-  .nav-links-open {
-    transform: translateX(0) !important;
+  /* Show nav links when menu is open */
+  .nav-links-open { 
+    display: flex !important; 
   }
-    
+  
   /* Style each nav item in mobile menu */
   .nav-links span, 
-  .nav-links .mobile-cta-btn {
+  .nav-links button:not(.nav-try-btn) {
     width: 100%;
     padding: 16px 0;
     border-bottom: 1px solid var(--border-subtle);
-    font-size: 1rem !important;
-  }
-  
-  .nav-links span:last-of-type {
-    border-bottom: none;
+    font-size: 1.1rem !important;
+    color: var(--text-primary) !important;
   }
   
   /* YouTube icon in mobile menu */
   .nav-links span[title="YouTube: pyofpython"] {
     padding: 16px 0;
     border-bottom: 1px solid var(--border-subtle);
-    justify-content: flex-start;
   }
-    
+  
+  /* Try Free button in mobile menu */
+  .nav-links button.nav-try-btn {
+    width: 100%;
+    margin-top: 20px;
+    justify-content: center;
+    padding: 14px 24px;
+    font-size: 0.95rem !important;
+  }
+  
   .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
   .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
   .tools-section { padding: 60px 20px 80px !important; }
@@ -3236,25 +3241,8 @@ Be honest, specific, and constructive.`} />;
       <ScrollToTop />
 
       {/* Navigation */}
-            <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
-          {/* ← ADD OVERLAY HERE, RIGHT AFTER nav opens */}
-  {menuOpen && (
-    <div 
-      className="menu-overlay"
-      onClick={() => setMenuOpen(false)}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: "rgba(0,0,0,0.5)",
-        zIndex: 98,
-        transition: "all 0.3s ease"
-      }}
-    />
-  )}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0  }}>
           <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
             <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
@@ -3280,48 +3268,73 @@ Be honest, specific, and constructive.`} />;
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
           </span>
           <button 
-            onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
-            className="mobile-cta-btn"
-            style={{ 
-              display: "none",
-              background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
-              border: "none", 
-              borderRadius: "8px", 
-              padding: "8px 14px", 
-              color: "#000", 
-              fontWeight: 700, 
-              fontSize: "0.75rem", 
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              fontFamily: "'Space Mono', monospace"
-            }}
-          >
-            Try Free →
-          </button>
+  onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}
+  className="mobile-cta-btn"
+  style={{ 
+    display: "none", // hidden on desktop, shown on mobile via CSS
+    background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", 
+    border: "none", 
+    borderRadius: "8px", 
+    padding: "8px 14px", 
+    color: "#000", 
+    fontWeight: 700, 
+    fontSize: "0.75rem", 
+    cursor: "pointer",
+    whiteSpace: "nowrap",
+    fontFamily: "'Space Mono', monospace"
+  }}
+>
+  Try Free →
+</button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-          <button 
-            onClick={() => setMenuOpen(!menuOpen)} 
-            aria-label="Toggle menu"
-            style={{ 
-              display: "none",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              padding: "8px"
-            }}
-            className="hamburger-btn"
-          >
-            <div style={{ width: "22px", height: "2px", background: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "6px", transition: "all 0.3s ease" }} />
-            <div style={{ width: "22px", height: "2px", background: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "6px", transition: "all 0.3s ease" }} />
-            <div style={{ width: "22px", height: "2px", background: theme === 'dark' ? "#fff" : "#1a1a1a", transition: "all 0.3s ease" }} />
-          </button>
+        {/* Right-side controls: hamburger + theme + try */}
+<div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+        {/* Hamburger - mobile only */}
+<button 
+  onClick={() => setMenuOpen(!menuOpen)} 
+  aria-label="Toggle menu"
+  style={{ 
+    display: "none",  // hidden on desktop
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "8px",
+    //marginLeft: "auto",
+    //marginRight: "12px"
+  }}
+  className="hamburger-btn"
+>
+  <div style={{ 
+    width: "22px", 
+    height: "2px", 
+    background: theme === 'dark' ? "#fff" : "#1a1a1a",
+    marginBottom: menuOpen ? "0" : "6px",
+    transform: menuOpen ? "rotate(45deg) translate(0, 2px)" : "none",
+    transition: "all 0.3s ease"
+  }} />
+  <div style={{ 
+    width: "22px", 
+    height: "2px", 
+    background: theme === 'dark' ? "#fff" : "#1a1a1a",
+    marginBottom: menuOpen ? "0" : "6px",
+    opacity: menuOpen ? "0" : "1",
+    transition: "all 0.3s ease"
+  }} />
+  <div style={{ 
+    width: "22px", 
+    height: "2px", 
+    background: theme === 'dark' ? "#fff" : "#1a1a1a",
+    transform: menuOpen ? "rotate(-45deg) translate(0, -2px)" : "none",
+    transition: "all 0.3s ease"
+  }} />
+</button>
 
-          <button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease" }}>
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
-        </div>
+<button onClick={toggleTheme} aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease" }}>
+  {theme === 'dark' ? '☀️' : '🌙'}
+</button>
+
+        //<button className="nav-try-btn" style={{ display: "none", background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "8px", padding: "8px 16px", color: "#000", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })}>Try Free →</button>
       </nav>
 
       {/* Hero */}
