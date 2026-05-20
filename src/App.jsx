@@ -3,6 +3,9 @@ import { useState, useEffect, useRef, useCallback, createContext, useContext, us
 import { Routes, Route, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { BlogList, BlogPost } from "./Blog.jsx";
+import About from "./pages/About.jsx";
+import Privacy from "./pages/Privacy.jsx";
+import Contact from "./pages/Contact.jsx";
 
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
@@ -3019,7 +3022,6 @@ function AppInner() {
   const [activeSection, setActiveSection] = useState("ai"); // "ai" | "dev"
   const [scrolled, setScrolled] = useState(false);
   const [visitorCount, setVisitorCount] = useState(null);
-  const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const currentYear = new Date().getFullYear();
@@ -3193,7 +3195,6 @@ Be honest, specific, and constructive.`} />;
         }
       `}</style>
 
-      {privacyOpen && <Modal title="Privacy Policy" content="ZeroAPI does not collect or store any personal data. Your AI queries are processed via Groq API and are never stored on our servers. Google Analytics is used for anonymous traffic insights only. No login or account is ever required." onClose={() => setPrivacyOpen(false)} />}
       {termsOpen && <Modal title="Terms of Use" content="ZeroAPI is a free platform for educational and research purposes. Tools are provided as-is. Do not use tools to generate harmful or illegal content. The creator reserves the right to modify or discontinue any feature at any time." onClose={() => setTermsOpen(false)} />}
 
       <ScrollToTop />
@@ -3477,9 +3478,9 @@ Be honest, specific, and constructive.`} />;
             <span onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: `${accentColor}66`, cursor: "pointer", transition: "color 0.2s" }} onMouseEnter={(e) => e.target.style.color = accentColor} onMouseLeave={(e) => e.target.style.color = `${accentColor}66`}>↑ Back to top</span>
           </div>
           <div style={{ display: "flex", gap: "24px" }}>
-            {[{ label: "Privacy", action: () => setPrivacyOpen(true) }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigator.clipboard.writeText("abhi16.2007@gmail.com").then(() => alert("✅ Email copied!\n\nabhi16.2007@gmail.com\n\nPaste it in your email app to reach Prof. Abhishek Singh.")) }].map(({ label, action }) => (
-              <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)")}>{label}</span>
-            ))}
+            {[{ label: "About", action: () => navigate("/about") }, { label: "Privacy", action: () => navigate("/privacy") }, { label: "Terms", action: () => setTermsOpen(true) }, { label: "Contact", action: () => navigate("/contact") }].map(({ label, action }) => (
+  <span key={label} onClick={action} style={{ fontSize: "0.78rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", cursor: "pointer", fontFamily: "'Space Mono', monospace", transition: "color 0.2s" }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)")}>{label}</span>
+))}
           </div>
         </div>
       </footer>
@@ -3504,7 +3505,11 @@ function AppWithRoutes() {
       <Route path="/" element={<AppInner />} />
       <Route path="/learn" element={<BlogList theme={theme} />} />
       <Route path="/learn/:slug" element={<BlogPost theme={theme} />} />
+      <Route path="/about" element={<About theme={theme} />} />
+      <Route path="/privacy" element={<Privacy theme={theme} />} />
+      <Route path="/contact" element={<Contact theme={theme} />} />
       <Route path="*" element={<AppInner />} />
     </Routes>
   );
 }
+
