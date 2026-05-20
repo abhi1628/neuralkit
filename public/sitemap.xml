@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://zeroapi.in/</loc><priority>1.0</priority></url>
+  <url><loc>https://zeroapi.in/learn</loc><priority>0.9</priority></url>
+  <url><loc>https://zeroapi.in/learn/ats-resume-2026</loc><priority>0.8</priority></url>
+  <url><loc>https://zeroapi.in/learn/python-312-313-314-differences</loc><priority>0.8</priority></url>
+  <url><loc>https://zeroapi.in/learn/git-github-first-job</loc><priority>0.8</priority></url>
+  <url><loc>https://zeroapi.in/learn/system-design-interview-patterns</loc><priority>0.8</priority></url>
+  <url><loc>https://zeroapi.in/learn/ai-coding-assistants-2026</loc><priority>0.8</priority></url>
+</urlset>
