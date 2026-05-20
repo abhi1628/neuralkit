@@ -9,6 +9,20 @@ const distPath = path.join(__dirname, '../dist');
 const indexPath = path.join(distPath, 'index.html');
 const indexHtml = fs.readFileSync(indexPath, 'utf-8');
 
+// Dynamically find the actual built asset filenames
+const assetsDir = path.join(distPath, 'assets');
+const assetFiles = fs.readdirSync(assetsDir);
+const jsFile = assetFiles.find(f => f.startsWith('index') && f.endsWith('.js'));
+const cssFile = assetFiles.find(f => f.startsWith('index') && f.endsWith('.css'));
+
+if (!jsFile || !cssFile) {
+  console.error('❌ Could not find built assets. Run `npm run build` first.');
+  process.exit(1);
+}
+
+console.log(`Using JS:  /assets/${jsFile}`);
+console.log(`Using CSS: /assets/${cssFile}`);
+
 // Your blog posts data (hardcoded to match Blog.jsx)
 const posts = [
   {
@@ -56,7 +70,7 @@ posts.forEach(post => {
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://zeroapi.in/learn/${post.slug}">
   <link rel="canonical" href="https://zeroapi.in/learn/${post.slug}">
-  <link rel="stylesheet" href="/assets/index-nqMpL4T3.css">
+  <link rel="stylesheet" href="/assets/${cssFile}">
   <style>
     body { font-family: 'DM Sans', sans-serif; background: #060a0f; color: #fff; margin: 0; padding: 40px 20px; }
     .container { max-width: 800px; margin: 0 auto; }
@@ -79,7 +93,7 @@ posts.forEach(post => {
       </noscript>
     </div>
   </div>
-  <script type="module" src="/assets/index-CqT0m0Mw.js"></script>
+  <script type="module" src="/assets/${jsFile}"></script>
 </body>
 </html>`;
 
@@ -122,7 +136,7 @@ const learnHtml = `<!DOCTYPE html>
       `).join('')}
     </div>
   </div>
-  <script type="module" src="/assets/index-CqT0m0Mw.js"></script>
+  <script type="module" src="/assets/${jsFile}"></script>
 </body>
 </html>`;
 
