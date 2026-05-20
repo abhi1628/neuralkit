@@ -27,7 +27,7 @@ export default function About({ theme }) {
             <li>Assistant Professor, CSE Department, Baderia Global Institute</li>
             <li>M.Tech — Data Science & VLSI Design</li>
             <li>Author: <em>Agentic AI Systems: Design & Engineering</em></li>
-            <li>YouTube: <a href="https://www.youtube.com/@pyofpython9668" target="_blank" rel="noopener noreferrer" style={{ color: "#0891b2" }}>@pyofpython</a> — 15K+ subscribers</li>
+            <li>YouTube: <a href="https://www.youtube.com/@pyofpython9668" target="_blank" rel="noopener noreferrer" style={{ color: "#0891b2" }}>@pyofpython</a> — 1.4K+ subscribers</li>
           </ul>
 
           <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.4rem", fontWeight: 700, marginTop: "16px", marginBottom: "8px", color: isDark ? "#fff" : "#1a1a1a" }}>Contact</h2>
