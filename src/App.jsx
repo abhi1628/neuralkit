@@ -1805,7 +1805,7 @@ ${code}` }]
           <div style={{ display: "flex", gap: "10px" }}>
             <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
             <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
-            <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "rgba(255,255,255,0.3)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }} aria-label="Run code">
+            <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "var(--text-muted)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }} aria-label="Run code">
               {running ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />Running...</> : "▶ Run"}
             </button>
           </div>
@@ -3114,7 +3114,7 @@ Be honest, specific, and constructive.`} />;
 
         /* Component Styles */
         .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #00ffe0; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; }
-        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: #00ffe0; font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+        .try-example-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,255,224,0.06); border: 1px solid rgba(0,255,224,0.15); border-radius: 8px; padding: 6px 14px; color: var(--accent); font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
         .try-example-btn:hover { background: rgba(0,255,224,0.12); }
         .scroll-to-top { position: fixed; bottom: 60px; right: 24px; z-index: 99; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #00ffe0, #0af); border: none; color: #000; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 24px rgba(0,255,224,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; animation: fadeUp 0.3s ease; }
         .scroll-to-top:hover { transform: scale(1.1); }
@@ -3123,7 +3123,7 @@ Be honest, specific, and constructive.`} />;
         .tool-textarea:focus { border-color: var(--accent); }
         .tool-textarea-error { border-color: rgba(255,80,80,0.4) !important; }
         .run-btn { background: linear-gradient(135deg, #00ffe0 0%, #0af 100%); border: none; border-radius: 10px; padding: 14px 28px; color: #000; font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; justify-content: center; box-shadow: 0 0 24px rgba(0,255,224,0.3); }
-        .run-btn-disabled { background: rgba(255,255,255,0.08) !important; color: rgba(255,255,255,0.3) !important; cursor: not-allowed !important; box-shadow: none !important; }
+        .run-btn-disabled { background: var(--bg-tertiary) !important; color: var(--text-muted) !important; cursor: not-allowed !important; box-shadow: none !important; }
         .error-box { background: var(--error-bg); border: 1px solid rgba(255,80,80,0.3); border-radius: 10px; padding: 14px; color: var(--error); font-size: 0.82rem; font-family: 'Space Mono', monospace; }
         .output-panel { background: var(--accent-light); border: 1px solid var(--border-medium); border-radius: 12px; padding: 24px 28px; }
         .output-header { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
