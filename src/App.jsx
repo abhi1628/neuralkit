@@ -3350,13 +3350,15 @@ Be honest, specific, and constructive.`} />;
         </h1>
 
         <p className="hero-sub" style={{ fontSize: "1.15rem", color: "var(--text-secondary)", maxWidth: "560px", lineHeight: 1.7, marginBottom: "48px", fontWeight: 300 }}>
-          Free, browser-based AI tools for developers, researchers, and engineers. Zero API key. Zero signup. Zero cost. Just intelligence at your fingertips.
+        Free guides, tutorials, and AI tools for developers, researchers, and engineers. Written by Prof. Abhishek Singh. Zero signup. Zero cost.
         </p>
 
-        <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
-          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "16px 36px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Try Tools Free →</button>
-          <button onClick={() => window.open("https://www.reddit.com/r/artificial/", "_blank", "noopener,noreferrer")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "16px 36px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>AI News →</button>
+
+          <div className="hero-cta" style={{ display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center" }}>
+          <button onClick={() => navigate("/learn")} style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 100%)", border: "none", borderRadius: "12px", padding: "16px 36px", color: "#000", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", boxShadow: "0 0 40px rgba(0,255,224,0.3)", letterSpacing: "0.03em" }}>Read Free Guides →</button>
+          <button onClick={() => document.getElementById("tools").scrollIntoView({ behavior: "smooth" })} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "12px", padding: "16px 36px", color: theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontWeight: 500, fontSize: "0.95rem", cursor: "pointer" }}>Try AI Tools →</button>
         </div>
+
 
         <div className="hero-stats" style={{ marginTop: "56px", display: "flex", gap: "60px", justifyContent: "center", flexWrap: "wrap" }}>
           {[{ n: visitorCount ? visitorCount.toLocaleString() : "...", label: "Visitors" }, { n: "0", label: "Signup Required" }, { n: "∞", label: "Possibilities" }].map(({ n, label }) => (
