@@ -3331,7 +3331,6 @@ Be honest, specific, and constructive.`} />;
             </button>
           </div>
         )}
-      </nav>
 
       {/* Hero */}
       <section className="hero-section" style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "90px 40px 80px", overflow: "hidden" }}>
