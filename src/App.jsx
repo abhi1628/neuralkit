@@ -1,6 +1,8 @@
 import React from 'react';
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useMemo } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
+import { BlogList, BlogPost } from "./Blog.jsx";
 
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
@@ -3012,6 +3014,7 @@ class ErrorBoundary extends React.Component {
 // ── Main App ─────────────────────────────────────────────────
 function AppInner() {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [activeTool, setActiveTool] = useState(0);
   const [activeSection, setActiveSection] = useState("ai"); // "ai" | "dev"
   const [scrolled, setScrolled] = useState(false);
@@ -3194,6 +3197,7 @@ Be honest, specific, and constructive.`} />;
           {[
             { label: "AI Tools", action: () => { setActiveSection("ai"); document.getElementById("tools").scrollIntoView({ behavior: "smooth" }); } },
             { label: "Dev Tools", action: () => { setActiveSection("dev"); document.getElementById("devtools").scrollIntoView({ behavior: "smooth" }); } },
+            { label: "Learn", action: () => navigate("/learn") },
             { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
           ].map(({ label, action }) => (
@@ -3291,6 +3295,25 @@ Be honest, specific, and constructive.`} />;
         <DevToolsPanel theme={theme} />
       </section>
 
+      {/* ── Learn Section teaser ── */}
+      <section style={{ maxWidth: "960px", margin: "0 auto", padding: "0 32px 80px" }}>
+        <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "24px", flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "10px" }}>◆ Learn</div>
+            <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 800, color: theme === 'dark' ? "#fff" : "#1a1a1a", letterSpacing: "-0.02em", marginBottom: "8px" }}>Guides & Tutorials</h3>
+            <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)", fontSize: "0.88rem", lineHeight: 1.6, maxWidth: "500px" }}>Practical articles for developers and students — resume tips, SQL guides, interview prep, and career advice. New every week.</p>
+            <div style={{ marginTop: "14px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {["ATS Resume Tips", "SQL Guides", "Interview Prep", "Career Advice"].map(tag => (
+                <span key={tag} style={{ background: "rgba(0,255,224,0.06)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "100px", padding: "3px 12px", fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: "var(--accent)" }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => navigate("/learn")} style={{ background: "linear-gradient(135deg,#00ffe0,#0af)", border: "none", borderRadius: "12px", padding: "12px 28px", color: "#000", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", whiteSpace: "nowrap", flexShrink: 0 }}>
+            Read Articles →
+          </button>
+        </div>
+      </section>
+
       <TriviaSection theme={theme} />
       <CodePlayground theme={theme} />
 
@@ -3348,8 +3371,20 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AppInner />
+        <AppWithRoutes />
       </ThemeProvider>
     </ErrorBoundary>
+  );
+}
+
+function AppWithRoutes() {
+  const { theme } = useTheme();
+  return (
+    <Routes>
+      <Route path="/" element={<AppInner />} />
+      <Route path="/learn" element={<BlogList theme={theme} />} />
+      <Route path="/learn/:slug" element={<BlogPost theme={theme} />} />
+      <Route path="*" element={<AppInner />} />
+    </Routes>
   );
 }
