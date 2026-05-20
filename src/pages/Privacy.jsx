@@ -29,7 +29,7 @@ export default function Privacy({ theme }) {
           <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.2rem", fontWeight: 700, marginTop: "16px", color: isDark ? "#fff" : "#1a1a1a" }}>4. Cookies</h2>
           <p>We use minimal cookies for theme preference (dark/light mode) stored locally in your browser. No tracking cookies from third parties.</p>
 
-          <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.2rem", fontWeight: 700", marginTop: "16px", color: isDark ? "#fff" : "#1a1a1a" }}>5. Data Retention</h2>
+          <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.2rem", fontWeight: 700, marginTop: "16px", color: isDark ? "#fff" : "#1a1a1a" }}>5. Data Retention</h2>
           <p>ZeroAPI does not operate a backend database for user data. All tool outputs are generated in real-time and disappear when you close the browser tab. We do not retain copies.</p>
 
           <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.2rem", fontWeight: 700, marginTop: "16px", color: isDark ? "#fff" : "#1a1a1a" }}>6. Contact</h2>
