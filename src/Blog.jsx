@@ -24,7 +24,7 @@ export const BLOG_POSTS = [
       },
       {
         type: "p",
-        text: "An Applicant Tracking System (ATS) is software that companies use to collect, sort, and filter job applications automatically. Think of it as a gatekeeper robot that reads your resume before any human does. Companies like TCS, Infosys, Wipro, Google, Amazon, and virtually every MNC uses one."
+        text: "An Applicant Tracking System (ATS) is software that companies use to collect, sort, and filter job applications automatically. Think of it as a gatekeeper robot that reads your resume before any human does. Companies like TCS, Infosys, Wipro, Google, Amazon, and virtually every MNC uses one. Popular ATS platforms include Workday (used by Amazon, Google), Greenhouse (used by Stripe, Airbnb), Lever (used by Netflix, Shopify), and iCIMS (used by TCS, Infosys) — each parses resumes slightly differently, but all follow the same core rules."
       },
       {
         type: "p",
