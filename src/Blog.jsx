@@ -6,7 +6,7 @@ export const BLOG_POSTS = [
   {
     slug: "ats-resume-2026",
     title: "How to Write an ATS-Friendly Resume in 2026",
-    date: "May 19, 2026",
+    date: "May 16, 2026",
     readTime: "10 min read",
     category: "Resume Tips",
     categoryColor: "#00ffe0",
@@ -234,7 +234,7 @@ export const BLOG_POSTS = [
   {
     slug: "python-312-313-314-differences",
     title: "Python 3.12 vs 3.13 vs 3.14: What Actually Changed and Why It Matters",
-    date: "May 20, 2026",
+    date: "May 17, 2026",
     readTime: "12 min read",
     category: "Python",
     categoryColor: "#a78bfa",
@@ -697,7 +697,7 @@ def zip_lists[*Ts](*lists: *Ts) -> list[tuple[*Ts]]: ...`
   {
     slug: "git-github-first-job",
     title: "Git & GitHub for Your First Job: Beyond git push",
-    date: "May 21, 2026",
+    date: "May 18, 2026",
     readTime: "9 min read",
     category: "Developer Tools",
     categoryColor: "#f472b6",
@@ -1013,7 +1013,7 @@ git bisect start                   # Find which commit introduced a bug`
   {
     slug: "system-design-interview-patterns",
     title: "System Design for Interviews: The 5 Patterns You Actually Need",
-    date: "May 22, 2026",
+    date: "May 19, 2026",
     readTime: "11 min read",
     category: "Interview Prep",
     categoryColor: "#fb923c",
@@ -1331,7 +1331,7 @@ git bisect start                   # Find which commit introduced a bug`
   {
     slug: "ai-coding-assistants-2026",
     title: "AI Coding Assistants in 2026: How to Use Them Without Becoming Replaceable",
-    date: "May 23, 2026",
+    date: "May 20, 2026",
     readTime: "10 min read",
     category: "Career",
     categoryColor: "#c084fc",
