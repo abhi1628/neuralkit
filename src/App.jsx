@@ -3184,7 +3184,12 @@ Be honest, specific, and constructive.`} />;
           .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
           nav { padding: 14px 20px !important; }
           .nav-try-btn { display: none !important; }
+          .mobile-menu { pointer-events: auto !important; }
           footer { padding: 28px 20px !important; }
+        }
+        .mobile-menu { isolation: isolate; }
+        @supports (backdrop-filter: blur(20px)) {
+          .mobile-menu { backdrop-filter: blur(20px) saturate(180%); }
         }
       `}</style>
 
@@ -3251,18 +3256,24 @@ Be honest, specific, and constructive.`} />;
         <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle dark/light mode" style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "50%", width: "36px", height: "36px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", transition: "all 0.3s ease" }}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+      </nav>
 
-        {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Overlay */}
         {menuOpen && (
-          <div className="mobile-menu" style={{ 
-            position: "fixed", 
-            top: "64px", 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            background: theme === 'dark' ? "rgba(6,10,15,0.98)" : "rgba(245,245,245,0.98)", 
-            backdropFilter: "blur(20px)",
-            zIndex: 99,
+          <div 
+            className="mobile-menu" 
+            onClick={(e) => { if (e.target === e.currentTarget) setMenuOpen(false); }}
+            style={{ 
+              position: "fixed", 
+              top: 0, 
+              paddingTop: "70px", 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              background: theme === 'dark' ? "rgba(6,10,15,0.98)" : "rgba(245,245,245,0.98)", 
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              zIndex: 9999,
             display: "flex",
             flexDirection: "column",
             padding: "24px 32px",
