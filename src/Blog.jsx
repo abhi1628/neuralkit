@@ -1589,7 +1589,7 @@ function renderContent(block, i, theme) {
   const isDark = theme === "dark";
   const text = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
   const muted = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
-  const ac = "#00ffe0";
+  const ac = "#0891b2";
   const border = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   switch (block.type) {
@@ -1784,7 +1784,7 @@ function renderContent(block, i, theme) {
 export function BlogList({ theme }) {
   const navigate = useNavigate();
   const isDark = theme === "dark";
-  const ac = "#00ffe0";
+  const ac = "#0891b2";
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -1843,7 +1843,7 @@ export function BlogPost({ theme }) {
   const { slug } = useParams();
   const navigate = useNavigate();
   const isDark = theme === "dark";
-  const ac = "#00ffe0";
+  const ac = "#0891b2";
 
   const post = BLOG_POSTS.find(p => p.slug === slug);
 
