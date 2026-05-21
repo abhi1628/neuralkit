@@ -54,6 +54,11 @@ const posts = [
   slug: 'sql-window-functions-ctes-2026',
   title: 'SQL in 2026: Window Functions, CTEs, and the Queries That Actually Get Asked in Interviews',
   excerpt: 'Stop writing SELECT * and hoping for the best. These are the SQL patterns that separate backend engineers from database wizards — and the exact questions Uber, Stripe, and Meta are asking in 2026.'
+},
+  {
+  slug: 'cisco-ideathon-2026',
+  title: 'Cisco Ideathon 2026: How to Build a Winning Project (Even If You\'re a Beginner)',
+  excerpt: 'Cisco Ideathon 2026 registrations are opening soon. Here is the complete playbook — from cracking the online assessment to building an idea that impresses Cisco engineers.'
 }
 ];
 
