@@ -1470,6 +1470,10 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState("");
   const [charCount, setCharCount] = useState(0);
+  const [chunks, setChunks] = useState([]);           // NEW: store chunks with metadata
+  const [followUpQuestion, setFollowUpQuestion] = useState("");  // NEW: Q&A input
+  const [qaAnswer, setQaAnswer] = useState("");       // NEW: Q&A response
+  const [qaLoading, setQaLoading] = useState(false);  // NEW: Q&A loading state
   const fileRef = useRef(null);
   const topRef = useRef(null);
 
@@ -1563,11 +1567,38 @@ function isResumeLike(text) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         const ab = await file.arrayBuffer();
         const pdf = await window.pdfjsLib.getDocument({ data: ab }).promise;
+        const pageTexts = [];
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          text += content.items.map(s => s.str).join(" ") + "\n";
+          const pageText = content.items.map(s => s.str).join(" ");
+          pageTexts.push({ pageNum: i, text: pageText });
+          text += pageText + "\n\n";
         }
+        // Create chunks with metadata
+        const createdChunks = [];
+        for (const page of pageTexts) {
+          const sentences = page.text.split(/[.!?]\s+/);
+          let currentChunk = "";
+          for (const sentence of sentences) {
+            if ((currentChunk + sentence).length > 2000 && currentChunk) {
+              createdChunks.push({
+                text: currentChunk.trim(),
+                source: `[Source: ${fileName}, page ${page.pageNum}]`
+              });
+              currentChunk = sentence;
+            } else {
+              currentChunk += (currentChunk ? " " : "") + sentence;
+            }
+          }
+          if (currentChunk) {
+            createdChunks.push({
+              text: currentChunk.trim(),
+              source: `[Source: ${fileName}, page ${page.pageNum}]`
+            });
+          }
+        }
+        setChunks(createdChunks);
       } else if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
         await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
         const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
@@ -1592,24 +1623,105 @@ function isResumeLike(text) {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: prompt }, { role: "user", content: extractedText }] }),
+        body: JSON.stringify({ 
+    model: "llama-3.3-70b-versatile", 
+    max_tokens: 1000, 
+    messages: [{ 
+        role: "system", 
+        content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations.`
+    }, { 
+        role: "user", 
+        content: extractedText 
+    }] 
+}),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
       else if (data?.error) setError(`API Error: ${data.error.message}`);
       else setError("Unexpected response. Please try again.");
     } catch { setError("Connection error. Please try again."); }
-    setLoading(false);
-  }
+        setLoading(false);
+}
 
-  const accentColor = "var(--accent)";
+// NEW: Q&A with citations function
+async function askFollowUp() {
+    if (!followUpQuestion.trim() || chunks.length === 0) return;
+    
+    setQaLoading(true);
+    setQaAnswer("");
+    
+    // Simple keyword search to find relevant chunks
+    const keywords = followUpQuestion.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    const scoredChunks = chunks.map(chunk => {
+        const lowerText = chunk.text.toLowerCase();
+        let score = 0;
+        for (const kw of keywords) {
+            const regex = new RegExp(kw, 'gi');
+            const matches = lowerText.match(regex);
+            if (matches) score += matches.length;
+        }
+        return { ...chunk, score };
+    });
+    
+    scoredChunks.sort((a, b) => b.score - a.score);
+    const topChunks = scoredChunks.slice(0, 4);
+    
+    if (topChunks.length === 0 || topChunks[0].score === 0) {
+        setQaAnswer("I couldn't find relevant information in the document to answer that question.");
+        setQaLoading(false);
+        return;
+    }
+    
+    const context = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
+    
+    try {
+        const res = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                max_tokens: 800,
+                temperature: 0.3,
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are a precise research assistant. Answer using ONLY the provided chunks.
+                        CRITICAL RULES:
+                        1. Every sentence with a factual claim MUST end with a citation like [Source: filename, page X]
+                        2. If you quote directly, use [Source: filename, page X, exact quote]
+                        3. If the answer isn't in the chunks, say "I couldn't find that in the document."
+                        4. Never make up citations.`
+                    },
+                    {
+                        role: "user",
+                        content: `Document excerpts:\n\n${context}\n\nQuestion: ${followUpQuestion}`
+                    }
+                ]
+            })
+        });
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+            setQaAnswer(data.choices[0].message.content);
+        } else {
+            setQaAnswer("Sorry, I couldn't generate an answer. Please try again.");
+        }
+    } catch (err) {
+        setQaAnswer("Connection error. Please try again.");
+    }
+    setQaLoading(false);
+}
+
+const accentColor = "var(--accent)";
   const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
   function handleClear() {
     setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError("");
+    setChunks([]);           // NEW: clear chunks
+    setQaAnswer("");         // NEW: clear Q&A
+    setFollowUpQuestion(""); // NEW: clear question input
     if (fileRef.current) fileRef.current.value = "";
     setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  }
+}
 
   return (
     <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -1636,9 +1748,95 @@ function isResumeLike(text) {
           </div>
         </div>
       )}
-      {output && (
+            {output && (
         <div>
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
+          
+          {/* NEW: Q&A Section with Citations */}
+          {chunks.length > 0 && (
+            <div style={{ marginTop: "28px" }}>
+              <div style={{ 
+                fontFamily: "'Space Mono', monospace", 
+                fontSize: "0.68rem", 
+                color: accentColor,
+                letterSpacing: "0.12em",
+                marginBottom: "12px",
+                textTransform: "uppercase"
+              }}>
+                ◆ Ask a follow-up question (with citations)
+              </div>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <input 
+                  type="text"
+                  value={followUpQuestion}
+                  onChange={(e) => setFollowUpQuestion(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && askFollowUp()}
+                  placeholder="e.g., What methodology did they use? On which page?"
+                  style={{
+                    flex: 1,
+                    minWidth: "200px",
+                    background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
+                    borderRadius: "10px",
+                    padding: "12px 16px",
+                    color: theme === 'dark' ? "#fff" : "#1a1a1a",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "0.85rem",
+                    outline: "none"
+                  }}
+                />
+                <button 
+                  onClick={askFollowUp}
+                  disabled={qaLoading || !followUpQuestion.trim() || chunks.length === 0}
+                  style={{
+                    background: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "12px 24px",
+                    color: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.3)" : "#000",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    cursor: qaLoading || !followUpQuestion.trim() ? "not-allowed" : "pointer",
+                    fontFamily: "'Space Mono', monospace",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  {qaLoading ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Searching...</> : "Ask →"}
+                </button>
+              </div>
+              
+              {qaAnswer && (
+                <div style={{ 
+                  marginTop: "16px",
+                  background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,137,123,0.04)",
+                  border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,137,123,0.15)"}`,
+                  borderRadius: "12px",
+                  padding: "20px",
+                  fontSize: "0.85rem",
+                  lineHeight: 1.75,
+                  color: theme === 'dark' ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.8)"
+                }}>
+                  <div style={{ 
+                    fontFamily: "'Space Mono', monospace", 
+                    fontSize: "0.6rem", 
+                    color: accentColor,
+                    marginBottom: "12px",
+                    letterSpacing: "0.1em"
+                  }}>
+                    ◆ ANSWER WITH CITATIONS
+                  </div>
+                  {qaAnswer.split("\n").map((line, i) => (
+                    <div key={i} style={{ marginBottom: line.trim() === "" ? "12px" : "6px" }}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
           <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={handleClear} />
           {label === "Analyze Resume" && (
             <ResumeBuilder originalText={extractedText} analysisText={output} theme={theme} />
