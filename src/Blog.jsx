@@ -17,7 +17,7 @@ export const BLOG_POSTS = [
   aiCoding,
   sqlWindow,
   ciscoIdeathon,
-];
+].sort((a, b) => new Date(b.date) - new Date(a.date));;
 
 // ── Blog Components ───────────────────────────────────────────
 function renderContent(block, i, theme) {
