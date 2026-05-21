@@ -1578,19 +1578,34 @@ function isResumeLike(text) {
         // Create chunks with metadata
         const createdChunks = [];
         for (const page of pageTexts) {
-          const sentences = page.text.split(/[.!?]\s+/);
-          let currentChunk = "";
-          for (const sentence of sentences) {
-            if ((currentChunk + sentence).length > 2000 && currentChunk) {
-              createdChunks.push({
-                text: currentChunk.trim(),
-                source: `[Source: ${fileName}, page ${page.pageNum}]`
-              });
-              currentChunk = sentence;
-            } else {
-              currentChunk += (currentChunk ? " " : "") + sentence;
-            }
-          }
+          const sentences = page.text.split(/(?<=[.!?])\s+/);
+let currentChunk = "";
+let overlapBuffer = "";
+const CHUNK_SIZE = 1800;
+const OVERLAP_SIZE = 300;
+
+for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i];
+    if ((currentChunk + sentence).length > CHUNK_SIZE && currentChunk) {
+        // Add chunk with overlap
+        createdChunks.push({
+            text: currentChunk.trim(),
+            source: `[Source: ${fileName}, page ${page.pageNum}]`
+        });
+        // Keep last ~300 chars for overlap
+        const words = currentChunk.split(/\s+/);
+        overlapBuffer = words.slice(-Math.min(40, words.length)).join(" ");
+        currentChunk = overlapBuffer + " " + sentence;
+    } else {
+        currentChunk += (currentChunk ? " " : "") + sentence;
+    }
+}
+if (currentChunk) {
+    createdChunks.push({
+        text: currentChunk.trim(),
+        source: `[Source: ${fileName}, page ${page.pageNum}]`
+    });
+}
           if (currentChunk) {
             createdChunks.push({
               text: currentChunk.trim(),
@@ -1623,22 +1638,62 @@ function isResumeLike(text) {
       const res = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        // Build context from chunks (more accurate than raw extractedText)
+let contextForLLM = extractedText;
+if (chunks.length > 0) {
+    // Take first 20 chunks to stay under token limit
+    const topChunks = chunks.slice(0, 20);
+    contextForLLM = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
+}
+
+body: JSON.stringify({ 
     model: "llama-3.3-70b-versatile", 
-    max_tokens: 1000, 
+    max_tokens: 1200,  // Increased for better summaries
+    temperature: 0.3,   // Lower = more factual, less creative
     messages: [{ 
         role: "system", 
-        content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations.`
+        content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: filename, page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations. Be precise with numbers and metrics.
+
+CONFIDENCE SCORING: After each major section, add a confidence indicator:
+- [HIGH] — Directly stated in the document word-for-word
+- [MEDIUM] — Clearly implied or inferred from multiple sentences
+- [LOW] — Limited evidence or partially stated, needs verification
+
+Example format:
+🎯 Core Idea: The ANFIS-PSO system achieves 100% test accuracy [Source: paper.pdf, page 2] [HIGH]
+
+🔍 Key Findings: 
+- 99.64% training accuracy [Source: page 2] [HIGH]
+- System reduces computation time by 40% compared to baseline [Source: page 5] [MEDIUM]
+
+⚠️ Limitations: Only tested on single dataset [Source: page 8] [HIGH]
+- Generalization to other populations not verified [Source: page 8] [LOW]`
     }, { 
         role: "user", 
-        content: extractedText 
+        content: contextForLLM 
     }] 
 }),
       });
       const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
-      else if (data?.error) setError(`API Error: ${data.error.message}`);
-      else setError("Unexpected response. Please try again.");
+      if (data?.choices?.[0]?.message?.content) {
+    const aiOutput = data.choices[0].message.content;
+    
+    // ── CHANGE 6: Validation check for citations ──
+    const hasCitations = /\[Source:.*?page\s+\d+\]/i.test(aiOutput);
+    const hasMetrics = /\d+(?:\.\d+)?%|\d+(?:\.\d+)?\s*(?:accuracy|rmse|score)/i.test(aiOutput);
+    
+    if (!hasCitations) {
+        console.warn("⚠️ Warning: Output missing citations");
+        // Optional: Add a warning to the output
+        setOutput(aiOutput + "\n\n⚠️ Note: This summary may lack specific page citations. For verification, use the Q&A feature below.");
+    } else if (!hasMetrics && aiOutput.length > 500) {
+        console.warn("⚠️ Warning: Output may be missing key metrics");
+    }
+    
+    setOutput(aiOutput);
+}
+else if (data?.error) setError(`API Error: ${data.error.message}`);
+else setError("Unexpected response. Please try again.");
     } catch { setError("Connection error. Please try again."); }
         setLoading(false);
 }
@@ -1651,8 +1706,29 @@ async function askFollowUp() {
     setQaAnswer("");
     
     // Simple keyword search to find relevant chunks
-    const keywords = followUpQuestion.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    const scoredChunks = chunks.map(chunk => {
+    // Extract specific page request if present (e.g., "on page 5" or "from page 3")
+const pageMatch = followUpQuestion.match(/page\s+(\d+)/i);
+let targetPage = null;
+if (pageMatch) {
+    targetPage = parseInt(pageMatch[1]);
+}
+
+const keywords = followUpQuestion.toLowerCase()
+    .replace(/page\s+\d+/i, '')  // Remove page references from keywords
+    .split(/\s+/)
+    .filter(w => w.length > 3);
+
+let filteredChunks = chunks;
+if (targetPage) {
+    filteredChunks = chunks.filter(c => c.source.includes(`page ${targetPage}`));
+    if (filteredChunks.length === 0) {
+        setQaAnswer(`No content found on page ${targetPage}.`);
+        setQaLoading(false);
+        return;
+    }
+}
+
+const scoredChunks = filteredChunks.map(chunk => {
         const lowerText = chunk.text.toLowerCase();
         let score = 0;
         for (const kw of keywords) {
@@ -1714,7 +1790,29 @@ async function askFollowUp() {
 const accentColor = "var(--accent)";
   const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
-  function handleClear() {
+// NEW: Extract numbers and metrics from text
+function extractKeyMetrics(text, fileName) {
+    const metrics = [];
+    // Match patterns like "accuracy = 99.5%", "RMSE: 0.144", "p-value < 0.05"
+    const patterns = [
+        /(\w+(?:\s+\w+)?)\s*[=:]\s*(\d+(?:\.\d+)?%?)/gi,
+        /(\w+)\s+of\s+(\d+(?:\.\d+)?)/gi,
+        /(?:accuracy|precision|recall|f1|rmse|mae|mse)\s*[=:]\s*(\d+(?:\.\d+)?%?)/gi
+    ];
+    
+    patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+            metrics.push({
+                metric: match[1] || "value",
+                value: match[2] || match[1],
+                source: `[Source: ${fileName}]`
+            });
+        }
+    });
+    return metrics;
+}  
+function handleClear() {
     setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError("");
     setChunks([]);           // NEW: clear chunks
     setQaAnswer("");         // NEW: clear Q&A
