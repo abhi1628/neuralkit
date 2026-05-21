@@ -303,21 +303,33 @@ async function fetchVisitorCount() {
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
+    if (src.includes("docx") && window.docx) { resolve(); return; }
+    if (src.includes("jspdf") && window.jspdf) { resolve(); return; }
     if (document.querySelector(`script[src="${src}"]`)) {
-      resolve();
+      const checkInterval = setInterval(() => {
+        if ((src.includes("docx") && window.docx) || 
+            (src.includes("jspdf") && window.jspdf) ||
+            (!src.includes("docx") && !src.includes("jspdf"))) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+      setTimeout(() => { clearInterval(checkInterval); resolve(); }, 5000);
       return;
     }
     const s = document.createElement("script");
     s.src = src;
-    s.onload = resolve;
-    s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
-    s.onload = resolve;
+    s.async = true;
+    let resolved = false;
+    const doResolve = () => { if (!resolved) { resolved = true; resolve(); } };
+    const doReject = () => { if (!resolved) { resolved = true; reject(new Error(`Failed to load: ${src}`)); } };
+    s.onload = doResolve;
+    s.onerror = doReject;
     document.head.appendChild(s);
-    
-    // Timeout after 10 seconds
-    setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
+    setTimeout(() => { if (!resolved) doReject(); }, 10000);
   });
 }
+
 
 async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
@@ -817,27 +829,10 @@ function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
   const [buildError, setBuildError] = useState("");
   const [loadingLinkedIn, setLoadingLinkedIn] = useState(false);
   const [showLinkedInPaste, setShowLinkedInPaste] = useState(false);
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [template, setTemplate] = useState("modern");
-  const [jobTarget, setJobTarget] = useState("");
-  const [yearsExp, setYearsExp] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [optimizationFocus, setOptimizationFocus] = useState("balanced");
   const accentColor = "var(--accent)";
-
-  const INDUSTRIES = [
-    "Technology / Software", "Finance / Banking", "Healthcare / Pharma",
-    "Consulting", "Marketing / Advertising", "Education", "Manufacturing",
-    "Government / Public Sector", "Retail / E-commerce", "Media / Entertainment",
-    "Energy / Utilities", "Real Estate", "Legal", "Non-profit", "Other"
-  ];
-
-  const FOCUS_OPTIONS = [
-    { id: "balanced", label: "Balanced", desc: "All-around improvement" },
-    { id: "ats", label: "ATS-First", desc: "Maximize keyword matching" },
-    { id: "impact", label: "Impact-First", desc: "Stronger achievements & metrics" },
-    { id: "clarity", label: "Clarity-First", desc: "Cleaner, simpler language" }
-  ];
 
   async function generateResume() {
     setStep("generating"); setBuildError("");
@@ -846,83 +841,34 @@ function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile", max_tokens: 2500, temperature: 0.3,
+          model: "llama-3.3-70b-versatile", max_tokens: 2000,
           messages: [{
             role: "system",
-            content: `You are an elite resume writer with 15+ years of experience and deep ATS (Applicant Tracking System) expertise. You have helped 10,000+ professionals land interviews at FAANG, Fortune 500, and top startups.
+            content: `You are an expert resume writer and ATS optimization specialist. Given original resume text and analysis feedback, generate an improved resume.
 
 CRITICAL: Respond ONLY with a valid JSON object. No preamble, no markdown backticks, no explanation — just raw JSON.
 
-OUTPUT FORMAT:
+Format:
 {
   "name": "Full Name",
-  "contact": { "email": "", "phone": "", "location": "", "linkedin": "", "github": "", "portfolio": "" },
-  "summary": "Compelling 2-3 sentence professional summary tailored to target role",
-  "experience": [{ "title": "", "company": "", "dates": "", "bullets": ["STAR-method bullet with metric"] }],
-  "education": [{ "degree": "", "institution": "", "dates": "", "gpa": "", "honors": "" }],
-  "skills": { "technical": [], "soft": [], "tools": [], "domain": [] },
-  "certifications": [{ "name": "", "issuer": "", "date": "" }],
-  "projects": [{ "name": "", "description": "", "tech": "", "impact": "" }],
-  "achievements": ["Notable award or recognition"],
-  "languages": ["Language (Proficiency)"],
-  "ats_score": { "overall": 8.5, "keywords": 9, "format": 8, "impact": 8.5, "readability": 9 }
+  "contact": { "email": "", "phone": "", "location": "", "linkedin": "" },
+  "summary": "2-3 sentence professional summary",
+  "experience": [{ "title": "", "company": "", "dates": "", "bullets": ["action verb + achievement"] }],
+  "education": [{ "degree": "", "institution": "", "dates": "", "gpa": "" }],
+  "skills": { "technical": [], "soft": [], "tools": [] },
+  "certifications": [],
+  "projects": [{ "name": "", "description": "", "tech": "" }]
 }
 
-ENHANCEMENT RULES — apply ALL of these:
-1. SUMMARY: Write a compelling hook that mentions years of experience, key expertise, and 1-2 standout achievements. Tailor to the target role. Use active voice.
-
-2. EXPERIENCE BULLETS — use STAR method (Situation, Task, Action, Result):
-   - Start EVERY bullet with a strong action verb (Led, Architected, Optimized, Streamlined, Pioneered)
-   - Include at least 1 metric per bullet: % improvement, $ saved, time reduced, users served, revenue impact
-   - Quantify vague statements: "improved performance" → "reduced API latency by 40% (from 2.5s to 1.5s)"
-   - Show scope: team size, budget, user base, project scale
-   - Highlight leadership: "mentored 3 junior engineers" not "worked with team"
-   - Add technical depth: specific frameworks, methodologies, architectures
-
-3. SKILLS — optimize for ATS keyword matching:
-   - Extract ALL technical skills from original resume + add relevant ones for target role
-   - Group by: Technical (languages, frameworks), Tools (software, platforms), Soft (leadership, communication), Domain (industry-specific)
-   - Include both acronyms and full names: "React.js" AND "React"
-   - Add trending/requested skills for the target role if implied by experience
-
-4. PROJECTS — make them interview-worthy:
-   - Include measurable impact: "served 50K+ users", "reduced costs by $200K/year"
-   - Mention specific tech stack and architecture decisions
-   - Add GitHub stars, downloads, or usage metrics if applicable
-
-5. EDUCATION — enhance with:
-   - Relevant coursework for target role
-   - Academic honors, Dean's List, scholarships
-   - Thesis/project titles if relevant
-   - GPA only if ≥ 3.5
-
-6. ATS OPTIMIZATION:
-   - Use standard section headers: "Professional Experience", "Education", "Technical Skills"
-   - Avoid tables, columns, graphics, headers/footers in the JSON data
-   - Include keywords from job description analysis
-   - Use full company names + brief context if niche
-
-7. ACCURACY — NEVER invent:
-   - Only use information from the original resume
-   - Do not add fake companies, degrees, or certifications
-   - You MAY rephrase, reorganize, and enhance existing content
-   - You MAY infer reasonable metrics if the original implies scale ("large team" → "15-person team")
-
-8. TONE: Confident but not arrogant. Professional but not robotic. Specific, not generic.`
+Rules:
+- Extract ONLY information from the original resume. Never invent or add fake data.
+- Improve bullet points to start with strong action verbs.
+- Add metrics where they exist in the original.
+- Omit sections with no data (e.g. no certifications → omit that key entirely).
+- Return ONLY valid JSON. Nothing else.`
           }, {
             role: "user",
-            content: `TARGET ROLE: ${jobTarget || "Not specified — infer from resume"}
-YEARS OF EXPERIENCE: ${yearsExp || "Infer from resume"}
-INDUSTRY: ${industry || "Infer from resume"}
-OPTIMIZATION FOCUS: ${optimizationFocus}
-
-ORIGINAL RESUME TEXT:
-${originalText}
-
-ANALYSIS FEEDBACK (weaknesses to address):
-${analysisText}
-
-Generate the improved resume as JSON now.`
+            content: `Original Resume:\n${originalText}\n\nAnalysis Feedback:\n${analysisText}`
           }]
         })
       });
@@ -934,10 +880,100 @@ Generate the improved resume as JSON now.`
       setStep("done");
       if (onDataParsed) onDataParsed(parsed);
     } catch (e) {
-      console.error(e);
       setBuildError("Failed to generate resume. Please try again.");
       setStep("error");
     }
+  }
+
+  async function downloadDocx() {
+    if (!resumeData) return;
+    setDownloadingDocx(true);
+    setBuildError("");
+    try {
+      await loadScript(DOCX_CDN);
+      if (!window.docx) {
+        throw new Error("DOCX library failed to load. Please check your internet connection and try again.");
+      }
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
+      const templateStyles = {
+        modern: { accent: "1F6FEB", font: "Arial" },
+        classic: { accent: "2c5282", font: "Georgia" },
+        minimal: { accent: "1a1a1a", font: "Helvetica" }
+      };
+      const style = templateStyles[template] || templateStyles.modern;
+      const accent = style.accent;
+      const children = [];
+
+      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
+
+      const c = resumeData.contact || {};
+      const contactParts = [c.email, c.phone, c.location, c.linkedin].filter(Boolean);
+      if (contactParts.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: contactParts.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
+
+      const divider = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+
+      const sectionHeader = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
+
+      if (resumeData.summary) {
+        children.push(divider());
+        children.push(sectionHeader("Professional Summary"));
+        children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] }));
+      }
+
+      if (resumeData.experience?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Experience"));
+        resumeData.experience.forEach(exp => {
+          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
+        });
+      }
+
+      if (resumeData.education?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Education"));
+        resumeData.education.forEach(edu => {
+          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
+          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
+        });
+      }
+
+      if (resumeData.skills) {
+        children.push(divider());
+        children.push(sectionHeader("Skills"));
+        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
+          .filter(s => s.items?.length)
+          .forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
+      }
+
+      if (resumeData.projects?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Projects"));
+        resumeData.projects.forEach(p => {
+          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] }));
+          if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] }));
+        });
+      }
+
+      if (resumeData.certifications?.length) {
+        children.push(divider());
+        children.push(sectionHeader("Certifications"));
+        resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] })));
+      }
+
+      const doc = new Document({
+        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
+        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
+      });
+
+      const buffer = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-improved.docx`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    } catch (e) { console.error(e); setBuildError("DOCX generation failed. Try PDF instead."); }
+    setDownloadingDocx(false);
   }
 
   async function downloadResumePdf() {
@@ -950,6 +986,12 @@ Generate the improved resume as JSON now.`
       const c = resumeData.contact || {};
       let y = 22;
 
+      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(26, 26, 26);
+      doc.text(resumeData.name || "Your Name", 105, y, { align: "center" }); y += 9;
+
+      const contactStr = [c.email, c.phone, c.location, c.linkedin].filter(Boolean).join("  |  ");
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
+      doc.text(contactStr, 105, y, { align: "center" }); y += 7;
       // Template-aware colors
       const templateColors = {
         modern: [31, 111, 235],
@@ -957,13 +999,6 @@ Generate the improved resume as JSON now.`
         minimal: [26, 26, 26]
       };
       const tc = templateColors[template] || templateColors.modern;
-
-      doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(26, 26, 26);
-      doc.text(resumeData.name || "Your Name", 105, y, { align: "center" }); y += 9;
-
-      const contactStr = [c.email, c.phone, c.location, c.linkedin, c.github, c.portfolio].filter(Boolean).join("  |  ");
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
-      doc.text(contactStr, 105, y, { align: "center" }); y += 7;
       doc.setDrawColor(...tc); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
 
       const section = (title) => {
@@ -973,8 +1008,8 @@ Generate the improved resume as JSON now.`
         doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(10, y, 200, y); y += 5;
       };
 
-      const body = (text, indent = 10, isBold = false) => {
-        doc.setFont("helvetica", isBold ? "bold" : "normal"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
+      const body = (text, indent = 10) => {
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(40, 40, 40);
         const lines = doc.splitTextToSize(text, 190 - (indent - 10));
         lines.forEach(line => { if (y > 278) { doc.addPage(); y = 18; } doc.text(line, indent, y); y += 5; });
       };
@@ -1001,15 +1036,13 @@ Generate the improved resume as JSON now.`
           doc.text(`${edu.degree || ""}${edu.institution ? `  —  ${edu.institution}` : ""}`, 10, y);
           doc.setFont("helvetica", "italic"); doc.setFontSize(8.5); doc.setTextColor(120, 120, 120);
           doc.text(edu.dates || "", 200, y, { align: "right" }); y += 5;
-          if (edu.gpa) body(`GPA: ${edu.gpa}`, 14);
-          if (edu.honors) body(`Honors: ${edu.honors}`, 14);
-          y += 2;
+          if (edu.gpa) body(`GPA: ${edu.gpa}`, 14); y += 2;
         });
       }
 
       if (resumeData.skills) {
         section("Skills");
-        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }, { label: "Domain", items: resumeData.skills.domain }]
+        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
           .filter(s => s.items?.length)
           .forEach(s => {
             if (y > 278) { doc.addPage(); y = 18; }
@@ -1029,37 +1062,13 @@ Generate the improved resume as JSON now.`
           if (y > 270) { doc.addPage(); y = 18; }
           doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(30, 30, 30);
           doc.text(`${p.name || ""}${p.tech ? `  (${p.tech})` : ""}`, 10, y); y += 5;
-          if (p.description) body(`• ${p.description}`, 14);
-          if (p.impact) body(`Impact: ${p.impact}`, 14, true);
-          y += 2;
+          if (p.description) body(`• ${p.description}`, 14); y += 2;
         });
       }
 
       if (resumeData.certifications?.length) {
         section("Certifications");
-        resumeData.certifications.forEach(cert => {
-          const certText = typeof cert === "string" ? cert : `${cert.name}${cert.issuer ? ` — ${cert.issuer}` : ""}${cert.date ? ` (${cert.date})` : ""}`;
-          body(`• ${certText}`, 14);
-        });
-      }
-
-      if (resumeData.achievements?.length) {
-        section("Achievements");
-        resumeData.achievements.forEach(a => body(`• ${a}`, 14));
-      }
-
-      if (resumeData.languages?.length) {
-        section("Languages");
-        body(Array.isArray(resumeData.languages) ? resumeData.languages.join(", ") : resumeData.languages, 10);
-      }
-
-      // ATS Score footer
-      if (resumeData.ats_score) {
-        const score = resumeData.ats_score;
-        const overall = score.overall || score;
-        y += 8;
-        doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(...tc);
-        doc.text(`ATS Optimization Score: ${overall}/10`, 105, y, { align: "center" });
+        resumeData.certifications.forEach(cert => body(`• ${cert}`, 14));
       }
 
       const pages = doc.internal.getNumberOfPages();
@@ -1076,52 +1085,7 @@ Generate the improved resume as JSON now.`
     <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "14px", padding: "20px 24px" }}>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "10px" }}>◆ NEXT STEP</div>
       <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", fontSize: "0.9rem", marginBottom: "16px", lineHeight: 1.6 }}>Want to build an <strong>improved, ATS-optimized resume</strong> based on this analysis?</p>
-      <button onClick={() => setStep("configure")} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'Space Mono', monospace" }}>✨ Build Improved Resume →</button>
-    </div>
-  );
-
-  if (step === "configure") return (
-    <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
-      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "14px" }}>◆ TAILOR YOUR RESUME</div>
-      <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.65)" : "rgba(0,0,0,0.65)", fontSize: "0.85rem", marginBottom: "20px", lineHeight: 1.6 }}>Help the AI understand your goals for a more targeted resume.</p>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "20px" }}>
-        <div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor, marginBottom: "6px" }}>TARGET JOB ROLE *</div>
-          <input value={jobTarget} onChange={e => setJobTarget(e.target.value)} placeholder="e.g. Senior Full Stack Developer, Data Scientist, Product Manager" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 14px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-          <div>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor, marginBottom: "6px" }}>YEARS OF EXPERIENCE</div>
-            <input value={yearsExp} onChange={e => setYearsExp(e.target.value)} placeholder="e.g. 5 years" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 14px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor, marginBottom: "6px" }}>INDUSTRY</div>
-            <select value={industry} onChange={e => setIndustry(e.target.value)} style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 14px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}>
-              <option value="">Select industry...</option>
-              {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: accentColor, marginBottom: "8px" }}>OPTIMIZATION FOCUS</div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {FOCUS_OPTIONS.map(f => (
-              <button key={f.id} onClick={() => setOptimizationFocus(f.id)} style={{ background: optimizationFocus === f.id ? accentColor : "transparent", border: `1px solid ${optimizationFocus === f.id ? accentColor : theme === 'dark' ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "8px 16px", color: optimizationFocus === f.id ? "#000" : theme === 'dark' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.8rem", cursor: "pointer", fontWeight: optimizationFocus === f.id ? 700 : 400, textAlign: "left" }}>
-                <div style={{ fontWeight: 700 }}>{f.label}</div>
-                <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>{f.desc}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: "flex", gap: "12px" }}>
-        <button onClick={() => setStep("disclaimer")} disabled={!jobTarget.trim()} style={{ background: jobTarget.trim() ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: jobTarget.trim() ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: jobTarget.trim() ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace" }}>Continue →</button>
-        <button onClick={() => setStep("prompt")} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>
-      </div>
+      <button onClick={() => setStep("disclaimer")} style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", fontFamily: "'Space Mono', monospace" }}>✨ Build Improved Resume →</button>
     </div>
   );
 
@@ -1143,7 +1107,7 @@ Generate the improved resume as JSON now.`
       </label>
       <div style={{ display: "flex", gap: "12px" }}>
         <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: agreed ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: agreed ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", transition: "all 0.2s" }}>Generate Resume →</button>
-        <button onClick={() => { setStep("configure"); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>
+        <button onClick={() => { setStep("prompt"); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", cursor: "pointer" }}>Cancel</button>
       </div>
     </div>
   );
@@ -1159,55 +1123,28 @@ Generate the improved resume as JSON now.`
   if (step === "error") return (
     <div style={{ marginTop: "20px" }}>
       <div className="error-box">⚠ {buildError}</div>
-      <button onClick={() => setStep("configure")} style={{ marginTop: "10px", background: "transparent", border: "1px solid var(--accent)", borderRadius: "8px", padding: "8px 18px", color: "var(--accent)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer" }}>↺ Try Again</button>
+      <button onClick={() => setStep("prompt")} style={{ marginTop: "10px", background: "transparent", border: "1px solid var(--accent)", borderRadius: "8px", padding: "8px 18px", color: "var(--accent)", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", cursor: "pointer" }}>↺ Try Again</button>
     </div>
   );
 
   return (
     <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em" }}>✅ RESUME READY</div>
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-          {["modern", "classic", "minimal"].map(t => (
-            <button key={t} onClick={() => setTemplate(t)} style={{ background: template === t ? accentColor : "transparent", border: `1px solid ${template === t ? accentColor : theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "6px", padding: "4px 12px", color: template === t ? "#000" : theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.68rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", textTransform: "uppercase" }}>
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
       <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData?.name}</div>
       <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
         {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
       </div>
-
-      {/* ATS Score Display */}
-      {resumeData?.ats_score && (
-        <div style={{ background: theme === 'dark' ? "rgba(0,255,224,0.06)" : "rgba(0,137,123,0.06)", border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,137,123,0.15)"}`, borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.75rem", color: accentColor, fontWeight: 700 }}>ATS SCORE</div>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              {Object.entries(resumeData.ats_score).filter(([k]) => k !== "overall").map(([k, v]) => (
-                <div key={k} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: v >= 8 ? "#00ffe0" : v >= 6 ? "#febc2e" : "#ff6b6b" }}>{v}</div>
-                  <div style={{ fontSize: "0.6rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)", textTransform: "uppercase" }}>{k}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginLeft: "auto", fontFamily: "'Space Mono', monospace", fontSize: "1.1rem", fontWeight: 800, color: accentColor }}>
-              {resumeData.ats_score.overall || Math.round(Object.values(resumeData.ats_score).reduce((a,b) => a+b, 0) / Object.values(resumeData.ats_score).length)}/10
-            </div>
-          </div>
-        </div>
-      )}
-
       <div style={{ background: theme === 'dark' ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${theme === 'dark' ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: theme === 'dark' ? "#febc2e" : "#b45309", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
-        ⚠ Review all content before sending. Download PDF to see the final formatted version.
+        ⚠ Review all content before sending. AI may not capture every nuance of your experience.
       </div>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingPdf ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingPdf ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+        <button onClick={downloadDocx} disabled={downloadingDocx} style={{ background: downloadingDocx ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingDocx ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingDocx ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+          {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download DOCX"}
+        </button>
+        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: "transparent", border: `1px solid ${accentColor}`, borderRadius: "10px", padding: "10px 22px", color: downloadingPdf ? "rgba(255,255,255,0.3)" : accentColor, fontWeight: 700, fontSize: "0.82rem", cursor: downloadingPdf ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
           {downloadingPdf ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download PDF"}
         </button>
-        <button onClick={() => { setStep("configure"); setResumeData(null); setBuildError(""); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Regenerate</button>
+        <button onClick={() => { setStep("prompt"); setResumeData(null); setBuildError(""); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Regenerate</button>
       </div>
     </div>
   );
@@ -1457,7 +1394,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
     if (!resumeData) return;
     setDownloadingDocx(true);
     try {
-      await loadScript(DOCX_CDN);
+      ;
       const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
       const accent = "1F6FEB";
       const children = [];
