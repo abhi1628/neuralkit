@@ -1626,33 +1626,33 @@ if (currentChunk) {
     setExtracting(false);
   }
 
-  async function analyze() {
+ async function analyze() {
     if (!extractedText) return;
     if (label === "Analyze Resume") {
-      if (isResearchPaper(extractedText)) { setError("❌ This appears to be an academic document. Please upload a CV or resume file."); return; }
-      if (!isResumeLike(extractedText)) { setError("❌ The uploaded file doesn't appear to be a resume. Please upload a proper CV or resume."); return; }
+        if (isResearchPaper(extractedText)) { setError("❌ This appears to be an academic document. Please upload a CV or resume file."); return; }
+        if (!isResumeLike(extractedText)) { setError("❌ The uploaded file doesn't appear to be a resume. Please upload a proper CV or resume."); return; }
     }
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
+    
+    // Build context from chunks (move this BEFORE the fetch)
+    let contextForLLM = extractedText;
+    if (chunks.length > 0) {
+        const topChunks = chunks.slice(0, 20);
+        contextForLLM = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
+    }
+    
     try {
-      const res = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Build context from chunks (more accurate than raw extractedText)
-let contextForLLM = extractedText;
-if (chunks.length > 0) {
-    // Take first 20 chunks to stay under token limit
-    const topChunks = chunks.slice(0, 20);
-    contextForLLM = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
-}
-
-body: JSON.stringify({ 
-    model: "llama-3.3-70b-versatile", 
-    max_tokens: 1200,  // Increased for better summaries
-    temperature: 0.3,   // Lower = more factual, less creative
-    messages: [{ 
-        role: "system", 
-        content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: filename, page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations. Be precise with numbers and metrics.
+        const res = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.3-70b-versatile", 
+                max_tokens: 1200,
+                temperature: 0.3,
+                messages: [{ 
+                    role: "system", 
+                    content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: filename, page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations. Be precise with numbers and metrics.
 
 CONFIDENCE SCORING: After each major section, add a confidence indicator:
 - [HIGH] — Directly stated in the document word-for-word
@@ -1668,34 +1668,39 @@ Example format:
 
 ⚠️ Limitations: Only tested on single dataset [Source: page 8] [HIGH]
 - Generalization to other populations not verified [Source: page 8] [LOW]`
-    }, { 
-        role: "user", 
-        content: contextForLLM 
-    }] 
-}),
-      });
-      const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) {
-    const aiOutput = data.choices[0].message.content;
-    
-    // ── CHANGE 6: Validation check for citations ──
-    const hasCitations = /\[Source:.*?page\s+\d+\]/i.test(aiOutput);
-    const hasMetrics = /\d+(?:\.\d+)?%|\d+(?:\.\d+)?\s*(?:accuracy|rmse|score)/i.test(aiOutput);
-    
-    if (!hasCitations) {
-        console.warn("⚠️ Warning: Output missing citations");
-        // Optional: Add a warning to the output
-        setOutput(aiOutput + "\n\n⚠️ Note: This summary may lack specific page citations. For verification, use the Q&A feature below.");
-    } else if (!hasMetrics && aiOutput.length > 500) {
-        console.warn("⚠️ Warning: Output may be missing key metrics");
+                }, { 
+                    role: "user", 
+                    content: contextForLLM 
+                }] 
+            })
+        });
+        
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+            const aiOutput = data.choices[0].message.content;
+            
+            // Validation check for citations
+            const hasCitations = /\[Source:.*?page\s+\d+\]/i.test(aiOutput);
+            const hasMetrics = /\d+(?:\.\d+)?%|\d+(?:\.\d+)?\s*(?:accuracy|rmse|score)/i.test(aiOutput);
+            
+            if (!hasCitations) {
+                console.warn("⚠️ Warning: Output missing citations");
+                setOutput(aiOutput + "\n\n⚠️ Note: This summary may lack specific page citations. For verification, use the Q&A feature below.");
+            } else if (!hasMetrics && aiOutput.length > 500) {
+                console.warn("⚠️ Warning: Output may be missing key metrics");
+                setOutput(aiOutput);
+            } else {
+                setOutput(aiOutput);
+            }
+        } else if (data?.error) {
+            setError(`API Error: ${data.error.message}`);
+        } else {
+            setError("Unexpected response. Please try again.");
+        }
+    } catch (err) {
+        setError("Connection error. Please try again.");
     }
-    
-    setOutput(aiOutput);
-}
-else if (data?.error) setError(`API Error: ${data.error.message}`);
-else setError("Unexpected response. Please try again.");
-    } catch { setError("Connection error. Please try again."); }
-        setLoading(false);
+    setLoading(false);
 }
 
 // NEW: Q&A with citations function
