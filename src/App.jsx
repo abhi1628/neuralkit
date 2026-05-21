@@ -459,11 +459,11 @@ const TOOLS = [
 You are an expert research analyst. When given text, produce a thorough structured summary with the following sections:
 
 🎯 Core Idea (1-2 sentences capturing the main contribution)
-🔍 Key Findings (3-5 bullet points with specific numbers, metrics, or results mentioned)
+🔍 Key Findings (3-5 bullet points with specific numbers, metrics, or results mentioned — include [Source: section X] or [Source: page X] when referencing specific data)
 📊 Methodology (describe the approach, techniques, algorithms, datasets, or experimental setup used — be specific about methods)
 💡 Practical Implications (2-3 points on real-world applications)
 ⚠️ Limitations or Gaps (1-2 points on constraints or future work needed)
-📌 Notable Details (important dates, names, figures, or citations)
+📌 Notable Details (important dates, names, figures, or citations — cite source location when possible)
 
 Be precise, technical yet accessible. Include methodology details even if they seem implicit. Keep under 350 words.`,
   },
@@ -1117,7 +1117,7 @@ const accent = style.accent;
       <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
         {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
       </div>
-      <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
+      <div style={{ background: theme === 'dark' ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${theme === 'dark' ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: theme === 'dark' ? "#febc2e" : "#b45309", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
         ⚠ Review all content before sending. AI may not capture every nuance of your experience.
       </div>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -1247,7 +1247,31 @@ RULES:
 
       <div style={{ marginBottom: "16px" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: ac, marginBottom: "8px" }}>JOB DESCRIPTION *</div>
-        <textarea value={jobDesc} onChange={e => setJobDesc(e.target.value)} rows={6} placeholder="Paste the job description here..." style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
+                <textarea value={jobDesc} onChange={e => setJobDesc(e.target.value)} rows={8} placeholder={`Example job description to paste:
+
+Senior Full Stack Developer
+XYZ Tech Solutions, Bangalore
+
+About the role:
+We are seeking an experienced Full Stack Developer with 3+ years of experience in React, Node.js, and cloud technologies. You will lead development of scalable web applications serving 100K+ users.
+
+Requirements:
+• 3+ years experience with React, TypeScript, Node.js
+• Strong in database design (PostgreSQL, MongoDB)
+• Experience with AWS/GCP cloud services
+• Familiarity with CI/CD pipelines and Docker
+• Bachelor's degree in Computer Science or related field
+
+Responsibilities:
+• Design and implement microservices architecture
+• Optimize application performance and database queries
+• Mentor junior developers and conduct code reviews
+• Collaborate with product team on feature roadmap
+
+Nice to have:
+• Experience with Kubernetes and serverless architectures
+• Contributions to open source projects
+• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
         <WordCounter text={jobDesc} limit={5000} theme={theme} />
       </div>
 
@@ -1424,7 +1448,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
         <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
           {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
         </div>
-        <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: "#febc2e", lineHeight: 1.6 }}>
+        <div style={{ background: isDark ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${isDark ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: isDark ? "#febc2e" : "#b45309", lineHeight: 1.6 }}>
           ⚠ Review carefully before sending. Download DOCX to edit in Word or Google Docs.
         </div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -1911,22 +1935,12 @@ if (currentChunk) {
                 temperature: 0.3,
                 messages: [{ 
                     role: "system", 
-                    content: prompt + `\n\nCITATION REQUIREMENT: Every factual claim in your response MUST be followed by a citation like [Source: filename, page X] based on the document content. If you quote directly, include [Source: page X, exact quote]. Never make up citations. Be precise with numbers and metrics.
-
-CONFIDENCE SCORING: After each major section, add a confidence indicator:
-- [HIGH] — Directly stated in the document word-for-word
-- [MEDIUM] — Clearly implied or inferred from multiple sentences
-- [LOW] — Limited evidence or partially stated, needs verification
-
-Example format:
-🎯 Core Idea: The ANFIS-PSO system achieves 100% test accuracy [Source: paper.pdf, page 2] [HIGH]
-
-🔍 Key Findings: 
-- 99.64% training accuracy [Source: page 2] [HIGH]
-- System reduces computation time by 40% compared to baseline [Source: page 5] [MEDIUM]
-
-⚠️ Limitations: Only tested on single dataset [Source: page 8] [HIGH]
-- Generalization to other populations not verified [Source: page 8] [LOW]`
+                    content: prompt + `\n\nIMPORTANT FORMATTING RULES:
+- Do NOT include page citations like [Source: page X] — this is a resume, not a research paper
+- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]
+- Be honest and specific about strengths and weaknesses
+- Use bullet points for readability
+- Include specific metrics and numbers when analyzing achievements`
                 }, { 
                     role: "user", 
                     content: contextForLLM 
@@ -1939,18 +1953,7 @@ Example format:
             const aiOutput = data.choices[0].message.content;
             
             // Validation check for citations
-            const hasCitations = /\[Source:.*?page\s+\d+\]/i.test(aiOutput);
-            const hasMetrics = /\d+(?:\.\d+)?%|\d+(?:\.\d+)?\s*(?:accuracy|rmse|score)/i.test(aiOutput);
-            
-            if (!hasCitations) {
-                console.warn("⚠️ Warning: Output missing citations");
-                setOutput(aiOutput + "\n\n⚠️ Note: This summary may lack specific page citations. For verification, use the Q&A feature below.");
-            } else if (!hasMetrics && aiOutput.length > 500) {
-                console.warn("⚠️ Warning: Output may be missing key metrics");
-                setOutput(aiOutput);
-            } else {
-                setOutput(aiOutput);
-            }
+            setOutput(aiOutput);
         } else if (data?.error) {
             setError(`API Error: ${data.error.message}`);
         } else {
