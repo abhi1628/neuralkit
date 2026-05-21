@@ -14,6 +14,7 @@ export const BLOG_POSTS = [
   gitGuide,
   systemDesign,
   aiCoding,
+  sqlWindow,
 ];
 
 // ── Blog Components ───────────────────────────────────────────
