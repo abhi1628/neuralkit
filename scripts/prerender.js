@@ -49,7 +49,12 @@ const posts = [
     slug: 'ai-coding-assistants-2026',
     title: 'AI Coding Assistants in 2026: How to Use Them Without Becoming Replaceable',
     excerpt: 'Every student uses Cursor, Copilot, or Claude Code. But interviewers are asking: \'How do you know this code is correct?\''
-  }
+  },
+  {
+  slug: 'sql-window-functions-ctes-2026',
+  title: 'SQL in 2026: Window Functions, CTEs, and the Queries That Actually Get Asked in Interviews',
+  excerpt: 'Stop writing SELECT * and hoping for the best. These are the SQL patterns that separate backend engineers from database wizards — and the exact questions Uber, Stripe, and Meta are asking in 2026.'
+}
 ];
 
 // Generate static HTML for each blog post
