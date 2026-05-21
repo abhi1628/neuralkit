@@ -55,7 +55,7 @@ const post = {
     {
       type: "do-dont",
       items: [
-        { do: "Revise CCNA 2-3 level networking: subnetting, VLANs, routing protocols, ACLs", dont: "Ignore networking prep — 10 of 22 questions are pure networking, and they're scenario-based" },
+        { do: "Revise CCNA 1-3 level networking: subnetting, VLANs, routing protocols, ACLs", dont: "Ignore networking prep — 10 of 22 questions are pure networking, and they're scenario-based" },
         { do: "Practice pattern recognition, blood relations, and logical arrangements for aptitude", dont: "Assume aptitude is easy — the 15-minute time limit for 10 questions is tight" },
         { do: "Solve LeetCode easy/medium on arrays, strings, and hash maps for basic coding", dont: "Skip coding practice — even the 'basic' coding question trips up non-CS students" },
         { do: "Study DSA + OOP for the advanced coding question: trees, graphs, dynamic programming", dont: "Go in without OOP knowledge — the advanced section tests object-oriented design" },
@@ -255,7 +255,7 @@ security, edge AI — signals you understand where the company is headed.`
     {
       type: "steps",
       items: [
-        { num: "1", title: "Week 1: Networking Deep Dive", text: "Complete CCNA 2-3 modules if you haven't already. Focus on: subnetting, VLANs, inter-VLAN routing, OSPF, NAT, ACLs, and wireless fundamentals. Use Packet Tracer to build and troubleshoot topologies." },
+        { num: "1", title: "Week 1: Networking Deep Dive", text: "Complete CCNA 1-3 modules if you haven't already. Focus on: subnetting, VLANs, inter-VLAN routing, OSPF, NAT, ACLs, and wireless fundamentals. Use Packet Tracer to build and troubleshoot topologies." },
         { num: "2", title: "Week 2: Coding + DSA", text: "Solve 30 LeetCode easy/medium problems. Focus on arrays, hash maps, strings, trees, and graph BFS/DFS. Practice writing clean, commented code under time pressure." },
         { num: "3", title: "Week 3: Cisco Stack Familiarity", text: "Browse Cisco's product catalog: DNA Center, Meraki, ISE, ThousandEyes, Cyber Vision, Edge Intelligence. Read 2-3 case studies per product. Understand what problem each solves, not just features." },
         { num: "4", title: "Week 4: Mock Pitch + Interview Prep", text: "Build a sample PPT on any problem statement. Present to friends or mentors. Have them ask hard questions. Record yourself and review — most students have never seen their own pitch on video." }
