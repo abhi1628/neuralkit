@@ -878,7 +878,7 @@ Rules:
     setDownloadingDocx(true);
     try {
       await loadScript(DOCX_CDN);
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat, BorderStyle } = window.docx;
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat } = window.docx;
       const templateStyles = {
   modern: { accent: "1F6FEB", font: "Arial", headerSize: 24, nameSize: 52 },
   classic: { accent: "2c5282", font: "Georgia", headerSize: 22, nameSize: 48 },
@@ -894,7 +894,8 @@ const accent = style.accent;
       const contactParts = [c.email, c.phone, c.location, c.linkedin].filter(Boolean);
       if (contactParts.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: contactParts.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
 
-      const divider = () => new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+      const divider = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+
       const sectionHeader = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
 
       if (resumeData.summary) {
@@ -1378,14 +1379,14 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
     setDownloadingDocx(true);
     try {
       await loadScript(DOCX_CDN);
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat, BorderStyle } = window.docx;
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
       const accent = "1F6FEB";
       const children = [];
       children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
       const c = resumeData.contact || {};
       const cp = [c.email, c.phone, c.location, c.linkedin, c.github].filter(Boolean);
       if (cp.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: cp.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
-      const div = () => new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+      const div = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
       const sh = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
       if (resumeData.summary) { children.push(div()); children.push(sh("Professional Summary")); children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] })); }
       if (resumeData.experience?.length) {
@@ -2142,7 +2143,7 @@ function handleClear() {
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
           
           {/* NEW: Q&A Section with Citations */}
-          {chunks.length > 0 && (
+          {label === "Summarize Document" && chunks.length > 0 && (
             <div style={{ marginTop: "28px" }}>
               <div style={{ 
                 fontFamily: "'Space Mono', monospace", 
