@@ -303,21 +303,33 @@ async function fetchVisitorCount() {
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
+    if (src.includes("docx") && window.docx) { resolve(); return; }
+    if (src.includes("jspdf") && window.jspdf) { resolve(); return; }
     if (document.querySelector(`script[src="${src}"]`)) {
-      resolve();
+      const checkInterval = setInterval(() => {
+        if ((src.includes("docx") && window.docx) || 
+            (src.includes("jspdf") && window.jspdf) ||
+            (!src.includes("docx") && !src.includes("jspdf"))) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+      setTimeout(() => { clearInterval(checkInterval); resolve(); }, 5000);
       return;
     }
     const s = document.createElement("script");
     s.src = src;
-    s.onload = resolve;
-    s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
-    s.onload = resolve;
+    s.async = true;
+    let resolved = false;
+    const doResolve = () => { if (!resolved) { resolved = true; resolve(); } };
+    const doReject = () => { if (!resolved) { resolved = true; reject(new Error(`Failed to load: ${src}`)); } };
+    s.onload = doResolve;
+    s.onerror = doReject;
     document.head.appendChild(s);
-    
-    // Timeout after 10 seconds
-    setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
+    setTimeout(() => { if (!resolved) doReject(); }, 10000);
   });
 }
+
 
 async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
@@ -808,7 +820,7 @@ function MCQPanel({ tool, theme }) {
 
 
 // ── Resume Builder ────────────────────────────────────────────
-const DOCX_CDN = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js";
+const DOCX_CDN = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js";
 
 function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
   const [step, setStep] = useState("prompt");
@@ -876,16 +888,20 @@ Rules:
   async function downloadDocx() {
     if (!resumeData) return;
     setDownloadingDocx(true);
+    setBuildError("");
     try {
       await loadScript(DOCX_CDN);
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat } = window.docx;
+      if (!window.docx) {
+        throw new Error("DOCX library failed to load. Please check your internet connection and try again.");
+      }
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
       const templateStyles = {
-  modern: { accent: "1F6FEB", font: "Arial", headerSize: 24, nameSize: 52 },
-  classic: { accent: "2c5282", font: "Georgia", headerSize: 22, nameSize: 48 },
-  minimal: { accent: "1a1a1a", font: "Helvetica", headerSize: 20, nameSize: 44 }
-};
-const style = templateStyles[template] || templateStyles.modern;
-const accent = style.accent;
+        modern: { accent: "1F6FEB", font: "Arial" },
+        classic: { accent: "2c5282", font: "Georgia" },
+        minimal: { accent: "1a1a1a", font: "Helvetica" }
+      };
+      const style = templateStyles[template] || templateStyles.modern;
+      const accent = style.accent;
       const children = [];
 
       children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
@@ -1378,7 +1394,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
     if (!resumeData) return;
     setDownloadingDocx(true);
     try {
-      await loadScript(DOCX_CDN);
+      ;
       const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
       const accent = "1F6FEB";
       const children = [];
