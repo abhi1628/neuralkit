@@ -60,14 +60,19 @@ const post = {
     {
       type: "code-compare",
       label: "Interview question: Top 3 salaries per department",
-      before: { version: "Junior approach (WRONG)", code: `# ❌ GROUP BY collapses rows — you lose the actual employees
+      before: {
+        version: "Junior approach (WRONG)",
+        code: `# ❌ GROUP BY collapses rows — you lose the actual employees
 SELECT department, MAX(salary) as top_salary
 FROM employees
 GROUP BY department;
 
 # This only gives you ONE top salary per department.
-# What if they ask for top 3? You can't do it with GROUP BY.` },
-      after: { version: "Senior approach (CORRECT)", code: `# ✅ Window function preserves all rows, ranks within groups
+# What if they ask for top 3? You can't do it with GROUP BY.`
+      },
+      after: {
+        version: "Senior approach (CORRECT)",
+        code: `# ✅ Window function preserves all rows, ranks within groups
 SELECT 
   employee_id,
   name,
@@ -83,7 +88,8 @@ QUALIFY dept_rank <= 3;
 # PARTITION BY resets ranking per department
 # ORDER BY DESC puts highest salary first
 # QUALIFY filters after window function runs
-# This gives exactly top 3 per department, no matter how many departments.` }
+# This gives exactly top 3 per department, no matter how many departments.`
+      }
     },
     {
       type: "h2",
@@ -96,7 +102,9 @@ QUALIFY dept_rank <= 3;
     {
       type: "code-compare",
       label: "CTE vs nested subqueries",
-      before: { version: "Nested subquery mess (UNREADABLE)", code: `# ❌ Three levels of nesting — good luck debugging this
+      before: {
+        version: "Nested subquery mess (UNREADABLE)",
+        code: `# ❌ Three levels of nesting — good luck debugging this
 SELECT 
   customer_id,
   total_spent
@@ -111,8 +119,11 @@ FROM (
   ) filtered_orders
   GROUP BY customer_id
 ) customer_totals
-WHERE total_spent > 1000;` },
-      after: { version: "CTE approach (READABLE)", code: `# ✅ Named steps you can read top-to-bottom
+WHERE total_spent > 1000;`
+      },
+      after: {
+        version: "CTE approach (READABLE)",
+        code: `# ✅ Named steps you can read top-to-bottom
 WITH completed_orders AS (
   SELECT * 
   FROM orders 
@@ -131,7 +142,8 @@ WHERE total_spent > 1000;
 
 # Each CTE is a named building block
 # Easy to debug: comment out final SELECT, inspect any CTE
-# Interviewers can follow your logic without getting lost` }
+# Interviewers can follow your logic without getting lost`
+      }
     },
     {
       type: "h2",
@@ -178,7 +190,7 @@ ORDER BY level, name;
 #   Bob (Director)     level 1
 #     Carol (Manager)  level 2
 #       Dave (IC)      level 3
-# Interview tip: Always include a level counter and cycle detection` }
+# Interview tip: Always include a level counter and cycle detection`
     },
     {
       type: "h2",
@@ -234,7 +246,7 @@ FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
 # Step 5: When indexes fail — query rewrite
 # Sometimes a LATERAL JOIN beats a correlated subquery
 # Sometimes UNION ALL + LIMIT is faster than OR conditions
-# The execution plan tells you what to fix` }
+# The execution plan tells you what to fix`
     },
     {
       type: "h2",
