@@ -6,7 +6,7 @@ import python from "./posts/python-312-313-314-differences";
 import gitGuide from "./posts/git-github-first-job";
 import systemDesign from "./posts/system-design-interview-patterns";
 import aiCoding from "./posts/ai-coding-assistants-2026";
-import sqlWindow from "./posts/SQL in 2026: Window Functions, CTEs, and the Queries That Actually Get Asked in Interviews";
+import sqlWindow from "./posts/sql-window-functions-ctes-2026";
  
 export const BLOG_POSTS = [
   atsResume,
