@@ -975,17 +975,18 @@ const accent = style.accent;
       const contactStr = [c.email, c.phone, c.location, c.linkedin].filter(Boolean).join("  |  ");
       doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
       doc.text(contactStr, 105, y, { align: "center" }); y += 7;
-      doc.setDrawColor(3const templateColors = {
-  modern: [31, 111, 235],
-  classic: [44, 82, 130],
-  minimal: [26, 26, 26]
-};
-const tc = templateColors[template] || templateColors.modern;
-doc.setDrawColor(...tc);1, 111, 235); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
+      // Template-aware colors
+      const templateColors = {
+        modern: [31, 111, 235],
+        classic: [44, 82, 130],
+        minimal: [26, 26, 26]
+      };
+      const tc = templateColors[template] || templateColors.modern;
+      doc.setDrawColor(...tc); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
 
       const section = (title) => {
         if (y > 270) { doc.addPage(); y = 18; }
-        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(31, 111, 235);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(...tc);
         doc.text(title.toUpperCase(), 10, y); y += 4;
         doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(10, y, 200, y); y += 5;
       };
