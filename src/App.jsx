@@ -886,95 +886,610 @@ Rules:
   }
 
   async function downloadDocx() {
-    if (!resumeData) return;
-    setDownloadingDocx(true);
-    setBuildError("");
-    try {
-      await loadScript(DOCX_CDN);
-      if (!window.docx) {
-        throw new Error("DOCX library failed to load. Please check your internet connection and try again.");
+  if (!resumeData) return;
+
+  setDownloadingDocx(true);
+  setBuildError("");
+
+  try {
+    // ================================
+    // Load DOCX library safely
+    // ================================
+    async function loadDocxLibrary() {
+      return new Promise((resolve, reject) => {
+
+        // Already loaded
+        if (window.docx?.Document) {
+          resolve();
+          return;
+        }
+
+        // Existing script tag
+        const existing = document.querySelector(
+          'script[src*="docx"]'
+        );
+
+        if (existing) {
+
+          const waitForDocx = setInterval(() => {
+            if (window.docx?.Document) {
+              clearInterval(waitForDocx);
+              resolve();
+            }
+          }, 200);
+
+          setTimeout(() => {
+            clearInterval(waitForDocx);
+
+            if (!window.docx?.Document) {
+              reject(new Error("DOCX library failed to initialize"));
+            }
+          }, 10000);
+
+          return;
+        }
+
+        // Create script
+        const script = document.createElement("script");
+
+        script.src =
+          "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js";
+
+        script.async = true;
+
+        script.onload = () => {
+
+          // Give browser time to initialize window.docx
+          setTimeout(() => {
+
+            if (window.docx?.Document) {
+              resolve();
+            } else {
+              reject(
+                new Error("DOCX library loaded but not initialized")
+              );
+            }
+
+          }, 700);
+        };
+
+        script.onerror = () => {
+          reject(new Error("Failed to load DOCX library"));
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    await loadDocxLibrary();
+
+    // ================================
+    // Extract DOCX classes
+    // ================================
+    const {
+      Document,
+      Packer,
+      Paragraph,
+      TextRun,
+      AlignmentType,
+      LevelFormat
+    } = window.docx;
+
+    // ================================
+    // Template Styles
+    // ================================
+    const templateStyles = {
+      modern: {
+        accent: "1F6FEB",
+        font: "Arial"
+      },
+      classic: {
+        accent: "2c5282",
+        font: "Georgia"
+      },
+      minimal: {
+        accent: "1a1a1a",
+        font: "Helvetica"
       }
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
-      const templateStyles = {
-        modern: { accent: "1F6FEB", font: "Arial" },
-        classic: { accent: "2c5282", font: "Georgia" },
-        minimal: { accent: "1a1a1a", font: "Helvetica" }
-      };
-      const style = templateStyles[template] || templateStyles.modern;
-      const accent = style.accent;
-      const children = [];
+    };
 
-      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
+    const style =
+      templateStyles[template] ||
+      templateStyles.modern;
 
-      const c = resumeData.contact || {};
-      const contactParts = [c.email, c.phone, c.location, c.linkedin].filter(Boolean);
-      if (contactParts.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: contactParts.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
+    const accent = style.accent;
+    const font = style.font;
 
-      const divider = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
+    const children = [];
 
-      const sectionHeader = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
+    // ================================
+    // Name
+    // ================================
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 80 },
+        children: [
+          new TextRun({
+            text: resumeData.name || "Your Name",
+            bold: true,
+            size: 52,
+            font,
+            color: "1a1a1a"
+          })
+        ]
+      })
+    );
 
-      if (resumeData.summary) {
-        children.push(divider());
-        children.push(sectionHeader("Professional Summary"));
-        children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] }));
-      }
+    // ================================
+    // Contact
+    // ================================
+    const c = resumeData.contact || {};
 
-      if (resumeData.experience?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Experience"));
-        resumeData.experience.forEach(exp => {
-          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
-        });
-      }
+    const contactParts = [
+      c.email,
+      c.phone,
+      c.location,
+      c.linkedin
+    ].filter(Boolean);
 
-      if (resumeData.education?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Education"));
-        resumeData.education.forEach(edu => {
-          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
-        });
-      }
+    if (contactParts.length) {
 
-      if (resumeData.skills) {
-        children.push(divider());
-        children.push(sectionHeader("Skills"));
-        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
-          .filter(s => s.items?.length)
-          .forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
-      }
+      children.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 160 },
+          children: [
+            new TextRun({
+              text: contactParts.join("  |  "),
+              size: 20,
+              font,
+              color: "555555"
+            })
+          ]
+        })
+      );
+    }
 
-      if (resumeData.projects?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Projects"));
-        resumeData.projects.forEach(p => {
-          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] }));
-          if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] }));
-        });
-      }
-
-      if (resumeData.certifications?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Certifications"));
-        resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] })));
-      }
-
-      const doc = new Document({
-        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
-        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
+    // ================================
+    // Helpers
+    // ================================
+    const divider = () =>
+      new Paragraph({
+        border: {
+          bottom: {
+            style: "single",
+            size: 6,
+            color: accent,
+            space: 1
+          }
+        },
+        spacing: {
+          before: 160,
+          after: 160
+        },
+        children: []
       });
 
-      const buffer = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-improved.docx`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e) { console.error(e); setBuildError("DOCX generation failed. Try PDF instead."); }
+    const sectionHeader = (text) =>
+      new Paragraph({
+        spacing: {
+          before: 160,
+          after: 80
+        },
+        children: [
+          new TextRun({
+            text: text.toUpperCase(),
+            bold: true,
+            size: 24,
+            font,
+            color: accent
+          })
+        ]
+      });
+
+    // ================================
+    // Summary
+    // ================================
+    if (resumeData.summary) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Professional Summary")
+      );
+
+      children.push(
+        new Paragraph({
+          spacing: { after: 100 },
+          children: [
+            new TextRun({
+              text: resumeData.summary,
+              size: 20,
+              font
+            })
+          ]
+        })
+      );
+    }
+
+    // ================================
+    // Experience
+    // ================================
+    if (resumeData.experience?.length) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Experience")
+      );
+
+      resumeData.experience.forEach(exp => {
+
+        children.push(
+          new Paragraph({
+            spacing: {
+              before: 120,
+              after: 40
+            },
+            children: [
+              new TextRun({
+                text: exp.title || "",
+                bold: true,
+                size: 22,
+                font
+              }),
+
+              new TextRun({
+                text: exp.company
+                  ? `  —  ${exp.company}`
+                  : "",
+                size: 22,
+                font,
+                color: "444444"
+              }),
+
+              new TextRun({
+                text: exp.dates
+                  ? `   ${exp.dates}`
+                  : "",
+                size: 20,
+                font,
+                color: "888888",
+                italics: true
+              })
+            ]
+          })
+        );
+
+        (exp.bullets || []).forEach(b => {
+
+          children.push(
+            new Paragraph({
+              numbering: {
+                reference: "bullets",
+                level: 0
+              },
+              spacing: { after: 40 },
+              children: [
+                new TextRun({
+                  text: b,
+                  size: 20,
+                  font
+                })
+              ]
+            })
+          );
+        });
+      });
+    }
+
+    // ================================
+    // Education
+    // ================================
+    if (resumeData.education?.length) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Education")
+      );
+
+      resumeData.education.forEach(edu => {
+
+        children.push(
+          new Paragraph({
+            spacing: {
+              before: 80,
+              after: 40
+            },
+            children: [
+              new TextRun({
+                text: edu.degree || "",
+                bold: true,
+                size: 22,
+                font
+              }),
+
+              new TextRun({
+                text: edu.institution
+                  ? `  —  ${edu.institution}`
+                  : "",
+                size: 22,
+                font,
+                color: "444444"
+              }),
+
+              new TextRun({
+                text: edu.dates
+                  ? `   ${edu.dates}`
+                  : "",
+                size: 20,
+                font,
+                color: "888888",
+                italics: true
+              })
+            ]
+          })
+        );
+
+        if (edu.gpa) {
+
+          children.push(
+            new Paragraph({
+              spacing: { after: 40 },
+              children: [
+                new TextRun({
+                  text: `GPA: ${edu.gpa}`,
+                  size: 20,
+                  font,
+                  color: "666666"
+                })
+              ]
+            })
+          );
+        }
+      });
+    }
+
+    // ================================
+    // Skills
+    // ================================
+    if (resumeData.skills) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Skills")
+      );
+
+      [
+        {
+          label: "Technical",
+          items: resumeData.skills.technical
+        },
+        {
+          label: "Tools",
+          items: resumeData.skills.tools
+        },
+        {
+          label: "Soft Skills",
+          items: resumeData.skills.soft
+        }
+      ]
+      .filter(s => s.items?.length)
+      .forEach(s => {
+
+        children.push(
+          new Paragraph({
+            spacing: { after: 60 },
+            children: [
+
+              new TextRun({
+                text: `${s.label}: `,
+                bold: true,
+                size: 20,
+                font
+              }),
+
+              new TextRun({
+                text: s.items.join(", "),
+                size: 20,
+                font
+              })
+            ]
+          })
+        );
+      });
+    }
+
+    // ================================
+    // Projects
+    // ================================
+    if (resumeData.projects?.length) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Projects")
+      );
+
+      resumeData.projects.forEach(p => {
+
+        children.push(
+          new Paragraph({
+            spacing: {
+              before: 80,
+              after: 40
+            },
+            children: [
+
+              new TextRun({
+                text: p.name || "",
+                bold: true,
+                size: 22,
+                font
+              }),
+
+              new TextRun({
+                text: p.tech
+                  ? `  (${p.tech})`
+                  : "",
+                size: 20,
+                font,
+                color: "666666",
+                italics: true
+              })
+            ]
+          })
+        );
+
+        if (p.description) {
+
+          children.push(
+            new Paragraph({
+              numbering: {
+                reference: "bullets",
+                level: 0
+              },
+              spacing: { after: 40 },
+              children: [
+                new TextRun({
+                  text: p.description,
+                  size: 20,
+                  font
+                })
+              ]
+            })
+          );
+        }
+      });
+    }
+
+    // ================================
+    // Certifications
+    // ================================
+    if (resumeData.certifications?.length) {
+
+      children.push(divider());
+
+      children.push(
+        sectionHeader("Certifications")
+      );
+
+      resumeData.certifications.forEach(cert => {
+
+        children.push(
+          new Paragraph({
+            numbering: {
+              reference: "bullets",
+              level: 0
+            },
+            spacing: { after: 40 },
+            children: [
+              new TextRun({
+                text: cert,
+                size: 20,
+                font
+              })
+            ]
+          })
+        );
+      });
+    }
+
+    // ================================
+    // Create DOCX
+    // ================================
+    const doc = new Document({
+
+      numbering: {
+        config: [
+          {
+            reference: "bullets",
+            levels: [
+              {
+                level: 0,
+                format: LevelFormat.BULLET,
+                text: "•",
+                alignment: AlignmentType.LEFT,
+                style: {
+                  paragraph: {
+                    indent: {
+                      left: 720,
+                      hanging: 360
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+
+      sections: [
+        {
+          properties: {
+            page: {
+              size: {
+                width: 12240,
+                height: 15840
+              },
+              margin: {
+                top: 1080,
+                right: 1080,
+                bottom: 1080,
+                left: 1080
+              }
+            }
+          },
+
+          children
+        }
+      ]
+    });
+
+    // ================================
+    // FIXED PART
+    // Use toBlob instead of toBuffer
+    // ================================
+    const blob = await Packer.toBlob(doc);
+
+    // ================================
+    // Download
+    // ================================
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+      `${(resumeData.name || "resume")
+        .replace(/\s+/g, "-")
+        .toLowerCase()}-improved.docx`;
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+
+  } catch (e) {
+
+    console.error("DOCX ERROR:", e);
+
+    setBuildError(
+      "DOCX generation failed. Please try PDF instead."
+    );
+
+  } finally {
+
     setDownloadingDocx(false);
   }
+}
 
   async function downloadResumePdf() {
     if (!resumeData) return;
