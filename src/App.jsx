@@ -10,8 +10,8 @@ import Contact from "./pages/Contact.jsx";
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
 const GA_ID = "G-FTQS5X9WF3";
-const WORD_LIMIT = 8000;
-const WORD_LIMIT_UPLOAD = 12000;
+const WORD_LIMIT = 12000;
+const WORD_LIMIT_UPLOAD = 40000;
 
 // ── Pre-compiled Security Patterns ────────────────────────────
 const DANGEROUS_INPUT_PATTERNS = [
@@ -1835,7 +1835,19 @@ function handleClear() {
           {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
         </div>
         {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
-        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
+        {charCount > 0 && (
+    <>
+        <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
+            {charCount.toLocaleString()} characters extracted
+            {charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}
+        </div>
+        {charCount >= 30000 && (
+            <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
+                ⚠️ Large file: First {Math.round(WORD_LIMIT_UPLOAD/1000)}K characters used. For best results, consider summarizing shorter sections.
+            </div>
+        )}
+    </>
+)}
       </div>
       {label === "Analyze Resume" && !fileName && <div className="upload-hint">📄 Please upload a resume/CV (not research papers, articles, or other documents)</div>}
       {extractedText && (
