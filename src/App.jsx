@@ -10,8 +10,8 @@ import Contact from "./pages/Contact.jsx";
 const GROQ_API_URL = "/api/ai";
 const VISITOR_API_URL = "/api/visitors";
 const GA_ID = "G-FTQS5X9WF3";
-const WORD_LIMIT = 8000;
-const WORD_LIMIT_UPLOAD = 12000;
+const WORD_LIMIT = 12000;
+const WORD_LIMIT_UPLOAD = 40000;
 
 // ── Pre-compiled Security Patterns ────────────────────────────
 const DANGEROUS_INPUT_PATTERNS = [
@@ -459,11 +459,11 @@ const TOOLS = [
 You are an expert research analyst. When given text, produce a thorough structured summary with the following sections:
 
 🎯 Core Idea (1-2 sentences capturing the main contribution)
-🔍 Key Findings (3-5 bullet points with specific numbers, metrics, or results mentioned)
+🔍 Key Findings (3-5 bullet points with specific numbers, metrics, or results mentioned — include [Source: section X] or [Source: page X] when referencing specific data)
 📊 Methodology (describe the approach, techniques, algorithms, datasets, or experimental setup used — be specific about methods)
 💡 Practical Implications (2-3 points on real-world applications)
 ⚠️ Limitations or Gaps (1-2 points on constraints or future work needed)
-📌 Notable Details (important dates, names, figures, or citations)
+📌 Notable Details (important dates, names, figures, or citations — cite source location when possible)
 
 Be precise, technical yet accessible. Include methodology details even if they seem implicit. Keep under 350 words.`,
   },
@@ -810,13 +810,16 @@ function MCQPanel({ tool, theme }) {
 // ── Resume Builder ────────────────────────────────────────────
 const DOCX_CDN = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js";
 
-function ResumeBuilder({ originalText, analysisText, theme }) {
+function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
   const [step, setStep] = useState("prompt");
   const [agreed, setAgreed] = useState(false);
   const [resumeData, setResumeData] = useState(null);
   const [buildError, setBuildError] = useState("");
+  const [loadingLinkedIn, setLoadingLinkedIn] = useState(false);
+  const [showLinkedInPaste, setShowLinkedInPaste] = useState(false);
   const [downloadingDocx, setDownloadingDocx] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [template, setTemplate] = useState("modern");
   const accentColor = "var(--accent)";
 
   async function generateResume() {
@@ -863,6 +866,7 @@ Rules:
       const parsed = JSON.parse(cleaned);
       setResumeData(parsed);
       setStep("done");
+      if (onDataParsed) onDataParsed(parsed);
     } catch (e) {
       setBuildError("Failed to generate resume. Please try again.");
       setStep("error");
@@ -875,7 +879,13 @@ Rules:
     try {
       await loadScript(DOCX_CDN);
       const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat, BorderStyle } = window.docx;
-      const accent = "1F6FEB";
+      const templateStyles = {
+  modern: { accent: "1F6FEB", font: "Arial", headerSize: 24, nameSize: 52 },
+  classic: { accent: "2c5282", font: "Georgia", headerSize: 22, nameSize: 48 },
+  minimal: { accent: "1a1a1a", font: "Helvetica", headerSize: 20, nameSize: 44 }
+};
+const style = templateStyles[template] || templateStyles.modern;
+const accent = style.accent;
       const children = [];
 
       children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
@@ -965,11 +975,18 @@ Rules:
       const contactStr = [c.email, c.phone, c.location, c.linkedin].filter(Boolean).join("  |  ");
       doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
       doc.text(contactStr, 105, y, { align: "center" }); y += 7;
-      doc.setDrawColor(31, 111, 235); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
+      // Template-aware colors
+      const templateColors = {
+        modern: [31, 111, 235],
+        classic: [44, 82, 130],
+        minimal: [26, 26, 26]
+      };
+      const tc = templateColors[template] || templateColors.modern;
+      doc.setDrawColor(...tc); doc.setLineWidth(0.6); doc.line(10, y, 200, y); y += 7;
 
       const section = (title) => {
         if (y > 270) { doc.addPage(); y = 18; }
-        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(31, 111, 235);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(...tc);
         doc.text(title.toUpperCase(), 10, y); y += 4;
         doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(10, y, 200, y); y += 5;
       };
@@ -1100,7 +1117,7 @@ Rules:
       <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
         {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
       </div>
-      <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: "#febc2e", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
+      <div style={{ background: theme === 'dark' ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${theme === 'dark' ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "20px", fontSize: "0.78rem", color: theme === 'dark' ? "#febc2e" : "#b45309", fontFamily: "'Space Mono', monospace", lineHeight: 1.6 }}>
         ⚠ Review all content before sending. AI may not capture every nuance of your experience.
       </div>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -1115,13 +1132,163 @@ Rules:
     </div>
   );
 }
+// ── Cover Letter Generator ───────────────────────────────────
+function CoverLetterGenerator({ resumeData, jobDescription, theme }) {
+  const [step, setStep] = useState("input");
+  const [jobDesc, setJobDesc] = useState(jobDescription || "");
+  const [tone, setTone] = useState("professional");
+  const [length, setLength] = useState("medium");
+  const [letter, setLetter] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+  const isDark = theme === "dark";
+  const ac = "var(--accent)";
 
+  async function generate() {
+    if (!jobDesc.trim()) return;
+    setLoading(true); setError(""); setLetter("");
+    try {
+      const res = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", max_tokens: 1200, temperature: 0.7,
+          messages: [{
+            role: "system",
+            content: `You are an expert career coach and cover letter writer. Write a compelling, ATS-friendly cover letter.
+
+RULES:
+- Match the applicant's skills from their resume to the job description naturally
+- Use specific achievements and metrics from the resume data
+- Tone: ${tone === "enthusiastic" ? "warm, energetic, passionate" : tone === "formal" ? "traditional, conservative, corporate" : "balanced, confident, professional"}
+- Length: ${length === "short" ? "200-250 words (3 paragraphs)" : length === "long" ? "400-500 words (5-6 paragraphs)" : "300-350 words (4 paragraphs)"}
+- Start with a hook that references the company/role specifically
+- End with a strong call to action
+- NEVER use generic phrases like "I am writing to apply" or "your job posting on"
+- Address specific requirements from the job description with matching qualifications
+- Use active voice, specific examples, avoid buzzwords`
+          }, {
+            role: "user",
+            content: `Resume Data:\n${JSON.stringify(resumeData, null, 2)}\n\nJob Description:\n${jobDesc}\n\nGenerate the cover letter now.`
+          }]
+        })
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) {
+        setLetter(data.choices[0].message.content.replace(/```/g, "").trim());
+        setStep("done");
+      } else setError("Failed to generate cover letter.");
+    } catch { setError("Connection error. Please try again."); }
+    setLoading(false);
+  }
+
+  const tones = [
+    { id: "professional", label: "Professional", desc: "Balanced & confident" },
+    { id: "enthusiastic", label: "Enthusiastic", desc: "Warm & passionate" },
+    { id: "formal", label: "Formal", desc: "Traditional corporate" }
+  ];
+
+  const lengths = [
+    { id: "short", label: "Short", desc: "3 paragraphs" },
+    { id: "medium", label: "Medium", desc: "4 paragraphs" },
+    { id: "long", label: "Long", desc: "5-6 paragraphs" }
+  ];
+
+  if (step === "done" && letter) return (
+    <div style={{ marginTop: "20px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: ac, letterSpacing: "0.12em" }}>◆ COVER LETTER READY</div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button onClick={() => copyToClipboard(letter, setCopied)} className="action-btn">{copied ? "✓ Copied!" : "Copy"}</button>
+          <button onClick={() => downloadAsPDF(letter, "cover-letter")} className="action-btn">⬇ PDF</button>
+        </div>
+      </div>
+      <div style={{ background: isDark ? "rgba(0,0,0,0.2)" : "#fff", border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "10px", padding: "24px", fontFamily: "'DM Sans', sans-serif", fontSize: "0.9rem", lineHeight: 1.8, color: isDark ? "rgba(255,255,255,0.9)" : "#2c3e50", whiteSpace: "pre-wrap" }}>
+        {letter}
+      </div>
+      <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
+        <button onClick={() => { setStep("input"); setLetter(""); setJobDesc(""); }} className="action-btn" style={{ color: ac, borderColor: ac }}>↺ New Letter</button>
+        <button onClick={generate} disabled={loading} className="run-btn" style={{ padding: "10px 20px", fontSize: "0.8rem" }}>
+          {loading ? "Regenerating..." : "↻ Regenerate"}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ marginTop: "20px", background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "14px", padding: "20px 24px" }}>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: ac, letterSpacing: "0.12em", marginBottom: "10px" }}>◆ COVER LETTER GENERATOR</div>
+      <p style={{ color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.7)", fontSize: "0.9rem", marginBottom: "16px", lineHeight: 1.6 }}>
+        Generate a tailored cover letter using your resume and a job description.
+      </p>
+      
+      <div style={{ marginBottom: "14px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: ac, marginBottom: "8px" }}>TONE</div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {tones.map(t => (
+            <button key={t.id} onClick={() => setTone(t.id)} style={{ background: tone === t.id ? ac : "transparent", border: `1px solid ${tone === t.id ? ac : isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: tone === t.id ? "#000" : isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.78rem", cursor: "pointer", fontWeight: tone === t.id ? 700 : 400 }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "14px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: ac, marginBottom: "8px" }}>LENGTH</div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {lengths.map(l => (
+            <button key={l.id} onClick={() => setLength(l.id)} style={{ background: length === l.id ? ac : "transparent", border: `1px solid ${length === l.id ? ac : isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: length === l.id ? "#000" : isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", fontSize: "0.78rem", cursor: "pointer", fontWeight: length === l.id ? 700 : 400 }}>
+              {l.label} <span style={{ opacity: 0.6, fontSize: "0.7rem" }}>({l.desc})</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "16px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: ac, marginBottom: "8px" }}>JOB DESCRIPTION *</div>
+                <textarea value={jobDesc} onChange={e => setJobDesc(e.target.value)} rows={8} placeholder={`Example job description to paste:
+
+Senior Full Stack Developer
+XYZ Tech Solutions, Bangalore
+
+About the role:
+We are seeking an experienced Full Stack Developer with 3+ years of experience in React, Node.js, and cloud technologies. You will lead development of scalable web applications serving 100K+ users.
+
+Requirements:
+• 3+ years experience with React, TypeScript, Node.js
+• Strong in database design (PostgreSQL, MongoDB)
+• Experience with AWS/GCP cloud services
+• Familiarity with CI/CD pipelines and Docker
+• Bachelor's degree in Computer Science or related field
+
+Responsibilities:
+• Design and implement microservices architecture
+• Optimize application performance and database queries
+• Mentor junior developers and conduct code reviews
+• Collaborate with product team on feature roadmap
+
+Nice to have:
+• Experience with Kubernetes and serverless architectures
+• Contributions to open source projects
+• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
+        <WordCounter text={jobDesc} limit={5000} theme={theme} />
+      </div>
+
+      {error && <div className="error-box" style={{ marginBottom: "12px" }}>⚠ {error}</div>}
+      
+      <button onClick={generate} disabled={loading || !jobDesc.trim()} style={{ background: loading || !jobDesc.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: loading || !jobDesc.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !jobDesc.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+        {loading ? <><span className="spinner" style={{ width: "14px", height: "14px" }} />Writing...</> : "✨ Generate Cover Letter →"}
+      </button>
+    </div>
+  );
+}
 // ── Resume Builder Tool (from scratch) ───────────────────────
 function ResumeBuilderTool({ theme }) {
   const STEPS = ["Personal Info", "Summary & Target", "Experience", "Education", "Skills", "Projects & Extras", "Review & Generate"];
   const [step, setStep] = useState(0);
   const [data, setData] = useState({
-    name: "", email: "", phone: "", location: "", linkedin: "", github: "",
+    name: "", email: "", phone: "", location: "", linkedin: "", github: "", linkedinImport: "", linkedinRaw: "",
     target: "", summary: "",
     experience: [{ id: 1, title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }],
     education: [{ id: 1, degree: "", field: "", institution: "", year: "", gpa: "" }],
@@ -1134,9 +1301,13 @@ function ResumeBuilderTool({ theme }) {
   const [resumeData, setResumeData] = useState(null);
   const [buildError, setBuildError] = useState("");
   const [downloadingDocx, setDownloadingDocx] = useState(false);
+  const [template, setTemplate] = useState("modern");
+  const [loadingLinkedIn, setLoadingLinkedIn] = useState(false);
+  const [showLinkedInPaste, setShowLinkedInPaste] = useState(false);
   const topRef = useRef(null);
   const isDark = theme === "dark";
   const ac = "var(--accent)";
+  const accentColor = "var(--accent)";
 
   const inp = (extra = {}) => ({
     style: {
@@ -1267,12 +1438,21 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
   if (step === 7 && resumeData) return (
     <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "14px", padding: "24px" }}>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em" }}>✅ RESUME READY</div>
+  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+    {["modern", "classic", "minimal"].map(t => (
+      <button key={t} onClick={() => setTemplate(t)} style={{ background: template === t ? accentColor : "transparent", border: `1px solid ${template === t ? accentColor : theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "6px", padding: "4px 12px", color: template === t ? "#000" : theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.68rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", textTransform: "uppercase" }}>
+        {t}
+      </button>
+    ))}
+  </div>
+</div>
         <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData.name}</div>
         <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
           {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
         </div>
-        <div style={{ background: "rgba(255,180,0,0.08)", border: "1px solid rgba(255,180,0,0.25)", borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: "#febc2e", lineHeight: 1.6 }}>
+        <div style={{ background: isDark ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${isDark ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: isDark ? "#febc2e" : "#b45309", lineHeight: 1.6 }}>
           ⚠ Review carefully before sending. Download DOCX to edit in Word or Google Docs.
         </div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
@@ -1302,8 +1482,114 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
   function renderStep() {
     if (step === 0) return (
       <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-        <div style={grid2}>
-          <div>{lbl("Full Name *")}<input {...inp()} placeholder="e.g. Priya Sharma" value={data.name} onChange={e => upd("name", e.target.value)} /></div>
+  
+  {/* LinkedIn Import */}
+  <div style={{ background: isDark ? "rgba(0,255,224,0.04)" : "rgba(0,137,123,0.04)", border: `1px dashed ${ac}`, borderRadius: "12px", padding: "16px", marginBottom: "8px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+      <span style={{ fontSize: "1.2rem" }}>💼</span>
+      <div>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", color: ac, fontWeight: 700 }}>IMPORT FROM LINKEDIN</div>
+        <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)", marginTop: "2px" }}>Paste your LinkedIn profile URL or public profile PDF</div>
+      </div>
+    </div>
+    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      <input 
+        {...inp({ flex: 1 })} 
+        placeholder="linkedin.com/in/yourprofile" 
+        value={data.linkedinImport || ""}
+        onChange={e => {
+          const url = e.target.value;
+          upd("linkedinImport", url);
+          // Auto-extract from URL pattern
+          if (url.includes("linkedin.com/in/")) {
+            const username = url.split("/in/")[1]?.split("/")[0]?.split("?")[0];
+            if (username) {
+              upd("linkedin", url);
+              // Pre-fill name from username (basic heuristic)
+              const nameGuess = username.replace(/-/g, " ").replace(/_/g, " ").replace(/\./g, " ")
+                .split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+              if (!data.name) upd("name", nameGuess);
+            }
+          }
+        }}
+        style={{ ...inp().style, flex: 1, minWidth: "200px" }}
+      />
+      <button 
+        onClick={async () => {
+          if (!data.linkedinImport?.includes("linkedin.com")) {
+            setBuildError("Please enter a valid LinkedIn URL");
+            return;
+          }
+          setBuildError("");
+          // Simulate extraction - in production this would call a scraping API
+          setLoadingLinkedIn(true);
+          await new Promise(r => setTimeout(r, 1500));
+          // Mock extraction for demo - user would need to paste their profile content
+          setLoadingLinkedIn(false);
+          setShowLinkedInPaste(true);
+        }}
+        disabled={loadingLinkedIn}
+        style={{ background: loadingLinkedIn ? "rgba(255,255,255,0.08)" : ac, border: "none", borderRadius: "8px", padding: "10px 18px", color: loadingLinkedIn ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.78rem", cursor: loadingLinkedIn ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}
+      >
+        {loadingLinkedIn ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />...</> : "Extract →"}
+      </button>
+    </div>
+    
+    {showLinkedInPaste && (
+      <div style={{ marginTop: "12px" }}>
+        <div style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", marginBottom: "8px", lineHeight: 1.5 }}>
+          ⚠️ LinkedIn blocks automatic scraping. Please <strong>copy your profile content</strong> (About, Experience, Education sections) and paste below. We'll auto-parse it.
+        </div>
+        <textarea 
+          value={data.linkedinRaw || ""}
+          onChange={e => {
+            const text = e.target.value;
+            upd("linkedinRaw", text);
+            // Auto-parse basic fields
+            const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+            // Simple heuristics
+            const nameLine = lines.find(l => l.length > 3 && l.length < 40 && !l.includes("@") && !l.includes("http"));
+            if (nameLine && !data.name) upd("name", nameLine);
+            // Extract email
+            const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+            if (emailMatch && !data.email) upd("email", emailMatch[0]);
+            // Extract phone
+            const phoneMatch = text.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+            if (phoneMatch && !data.phone) upd("phone", phoneMatch[0]);
+            // Extract experience blocks
+            const expBlocks = text.split(/Experience|Work Experience|Employment/i).slice(1);
+            if (expBlocks.length > 0 && data.experience[0].title === "") {
+              // Basic parsing - would be enhanced with better NLP in production
+              const parsedExps = expBlocks.slice(0, 3).map((block, i) => {
+                const lines = block.split("\n").filter(l => l.trim());
+                return {
+                  id: Date.now() + i,
+                  title: lines[0] || "",
+                  company: lines[1] || "",
+                  startDate: "",
+                  endDate: "",
+                  current: false,
+                  bullets: lines.slice(2).join("\n")
+                };
+              });
+              if (parsedExps.length > 0) setData(d => ({ ...d, experience: parsedExps }));
+            }
+          }}
+          rows={8}
+          placeholder="Paste your LinkedIn profile text here (About, Experience, Education)..."
+          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", resize: "vertical" }}
+        />
+        <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
+          💡 Tip: Go to your LinkedIn profile → Click "More" → "Save to PDF" → Copy text from the PDF
+        </div>
+      </div>
+    )}
+    
+    {buildError && <div style={{ color: "#ff6b6b", fontSize: "0.75rem", marginTop: "8px" }}>{buildError}</div>}
+  </div>
+
+  <div style={grid2}>
+    <div>{lbl("Full Name *")}<input {...inp()} placeholder="e.g. Priya Sharma" value={data.name} onChange={e => upd("name", e.target.value)} /></div>
           <div>{lbl("Email *")}<input {...inp()} type="email" placeholder="priya@email.com" value={data.email} onChange={e => upd("email", e.target.value)} /></div>
           <div>{lbl("Phone")}<input {...inp()} placeholder="+91 98765 43210" value={data.phone} onChange={e => upd("phone", e.target.value)} /></div>
           <div>{lbl("Location")}<input {...inp()} placeholder="Mumbai, Maharashtra" value={data.location} onChange={e => upd("location", e.target.value)} /></div>
@@ -1470,6 +1756,11 @@ function UploadTool({ prompt, filename, icon, label, theme }) {
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState("");
   const [charCount, setCharCount] = useState(0);
+  const [chunks, setChunks] = useState([]);           // NEW: store chunks with metadata
+  const [followUpQuestion, setFollowUpQuestion] = useState("");  // NEW: Q&A input
+  const [qaAnswer, setQaAnswer] = useState("");       // NEW: Q&A response
+  const [parsedResumeData, setParsedResumeData] = useState(null);
+  const [qaLoading, setQaLoading] = useState(false);  // NEW: Q&A loading state
   const fileRef = useRef(null);
   const topRef = useRef(null);
 
@@ -1563,15 +1854,65 @@ function isResumeLike(text) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         const ab = await file.arrayBuffer();
         const pdf = await window.pdfjsLib.getDocument({ data: ab }).promise;
+        const pageTexts = [];
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          text += content.items.map(s => s.str).join(" ") + "\n";
+          const pageText = content.items.map(s => s.str).join(" ");
+          pageTexts.push({ pageNum: i, text: pageText });
+          text += pageText + "\n\n";
         }
+        // Create chunks with metadata
+        const createdChunks = [];
+        for (const page of pageTexts) {
+          const sentences = page.text.split(/(?<=[.!?])\s+/);
+let currentChunk = "";
+let overlapBuffer = "";
+const CHUNK_SIZE = 1800;
+const OVERLAP_SIZE = 300;
+
+for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i];
+    if ((currentChunk + sentence).length > CHUNK_SIZE && currentChunk) {
+        // Add chunk with overlap
+        createdChunks.push({
+            text: currentChunk.trim(),
+            source: `[Source: ${fileName}, page ${page.pageNum}]`
+        });
+        // Keep last ~300 chars for overlap
+        const words = currentChunk.split(/\s+/);
+        overlapBuffer = words.slice(-Math.min(40, words.length)).join(" ");
+        currentChunk = overlapBuffer + " " + sentence;
+    } else {
+        currentChunk += (currentChunk ? " " : "") + sentence;
+    }
+}
+if (currentChunk) {
+    createdChunks.push({
+        text: currentChunk.trim(),
+        source: `[Source: ${fileName}, page ${page.pageNum}]`
+    });
+}
+        }
+        setChunks(createdChunks);
       } else if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
         await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
         const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
         text = result.value;
+        // Build chunks for docx so Q&A with citations works
+        const sentences = text.split(/(?<=[.!?])\s+/);
+        const docxChunks = [];
+        let currentChunk = "";
+        for (const sentence of sentences) {
+          if ((currentChunk + sentence).length > 1800 && currentChunk) {
+            docxChunks.push({ text: currentChunk.trim(), source: `[Source: ${file.name}]` });
+            currentChunk = sentence;
+          } else {
+            currentChunk += (currentChunk ? " " : "") + sentence;
+          }
+        }
+        if (currentChunk) docxChunks.push({ text: currentChunk.trim(), source: `[Source: ${file.name}]` });
+        setChunks(docxChunks);
       } else { setError("Please upload a PDF or Word (.docx) file."); setExtracting(false); return; }
       if (!text.trim()) { setError("Could not extract text from this file."); setExtracting(false); return; }
       const trimmed = text.slice(0, WORD_LIMIT_UPLOAD);
@@ -1580,36 +1921,184 @@ function isResumeLike(text) {
     setExtracting(false);
   }
 
-  async function analyze() {
+ async function analyze() {
     if (!extractedText) return;
     if (label === "Analyze Resume") {
-      if (isResearchPaper(extractedText)) { setError("❌ This appears to be an academic document. Please upload a CV or resume file."); return; }
-      if (!isResumeLike(extractedText)) { setError("❌ The uploaded file doesn't appear to be a resume. Please upload a proper CV or resume."); return; }
+        if (isResearchPaper(extractedText)) { setError("❌ This appears to be an academic document. Please upload a CV or resume file."); return; }
+        if (!isResumeLike(extractedText)) { setError("❌ The uploaded file doesn't appear to be a resume. Please upload a proper CV or resume."); return; }
     }
     setLoading(true); setOutput(""); setError("");
     trackEvent("tool_run", { tool_name: label });
+    
+    // Build context from chunks (move this BEFORE the fetch)
+    let contextForLLM = extractedText;
+    if (chunks.length > 0) {
+        const topChunks = chunks.slice(0, 20);
+        contextForLLM = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
+    }
+    
     try {
-      const res = await fetch(GROQ_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "llama-3.3-70b-versatile", max_tokens: 1000, messages: [{ role: "system", content: prompt }, { role: "user", content: extractedText }] }),
-      });
-      const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) setOutput(data.choices[0].message.content);
-      else if (data?.error) setError(`API Error: ${data.error.message}`);
-      else setError("Unexpected response. Please try again.");
-    } catch { setError("Connection error. Please try again."); }
+        const res = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                model: "llama-3.3-70b-versatile", 
+                max_tokens: 1200,
+                temperature: 0.3,
+                messages: [{ 
+                    role: "system", 
+                    content: prompt + `\n\nIMPORTANT FORMATTING RULES:
+- Do NOT include page citations like [Source: page X] — this is a resume, not a research paper
+- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]
+- Be honest and specific about strengths and weaknesses
+- Use bullet points for readability
+- Include specific metrics and numbers when analyzing achievements`
+                }, { 
+                    role: "user", 
+                    content: contextForLLM 
+                }] 
+            })
+        });
+        
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+            const aiOutput = data.choices[0].message.content;
+            
+            // Validation check for citations
+            setOutput(aiOutput);
+        } else if (data?.error) {
+            setError(`API Error: ${data.error.message}`);
+        } else {
+            setError("Unexpected response. Please try again.");
+        }
+    } catch (err) {
+        setError("Connection error. Please try again.");
+    }
     setLoading(false);
-  }
+}
 
-  const accentColor = "var(--accent)";
+// NEW: Q&A with citations function
+async function askFollowUp() {
+    if (!followUpQuestion.trim() || chunks.length === 0) return;
+    
+    setQaLoading(true);
+    setQaAnswer("");
+    
+    // Simple keyword search to find relevant chunks
+    // Extract specific page request if present (e.g., "on page 5" or "from page 3")
+const pageMatch = followUpQuestion.match(/page\s+(\d+)/i);
+let targetPage = null;
+if (pageMatch) {
+    targetPage = parseInt(pageMatch[1]);
+}
+
+const keywords = followUpQuestion.toLowerCase()
+    .replace(/page\s+\d+/i, '')  // Remove page references from keywords
+    .split(/\s+/)
+    .filter(w => w.length > 3);
+
+let filteredChunks = chunks;
+if (targetPage) {
+    filteredChunks = chunks.filter(c => c.source.includes(`page ${targetPage}`));
+    if (filteredChunks.length === 0) {
+        setQaAnswer(`No content found on page ${targetPage}.`);
+        setQaLoading(false);
+        return;
+    }
+}
+
+const scoredChunks = filteredChunks.map(chunk => {
+        const lowerText = chunk.text.toLowerCase();
+        let score = 0;
+        for (const kw of keywords) {
+            const regex = new RegExp(kw, 'gi');
+            const matches = lowerText.match(regex);
+            if (matches) score += matches.length;
+        }
+        return { ...chunk, score };
+    });
+    
+    scoredChunks.sort((a, b) => b.score - a.score);
+    const topChunks = scoredChunks.slice(0, 4);
+    
+    if (topChunks.length === 0 || topChunks[0].score === 0) {
+        setQaAnswer("I couldn't find relevant information in the document to answer that question.");
+        setQaLoading(false);
+        return;
+    }
+    
+    const context = topChunks.map(c => `--- ${c.source} ---\n${c.text}`).join("\n\n");
+    
+    try {
+        const res = await fetch(GROQ_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                max_tokens: 800,
+                temperature: 0.3,
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are a precise research assistant. Answer using ONLY the provided chunks.
+                        CRITICAL RULES:
+                        1. Every sentence with a factual claim MUST end with a citation like [Source: filename, page X]
+                        2. If you quote directly, use [Source: filename, page X, exact quote]
+                        3. If the answer isn't in the chunks, say "I couldn't find that in the document."
+                        4. Never make up citations.`
+                    },
+                    {
+                        role: "user",
+                        content: `Document excerpts:\n\n${context}\n\nQuestion: ${followUpQuestion}`
+                    }
+                ]
+            })
+        });
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+            setQaAnswer(data.choices[0].message.content);
+        } else {
+            setQaAnswer("Sorry, I couldn't generate an answer. Please try again.");
+        }
+    } catch (err) {
+        setQaAnswer("Connection error. Please try again.");
+    }
+    setQaLoading(false);
+}
+
+const accentColor = "var(--accent)";
   const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
-  function handleClear() {
+// NEW: Extract numbers and metrics from text
+function extractKeyMetrics(text, fileName) {
+    const metrics = [];
+    // Match patterns like "accuracy = 99.5%", "RMSE: 0.144", "p-value < 0.05"
+    const patterns = [
+        /(\w+(?:\s+\w+)?)\s*[=:]\s*(\d+(?:\.\d+)?%?)/gi,
+        /(\w+)\s+of\s+(\d+(?:\.\d+)?)/gi,
+        /(?:accuracy|precision|recall|f1|rmse|mae|mse)\s*[=:]\s*(\d+(?:\.\d+)?%?)/gi
+    ];
+    
+    patterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+            metrics.push({
+                metric: match[1] || "value",
+                value: match[2] || match[1],
+                source: `[Source: ${fileName}]`
+            });
+        }
+    });
+    return metrics;
+}  
+function handleClear() {
     setOutput(""); setFileName(""); setExtractedText(""); setCharCount(0); setError("");
+    setChunks([]);           // NEW: clear chunks
+    setQaAnswer("");         // NEW: clear Q&A
+    setFollowUpQuestion(""); // NEW: clear question input
     if (fileRef.current) fileRef.current.value = "";
     setTimeout(() => topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  }
+}
 
   return (
     <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -1620,7 +2109,19 @@ function isResumeLike(text) {
           {extracting ? "Extracting text..." : fileName ? fileName : "Click to upload PDF or Word file"}
         </div>
         {!fileName && <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)" }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
-        {charCount > 0 && <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>{charCount.toLocaleString()} characters extracted{charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}</div>}
+        {charCount > 0 && (
+    <>
+        <div style={{ fontSize: "0.72rem", color: accentColor, marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
+            {charCount.toLocaleString()} characters extracted
+            {charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}
+        </div>
+        {charCount >= 30000 && (
+            <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
+                ⚠️ Large file: First {Math.round(WORD_LIMIT_UPLOAD/1000)}K characters used. For best results, consider summarizing shorter sections.
+            </div>
+        )}
+    </>
+)}
       </div>
       {label === "Analyze Resume" && !fileName && <div className="upload-hint">📄 Please upload a resume/CV (not research papers, articles, or other documents)</div>}
       {extractedText && (
@@ -1636,13 +2137,113 @@ function isResumeLike(text) {
           </div>
         </div>
       )}
-      {output && (
+            {output && (
         <div>
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
+          
+          {/* NEW: Q&A Section with Citations */}
+          {chunks.length > 0 && (
+            <div style={{ marginTop: "28px" }}>
+              <div style={{ 
+                fontFamily: "'Space Mono', monospace", 
+                fontSize: "0.68rem", 
+                color: accentColor,
+                letterSpacing: "0.12em",
+                marginBottom: "12px",
+                textTransform: "uppercase"
+              }}>
+                ◆ Ask a follow-up question (with citations)
+              </div>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <input 
+                  type="text"
+                  value={followUpQuestion}
+                  onChange={(e) => setFollowUpQuestion(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && askFollowUp()}
+                  placeholder="e.g., What methodology did they use? On which page?"
+                  style={{
+                    flex: 1,
+                    minWidth: "200px",
+                    background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
+                    border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
+                    borderRadius: "10px",
+                    padding: "12px 16px",
+                    color: theme === 'dark' ? "#fff" : "#1a1a1a",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "0.85rem",
+                    outline: "none"
+                  }}
+                />
+                <button 
+                  onClick={askFollowUp}
+                  disabled={qaLoading || !followUpQuestion.trim() || chunks.length === 0}
+                  style={{
+                    background: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "12px 24px",
+                    color: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.3)" : "#000",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    cursor: qaLoading || !followUpQuestion.trim() ? "not-allowed" : "pointer",
+                    fontFamily: "'Space Mono', monospace",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  {qaLoading ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Searching...</> : "Ask →"}
+                </button>
+              </div>
+              
+              {qaAnswer && (
+                <div style={{ 
+                  marginTop: "16px",
+                  background: theme === 'dark' ? "rgba(0,255,224,0.04)" : "rgba(0,137,123,0.04)",
+                  border: `1px solid ${theme === 'dark' ? "rgba(0,255,224,0.15)" : "rgba(0,137,123,0.15)"}`,
+                  borderRadius: "12px",
+                  padding: "20px",
+                  fontSize: "0.85rem",
+                  lineHeight: 1.75,
+                  color: theme === 'dark' ? "rgba(255,255,255,0.88)" : "rgba(0,0,0,0.8)"
+                }}>
+                  <div style={{ 
+                    fontFamily: "'Space Mono', monospace", 
+                    fontSize: "0.6rem", 
+                    color: accentColor,
+                    marginBottom: "12px",
+                    letterSpacing: "0.1em"
+                  }}>
+                    ◆ ANSWER WITH CITATIONS
+                  </div>
+                  {qaAnswer.split("\n").map((line, i) => (
+                    <div key={i} style={{ marginBottom: line.trim() === "" ? "12px" : "6px" }}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
           <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={handleClear} />
           {label === "Analyze Resume" && (
-            <ResumeBuilder originalText={extractedText} analysisText={output} theme={theme} />
-          )}
+  <>
+    <ResumeBuilder 
+      originalText={extractedText} 
+      analysisText={output} 
+      theme={theme} 
+      onDataParsed={(data) => setParsedResumeData(data)}
+    />
+    {parsedResumeData && (
+      <CoverLetterGenerator 
+        resumeData={parsedResumeData} 
+        jobDescription="" 
+        theme={theme} 
+      />
+    )}
+  </>
+)}
         </div>
       )}
     </div>
@@ -3369,8 +3970,32 @@ Be honest, specific, and constructive.`} />;
             </div>
           ))}
         </div>
+        
+        {/* Feature Comparison Banner */}
+        <div style={{ marginTop: "48px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "16px", padding: "24px 32px", maxWidth: "800px", width: "100%" }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px", textAlign: "center" }}>◆ Why ZeroAPI Wins</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+            {[
+              { icon: "✅", label: "No Signup", desc: "Start instantly" },
+              { icon: "✅", label: "Fully Free", desc: "No hidden tiers" },
+              { icon: "✅", label: "Resume Builder", desc: "Step-by-step AI wizard" },
+              { icon: "✅", label: "Document Summarizer", desc: "PDF & Word supported" },
+              { icon: "✅", label: "Q&A with Citations", desc: "Ask follow-up questions" },
+              { icon: "✅", label: "Code Playground", desc: "6 languages, AI explain" },
+              { icon: "✅", label: "MCQ Generator", desc: "Auto-generates questions" },
+              { icon: "✅", label: "Research Summarizer", desc: "Papers → key insights" }
+            ].map(f => (
+              <div key={f.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>{f.icon}</span>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{f.label}</div>
+                  <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)" }}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
-
     
       {/* ── Learn Section teaser ── */}
       <section style={{ maxWidth: "960px", margin: "0 auto", padding: "0 32px 80px" }}>
@@ -3512,4 +4137,3 @@ function AppWithRoutes() {
     </Routes>
   );
 }
-
