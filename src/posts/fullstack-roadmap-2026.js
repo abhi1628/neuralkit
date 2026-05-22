@@ -3,7 +3,7 @@
 const post = {
   slug: "fullstack-roadmap-2026",
   title: "The 2026 Full-Stack Roadmap: What to Learn (And What to Skip)",
-  date: "May 21, 2026",
+  date: "May 22, 2026",
   readTime: "15 min read",
   category: "Career",
   categoryColor: "#10b981",
