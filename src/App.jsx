@@ -66,7 +66,7 @@ function useThemeStyles() {
       primary: theme === 'dark' ? '#ffffff' : '#1f2937',      // slate-800
       secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4b5563',  // gray-600
       muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#9ca3af',      // gray-400
-      inverse: theme === 'dark' ? '#1a1a2e' : '#ffffff',
+      inverse: theme === 'dark' ? '#1f2937' : '#ffffff',
     },
     border: {
       subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e7e5e4',    // stone-200
@@ -641,7 +641,7 @@ function TriviaSection({ theme }) {
         {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span className="spinner" style={{ marginRight: "10px" }} />Generating question...</div>}
         {trivia && !trivia.error && !loading && (
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
             <div className="trivia-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
               {trivia.options.map((opt) => {
                 const isThis = selected === opt, correct = opt.startsWith(trivia.answer);
@@ -1130,7 +1130,7 @@ Rules:
   return (
     <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
-      <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData?.name}</div>
+      <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "4px" }}>{resumeData?.name}</div>
       <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
         {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
       </div>
@@ -1288,7 +1288,7 @@ Responsibilities:
 Nice to have:
 • Experience with Kubernetes and serverless architectures
 • Contributions to open source projects
-• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
+• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
         <WordCounter text={jobDesc} limit={5000} theme={theme} />
       </div>
 
@@ -1332,7 +1332,7 @@ function ResumeBuilderTool({ theme }) {
       background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
       border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
       borderRadius: "10px", padding: "10px 14px",
-      color: isDark ? "#fff" : "#1a1a1a",
+      color: isDark ? "#fff" : "#1f2937",
       fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none",
       ...extra
     }
@@ -1465,7 +1465,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
     ))}
   </div>
 </div>
-        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData.name}</div>
+        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#1f2937", marginBottom: "4px" }}>{resumeData.name}</div>
         <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
           {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
         </div>
@@ -1594,7 +1594,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
           }}
           rows={8}
           placeholder="Paste your LinkedIn profile text here (About, Experience, Education)..."
-          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", resize: "vertical" }}
+          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "10px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", resize: "vertical" }}
         />
         <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
           💡 Tip: Go to your LinkedIn profile → Click "More" → "Save to PDF" → Copy text from the PDF
@@ -1726,7 +1726,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
           {[["Name", data.name || "—"], ["Email", data.email || "—"], ["Target Role", data.target || "—"], ["Experience", `${data.experience.filter(e => e.title.trim()).length} role(s)`], ["Education", `${data.education.filter(e => (e.degree + e.institution).trim()).length} degree(s)`], ["Technical Skills", data.techSkills ? "✓ Added" : "— Not added"], ["Projects", data.projects.filter(p => p.name.trim()).length > 0 ? `${data.projects.filter(p => p.name.trim()).length} project(s)` : "— None"]].map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
               <span style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem" }}>{k}</span>
-              <span style={{ color: isDark ? "#fff" : "#1a1a1a", fontWeight: 500, fontSize: "0.85rem" }}>{v}</span>
+              <span style={{ color: isDark ? "#fff" : "#1f2937", fontWeight: 500, fontSize: "0.85rem" }}>{v}</span>
             </div>
           ))}
           <button onClick={() => setStep(0)} style={{ marginTop: "12px", background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)"}`, borderRadius: "8px", padding: "6px 14px", color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }}>← Edit Inputs</button>
@@ -2185,7 +2185,7 @@ function handleClear() {
                     border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
                     borderRadius: "10px",
                     padding: "12px 16px",
-                    color: theme === 'dark' ? "#fff" : "#1a1a1a",
+                    color: theme === 'dark' ? "#fff" : "#1f2937",
                     fontFamily: "'DM Sans', sans-serif",
                     fontSize: "0.85rem",
                     outline: "none"
@@ -2402,7 +2402,7 @@ ${code}` }]
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "12px" }}>Write. Run. Learn.</h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
 
@@ -2542,7 +2542,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
     <div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", minWidth: 0, position: "relative" }}>
-          <input ref={inputRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+          <input ref={inputRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
             onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
             onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} aria-label="Ask a question" />
         </div>
@@ -2634,10 +2634,10 @@ function UserFeedback({ theme }) {
               <span style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
             </div>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name (optional)"
-              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
               onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your name" />
             <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
-              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
               onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your feedback" />
             {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono',monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
@@ -2668,7 +2668,7 @@ function UserFeedback({ theme }) {
                   {/* Header */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1f2937" }}>{fb.name}</span>
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
                     <span style={{ fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>
@@ -3164,7 +3164,7 @@ Jun,82000,38000,44000`;
       // Center text
       ctx.fillStyle = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"; ctx.font = "bold 14px monospace"; ctx.textAlign = "center";
       ctx.fillText("Total", cx, cy - 8);
-      ctx.fillStyle = isDark ? "#fff" : "#1a1a1a"; ctx.font = "bold 18px monospace";
+      ctx.fillStyle = isDark ? "#fff" : "#1f2937"; ctx.font = "bold 18px monospace";
       const tot = ds.data.reduce((a,b)=>a+b,0);
       ctx.fillText(tot >= 1000 ? `${(tot/1000).toFixed(1)}k` : tot, cx, cy + 12);
       // Legend
@@ -3309,7 +3309,7 @@ Jun,82000,38000,44000`;
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
               <div>
                 <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>{chartType === "scatter" ? "X AXIS (numeric)" : "X AXIS / LABELS"}</div>
-                <select value={xCol} onChange={e => setXCol(+e.target.value)} style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${ac}33`, borderRadius: "6px", padding: "6px 10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem" }}>
+                <select value={xCol} onChange={e => setXCol(+e.target.value)} style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${ac}33`, borderRadius: "6px", padding: "6px 10px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem" }}>
                   {headers.map((h,i) => <option key={i} value={i}>{h}</option>)}
                 </select>
               </div>
@@ -3495,7 +3495,7 @@ function MockInterview({ theme }) {
           return (
             <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px", gap: "10px" }}>
-                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5 }}>Q{i+1}. {r.q}</div>
+                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: isDark ? "#fff" : "#1f2937", lineHeight: 1.5 }}>Q{i+1}. {r.q}</div>
                 <div style={{ background: `${sc}20`, border: `1px solid ${sc}`, borderRadius: "8px", padding: "3px 12px", fontFamily: "'Space Mono',monospace", fontSize: "0.75rem", color: sc, flexShrink: 0, fontWeight: 700 }}>{r.score}/10</div>
               </div>
               <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "8px", fontStyle: "italic" }}>"{r.a}"</div>
@@ -3529,7 +3529,7 @@ function MockInterview({ theme }) {
       </div>
       <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "20px" }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "10px" }}>◆ INTERVIEWER ASKS</div>
-        <div style={{ fontSize: "1rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.6 }}>{questions[qNum]}</div>
+        <div style={{ fontSize: "1rem", fontWeight: 600, color: isDark ? "#fff" : "#1f2937", lineHeight: 1.6 }}>{questions[qNum]}</div>
       </div>
       <div>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "8px" }}>YOUR ANSWER</div>
@@ -3587,7 +3587,7 @@ function DevToolsPanel({ theme }) {
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
       <div style={{ marginBottom: "48px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.7rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Dev Tools</div>
-        <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a1a" }}>Visual. Interactive. Zero Signup.</h2>
+        <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1f2937" }}>Visual. Interactive. Zero Signup.</h2>
         <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Tools that go beyond text — diagrams, charts, and simulations that ChatGPT can't render.</p>
       </div>
       <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
@@ -3599,7 +3599,7 @@ function DevToolsPanel({ theme }) {
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
           <span style={{ fontSize: "1.5rem" }}>{info.icon}</span>
           <div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a" }}>{info.name}</div>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1f2937" }}>{info.name}</div>
             <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{info.tagline}</div>
           </div>
         </div>
@@ -3717,7 +3717,7 @@ Be honest, specific, and constructive.`} />;
         :root {
           --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --bg-tertiary: #f0f0f0;
           --bg-elevated: #ffffff; --bg-code: #1e1e2e;
-          --text-primary: #1a1a2e; --text-secondary: #4a4a5e; --text-muted: #7a7a8e; --text-inverse: #ffffff;
+          --text-primary: #1a1a2e; --text-secondary: #4b5563; --text-muted: #9ca3af; --text-inverse: #ffffff;
           --accent: #00897b; --accent-light: #e0f2f1; --accent-glow: rgba(0, 137, 123, 0.15);
           --border-subtle: rgba(0, 0, 0, 0.08); --border-medium: rgba(0, 0, 0, 0.15); --border-strong: rgba(0, 0, 0, 0.25);
           --error: #d32f2f; --error-bg: rgba(211, 47, 47, 0.08); --warning: #f9a825; --success: #2e7d32;
@@ -3829,7 +3829,7 @@ Be honest, specific, and constructive.`} />;
             <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
             <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
           </svg>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1f2937" }}>ZeroAPI</span>
         </div>
 
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
@@ -3840,7 +3840,7 @@ Be honest, specific, and constructive.`} />;
             { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
           ].map(({ label, action }) => (
-            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
+            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1f2937")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
@@ -3865,7 +3865,7 @@ Be honest, specific, and constructive.`} />;
             alignItems: "center", 
             justifyContent: "center", 
             fontSize: "1.2rem", 
-            color: theme === 'dark' ? "#fff" : "#1a1a1a", 
+            color: theme === 'dark' ? "#fff" : "#1f2937", 
             transition: "all 0.3s ease",
             marginLeft: "auto"
           }}>
@@ -3913,7 +3913,7 @@ Be honest, specific, and constructive.`} />;
                   background: "transparent", 
                   border: "none", 
                   padding: "14px 0", 
-                  color: theme === 'dark' ? "#fff" : "#1a1a1a", 
+                  color: theme === 'dark' ? "#fff" : "#1f2937", 
                   fontSize: "1.1rem", 
                   fontWeight: 600,
                   fontFamily: "'DM Sans', sans-serif",
@@ -3962,7 +3962,7 @@ Be honest, specific, and constructive.`} />;
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
-        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1a1a1a", wordBreak: "keep-all" }}>
+        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1f2937", wordBreak: "keep-all" }}>
           <span>Your AI </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", whiteSpace: "nowrap" }}>Superpower</span>
           <br /><span>Starts Here</span>
@@ -4005,7 +4005,7 @@ Be honest, specific, and constructive.`} />;
               <div key={f.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                 <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>{f.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{f.label}</div>
+                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: theme === 'dark' ? "#fff" : "#1f2937" }}>{f.label}</div>
                   <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)" }}>{f.desc}</div>
                 </div>
               </div>
@@ -4019,7 +4019,7 @@ Be honest, specific, and constructive.`} />;
         <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "24px", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "10px" }}>◆ Learn</div>
-            <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 800, color: theme === 'dark' ? "#fff" : "#1a1a1a", letterSpacing: "-0.02em", marginBottom: "8px" }}>Guides & Tutorials</h3>
+            <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 800, color: theme === 'dark' ? "#fff" : "#1f2937", letterSpacing: "-0.02em", marginBottom: "8px" }}>Guides & Tutorials</h3>
             <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)", fontSize: "0.88rem", lineHeight: 1.6, maxWidth: "500px" }}>Practical articles for developers and students — resume tips, SQL guides, interview prep, and career advice. New every week.</p>
             <div style={{ marginTop: "14px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {["ATS Resume Tips", "SQL Guides", "Interview Prep", "Career Advice"].map(tag => (
@@ -4037,7 +4037,7 @@ Be honest, specific, and constructive.`} />;
       <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Pick a Tool. Run It. Free.</h2>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1f2937" }}>Pick a Tool. Run It. Free.</h2>
           <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI · No API Key · No Subscription · Always Free</p>
         </div>
 
@@ -4063,7 +4063,7 @@ Be honest, specific, and constructive.`} />;
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <span style={{ fontSize: "1.5rem" }}>{activeInfo.icon}</span>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{activeInfo.name}</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1f2937" }}>{activeInfo.name}</div>
               <div style={{ fontSize: "0.8rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{activeInfo.tagline}</div>
             </div>
           </div>
@@ -4082,13 +4082,13 @@ Be honest, specific, and constructive.`} />;
 
       {/* About */}
       <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1f2937" }}>
           <span>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
           <span> for everyone.</span>
         </h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
-          ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
+          ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1f2937", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
           This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: accentColor, fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
