@@ -59,6 +59,11 @@ const posts = [
   slug: 'cisco-ideathon-2026',
   title: 'Cisco Ideathon 2026: How to Build a Winning Project (Even If You\'re a Beginner)',
   excerpt: 'Cisco Ideathon 2026 registrations are opening soon. Here is the complete playbook — from cracking the online assessment to building an idea that impresses Cisco engineers.'
+},
+  {
+  slug: 'model-swapping-ai-engineering-2026',
+  title: 'Model Swapping: The One-Line Change That Breaks Production (And Nobody Talks About It)',
+  excerpt: 'You changed one line — model = \'gpt-5\' to model = \'gemini-3\' — and everything broke. Not the API. Not the prompt. The model itself. Here is why model swapping is the most underestimated skill in AI engineering.'
 }
 ];
 
