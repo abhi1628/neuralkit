@@ -19,7 +19,7 @@ export const BLOG_POSTS = [
   sqlWindow,
   ciscoIdeathon,
   modelSwapping,
-].sort((a, b) => new Date(b.date) - new Date(a.date));;
+].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── Blog Components ───────────────────────────────────────────
 function renderContent(block, i, theme) {
