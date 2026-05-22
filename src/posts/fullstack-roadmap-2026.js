@@ -1,7 +1,7 @@
 const post = {
   slug: "fullstack-roadmap-2026",
   title: "The 2026 Full-Stack Roadmap: What to Learn (And What to Skip)",
-  date: "May 22, 2026",
+  date: "May 21, 2026",
   readTime: "15 min read",
   category: "Career",
   categoryColor: "#10b981",
@@ -143,10 +143,10 @@ export async function POST(req: Request) {
   // 2. Search vector DB for relevant docs
   const docs = await prisma.$queryRaw`
     SELECT content, source, 
-      1 - (embedding <=> \${embedding.data[0].embedding}::vector) 
+      1 - (embedding <=> ${embedding.data[0].embedding}::vector) 
       as similarity
     FROM documents
-    WHERE 1 - (embedding <=> \${embedding.data[0].embedding}::vector) > 0.7
+    WHERE 1 - (embedding <=> ${embedding.data[0].embedding}::vector) > 0.7
     ORDER BY similarity DESC
     LIMIT 5
   `;
