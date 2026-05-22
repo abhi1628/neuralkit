@@ -1,7 +1,7 @@
 const post = {
   slug: "model-swapping-ai-engineering-2026",
   title: "Model Swapping: The One-Line Change That Breaks Production (And Nobody Talks About It)",
-  date: "May 21, 2026",
+  date: "May 22, 2026",
   readTime: "11 min read",
   category: "AI Engineering",
   categoryColor: "#8b5cf6",
