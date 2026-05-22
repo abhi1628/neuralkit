@@ -56,29 +56,29 @@ function useThemeStyles() {
   return useMemo(() => ({
     isDark: theme === 'dark',
     bg: {
-      primary: theme === 'dark' ? '#060a0f' : '#f5f5f5',
+      primary: theme === 'dark' ? '#060a0f' : '#fafaf9',      // Warm off-white
       secondary: theme === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
-      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f0f0f0',
+      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f5f5f4',  // stone-100
       elevated: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#ffffff',
-      code: theme === 'dark' ? '#0d1117' : '#f5f5f5',
+      code: theme === 'dark' ? '#0d1117' : '#f5f5f4',
     },
     text: {
-      primary: theme === 'dark' ? '#ffffff' : '#1a1a2e',
-      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4a4a5e',
-      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#7a7a8e',
+      primary: theme === 'dark' ? '#ffffff' : '#1f2937',      // slate-800
+      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4b5563',  // gray-600
+      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#9ca3af',      // gray-400
       inverse: theme === 'dark' ? '#1a1a2e' : '#ffffff',
     },
     border: {
-      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
-      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)',
+      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e7e5e4',    // stone-200
+      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : '#d6d3d1',    // stone-300
+      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : '#a8a29e',     // stone-400
     },
-    accent: theme === 'dark' ? '#00ffe0' : '#00897b',
-    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#e0f2f1',
-    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(0,137,123,0.15)',
-    error: theme === 'dark' ? '#ff6b6b' : '#d32f2f',
-    warning: '#febc2e',
-    success: theme === 'dark' ? '#00ffe0' : '#2e7d32',
+    accent: theme === 'dark' ? '#00ffe0' : '#0d9488',         // teal-600
+    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#ccfbf1',   // teal-100
+    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(13, 148, 136, 0.12)',
+    error: theme === 'dark' ? '#ff6b6b' : '#dc2626',          // red-600
+    warning: '#f59e0b',                                        // amber-500 (warmer)
+    success: theme === 'dark' ? '#00ffe0' : '#059669',        // emerald-600
   }), [theme]);
 }
 
