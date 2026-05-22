@@ -64,6 +64,11 @@ const posts = [
   slug: 'model-swapping-ai-engineering-2026',
   title: 'Model Swapping: The One-Line Change That Breaks Production (And Nobody Talks About It)',
   excerpt: 'You changed one line — model = \'gpt-5\' to model = \'gemini-3\' — and everything broke. Not the API. Not the prompt. The model itself. Here is why model swapping is the most underestimated skill in AI engineering.'
+},
+  {
+  slug: 'fullstack-roadmap-2026',
+  title: 'The 2026 Full-Stack Roadmap: What to Learn (And What to Skip)',
+  excerpt: 'The full-stack definition changed in 2026. It is no longer just React + Node. Here is the exact stack that gets you hired — and the technologies you should stop wasting time on.'
 }
 ];
 
