@@ -1,3 +1,5 @@
+// src/posts/fullstack-roadmap-2026.js
+
 const post = {
   slug: "fullstack-roadmap-2026",
   title: "The 2026 Full-Stack Roadmap: What to Learn (And What to Skip)",
@@ -61,42 +63,11 @@ const post = {
       label: "Backend stack: 2022 vs 2026",
       before: {
         version: "2022 Stack (DON'T)",
-        code: `# ❌ Express + MongoDB + no types
-const express = require('express');
-const mongoose = require('mongoose');
-
-// No type safety. No validation. No observability.
-app.post('/api/users', async (req, res) => {
-  const user = new User(req.body);  // ❌ No input validation
-  await user.save();
-  res.json(user);
-});
-
-# Problems: runtime errors, injection risks, 
-# impossible to refactor safely`
+        code: "// ❌ Express + MongoDB + no types\nconst express = require('express');\nconst mongoose = require('mongoose');\n\n// No type safety. No validation. No observability.\napp.post('/api/users', async (req, res) => {\n  const user = new User(req.body);  // ❌ No input validation\n  await user.save();\n  res.json(user);\n});\n\n# Problems: runtime errors, injection risks, \n# impossible to refactor safely"
       },
       after: {
         version: "2026 Stack (DO)",
-        code: `# ✅ Next.js API routes + tRPC + Zod + Prisma
-import { z } from 'zod';
-import { prisma } from '@/lib/db';
-
-const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2).max(50),
-});
-
-export async function POST(req: Request) {
-  const body = await req.json();
-  const data = createUserSchema.parse(body);  // ✅ Runtime validation
-
-  const user = await prisma.user.create({ data });
-
-  return Response.json(user);  // ✅ Type-safe end-to-end
-}
-
-# Benefits: shared types, automatic validation,
-# SQL injection impossible, easy to test`
+        code: "// ✅ Next.js API routes + tRPC + Zod + Prisma\nimport { z } from 'zod';\nimport { prisma } from '@/lib/db';\n\nconst createUserSchema = z.object({\n  email: z.string().email(),\n  name: z.string().min(2).max(50),\n});\n\nexport async function POST(req: Request) {\n  const body = await req.json();\n  const data = createUserSchema.parse(body);  // ✅ Runtime validation\n\n  const user = await prisma.user.create({ data });\n\n  return Response.json(user);  // ✅ Type-safe end-to-end\n}\n\n# Benefits: shared types, automatic validation,\n# SQL injection impossible, easy to test"
       }
     },
     {
@@ -126,43 +97,7 @@ export async function POST(req: Request) {
     {
       type: "code-block",
       label: "AI integration pattern: RAG with citations",
-      code: `# 2026 Full-Stack AI: RAG pipeline with Vercel AI SDK
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
-import { prisma } from '@/lib/db';
-
-export async function POST(req: Request) {
-  const { messages } = await req.json();
-
-  // 1. Embed the latest user message
-  const embedding = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
-    input: messages[messages.length - 1].content,
-  });
-
-  // 2. Search vector DB for relevant docs
-  const docs = await prisma.$queryRaw`
-    SELECT content, source, 
-      1 - (embedding <=> ${embedding.data[0].embedding}::vector) 
-      as similarity
-    FROM documents
-    WHERE 1 - (embedding <=> ${embedding.data[0].embedding}::vector) > 0.7
-    ORDER BY similarity DESC
-    LIMIT 5
-  `;
-
-  // 3. Stream response with citations
-  const result = streamText({
-    model: openai('gpt-4o-mini'),
-    system: 'Answer based on these documents: ' + JSON.stringify(docs),
-    messages,
-  });
-
-  return result.toDataStreamResponse();
-}
-
-# What this proves: you can build AI-native features,
-# not just call OpenAI and pray.`
+      code: "// 2026 Full-Stack AI: RAG pipeline with Vercel AI SDK\nimport { openai } from '@ai-sdk/openai';\nimport { streamText } from 'ai';\nimport { prisma } from '@/lib/db';\n\nexport async function POST(req: Request) {\n  const { messages } = await req.json();\n\n  // 1. Embed the latest user message\n  const embedding = await openai.embeddings.create({\n    model: 'text-embedding-3-small',\n    input: messages[messages.length - 1].content,\n  });\n\n  // 2. Search vector DB for relevant docs using PostgreSQL pgvector\n  // The embedding comparison uses cosine distance operator <=>\n  const docs = await prisma.$queryRaw`\n    SELECT content, source, \n      1 - (embedding <=> ${embedding.data[0].embedding}::vector) \n      as similarity\n    FROM documents\n    WHERE 1 - (embedding <=> ${embedding.data[0].embedding}::vector) > 0.7\n    ORDER BY similarity DESC\n    LIMIT 5\n  `;\n\n  // 3. Stream response with citations\n  const result = streamText({\n    model: openai('gpt-4o-mini'),\n    system: 'Answer based on these documents: ' + JSON.stringify(docs),\n    messages,\n  });\n\n  return result.toDataStreamResponse();\n}\n\n# What this proves: you can build AI-native features,\n# not just call OpenAI and pray."
     },
     {
       type: "h2",
@@ -252,49 +187,17 @@ export async function POST(req: Request) {
     {
       type: "code-block",
       label: "Project 1: AI-Powered SaaS (The Differentiator)",
-      code: `# What to build: A Notion-like notes app with AI summarization
-Stack: Next.js 15, PostgreSQL, Prisma, OpenAI, Stripe, Vercel
-
-Features:
-- Real-time collaborative editing (Yjs or Liveblocks)
-- AI auto-summarizes long notes into bullet points
-- Semantic search across all notes (pgvector embeddings)
-- Stripe billing with free tier + pro plan
-- Dockerized, CI/CD via GitHub Actions
-
-Why it wins: Shows AI integration, payments, real-time,
-# and deployment — every skill a 2026 startup wants.`
+      code: "# What to build: A Notion-like notes app with AI summarization\nStack: Next.js 15, PostgreSQL, Prisma, OpenAI, Stripe, Vercel\n\nFeatures:\n- Real-time collaborative editing (Yjs or Liveblocks)\n- AI auto-summarizes long notes into bullet points\n- Semantic search across all notes (pgvector embeddings)\n- Stripe billing with free tier + pro plan\n- Dockerized, CI/CD via GitHub Actions\n\nWhy it wins: Shows AI integration, payments, real-time,\n# and deployment — every skill a 2026 startup wants."
     },
     {
       type: "code-block",
       label: "Project 2: Real-Time Analytics Dashboard (The Scale Project)",
-      code: `# What to build: A Plausible-like analytics dashboard
-Stack: Next.js, PostgreSQL, Redis, WebSockets, Docker
-
-Features:
-- Lightweight tracking script (< 1KB) for any website
-- Real-time visitor count via WebSockets
-- Time-series data aggregation with PostgreSQL
-- Redis for caching hot data (last 24h stats)
-- Role-based access: admin, viewer, API key
-
-Why it wins: Shows database design, caching strategy,
-# real-time systems, and performance optimization.`
+      code: "# What to build: A Plausible-like analytics dashboard\nStack: Next.js, PostgreSQL, Redis, WebSockets, Docker\n\nFeatures:\n- Lightweight tracking script (< 1KB) for any website\n- Real-time visitor count via WebSockets\n- Time-series data aggregation with PostgreSQL\n- Redis for caching hot data (last 24h stats)\n- Role-based access: admin, viewer, API key\n\nWhy it wins: Shows database design, caching strategy,\n# real-time systems, and performance optimization."
     },
     {
       type: "code-block",
       label: "Project 3: Developer Tool with CLI (The Depth Project)",
-      code: `# What to build: A CLI tool that scaffolds Next.js projects
-Stack: Node.js, TypeScript, Commander.js, Inquirer, GitHub API
-
-Features:
-- Interactive CLI: pick stack (Prisma/Drizzle, Auth/no Auth, AI/no AI)
-- Generates production-ready boilerplate with your choices
-- Auto-configures Docker, CI/CD, and environment variables
-- Publishes to npm with proper README and versioning
-
-Why it wins: Shows deep Node.js knowledge, developer empathy,
-# open-source contribution, and npm ecosystem understanding.`
+      code: "# What to build: A CLI tool that scaffolds Next.js projects\nStack: Node.js, TypeScript, Commander.js, Inquirer, GitHub API\n\nFeatures:\n- Interactive CLI: pick stack (Prisma/Drizzle, Auth/no Auth, AI/no AI)\n- Generates production-ready boilerplate with your choices\n- Auto-configures Docker, CI/CD, and environment variables\n- Publishes to npm with proper README and versioning\n\nWhy it wins: Shows deep Node.js knowledge, developer empathy,\n# open-source contribution, and npm ecosystem understanding."
     },
     {
       type: "h2",
