@@ -2287,15 +2287,15 @@ ${code}` }]
       )}
 
       <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.5)", letterSpacing: "0.04em" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: theme === 'dark' ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.14)"}`, borderRadius: "100px", padding: "6px 16px", fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "#334155", letterSpacing: "0.04em" }}>
           💡 Tab to indent · Ctrl+Enter to run · Run code first, then "Ask AI to Explain"
         </div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.3)", letterSpacing: "0.03em" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", color: theme === 'dark' ? "rgba(255,255,255,0.35)" : "#475569", letterSpacing: "0.03em" }}>
           <span>⚡ Powered by OnlineCompiler.io</span>
-          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
+          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.25)" }}>·</span>
           <span>Standard library only</span>
-          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.15)" }}>·</span>
-          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: `${accentColor}59`, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>Use Colab for ML/DL</span>
+          <span style={{ color: theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.25)" }}>·</span>
+          <span onClick={() => window.open("https://colab.research.google.com", "_blank", "noopener,noreferrer")} style={{ color: theme === 'dark' ? "#00ffe0" : "#00897b", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px", fontWeight: 600 }}>Use Colab for ML/DL</span>
         </div>
       </div>
     </section>
@@ -3619,14 +3619,14 @@ Be honest, specific, and constructive.`} />;
       {/* Navigation */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, padding: "14px 40px", display: "flex", alignItems: "center", gap: "24px", background: scrolled ? (theme === 'dark' ? "rgba(6,10,15,0.92)" : "rgba(245,245,245,0.92)") : "transparent", backdropFilter: scrolled ? "blur(16px)" : "none", borderBottom: scrolled ? `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` : "none", transition: "all 0.3s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: "drop-shadow(0 0 8px rgba(0,255,224,0.4))" }}>
-            <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00ffe0"/><stop offset="100%" stopColor="#00aaff"/></linearGradient></defs>
-            <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3" strokeDasharray="220 80" strokeLinecap="round"/>
-            <circle cx="60" cy="60" r="34" fill="none" stroke="rgba(0,255,224,0.2)" strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round"/>
-            <circle cx="60" cy="12" r="4" fill="#00ffe0"/><circle cx="108" cy="60" r="4" fill="#00aaff"/><circle cx="60" cy="108" r="4" fill="#00ffe0"/><circle cx="12" cy="60" r="4" fill="#00aaff"/>
-            <line x1="60" y1="12" x2="60" y2="22" stroke="#00ffe0" strokeWidth="2"/><line x1="108" y1="60" x2="98" y2="60" stroke="#00aaff" strokeWidth="2"/><line x1="60" y1="108" x2="60" y2="98" stroke="#00ffe0" strokeWidth="2"/><line x1="12" y1="60" x2="22" y2="60" stroke="#00aaff" strokeWidth="2"/>
-            <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
-            <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
+          <svg width="44" height="44" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style={{ filter: theme === 'dark' ? "drop-shadow(0 0 10px rgba(0,255,224,0.5))" : "drop-shadow(0 0 6px rgba(0,137,123,0.5))" }}>
+            <defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={theme === 'dark' ? "#00ffe0" : "#00897b"}/><stop offset="100%" stopColor={theme === 'dark' ? "#00aaff" : "#0077cc"}/></linearGradient></defs>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="url(#lg1)" strokeWidth="3.5" strokeDasharray="220 80" strokeLinecap="round"/>
+            <circle cx="60" cy="60" r="34" fill="none" stroke={theme === 'dark' ? "rgba(0,255,224,0.35)" : "rgba(0,137,123,0.4)"} strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round"/>
+            <circle cx="60" cy="12" r="4" fill={theme === 'dark' ? "#00ffe0" : "#00897b"}/><circle cx="108" cy="60" r="4" fill={theme === 'dark' ? "#00aaff" : "#0077cc"}/><circle cx="60" cy="108" r="4" fill={theme === 'dark' ? "#00ffe0" : "#00897b"}/><circle cx="12" cy="60" r="4" fill={theme === 'dark' ? "#00aaff" : "#0077cc"}/>
+            <line x1="60" y1="12" x2="60" y2="22" stroke={theme === 'dark' ? "#00ffe0" : "#00897b"} strokeWidth="2"/><line x1="108" y1="60" x2="98" y2="60" stroke={theme === 'dark' ? "#00aaff" : "#0077cc"} strokeWidth="2"/><line x1="60" y1="108" x2="60" y2="98" stroke={theme === 'dark' ? "#00ffe0" : "#00897b"} strokeWidth="2"/><line x1="12" y1="60" x2="22" y2="60" stroke={theme === 'dark' ? "#00aaff" : "#0077cc"} strokeWidth="2"/>
+            <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)">0</text>
+            <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.7)"} letterSpacing="4" fontWeight="700">API</text>
           </svg>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
