@@ -8,6 +8,7 @@ import systemDesign from "./posts/system-design-interview-patterns";
 import aiCoding from "./posts/ai-coding-assistants-2026";
 import sqlWindow from "./posts/sql-window-functions-ctes-2026";
 import ciscoIdeathon from "./posts/cisco-ideathon-2026";
+import modelSwapping from "./posts/model-swapping-ai-engineering-2026";
  
 export const BLOG_POSTS = [
   atsResume,
@@ -17,6 +18,7 @@ export const BLOG_POSTS = [
   aiCoding,
   sqlWindow,
   ciscoIdeathon,
+  modelSwapping,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));;
 
 // ── Blog Components ───────────────────────────────────────────
