@@ -56,29 +56,29 @@ function useThemeStyles() {
   return useMemo(() => ({
     isDark: theme === 'dark',
     bg: {
-      primary: theme === 'dark' ? '#060a0f' : '#fafaf9',      // Warm off-white
+      primary: theme === 'dark' ? '#060a0f' : '#f5f5f5',
       secondary: theme === 'dark' ? 'rgba(255,255,255,0.04)' : '#ffffff',
-      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f5f5f4',  // stone-100
+      tertiary: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#f0f0f0',
       elevated: theme === 'dark' ? 'rgba(255,255,255,0.06)' : '#ffffff',
-      code: theme === 'dark' ? '#0d1117' : '#f5f5f4',
+      code: theme === 'dark' ? '#0d1117' : '#f5f5f5',
     },
     text: {
-      primary: theme === 'dark' ? '#ffffff' : '#1f2937',      // slate-800
-      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4b5563',  // gray-600
-      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#9ca3af',      // gray-400
-      inverse: theme === 'dark' ? '#1f2937' : '#ffffff',
+      primary: theme === 'dark' ? '#ffffff' : '#1a1a2e',
+      secondary: theme === 'dark' ? 'rgba(255,255,255,0.7)' : '#4a4a5e',
+      muted: theme === 'dark' ? 'rgba(255,255,255,0.5)' : '#7a7a8e',
+      inverse: theme === 'dark' ? '#1a1a2e' : '#ffffff',
     },
     border: {
-      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e7e5e4',    // stone-200
-      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : '#d6d3d1',    // stone-300
-      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : '#a8a29e',     // stone-400
+      subtle: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+      medium: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
+      strong: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)',
     },
-    accent: theme === 'dark' ? '#00ffe0' : '#0d9488',         // teal-600
-    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#ccfbf1',   // teal-100
-    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(13, 148, 136, 0.12)',
-    error: theme === 'dark' ? '#ff6b6b' : '#dc2626',          // red-600
-    warning: '#f59e0b',                                        // amber-500 (warmer)
-    success: theme === 'dark' ? '#00ffe0' : '#059669',        // emerald-600
+    accent: theme === 'dark' ? '#00ffe0' : '#00897b',
+    accentLight: theme === 'dark' ? 'rgba(0,255,224,0.08)' : '#e0f2f1',
+    accentGlow: theme === 'dark' ? 'rgba(0,255,224,0.15)' : 'rgba(0,137,123,0.15)',
+    error: theme === 'dark' ? '#ff6b6b' : '#d32f2f',
+    warning: '#febc2e',
+    success: theme === 'dark' ? '#00ffe0' : '#2e7d32',
   }), [theme]);
 }
 
@@ -303,33 +303,21 @@ async function fetchVisitorCount() {
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
-    if (src.includes("docx") && window.docx) { resolve(); return; }
-    if (src.includes("jspdf") && window.jspdf) { resolve(); return; }
     if (document.querySelector(`script[src="${src}"]`)) {
-      const checkInterval = setInterval(() => {
-        if ((src.includes("docx") && window.docx) || 
-            (src.includes("jspdf") && window.jspdf) ||
-            (!src.includes("docx") && !src.includes("jspdf"))) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 100);
-      setTimeout(() => { clearInterval(checkInterval); resolve(); }, 5000);
+      resolve();
       return;
     }
     const s = document.createElement("script");
     s.src = src;
-    s.async = true;
-    let resolved = false;
-    const doResolve = () => { if (!resolved) { resolved = true; resolve(); } };
-    const doReject = () => { if (!resolved) { resolved = true; reject(new Error(`Failed to load: ${src}`)); } };
-    s.onload = doResolve;
-    s.onerror = doReject;
+    s.onload = resolve;
+    s.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
+    s.onload = resolve;
     document.head.appendChild(s);
-    setTimeout(() => { if (!resolved) doReject(); }, 10000);
+    
+    // Timeout after 10 seconds
+    setTimeout(() => reject(new Error(`Timeout loading ${src}`)), 10000);
   });
 }
-
 
 async function downloadAsPDF(text, filename = "zeroapi-output") {
   await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
@@ -385,7 +373,7 @@ function WordCounter({ text, limit = WORD_LIMIT, theme }) {
   const pct = useMemo(() => (words / limit) * 100, [words, limit]);
   const color = useMemo(() => {
     if (pct >= 100) return "#ff6b6b";
-    if (pct >= 80) return "#febc2e";
+    if (pct >= 80) return theme === 'dark' ? "#febc2e" : "#d97706";
     if (words > 0) return theme === 'dark' ? "#00ffe0" : "#0a6b5e";
     return theme === 'dark' ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.4)";
   }, [pct, words, theme]);
@@ -394,9 +382,9 @@ function WordCounter({ text, limit = WORD_LIMIT, theme }) {
     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px", fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color }}>
       <span>{words.toLocaleString()} / {limit.toLocaleString()} words</span>
       {pct >= 100 && <span style={{ color: "#ff6b6b", fontWeight: 700 }}>— Over limit</span>}
-      {pct >= 80 && pct < 100 && <span style={{ color: "#febc2e" }}>— Approaching limit</span>}
-      <div style={{ marginLeft: "auto", width: "80px", height: "4px", background: "rgba(255,255,255,0.08)", borderRadius: "2px", overflow: "hidden" }}>
-        <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pct >= 100 ? "#ff6b6b" : pct >= 80 ? "#febc2e" : "#00ffe0", borderRadius: "2px", transition: "all 0.3s" }} />
+      {pct >= 80 && pct < 100 && <span style={{ color: theme === 'dark' ? "#febc2e" : "#d97706" }}>— Approaching limit</span>}
+      <div style={{ marginLeft: "auto", width: "80px", height: "4px", background: theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)", borderRadius: "2px", overflow: "hidden" }}>
+        <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pct >= 100 ? "#ff6b6b" : pct >= 80 ? (theme === 'dark' ? "#febc2e" : "#d97706") : "var(--accent)", borderRadius: "2px", transition: "all 0.3s" }} />
       </div>
     </div>
   );
@@ -641,7 +629,7 @@ function TriviaSection({ theme }) {
         {loading && <div style={{ color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono', monospace", fontSize: "0.85rem" }}><span className="spinner" style={{ marginRight: "10px" }} />Generating question...</div>}
         {trivia && !trivia.error && !loading && (
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: "1.15rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "24px", lineHeight: 1.5 }}>{trivia.question}</div>
             <div className="trivia-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
               {trivia.options.map((opt) => {
                 const isThis = selected === opt, correct = opt.startsWith(trivia.answer);
@@ -820,8 +808,6 @@ function MCQPanel({ tool, theme }) {
 
 
 // ── Resume Builder ────────────────────────────────────────────
-const DOCX_CDN = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js";
-
 function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
   const [step, setStep] = useState("prompt");
   const [agreed, setAgreed] = useState(false);
@@ -829,7 +815,6 @@ function ResumeBuilder({ originalText, analysisText, theme, onDataParsed }) {
   const [buildError, setBuildError] = useState("");
   const [loadingLinkedIn, setLoadingLinkedIn] = useState(false);
   const [showLinkedInPaste, setShowLinkedInPaste] = useState(false);
-  const [downloadingDocx, setDownloadingDocx] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [template, setTemplate] = useState("modern");
   const accentColor = "var(--accent)";
@@ -883,97 +868,6 @@ Rules:
       setBuildError("Failed to generate resume. Please try again.");
       setStep("error");
     }
-  }
-
-  async function downloadDocx() {
-    if (!resumeData) return;
-    setDownloadingDocx(true);
-    setBuildError("");
-    try {
-      await loadScript(DOCX_CDN);
-      if (!window.docx) {
-        throw new Error("DOCX library failed to load. Please check your internet connection and try again.");
-      }
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
-      const templateStyles = {
-        modern: { accent: "1F6FEB", font: "Arial" },
-        classic: { accent: "2c5282", font: "Georgia" },
-        minimal: { accent: "1a1a1a", font: "Helvetica" }
-      };
-      const style = templateStyles[template] || templateStyles.modern;
-      const accent = style.accent;
-      const children = [];
-
-      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "Your Name", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
-
-      const c = resumeData.contact || {};
-      const contactParts = [c.email, c.phone, c.location, c.linkedin].filter(Boolean);
-      if (contactParts.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: contactParts.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
-
-      const divider = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
-
-      const sectionHeader = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
-
-      if (resumeData.summary) {
-        children.push(divider());
-        children.push(sectionHeader("Professional Summary"));
-        children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] }));
-      }
-
-      if (resumeData.experience?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Experience"));
-        resumeData.experience.forEach(exp => {
-          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
-        });
-      }
-
-      if (resumeData.education?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Education"));
-        resumeData.education.forEach(edu => {
-          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
-        });
-      }
-
-      if (resumeData.skills) {
-        children.push(divider());
-        children.push(sectionHeader("Skills"));
-        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }]
-          .filter(s => s.items?.length)
-          .forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
-      }
-
-      if (resumeData.projects?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Projects"));
-        resumeData.projects.forEach(p => {
-          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] }));
-          if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] }));
-        });
-      }
-
-      if (resumeData.certifications?.length) {
-        children.push(divider());
-        children.push(sectionHeader("Certifications"));
-        resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] })));
-      }
-
-      const doc = new Document({
-        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
-        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
-      });
-
-      const buffer = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-improved.docx`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e) { console.error(e); setBuildError("DOCX generation failed. Try PDF instead."); }
-    setDownloadingDocx(false);
   }
 
   async function downloadResumePdf() {
@@ -1106,7 +1000,7 @@ Rules:
         <span style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.8)", fontWeight: 500 }}>I understand and agree to proceed</span>
       </label>
       <div style={{ display: "flex", gap: "12px" }}>
-        <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: agreed ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: agreed ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", transition: "all 0.2s" }}>Generate Resume →</button>
+        <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? "linear-gradient(135deg, #00ffe0, #0af)" : (theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"), border: "none", borderRadius: "10px", padding: "10px 24px", color: agreed ? "#000" : (theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"), fontWeight: 700, fontSize: "0.85rem", cursor: agreed ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", transition: "all 0.2s" }}>Generate Resume →</button>
         <button onClick={() => { setStep("prompt"); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.85rem", cursor: "pointer" }}>Cancel</button>
       </div>
     </div>
@@ -1130,7 +1024,7 @@ Rules:
   return (
     <div style={{ marginTop: "20px", background: theme === 'dark' ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`, borderRadius: "14px", padding: "24px" }}>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "6px" }}>✅ RESUME READY</div>
-      <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "4px" }}>{resumeData?.name}</div>
+      <div style={{ fontSize: "1.05rem", fontWeight: 700, color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{resumeData?.name}</div>
       <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", marginBottom: "18px", fontFamily: "'Space Mono', monospace" }}>
         {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
       </div>
@@ -1138,10 +1032,7 @@ Rules:
         ⚠ Review all content before sending. AI may not capture every nuance of your experience.
       </div>
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-        <button onClick={downloadDocx} disabled={downloadingDocx} style={{ background: downloadingDocx ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingDocx ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingDocx ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
-          {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download DOCX"}
-        </button>
-        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: "transparent", border: `1px solid ${accentColor}`, borderRadius: "10px", padding: "10px 22px", color: downloadingPdf ? "rgba(255,255,255,0.3)" : accentColor, fontWeight: 700, fontSize: "0.82rem", cursor: downloadingPdf ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingPdf ? (theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingPdf ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
           {downloadingPdf ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download PDF"}
         </button>
         <button onClick={() => { setStep("prompt"); setResumeData(null); setBuildError(""); setAgreed(false); }} style={{ background: "transparent", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Regenerate</button>
@@ -1288,13 +1179,13 @@ Responsibilities:
 Nice to have:
 • Experience with Kubernetes and serverless architectures
 • Contributions to open source projects
-• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
+• Knowledge of machine learning model deployment`} style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", resize: "vertical" }} />
         <WordCounter text={jobDesc} limit={5000} theme={theme} />
       </div>
 
       {error && <div className="error-box" style={{ marginBottom: "12px" }}>⚠ {error}</div>}
       
-      <button onClick={generate} disabled={loading || !jobDesc.trim()} style={{ background: loading || !jobDesc.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: loading || !jobDesc.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !jobDesc.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+      <button onClick={generate} disabled={loading || !jobDesc.trim()} style={{ background: loading || !jobDesc.trim() ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: loading || !jobDesc.trim() ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !jobDesc.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
         {loading ? <><span className="spinner" style={{ width: "14px", height: "14px" }} />Writing...</> : "✨ Generate Cover Letter →"}
       </button>
     </div>
@@ -1317,8 +1208,6 @@ function ResumeBuilderTool({ theme }) {
   const [generating, setGenerating] = useState(false);
   const [resumeData, setResumeData] = useState(null);
   const [buildError, setBuildError] = useState("");
-  const [downloadingDocx, setDownloadingDocx] = useState(false);
-  const [template, setTemplate] = useState("modern");
   const [loadingLinkedIn, setLoadingLinkedIn] = useState(false);
   const [showLinkedInPaste, setShowLinkedInPaste] = useState(false);
   const topRef = useRef(null);
@@ -1332,7 +1221,7 @@ function ResumeBuilderTool({ theme }) {
       background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
       border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
       borderRadius: "10px", padding: "10px 14px",
-      color: isDark ? "#fff" : "#1f2937",
+      color: isDark ? "#fff" : "#1a1a1a",
       fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none",
       ...extra
     }
@@ -1390,64 +1279,10 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
     setGenerating(false);
   }
 
-  async function downloadDocx() {
-    if (!resumeData) return;
-    setDownloadingDocx(true);
-    try {
-      ;
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, LevelFormat} = window.docx;
-      const accent = "1F6FEB";
-      const children = [];
-      children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: resumeData.name || "", bold: true, size: 52, font: "Arial", color: "1a1a1a" })] }));
-      const c = resumeData.contact || {};
-      const cp = [c.email, c.phone, c.location, c.linkedin, c.github].filter(Boolean);
-      if (cp.length) children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 }, children: [new TextRun({ text: cp.join("  |  "), size: 20, font: "Arial", color: "555555" })] }));
-      const div = () => new Paragraph({ border: { bottom: { style: "single", size: 6, color: accent, space: 1 } }, spacing: { before: 160, after: 160 }, children: [] });
-      const sh = (text) => new Paragraph({ spacing: { before: 160, after: 80 }, children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: "Arial", color: accent })] });
-      if (resumeData.summary) { children.push(div()); children.push(sh("Professional Summary")); children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: resumeData.summary, size: 20, font: "Arial" })] })); }
-      if (resumeData.experience?.length) {
-        children.push(div()); children.push(sh("Experience"));
-        resumeData.experience.forEach(exp => {
-          children.push(new Paragraph({ spacing: { before: 120, after: 40 }, children: [new TextRun({ text: exp.title || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: exp.company ? `  —  ${exp.company}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: exp.dates ? `   ${exp.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          (exp.bullets || []).forEach(b => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: b, size: 20, font: "Arial" })] })));
-        });
-      }
-      if (resumeData.education?.length) {
-        children.push(div()); children.push(sh("Education"));
-        resumeData.education.forEach(edu => {
-          children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: edu.degree || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: edu.institution ? `  —  ${edu.institution}` : "", size: 22, font: "Arial", color: "444444" }), new TextRun({ text: edu.dates ? `   ${edu.dates}` : "", size: 20, font: "Arial", color: "888888", italics: true })] }));
-          if (edu.gpa) children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: `GPA: ${edu.gpa}`, size: 20, font: "Arial", color: "666666" })] }));
-        });
-      }
-      if (resumeData.skills) {
-        children.push(div()); children.push(sh("Skills"));
-        [{ label: "Technical", items: resumeData.skills.technical }, { label: "Tools", items: resumeData.skills.tools }, { label: "Soft Skills", items: resumeData.skills.soft }].filter(s => s.items?.length).forEach(s => children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: `${s.label}: `, bold: true, size: 20, font: "Arial" }), new TextRun({ text: s.items.join(", "), size: 20, font: "Arial" })] })));
-      }
-      if (resumeData.projects?.length) {
-        children.push(div()); children.push(sh("Projects"));
-        resumeData.projects.forEach(p => { children.push(new Paragraph({ spacing: { before: 80, after: 40 }, children: [new TextRun({ text: p.name || "", bold: true, size: 22, font: "Arial" }), new TextRun({ text: p.tech ? `  (${p.tech})` : "", size: 20, font: "Arial", color: "666666", italics: true })] })); if (p.description) children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: p.description, size: 20, font: "Arial" })] })); });
-      }
-      if (resumeData.certifications?.length) { children.push(div()); children.push(sh("Certifications")); resumeData.certifications.forEach(cert => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: cert, size: 20, font: "Arial" })] }))); }
-      if (resumeData.languages?.length) { children.push(div()); children.push(sh("Languages")); children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: Array.isArray(resumeData.languages) ? resumeData.languages.join(", ") : resumeData.languages, size: 20, font: "Arial" })] })); }
-      if (resumeData.achievements?.length) { children.push(div()); children.push(sh("Achievements")); (Array.isArray(resumeData.achievements) ? resumeData.achievements : [resumeData.achievements]).forEach(a => children.push(new Paragraph({ numbering: { reference: "bullets", level: 0 }, spacing: { after: 40 }, children: [new TextRun({ text: a, size: 20, font: "Arial" })] }))); }
-      const doc = new Document({
-        numbering: { config: [{ reference: "bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 720, hanging: 360 } } } }] }] },
-        sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }]
-      });
-      const buffer = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `${(resumeData.name || "resume").replace(/\s+/g, "-").toLowerCase()}-zeroapi.docx`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch (e) { console.error(e); setBuildError("DOCX download failed. Please try again."); }
-    setDownloadingDocx(false);
-  }
-
   const navBtns = (canNext = true) => (
     <div style={{ display: "flex", gap: "12px", marginTop: "24px", paddingTop: "16px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}` }}>
       {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>}
-      <button onClick={() => setStep(s => s + 1)} disabled={!canNext} style={{ background: canNext ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 24px", color: canNext ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: canNext ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace" }}>Next →</button>
+      <button onClick={() => setStep(s => s + 1)} disabled={!canNext} style={{ background: canNext ? "linear-gradient(135deg, #00ffe0, #0af)" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"), border: "none", borderRadius: "10px", padding: "10px 24px", color: canNext ? "#000" : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"), fontWeight: 700, fontSize: "0.85rem", cursor: canNext ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace" }}>Next →</button>
     </div>
   );
 
@@ -1455,28 +1290,16 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
   if (step === 7 && resumeData) return (
     <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <div style={{ background: "rgba(0,255,224,0.04)", border: "1px solid rgba(0,255,224,0.2)", borderRadius: "14px", padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
-  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em" }}>✅ RESUME READY</div>
-  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-    {["modern", "classic", "minimal"].map(t => (
-      <button key={t} onClick={() => setTemplate(t)} style={{ background: template === t ? accentColor : "transparent", border: `1px solid ${template === t ? accentColor : theme === 'dark' ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "6px", padding: "4px 12px", color: template === t ? "#000" : theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.68rem", cursor: "pointer", fontFamily: "'Space Mono', monospace", textTransform: "uppercase" }}>
-        {t}
-      </button>
-    ))}
-  </div>
-</div>
-        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#1f2937", marginBottom: "4px" }}>{resumeData.name}</div>
-        <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: accentColor, letterSpacing: "0.12em", marginBottom: "12px" }}>✅ RESUME READY</div>
+        <div style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#fff" : "#0f172a", marginBottom: "4px" }}>{resumeData.name}</div>
+        <div style={{ fontSize: "0.75rem", color: isDark ? "rgba(255,255,255,0.45)" : "#64748b", fontFamily: "'Space Mono', monospace", marginBottom: "18px" }}>
           {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? "s" : ""}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(" · ")}
         </div>
-        <div style={{ background: isDark ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${isDark ? "rgba(255,180,0,0.3)" : "#febc2e"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: isDark ? "#febc2e" : "#b45309", lineHeight: 1.6 }}>
-          ⚠ Review carefully before sending. Download DOCX to edit in Word or Google Docs.
+        <div style={{ background: isDark ? "rgba(255,180,0,0.15)" : "#fff8e1", border: `1px solid ${isDark ? "rgba(255,180,0,0.3)" : "#f59e0b"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "18px", fontSize: "0.78rem", color: isDark ? "#febc2e" : "#b45309", lineHeight: 1.6 }}>
+          ⚠ Review carefully before sending to employers. AI-generated content may need adjustments.
         </div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <button onClick={downloadDocx} disabled={downloadingDocx} style={{ background: downloadingDocx ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "10px 22px", color: downloadingDocx ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.82rem", cursor: downloadingDocx ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
-            {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download DOCX"}
-          </button>
-          <button onClick={() => { setStep(0); setResumeData(null); setBuildError(""); setAgreed(false); setData({ name: "", email: "", phone: "", location: "", linkedin: "", github: "", target: "", summary: "", experience: [{ id: Date.now(), title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }], education: [{ id: Date.now()+1, degree: "", field: "", institution: "", year: "", gpa: "" }], techSkills: "", tools: "", softSkills: "", projects: [{ id: Date.now()+2, name: "", tech: "", description: "" }], certs: "", languages: "", achievements: "" }); }} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontSize: "0.82rem", cursor: "pointer" }}>↺ Build New Resume</button>
+          <button onClick={() => { setStep(0); setResumeData(null); setBuildError(""); setAgreed(false); setData({ name: "", email: "", phone: "", location: "", linkedin: "", github: "", target: "", summary: "", experience: [{ id: Date.now(), title: "", company: "", startDate: "", endDate: "", current: false, bullets: "" }], education: [{ id: Date.now()+1, degree: "", field: "", institution: "", year: "", gpa: "" }], techSkills: "", tools: "", softSkills: "", projects: [{ id: Date.now()+2, name: "", tech: "", description: "" }], certs: "", languages: "", achievements: "" }); }} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 16px", color: isDark ? "rgba(255,255,255,0.5)" : "#334155", fontSize: "0.82rem", cursor: "pointer" }}>↺ Build New Resume</button>
         </div>
         {buildError && <div className="error-box" style={{ marginTop: "12px" }}>⚠ {buildError}</div>}
       </div>
@@ -1546,7 +1369,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
           setShowLinkedInPaste(true);
         }}
         disabled={loadingLinkedIn}
-        style={{ background: loadingLinkedIn ? "rgba(255,255,255,0.08)" : ac, border: "none", borderRadius: "8px", padding: "10px 18px", color: loadingLinkedIn ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.78rem", cursor: loadingLinkedIn ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}
+        style={{ background: loadingLinkedIn ? (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : ac, border: "none", borderRadius: "8px", padding: "10px 18px", color: loadingLinkedIn ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000", fontWeight: 700, fontSize: "0.78rem", cursor: loadingLinkedIn ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }}
       >
         {loadingLinkedIn ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />...</> : "Extract →"}
       </button>
@@ -1594,7 +1417,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
           }}
           rows={8}
           placeholder="Paste your LinkedIn profile text here (About, Experience, Education)..."
-          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "10px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", resize: "vertical" }}
+          style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", resize: "vertical" }}
         />
         <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "6px", fontFamily: "'Space Mono', monospace" }}>
           💡 Tip: Go to your LinkedIn profile → Click "More" → "Save to PDF" → Copy text from the PDF
@@ -1726,13 +1549,13 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
           {[["Name", data.name || "—"], ["Email", data.email || "—"], ["Target Role", data.target || "—"], ["Experience", `${data.experience.filter(e => e.title.trim()).length} role(s)`], ["Education", `${data.education.filter(e => (e.degree + e.institution).trim()).length} degree(s)`], ["Technical Skills", data.techSkills ? "✓ Added" : "— Not added"], ["Projects", data.projects.filter(p => p.name.trim()).length > 0 ? `${data.projects.filter(p => p.name.trim()).length} project(s)` : "— None"]].map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}` }}>
               <span style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)", fontFamily: "'Space Mono', monospace", fontSize: "0.68rem" }}>{k}</span>
-              <span style={{ color: isDark ? "#fff" : "#1f2937", fontWeight: 500, fontSize: "0.85rem" }}>{v}</span>
+              <span style={{ color: isDark ? "#fff" : "#1a1a1a", fontWeight: 500, fontSize: "0.85rem" }}>{v}</span>
             </div>
           ))}
           <button onClick={() => setStep(0)} style={{ marginTop: "12px", background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)"}`, borderRadius: "8px", padding: "6px 14px", color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }}>← Edit Inputs</button>
         </div>
         <div style={{ background: "rgba(255,180,0,0.06)", border: "1px solid rgba(255,180,0,0.2)", borderRadius: "12px", padding: "16px" }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#febc2e", marginBottom: "10px" }}>⚠ BEFORE YOU GENERATE</div>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: isDark ? "#febc2e" : "#b45309", marginBottom: "10px" }}>⚠ BEFORE YOU GENERATE</div>
           {["Your data will be sent to Groq AI to build your resume.", "Groq processes data in real-time — not stored permanently.", "ZeroAPI does not store, save, or retain any of your personal data.", "Resume stays in your browser only — clears when you close the tab.", "Always review the generated resume carefully before submitting."].map((item, i) => (
             <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginBottom: "8px" }}>
               <span style={{ color: ac, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", flexShrink: 0, marginTop: "2px" }}>✓</span>
@@ -1747,7 +1570,7 @@ Output format: {"name":"","contact":{"email":"","phone":"","location":"","linked
         {buildError && <div className="error-box">⚠ {buildError}</div>}
         <div style={{ display: "flex", gap: "12px" }}>
           <button onClick={() => setStep(5)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "10px 20px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontSize: "0.85rem", cursor: "pointer" }}>← Back</button>
-          <button onClick={generate} disabled={!agreed || generating} style={{ background: agreed && !generating ? "linear-gradient(135deg, #00ffe0, #0af)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: "10px", padding: "10px 28px", color: agreed && !generating ? "#000" : "rgba(255,255,255,0.3)", fontWeight: 700, fontSize: "0.85rem", cursor: agreed && !generating ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
+          <button onClick={generate} disabled={!agreed || generating} style={{ background: agreed && !generating ? "linear-gradient(135deg, #00ffe0, #0af)" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"), border: "none", borderRadius: "10px", padding: "10px 28px", color: agreed && !generating ? "#000" : (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"), fontWeight: 700, fontSize: "0.85rem", cursor: agreed && !generating ? "pointer" : "not-allowed", fontFamily: "'Space Mono', monospace", display: "flex", alignItems: "center", gap: "8px" }}>
             {generating ? <><span className="spinner" style={{ width: "14px", height: "14px" }} />Generating Resume...</> : "✨ Generate My Resume →"}
           </button>
         </div>
@@ -2133,7 +1956,7 @@ function handleClear() {
             {charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ""}
         </div>
         {charCount >= 30000 && (
-            <div style={{ fontSize: "0.68rem", color: "#febc2e", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
+            <div style={{ fontSize: "0.68rem", color: theme === 'dark' ? "#febc2e" : "#b45309", marginTop: "4px", fontFamily: "'Space Mono', monospace" }}>
                 ⚠️ Large file: First {Math.round(WORD_LIMIT_UPLOAD/1000)}K characters used. For best results, consider summarizing shorter sections.
             </div>
         )}
@@ -2159,7 +1982,7 @@ function handleClear() {
           <div className="output-panel"><div className="output-header">◆ {label} Result</div>{formattedOutput}</div>
           
           {/* NEW: Q&A Section with Citations */}
-          {label === "Summarize Document" && chunks.length > 0 && (
+          {chunks.length > 0 && (
             <div style={{ marginTop: "28px" }}>
               <div style={{ 
                 fontFamily: "'Space Mono', monospace", 
@@ -2185,7 +2008,7 @@ function handleClear() {
                     border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`,
                     borderRadius: "10px",
                     padding: "12px 16px",
-                    color: theme === 'dark' ? "#fff" : "#1f2937",
+                    color: theme === 'dark' ? "#fff" : "#1a1a1a",
                     fontFamily: "'DM Sans', sans-serif",
                     fontSize: "0.85rem",
                     outline: "none"
@@ -2195,11 +2018,11 @@ function handleClear() {
                   onClick={askFollowUp}
                   disabled={qaLoading || !followUpQuestion.trim() || chunks.length === 0}
                   style={{
-                    background: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)",
+                    background: qaLoading || !followUpQuestion.trim() ? (theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg, #00ffe0, #0af)",
                     border: "none",
                     borderRadius: "10px",
                     padding: "12px 24px",
-                    color: qaLoading || !followUpQuestion.trim() ? "rgba(255,255,255,0.3)" : "#000",
+                    color: qaLoading || !followUpQuestion.trim() ? (theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000",
                     fontWeight: 700,
                     fontSize: "0.85rem",
                     cursor: qaLoading || !followUpQuestion.trim() ? "not-allowed" : "pointer",
@@ -2402,7 +2225,7 @@ ${code}` }]
     <section id="playground" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 80px" }}>
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Code Playground</div>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1f2937", marginBottom: "12px" }}>Write. Run. Learn.</h2>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: theme === 'dark' ? "#fff" : "#1a1a1a", marginBottom: "12px" }}>Write. Run. Learn.</h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300 }}>Browser-based code editor · 6 languages · AI explanation built-in</p>
       </div>
 
@@ -2426,7 +2249,7 @@ ${code}` }]
           <div style={{ display: "flex", gap: "10px" }}>
             <button onClick={() => { setCode(""); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Clear</button>
             <button onClick={() => { setCode(lang.starter); setOutput(""); setExplanation(""); }} style={{ background: theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: "var(--text-secondary)", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem", cursor: "pointer" }}>Reset</button>
-            <button onClick={runCode} disabled={running} style={{ background: running ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "var(--text-muted)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }} aria-label="Run code">
+            <button onClick={runCode} disabled={running} style={{ background: running ? (theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "8px", padding: "6px 20px", color: running ? "var(--text-muted)" : "#000", fontFamily: "'Space Mono', monospace", fontSize: "0.78rem", fontWeight: 700, cursor: running ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px" }} aria-label="Run code">
               {running ? <><span className="spinner" style={{ width: "10px", height: "10px" }} />Running...</> : "▶ Run"}
             </button>
           </div>
@@ -2443,7 +2266,7 @@ ${code}` }]
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", color: runError ? "#ff6b6b" : accentColor, letterSpacing: "0.1em", textTransform: "uppercase" }}>{runError ? "⚠ Error" : "◆ Output"}</span>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 <button onClick={() => { setOutput(""); setExplanation(""); setError(""); setRunError(false); }} style={{ background: "rgba(0,255,224,0.06)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: "pointer" }} aria-label="Clear console">↺ Clear Console</button>
-                <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? "rgba(255,255,255,0.06)" : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? "rgba(255,255,255,0.3)" : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
+                <button onClick={explainCode} disabled={explaining} style={{ background: explaining ? (theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)") : "rgba(0,255,224,0.08)", border: `1px solid ${accentColor}33`, borderRadius: "8px", padding: "5px 14px", color: explaining ? (theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : accentColor, fontFamily: "'Space Mono', monospace", fontSize: "0.68rem", cursor: explaining ? "not-allowed" : "pointer" }} aria-label="Ask AI to explain code">
                   {explaining ? "Explaining..." : "🧠 Ask AI to Explain"}
                 </button>
               </div>
@@ -2542,11 +2365,11 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.`
     <div>
       <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", minWidth: 0, position: "relative" }}>
-          <input ref={inputRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1f2937", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+          <input ref={inputRef} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="e.g. What is an AI agent? How do I start with LangGraph?" style={{ width: "100%", background: theme === 'dark' ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "10px", padding: "12px 16px", color: theme === 'dark' ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans', sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
             onFocus={(e) => e.target.style.borderColor = `${accentColor}66`}
             onBlur={(e) => e.target.style.borderColor = theme === 'dark' ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"} aria-label="Ask a question" />
         </div>
-        <button onClick={ask} disabled={loading || !question.trim()} style={{ flex: "0 0 auto", background: loading || !question.trim() ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }} aria-label="Ask question">
+        <button onClick={ask} disabled={loading || !question.trim()} style={{ flex: "0 0 auto", background: loading || !question.trim() ? (theme === 'dark' ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg, #00ffe0, #0af)", border: "none", borderRadius: "10px", padding: "12px 20px", color: loading || !question.trim() ? (theme === 'dark' ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: loading || !question.trim() ? "not-allowed" : "pointer", fontFamily: "'Space Mono', monospace", whiteSpace: "nowrap" }} aria-label="Ask question">
           {loading ? "..." : "Ask →"}
         </button>
       </div>
@@ -2634,14 +2457,14 @@ function UserFeedback({ theme }) {
               <span style={{ fontSize: "0.72rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", marginLeft: "8px" }}>{rating > 0 ? `${rating}/5` : ""}</span>
             </div>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name (optional)"
-              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }}
               onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your name" />
             <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Share your thoughts, suggestions, or what you liked..." rows={4}
-              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
+              style={{ width: "100%", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "12px 16px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'DM Sans',sans-serif", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", resize: "vertical" }}
               onFocus={e => e.target.style.borderColor = `${ac}66`} onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"} aria-label="Your feedback" />
             {error && <div style={{ color: "#ff6b6b", fontSize: "0.78rem", fontFamily: "'Space Mono',monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
-              style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg,#00ffe0,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: rating === 0 || submitting ? "rgba(255,255,255,0.3)" : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono',monospace", display: "flex", alignItems: "center", gap: "8px" }} aria-label="Submit feedback">
+              style={{ alignSelf: "flex-start", background: rating === 0 || submitting ? (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)") : "linear-gradient(135deg,#00ffe0,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: rating === 0 || submitting ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)") : "#000", fontWeight: 700, fontSize: "0.85rem", cursor: rating === 0 || submitting ? "not-allowed" : "pointer", fontFamily: "'Space Mono',monospace", display: "flex", alignItems: "center", gap: "8px" }} aria-label="Submit feedback">
               {submitting ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Submitting...</> : "Submit Feedback →"}
             </button>
           </div>
@@ -2668,7 +2491,7 @@ function UserFeedback({ theme }) {
                   {/* Header */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1f2937" }}>{fb.name}</span>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a" }}>{fb.name}</span>
                       <span style={{ color: "#febc2e", fontSize: "0.8rem" }}>{"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}</span>
                     </div>
                     <span style={{ fontSize: "0.68rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>
@@ -3164,7 +2987,7 @@ Jun,82000,38000,44000`;
       // Center text
       ctx.fillStyle = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)"; ctx.font = "bold 14px monospace"; ctx.textAlign = "center";
       ctx.fillText("Total", cx, cy - 8);
-      ctx.fillStyle = isDark ? "#fff" : "#1f2937"; ctx.font = "bold 18px monospace";
+      ctx.fillStyle = isDark ? "#fff" : "#1a1a1a"; ctx.font = "bold 18px monospace";
       const tot = ds.data.reduce((a,b)=>a+b,0);
       ctx.fillText(tot >= 1000 ? `${(tot/1000).toFixed(1)}k` : tot, cx, cy + 12);
       // Legend
@@ -3309,7 +3132,7 @@ Jun,82000,38000,44000`;
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
               <div>
                 <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>{chartType === "scatter" ? "X AXIS (numeric)" : "X AXIS / LABELS"}</div>
-                <select value={xCol} onChange={e => setXCol(+e.target.value)} style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${ac}33`, borderRadius: "6px", padding: "6px 10px", color: isDark ? "#fff" : "#1f2937", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem" }}>
+                <select value={xCol} onChange={e => setXCol(+e.target.value)} style={{ background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)", border: `1px solid ${ac}33`, borderRadius: "6px", padding: "6px 10px", color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem" }}>
                   {headers.map((h,i) => <option key={i} value={i}>{h}</option>)}
                 </select>
               </div>
@@ -3380,7 +3203,6 @@ function MockInterview({ theme }) {
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState(120);
   const [timerActive, setTimerActive] = useState(false);
-  const [downloadingDocx, setDownloadingDocx] = useState(false);
   const timerRef = useRef(null);
   const topRef = useRef(null);
   const isDark = theme === "dark";
@@ -3445,37 +3267,7 @@ function MockInterview({ theme }) {
     else { setQNum(q => q + 1); setAnswer(""); setTimeLeft(120); setTimerActive(true); }
   }
 
-  async function downloadReport() {
-    setDownloadingDocx(true);
-    try {
-      await loadScript(DOCX_CDN);
-      const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = window.docx;
-      const avg = (results.reduce((a, r) => a + r.score, 0) / results.length).toFixed(1);
-      const children = [
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: "Mock Interview Report", bold: true, size: 48, font: "Arial", color: "1F6FEB" })] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: `${role}  ·  ${level}  ·  Overall Score: ${avg}/10`, size: 22, font: "Arial", color: "555555" })] }),
-      ];
-      results.forEach((r, i) => {
-        const scoreColor = r.score >= 7 ? "2e7d32" : r.score >= 5 ? "f9a825" : "d32f2f";
-        children.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "1F6FEB" } }, spacing: { before: 200, after: 160 }, children: [new TextRun({ text: `Q${i+1}. ${r.q}`, bold: true, size: 22, font: "Arial" })] }));
-        children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: `Score: ${r.score}/10`, bold: true, size: 20, font: "Arial", color: scoreColor }), new TextRun({ text: `   Time: ${r.time}s`, size: 18, font: "Arial", color: "888888", italics: true })] }));
-        children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Your Answer: ", bold: true, size: 19, font: "Arial" }), new TextRun({ text: r.a, size: 19, font: "Arial", color: "444444" })] }));
-        children.push(new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Feedback: ", bold: true, size: 19, font: "Arial" }), new TextRun({ text: r.feedback, size: 19, font: "Arial" })] }));
-        if (r.strength !== "—") children.push(new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "✓ Strength: ", bold: true, size: 18, font: "Arial", color: "2e7d32" }), new TextRun({ text: r.strength, size: 18, font: "Arial" })] }));
-        children.push(new Paragraph({ spacing: { after: 160 }, children: [new TextRun({ text: "↑ Improve: ", bold: true, size: 18, font: "Arial", color: "d32f2f" }), new TextRun({ text: r.improvement, size: 18, font: "Arial" })] }));
-      });
-      children.push(new Paragraph({ spacing: { before: 300 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: `Generated by ZeroAPI.in  ·  Zero Signup · Zero Storage`, size: 16, font: "Arial", color: "aaaaaa", italics: true })] }));
-      const doc = new Document({ sections: [{ properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } } }, children }] });
-      const buffer = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = `interview-report-${role.replace(/\s+/g,"-").toLowerCase()}.docx`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    } catch(e) { console.error(e); setError("Report download failed."); }
-    setDownloadingDocx(false);
-  }
-
-  const timerColor = timeLeft <= 30 ? "#ff6b6b" : timeLeft <= 60 ? "#febc2e" : ac;
+  const timerColor = timeLeft <= 30 ? "#ff6b6b" : timeLeft <= 60 ? (isDark ? "#febc2e" : "#d97706") : ac;
   const mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
 
   // ── Report Screen
@@ -3495,7 +3287,7 @@ function MockInterview({ theme }) {
           return (
             <div key={i} style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px", gap: "10px" }}>
-                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: isDark ? "#fff" : "#1f2937", lineHeight: 1.5 }}>Q{i+1}. {r.q}</div>
+                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5 }}>Q{i+1}. {r.q}</div>
                 <div style={{ background: `${sc}20`, border: `1px solid ${sc}`, borderRadius: "8px", padding: "3px 12px", fontFamily: "'Space Mono',monospace", fontSize: "0.75rem", color: sc, flexShrink: 0, fontWeight: 700 }}>{r.score}/10</div>
               </div>
               <div style={{ fontSize: "0.82rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "8px", fontStyle: "italic" }}>"{r.a}"</div>
@@ -3508,9 +3300,6 @@ function MockInterview({ theme }) {
         })}
         {error && <div className="error-box">⚠ {error}</div>}
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <button onClick={downloadReport} disabled={downloadingDocx} className="run-btn" style={{ padding: "10px 22px" }}>
-            {downloadingDocx ? <><span className="spinner" style={{ width: "12px", height: "12px" }} />Building...</> : "⬇ Download Report (DOCX)"}
-          </button>
           <button onClick={() => { setStep("setup"); setResults([]); setQuestions([]); setQNum(0); setAnswer(""); setError(""); }} className="action-btn" style={{ color: ac, borderColor: ac }}>↺ New Interview</button>
         </div>
       </div>
@@ -3529,7 +3318,7 @@ function MockInterview({ theme }) {
       </div>
       <div style={{ background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`, borderRadius: "12px", padding: "20px" }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "10px" }}>◆ INTERVIEWER ASKS</div>
-        <div style={{ fontSize: "1rem", fontWeight: 600, color: isDark ? "#fff" : "#1f2937", lineHeight: 1.6 }}>{questions[qNum]}</div>
+        <div style={{ fontSize: "1rem", fontWeight: 600, color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.6 }}>{questions[qNum]}</div>
       </div>
       <div>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, marginBottom: "8px" }}>YOUR ANSWER</div>
@@ -3587,7 +3376,7 @@ function DevToolsPanel({ theme }) {
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
       <div style={{ marginBottom: "48px", textAlign: "center" }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.7rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Dev Tools</div>
-        <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1f2937" }}>Visual. Interactive. Zero Signup.</h2>
+        <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", color: isDark ? "#fff" : "#1a1a1a" }}>Visual. Interactive. Zero Signup.</h2>
         <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Tools that go beyond text — diagrams, charts, and simulations that ChatGPT can't render.</p>
       </div>
       <div className="tool-row" style={{ display: "flex", gap: "16px", marginBottom: "36px" }}>
@@ -3599,7 +3388,7 @@ function DevToolsPanel({ theme }) {
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
           <span style={{ fontSize: "1.5rem" }}>{info.icon}</span>
           <div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1f2937" }}>{info.name}</div>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a" }}>{info.name}</div>
             <div style={{ fontSize: "0.8rem", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{info.tagline}</div>
           </div>
         </div>
@@ -3715,12 +3504,12 @@ Be honest, specific, and constructive.`} />;
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
 
         :root {
-          --bg-primary: #f5f5f5; --bg-secondary: #ffffff; --bg-tertiary: #f0f0f0;
+          --bg-primary: #f8fafc; --bg-secondary: #ffffff; --bg-tertiary: #f1f5f9;
           --bg-elevated: #ffffff; --bg-code: #1e1e2e;
-          --text-primary: #1a1a2e; --text-secondary: #4b5563; --text-muted: #9ca3af; --text-inverse: #ffffff;
+          --text-primary: #0f172a; --text-secondary: #334155; --text-muted: #64748b; --text-inverse: #ffffff;
           --accent: #00897b; --accent-light: #e0f2f1; --accent-glow: rgba(0, 137, 123, 0.15);
-          --border-subtle: rgba(0, 0, 0, 0.08); --border-medium: rgba(0, 0, 0, 0.15); --border-strong: rgba(0, 0, 0, 0.25);
-          --error: #d32f2f; --error-bg: rgba(211, 47, 47, 0.08); --warning: #f9a825; --success: #2e7d32;
+          --border-subtle: rgba(0, 0, 0, 0.07); --border-medium: rgba(0, 0, 0, 0.13); --border-strong: rgba(0, 0, 0, 0.22);
+          --error: #dc2626; --error-bg: rgba(220, 38, 38, 0.07); --warning: #b45309; --success: #15803d;
         }
         [data-theme="dark"] {
           --bg-primary: #060a0f; --bg-secondary: rgba(255,255,255,0.04); --bg-tertiary: rgba(255,255,255,0.03);
@@ -3757,7 +3546,7 @@ Be honest, specific, and constructive.`} />;
         .tool-textarea-error { border-color: rgba(255,80,80,0.4) !important; }
         .run-btn { background: linear-gradient(135deg, #00ffe0 0%, #0af 100%); border: none; border-radius: 10px; padding: 14px 28px; color: #000; font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; justify-content: center; box-shadow: 0 0 24px rgba(0,255,224,0.3); }
         .run-btn-disabled { background: var(--bg-tertiary) !important; color: var(--text-muted) !important; cursor: not-allowed !important; box-shadow: none !important; }
-        .error-box { background: var(--error-bg); border: 1px solid rgba(255,80,80,0.3); border-radius: 10px; padding: 14px; color: var(--error); font-size: 0.82rem; font-family: 'Space Mono', monospace; }
+        .error-box { background: var(--error-bg); border: 1px solid rgba(220,38,38,0.3); border-radius: 10px; padding: 14px; color: var(--error); font-size: 0.82rem; font-family: 'Space Mono', monospace; }
         .output-panel { background: var(--accent-light); border: 1px solid var(--border-medium); border-radius: 12px; padding: 24px 28px; }
         .output-header { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
         .output-header-mcq { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
@@ -3781,6 +3570,16 @@ Be honest, specific, and constructive.`} />;
         .text-link { background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline; }
         .code-editor { background: #0d1117; color: #e6edf3; }
 
+        [data-theme="light"] .spinner { border-color: rgba(0,0,0,0.12); border-top-color: #00897b; }
+        [data-theme="light"] .upload-hint { color: #b45309; }
+        [data-theme="light"] .share-score-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #64748b; }
+        [data-theme="light"] .share-score-btn:hover { color: #00897b; }
+        [data-theme="light"] .mcq-answer { background: rgba(0,137,123,0.08); }
+        [data-theme="light"] .mcq-explanation { color: #475569; }
+        [data-theme="light"] .new-question-btn { background: rgba(0,137,123,0.06); }
+        [data-theme="light"] .new-question-btn:hover { background: rgba(0,137,123,0.12); }
+        [data-theme="light"] .try-example-btn { background: rgba(0,137,123,0.06); border-color: rgba(0,137,123,0.2); }
+        [data-theme="light"] .try-example-btn:hover { background: rgba(0,137,123,0.12); }
         [data-theme="light"] .tool-card-inactive { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
         [data-theme="light"] .tool-card-inactive:hover { border-color: var(--accent) !important; background: var(--bg-elevated) !important; }
         [data-theme="light"] .output-panel { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
@@ -3829,7 +3628,7 @@ Be honest, specific, and constructive.`} />;
             <text x="60" y="56" textAnchor="middle" fontFamily="'Arial Black', sans-serif" fontSize="24" fontWeight="900" fill="url(#lg1)" style={{ filter: "drop-shadow(0 0 4px rgba(0,255,224,0.6))" }}>0</text>
             <text x="60" y="76" textAnchor="middle" fontFamily="monospace" fontSize="11" fill={theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)"} letterSpacing="4" fontWeight="700">API</text>
           </svg>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1f2937" }}>ZeroAPI</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.1rem", letterSpacing: "-0.02em", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>ZeroAPI</span>
         </div>
 
         <div className="nav-links" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
@@ -3840,7 +3639,7 @@ Be honest, specific, and constructive.`} />;
             { label: "Playground", action: () => document.getElementById("playground").scrollIntoView({ behavior: "smooth" }) },
             { label: "About", action: () => document.getElementById("about").scrollIntoView({ behavior: "smooth" }) }
           ].map(({ label, action }) => (
-            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1f2937")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
+            <span key={label} onClick={action} style={{ fontSize: "0.85rem", color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", cursor: "pointer", transition: "color 0.2s", fontWeight: 500 }} onMouseEnter={(e) => (e.target.style.color = theme === 'dark' ? "#fff" : "#1a1a1a")} onMouseLeave={(e) => (e.target.style.color = theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)")}>{label}</span>
           ))}
           <span onClick={() => window.open("https://www.youtube.com/@pyofpython9668", "_blank", "noopener,noreferrer")} title="YouTube: pyofpython" style={{ cursor: "pointer", display: "flex", alignItems: "center", opacity: 0.6, transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#ff0000" opacity="0.9"/><polygon points="9.5,7.5 9.5,16.5 17,12" fill="white"/></svg>
@@ -3865,7 +3664,7 @@ Be honest, specific, and constructive.`} />;
             alignItems: "center", 
             justifyContent: "center", 
             fontSize: "1.2rem", 
-            color: theme === 'dark' ? "#fff" : "#1f2937", 
+            color: theme === 'dark' ? "#fff" : "#1a1a1a", 
             transition: "all 0.3s ease",
             marginLeft: "auto"
           }}>
@@ -3913,7 +3712,7 @@ Be honest, specific, and constructive.`} />;
                   background: "transparent", 
                   border: "none", 
                   padding: "14px 0", 
-                  color: theme === 'dark' ? "#fff" : "#1f2937", 
+                  color: theme === 'dark' ? "#fff" : "#1a1a1a", 
                   fontSize: "1.1rem", 
                   fontWeight: 600,
                   fontFamily: "'DM Sans', sans-serif",
@@ -3962,7 +3761,7 @@ Be honest, specific, and constructive.`} />;
           FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
         </div>
 
-        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1f2937", wordBreak: "keep-all" }}>
+        <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 6vw, 6rem)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-0.03em", marginBottom: "24px", maxWidth: "900px", color: theme === 'dark' ? "#fff" : "#1a1a1a", wordBreak: "keep-all" }}>
           <span>Your AI </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0 0%, #0af 60%, #a78bfa 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", whiteSpace: "nowrap" }}>Superpower</span>
           <br /><span>Starts Here</span>
@@ -4005,7 +3804,7 @@ Be honest, specific, and constructive.`} />;
               <div key={f.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                 <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>{f.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: theme === 'dark' ? "#fff" : "#1f2937" }}>{f.label}</div>
+                  <div style={{ fontWeight: 600, fontSize: "0.85rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{f.label}</div>
                   <div style={{ fontSize: "0.75rem", color: theme === 'dark' ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.5)" }}>{f.desc}</div>
                 </div>
               </div>
@@ -4019,7 +3818,7 @@ Be honest, specific, and constructive.`} />;
         <div style={{ background: theme === 'dark' ? "rgba(255,255,255,0.025)" : "rgba(0,0,0,0.03)", border: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.1)"}`, borderRadius: "20px", padding: "36px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "24px", flexWrap: "wrap" }}>
           <div>
             <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: "var(--accent)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "10px" }}>◆ Learn</div>
-            <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 800, color: theme === 'dark' ? "#fff" : "#1f2937", letterSpacing: "-0.02em", marginBottom: "8px" }}>Guides & Tutorials</h3>
+            <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 800, color: theme === 'dark' ? "#fff" : "#1a1a1a", letterSpacing: "-0.02em", marginBottom: "8px" }}>Guides & Tutorials</h3>
             <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)", fontSize: "0.88rem", lineHeight: 1.6, maxWidth: "500px" }}>Practical articles for developers and students — resume tips, SQL guides, interview prep, and career advice. New every week.</p>
             <div style={{ marginTop: "14px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {["ATS Resume Tips", "SQL Guides", "Interview Prep", "Career Advice"].map(tag => (
@@ -4037,7 +3836,7 @@ Be honest, specific, and constructive.`} />;
       <section id="tools" className="tools-section" style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 32px 120px" }}>
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", color: accentColor, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "16px" }}>◆ Live AI Tools</div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1f2937" }}>Pick a Tool. Run It. Free.</h2>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>Pick a Tool. Run It. Free.</h2>
           <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "14px", fontSize: "1rem", fontWeight: 300 }}>Powered by Groq AI · No API Key · No Subscription · Always Free</p>
         </div>
 
@@ -4063,7 +3862,7 @@ Be honest, specific, and constructive.`} />;
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "28px", paddingBottom: "20px", borderBottom: `1px solid ${theme === 'dark' ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
             <span style={{ fontSize: "1.5rem" }}>{activeInfo.icon}</span>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1f2937" }}>{activeInfo.name}</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "1.1rem", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>{activeInfo.name}</div>
               <div style={{ fontSize: "0.8rem", color: theme === 'dark' ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", marginTop: "2px" }}>{activeInfo.tagline}</div>
             </div>
           </div>
@@ -4082,13 +3881,13 @@ Be honest, specific, and constructive.`} />;
 
       {/* About */}
       <section id="about" className="about-section" style={{ maxWidth: "700px", margin: "0 auto", padding: "80px 24px 40px", textAlign: "center" }}>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1f2937" }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "20px", color: theme === 'dark' ? "#fff" : "#1a1a1a" }}>
           <span>Built by an </span>
           <span style={{ background: "linear-gradient(135deg, #00ffe0, #0af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>AI Researcher</span>
           <span> for everyone.</span>
         </h2>
         <p style={{ color: theme === 'dark' ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", lineHeight: 1.9, fontSize: "1rem", fontWeight: 300, marginBottom: "36px" }}>
-          ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1f2937", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
+          ZeroAPI is built by <strong style={{ color: theme === 'dark' ? "#fff" : "#1a1a1a", fontWeight: 600 }}>Prof. Abhishek Singh</strong>, CSE Department at Baderia Global Institute of Engineering and Management, Jabalpur, MP, India — and author of <em>Agentic AI Systems: Design &amp; Engineering</em>.
           <br /><br />
           This platform exists because powerful AI tools shouldn&apos;t be locked behind paywalls or API keys. <strong style={{ color: accentColor, fontWeight: 500 }}>Everything here runs free, instantly, with zero signup.</strong> ZeroAPI is the practical companion to the book — real tools, real AI, no gatekeeping.
         </p>
