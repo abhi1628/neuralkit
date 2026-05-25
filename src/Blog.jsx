@@ -247,15 +247,18 @@ function BlogComments({ slug, theme }) {
       })
       .then(data => {
         setLikeCount(data.likeCount || 0);
-        // API is source of truth — sync localStorage with server
-        const serverLiked = data.liked || false;
-        setLiked(serverLiked);
-        try { localStorage.setItem(LIKE_KEY, String(serverLiked)); } catch {}
+        // ── KEY FIX ──────────────────────────────────────────
+        // Do NOT use data.liked to set liked state.
+        // IP detection on Vercel is unreliable (edge nodes, mobile IPs,
+        // CDN layers). localStorage is the single source of truth for
+        // whether THIS user liked this post.
+        // API only provides the shared count visible to everyone.
+        // ─────────────────────────────────────────────────────
         setComments(data.comments || []);
       })
       .catch(err => {
         console.error("[ZeroAPI] blog-reactions fetch failed:", err.message);
-        setApiError("Could not load reactions. Your previous like is preserved locally.");
+        setApiError("Could not load reactions. Your previous like is preserved.");
       })
       .finally(() => setLoading(false));
   }, [slug]);
