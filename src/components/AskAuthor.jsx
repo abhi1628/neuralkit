@@ -9,7 +9,7 @@ import OutputActions from './OutputActions';
 export default function AskAuthor() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac     = isDark ? '#00ffe0' : '#00897b';
+  const ac     = isDark ? '#a78bfa' : '#7c3aed';
 
   const [question, setQuestion] = useState('');
   const [answer,   setAnswer]   = useState('');
@@ -79,7 +79,7 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
           />
         </div>
         <button onClick={ask} disabled={loading || !question.trim()}
-          style={{ flex: '0 0 auto', background: loading || !question.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '12px 20px', color: loading || !question.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: loading || !question.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", whiteSpace: 'nowrap' }}
+          style={{ flex: '0 0 auto', background: loading || !question.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '12px 20px', color: loading || !question.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: loading || !question.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", whiteSpace: 'nowrap' }}
           aria-label="Ask question">
           {loading ? '...' : 'Ask →'}
         </button>
