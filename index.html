@@ -2,20 +2,157 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- ── Favicon ── -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><circle cx='60' cy='60' r='48' fill='none' stroke='%2300ffe0' stroke-width='4'/><text x='60' y='68' text-anchor='middle' font-family='Arial' font-size='28' font-weight='bold' fill='%2300ffe0'>0</text></svg>" />
+
+    <!-- ── Viewport ── -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ── Primary Meta ── -->
     <title>ZeroAPI — Free AI Tools for Developers & Researchers</title>
-    <meta name="description" content="ZeroAPI: Free, browser-based AI tools. Research Summarizer, Code Explainer, MCQ Generator, Resume Analyzer, Code Playground. No API key. No signup." />
-    <meta name="theme-color" content="#060a0f" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
-    <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.groq.com https://*.vercel.app https://countapi.mileshilliard.com; img-src 'self' data:;">
-    
+    <meta name="description" content="ZeroAPI: Free AI tools for developers, students, and researchers. Research Summarizer, Code Explainer, MCQ Generator, Resume Analyzer, Code Playground. No API key. No signup. Built by Prof. Abhishek Singh." />
+    <meta name="keywords" content="free AI tools, resume analyzer, code explainer, MCQ generator, research summarizer, no signup AI, AI for students, AI for developers, ZeroAPI" />
+    <meta name="author" content="Prof. Abhishek Singh" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- ── Canonical ── -->
+    <link rel="canonical" href="https://zeroapi.in/" />
+
+    <!-- ── Theme Color ── -->
+    <meta name="theme-color" content="#060a0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+
+    <!-- ── Open Graph (Facebook, WhatsApp, LinkedIn) ── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://zeroapi.in/" />
+    <meta property="og:title"       content="ZeroAPI — Free AI Tools for Developers & Researchers" />
+    <meta property="og:description" content="Free AI tools: Resume Analyzer, Research Summarizer, Code Explainer, MCQ Generator, Mock Interview, Code Playground. No API key. No signup. Ever." />
+    <meta property="og:image"       content="https://zeroapi.in/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name"   content="ZeroAPI" />
+    <meta property="og:locale"      content="en_IN" />
+
+    <!-- ── Twitter / X Card ── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:url"         content="https://zeroapi.in/" />
+    <meta name="twitter:title"       content="ZeroAPI — Free AI Tools. No Signup." />
+    <meta name="twitter:description" content="Resume Analyzer, Research Summarizer, Code Explainer, MCQ Generator, Mock Interview — all free, no API key, no login." />
+    <meta name="twitter:image"       content="https://zeroapi.in/og-image.png" />
+    <meta name="twitter:creator"     content="@pyofpython" />
+
+    <!-- ── JSON-LD Structured Data ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://zeroapi.in/#website",
+          "url": "https://zeroapi.in/",
+          "name": "ZeroAPI",
+          "description": "Free AI tools for developers and researchers. No API key. No signup.",
+          "publisher": {
+            "@type": "Person",
+            "name": "Prof. Abhishek Singh",
+            "jobTitle": "Assistant Professor, CSE",
+            "affiliation": "Baderia Global Institute of Engineering and Management",
+            "email": "abhi16.2007@gmail.com",
+            "sameAs": [
+              "https://www.youtube.com/@pyofpython9668",
+              "https://www.linkedin.com/in/abhishek-singh-data-science/"
+            ]
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://zeroapi.in/learn?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://zeroapi.in/#organization",
+          "name": "ZeroAPI",
+          "url": "https://zeroapi.in/",
+          "logo": "https://zeroapi.in/favicon.svg",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "abhi16.2007@gmail.com",
+            "contactType": "customer support",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "ZeroAPI AI Tools",
+          "url": "https://zeroapi.in/",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Web Browser",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "featureList": [
+            "Resume Analyzer and ATS Score",
+            "Research Paper Summarizer",
+            "Code Explainer for C, C++, Java, Python, SQL",
+            "MCQ Generator",
+            "Mock Interview Coach",
+            "Code Playground",
+            "Document Summarizer"
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- ── Content Security Policy (AdSense-compatible) ── -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval'
+        https://www.googletagmanager.com
+        https://www.google-analytics.com
+        https://pagead2.googlesyndication.com
+        https://googleads.g.doubleclick.net
+        https://adservice.google.com
+        https://cdnjs.cloudflare.com
+        https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline'
+        https://fonts.googleapis.com;
+      font-src 'self'
+        https://fonts.gstatic.com;
+      img-src 'self' data: blob:
+        https://www.google-analytics.com
+        https://www.googletagmanager.com
+        https://pagead2.googlesyndication.com
+        https://googleads.g.doubleclick.net;
+      frame-src
+        https://googleads.g.doubleclick.net
+        https://tpc.googlesyndication.com;
+      connect-src 'self'
+        https://api.groq.com
+        https://*.vercel.app
+        https://*.supabase.co
+        https://www.google-analytics.com
+        https://stats.g.doubleclick.net
+        https://pagead2.googlesyndication.com
+        https://adservice.google.com
+        https://countapi.mileshilliard.com;
+    " />
+
+    <!-- ── Google AdSense ── -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5748273843361979"
+         crossorigin="anonymous"></script>
+
+    <!-- ── Google Fonts Preconnect ── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx?v=20250515"></script>
+    <script type="module" src="/src/main.jsx?v=20250524"></script>
   </body>
 </html>
