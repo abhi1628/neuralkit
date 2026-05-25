@@ -1,5 +1,5 @@
 // src/components/TriviaSection.jsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { fireConfetti, fetchWithBackoff } from '../utils';
@@ -10,7 +10,8 @@ export default function TriviaSection() {
   const [selected,   setSelected]   = useState(null);
   const [loading,    setLoading]    = useState(false);
   const [shared,     setShared]     = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  // useRef instead of useState — avoids stale closure in recursive loadTrivia calls
+  const retryCount = useRef(0);
   const [score, setScore] = useState(() => {
     const saved = localStorage.getItem('zeroapi_trivia_score');
     return saved ? JSON.parse(saved) : { score: 0, total: 0 };
@@ -67,13 +68,20 @@ export default function TriviaSection() {
         parsed = JSON.parse(clean);
         if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length !== 4) throw new Error('Invalid');
       } catch {
-        if (retryCount < MAX_RETRIES) { setRetryCount(c => c + 1); setLoading(false); loadTrivia(); return; }
+        // Use ref so retryCount is always current — no stale closure
+        if (retryCount.current < MAX_RETRIES) {
+          retryCount.current += 1;
+          setLoading(false);
+          loadTrivia();
+          return;
+        }
         parsed = { error: true };
       }
-      setTrivia(parsed); setRetryCount(0);
+      retryCount.current = 0;
+      setTrivia(parsed);
     } catch (e) {
-      // fetchWithBackoff already retried on 429 — show error directly
-      setTrivia({ error: true }); setRetryCount(0);
+      retryCount.current = 0;
+      setTrivia({ error: true });
     }
     setLoading(false);
   }
