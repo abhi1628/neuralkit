@@ -129,7 +129,8 @@ function AskAuthorSection() {
 }
 
 // ── About section ─────────────────────────────────────────────
-function AboutSection({ onTermsOpen, currentYear }) {
+function AboutSection({ currentYear }) {
+  const navigate  = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const ac = isDark ? '#a78bfa' : '#7c3aed';
@@ -150,7 +151,7 @@ function AboutSection({ onTermsOpen, currentYear }) {
           style={{ background: '#0077b5', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
           LinkedIn
         </button>
-        <button onClick={onTermsOpen} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '12px 24px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.85rem', cursor: 'pointer' }}>
+        <button onClick={() => navigate('/privacy')} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '12px 24px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.85rem', cursor: 'pointer' }}>
           Terms & Privacy
         </button>
       </div>
@@ -167,7 +168,6 @@ function AppInner() {
   const [activeTool,     setActiveTool]     = useState(0);
   const [activeSection,  setActiveSection]  = useState('ai');
   const [visitorCount,   setVisitorCount]   = useState(null);
-  const [termsOpen,      setTermsOpen]      = useState(false);
   const currentYear = new Date().getFullYear();
 
   useEffect(() => { loadGA(GA_ID); }, []);
@@ -181,7 +181,6 @@ function AppInner() {
     { width: 5,  height: 5,  left: '70%', top: '80%', animationDuration: '10s', animationDelay: '0.5s', opacity: 0.4 },
   ], []);
 
-  const TERMS_TEXT = `TERMS OF USE & PRIVACY POLICY\n\nZeroAPI provides AI-powered tools for educational and research purposes.\n\nData: We do not store, log, or retain any text you enter. All processing is real-time via Groq AI.\n\nPrivacy: No user accounts. No cookies for tracking. No data sold to third parties.\n\nGroq AI: Your inputs are processed by Groq's infrastructure. See groq.com/privacy.\n\nContent: You are responsible for the content you submit. Do not submit sensitive personal data.\n\nLimitations: AI outputs may contain errors. Always verify AI-generated content, especially for professional use.\n\nChanges: These terms may change without notice. Continued use implies acceptance.\n\nContact: Reach us via YouTube @pyofpython or LinkedIn.\n\nLast updated: 2025`;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif", overflowX: 'hidden' }}>
@@ -197,9 +196,8 @@ function AppInner() {
 
       <AskAuthorSection />
       <UserFeedback />
-      <AboutSection onTermsOpen={() => setTermsOpen(true)} currentYear={currentYear} />
+      <AboutSection currentYear={currentYear} />
 
-      {termsOpen && <Modal title="Terms & Privacy" content={TERMS_TEXT} onClose={() => setTermsOpen(false)} />}
       <ScrollToTop />
     </div>
   );
