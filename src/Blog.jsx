@@ -215,10 +215,14 @@ function renderContent(block, i, theme) {
 // ── BlogComments component ────────────────────────────────────
 function BlogComments({ slug, theme }) {
   const isDark = theme === "dark";
+  const LIKE_KEY = `zeroapi_liked_${slug}`;
   const ac = isDark ? "#a78bfa" : "#7c3aed";
 
+  // ── Init liked from localStorage instantly (no flash on refresh) ──
   const [likeCount,  setLikeCount]  = useState(0);
-  const [liked,      setLiked]      = useState(false);
+  const [liked,      setLiked]      = useState(() => {
+    try { return localStorage.getItem(LIKE_KEY) === "true"; } catch { return false; }
+  });
   const [likeAnim,   setLikeAnim]   = useState(false);
   const [comments,   setComments]   = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -229,19 +233,30 @@ function BlogComments({ slug, theme }) {
   const [error,      setError]      = useState("");
   const [success,    setSuccess]    = useState(false);
   const [commentErr, setCommentErr] = useState("");
+  const [apiError,   setApiError]   = useState("");
   const formRef = useRef(null);
 
   // ── Fetch likes + comments ──────────────────────────────────
   useEffect(() => {
     setLoading(true);
+    setApiError("");
     fetch(`/api/blog-reactions?slug=${encodeURIComponent(slug)}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`API error ${r.status}`);
+        return r.json();
+      })
       .then(data => {
         setLikeCount(data.likeCount || 0);
-        setLiked(data.liked || false);
+        // API is source of truth — sync localStorage with server
+        const serverLiked = data.liked || false;
+        setLiked(serverLiked);
+        try { localStorage.setItem(LIKE_KEY, String(serverLiked)); } catch {}
         setComments(data.comments || []);
       })
-      .catch(() => {})
+      .catch(err => {
+        console.error("[ZeroAPI] blog-reactions fetch failed:", err.message);
+        setApiError("Could not load reactions. Your previous like is preserved locally.");
+      })
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -250,6 +265,10 @@ function BlogComments({ slug, theme }) {
     if (liked || liking) return;
     setLiking(true);
     setLikeAnim(true);
+    // Optimistic update immediately
+    setLiked(true);
+    setLikeCount(c => c + 1);
+    try { localStorage.setItem(LIKE_KEY, "true"); } catch {}
     setTimeout(() => setLikeAnim(false), 600);
     try {
       const r = await fetch(`/api/blog-reactions?slug=${encodeURIComponent(slug)}&type=like`, {
@@ -257,10 +276,19 @@ function BlogComments({ slug, theme }) {
       });
       const data = await r.json();
       if (r.ok || r.status === 409) {
+        // Update with real server count
         setLikeCount(data.likeCount ?? likeCount + 1);
         setLiked(true);
+        try { localStorage.setItem(LIKE_KEY, "true"); } catch {}
+      } else {
+        // Revert on failure
+        setLiked(false);
+        setLikeCount(c => Math.max(0, c - 1));
+        try { localStorage.removeItem(LIKE_KEY); } catch {}
       }
-    } catch {}
+    } catch {
+      // Keep optimistic state — like is saved locally even if API fails
+    }
     setLiking(false);
   }
 
@@ -339,6 +367,13 @@ function BlogComments({ slug, theme }) {
           </div>
         </div>
       </div>
+
+      {/* ── API error notice ── */}
+      {apiError && (
+        <div style={{ background: isDark ? "rgba(251,191,36,0.08)" : "rgba(180,83,9,0.06)", border: `1px solid ${isDark ? "rgba(251,191,36,0.2)" : "rgba(180,83,9,0.15)"}`, borderRadius: "10px", padding: "10px 16px", marginBottom: "20px", fontSize: "0.75rem", color: isDark ? "#fbbf24" : "#b45309", fontFamily: "'Space Mono',monospace" }}>
+          ⚠ {apiError}
+        </div>
+      )}
 
       {/* ── Like button ── */}
       <div style={{ marginBottom: "36px" }}>
