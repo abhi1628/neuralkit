@@ -21,7 +21,7 @@ function renderContent(block, i, theme) {
   const isDark = theme === "dark";
   const text   = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
   const muted  = isDark ? "rgba(255,255,255,0.5)"  : "rgba(0,0,0,0.5)";
-  const ac     = "#0891b2";
+  const ac = isDark ? "#a78bfa" : "#7c3aed";
   const border = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   switch (block.type) {
@@ -42,7 +42,7 @@ function renderContent(block, i, theme) {
                   <td style={{ padding: "10px 14px", color: ac, fontWeight: 700, borderBottom: `1px solid ${border}`, whiteSpace: "nowrap" }}>{row.version}</td>
                   <td style={{ padding: "10px 14px", color: text, borderBottom: `1px solid ${border}`, whiteSpace: "nowrap" }}>{row.released}</td>
                   <td style={{ padding: "10px 14px", borderBottom: `1px solid ${border}`, whiteSpace: "nowrap" }}>
-                    <span style={{ background: row.status.includes("Current") ? "rgba(52,211,153,0.12)" : row.status.includes("Active") ? "rgba(0,255,224,0.08)" : "rgba(255,255,255,0.05)", border: `1px solid ${row.status.includes("Current") ? "rgba(52,211,153,0.3)" : row.status.includes("Active") ? `${ac}33` : "rgba(255,255,255,0.1)"}`, borderRadius: "100px", padding: "2px 10px", fontSize: "0.68rem", color: row.status.includes("Current") ? "#34d399" : row.status.includes("Active") ? ac : muted }}>{row.status}</span>
+                    <span style={{ background: row.status.includes("Current") ? "rgba(52,211,153,0.12)" : row.status.includes("Active") ? "rgba(167,139,250,0.08)" : "rgba(255,255,255,0.05)", border: `1px solid ${row.status.includes("Current") ? "rgba(52,211,153,0.3)" : row.status.includes("Active") ? `${ac}33` : "rgba(255,255,255,0.1)"}`, borderRadius: "100px", padding: "2px 10px", fontSize: "0.68rem", color: row.status.includes("Current") ? "#34d399" : row.status.includes("Active") ? ac : muted }}>{row.status}</span>
                   </td>
                   <td style={{ padding: "10px 14px", color: text, borderBottom: `1px solid ${border}`, lineHeight: 1.5 }}>{row.highlight}</td>
                 </tr>
@@ -108,7 +108,7 @@ function renderContent(block, i, theme) {
 
     case "callout":
       return (
-        <div key={i} style={{ background: isDark ? "rgba(0,255,224,0.06)" : "rgba(0,137,123,0.06)", border: `1px solid ${ac}33`, borderRadius: "12px", padding: "18px 22px", margin: "28px 0", display: "flex", gap: "14px", alignItems: "flex-start" }}>
+        <div key={i} style={{ background: isDark ? "rgba(167,139,250,0.06)" : "rgba(124,58,237,0.06)", border: `1px solid ${ac}33`, borderRadius: "12px", padding: "18px 22px", margin: "28px 0", display: "flex", gap: "14px", alignItems: "flex-start" }}>
           <span style={{ fontSize: "1.3rem", flexShrink: 0 }}>{block.icon}</span>
           <p style={{ fontSize: "0.92rem", color: text, lineHeight: 1.75, margin: 0 }}>{block.text}</p>
         </div>
@@ -188,7 +188,7 @@ function renderContent(block, i, theme) {
 
     case "checklist":
       return (
-        <div key={i} style={{ margin: "24px 0", background: isDark ? "rgba(0,255,224,0.03)" : "rgba(0,137,123,0.04)", border: `1px solid ${ac}22`, borderRadius: "14px", padding: "20px 22px" }}>
+        <div key={i} style={{ margin: "24px 0", background: isDark ? "rgba(167,139,250,0.03)" : "rgba(124,58,237,0.04)", border: `1px solid ${ac}22`, borderRadius: "14px", padding: "20px 22px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {block.items.map((item, j) => (
               <div key={j} style={{ display: "flex", gap: "10px", alignItems: "flex-start", fontSize: "0.85rem", color: text, lineHeight: 1.6 }}>
@@ -202,7 +202,7 @@ function renderContent(block, i, theme) {
     case "cta":
       return (
         <div key={i} style={{ margin: "32px 0", textAlign: "center" }}>
-          <a href={block.href} style={{ display: "inline-block", background: "linear-gradient(135deg,#00ffe0,#0af)", color: "#000", fontWeight: 700, fontSize: "0.95rem", padding: "14px 32px", borderRadius: "12px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>{block.text}</a>
+          <a href={block.href} style={{ display: "inline-block", background: "linear-gradient(135deg,#a78bfa,#0af)", color: "#000", fontWeight: 700, fontSize: "0.95rem", padding: "14px 32px", borderRadius: "12px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>{block.text}</a>
           {block.note && <div style={{ marginTop: "10px", fontSize: "0.75rem", color: muted, fontFamily: "'Space Mono',monospace" }}>{block.note}</div>}
         </div>
       );
@@ -215,7 +215,7 @@ function renderContent(block, i, theme) {
 // ── BlogComments component ────────────────────────────────────
 function BlogComments({ slug, theme }) {
   const isDark = theme === "dark";
-  const ac     = "#0891b2";
+  const ac = isDark ? "#a78bfa" : "#7c3aed";
 
   const [likeCount,  setLikeCount]  = useState(0);
   const [liked,      setLiked]      = useState(false);
@@ -458,7 +458,7 @@ function BlogComments({ slug, theme }) {
                 alignSelf: "flex-start",
                 background: submitting || !message.trim()
                   ? (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)")
-                  : "linear-gradient(135deg,#00ffe0,#0af)",
+                  : "linear-gradient(135deg,#a78bfa,#0af)",
                 border: "none",
                 borderRadius: "10px",
                 padding: "10px 24px",
@@ -529,12 +529,12 @@ function BlogComments({ slug, theme }) {
 export function BlogList({ theme }) {
   const navigate = useNavigate();
   const isDark = theme === "dark";
-  const ac = "#0891b2";
+  const ac = isDark ? "#a78bfa" : "#7c3aed";
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: isDark ? "#060a0f" : "#f5f5f5", width: "100%" }}>
+    <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", width: "100%" }}>
       <div style={{ maxWidth: "860px", margin: "0 auto", padding: "80px 24px 100px" }}>
         <button onClick={() => navigate("/")} style={{ background: "transparent", border: "none", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", marginBottom: "48px", display: "flex", alignItems: "center", gap: "6px", padding: 0 }}>
           ← Back to ZeroAPI
@@ -584,17 +584,17 @@ export function BlogPost({ theme }) {
   const { slug }   = useParams();
   const navigate   = useNavigate();
   const isDark     = theme === "dark";
-  const ac         = "#0891b2";
+  const ac         = isDark ? "#a78bfa" : "#7c3aed";
   const post       = BLOG_POSTS.find(p => p.slug === slug);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
   if (!post) {
     return (
-      <div style={{ minHeight: "100vh", background: isDark ? "#060a0f" : "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
+      <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
         <div style={{ fontSize: "3rem" }}>📭</div>
         <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>Article not found</div>
-        <button onClick={() => navigate("/learn")} style={{ background: "linear-gradient(135deg,#00ffe0,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>← Back to Learn</button>
+        <button onClick={() => navigate("/learn")} style={{ background: "linear-gradient(135deg,#a78bfa,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>← Back to Learn</button>
       </div>
     );
   }
@@ -609,7 +609,7 @@ export function BlogPost({ theme }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: isDark ? "#060a0f" : "#f5f5f5", width: "100%" }}>
+    <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", width: "100%" }}>
 
       {/* ── Article Header ── */}
       <div style={{ background: isDark ? "rgba(255,255,255,0.018)" : "rgba(0,0,0,0.02)", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
@@ -652,15 +652,15 @@ export function BlogPost({ theme }) {
         </div>
 
         {/* Related tools CTA */}
-        <div style={{ marginTop: "40px", background: isDark ? "rgba(0,255,224,0.04)" : "rgba(0,137,123,0.05)", border: "1px solid rgba(0,255,224,0.15)", borderRadius: "16px", padding: "28px 32px" }}>
+        <div style={{ marginTop: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: "16px", padding: "28px 32px" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
             <div style={{ fontSize: "1.8rem", lineHeight: 1, flexShrink: 0 }}>📋</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.05rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "6px", textAlign: "left" }}>Try Our Free Resume Tools</div>
               <p style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "16px", lineHeight: 1.6, textAlign: "left" }}>Analyze your resume for ATS score, get expert feedback, and build an improved version — free, no signup needed.</p>
               <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <a href="/#tools" style={{ background: "linear-gradient(135deg,#00ffe0,#0af)", color: "#000", fontWeight: 700, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Analyzer →</a>
-                <a href="/#tools" style={{ background: "transparent", border: "1px solid rgba(0,255,224,0.3)", color: ac, fontWeight: 500, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Builder →</a>
+                <a href="/#tools" style={{ background: "linear-gradient(135deg,#a78bfa,#0af)", color: "#000", fontWeight: 700, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Analyzer →</a>
+                <a href="/#tools" style={{ background: "transparent", border: "1px solid rgba(167,139,250,0.3)", color: ac, fontWeight: 500, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Builder →</a>
               </div>
             </div>
           </div>
