@@ -7,7 +7,7 @@ import { fetchWithBackoff } from '../utils';
 export default function InterviewCoach() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac = isDark ? '#00ffe0' : '#00897b';
+  const ac = isDark ? '#a78bfa' : '#7c3aed';
 
   const [step,      setStep]      = useState('setup');
   const [role,      setRole]      = useState(INTERVIEW_ROLES[0]);
@@ -93,17 +93,17 @@ export default function InterviewCoach() {
 
   if (step === 'report') {
     const avg = (results.reduce((a, r) => a + r.score, 0) / results.length).toFixed(1);
-    const grade = avg >= 8 ? { label: 'Excellent', color: '#00ffe0' } : avg >= 6 ? { label: 'Good', color: '#34d399' } : avg >= 4 ? { label: 'Average', color: '#febc2e' } : { label: 'Needs Work', color: '#ff6b6b' };
+    const grade = avg >= 8 ? { label: 'Excellent', color: '#a78bfa' } : avg >= 6 ? { label: 'Good', color: '#34d399' } : avg >= 4 ? { label: 'Average', color: '#febc2e' } : { label: 'Needs Work', color: '#ff6b6b' };
     return (
       <div ref={topRef} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ background: 'rgba(0,255,224,0.04)', border: '1px solid rgba(0,255,224,0.2)', borderRadius: '14px', padding: '24px', textAlign: 'center' }}>
+        <div style={{ background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '14px', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.65rem', color: ac, marginBottom: '8px' }}>◆ INTERVIEW COMPLETE</div>
           <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: "'Syne',sans-serif", color: grade.color }}>{avg}<span style={{ fontSize: '1.2rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>/10</span></div>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.85rem', color: grade.color, marginBottom: '4px' }}>{grade.label}</div>
           <div style={{ fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)' }}>{role} · {level}</div>
         </div>
         {results.map((r, i) => {
-          const sc = r.score >= 7 ? '#00ffe0' : r.score >= 5 ? '#febc2e' : '#ff6b6b';
+          const sc = r.score >= 7 ? '#a78bfa' : r.score >= 5 ? '#febc2e' : '#ff6b6b';
           return (
             <div key={i} style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', gap: '10px' }}>
@@ -133,7 +133,7 @@ export default function InterviewCoach() {
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.9rem', color: timerColor, fontWeight: 700 }}>⏱ {String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}</div>
       </div>
       <div style={{ height: '4px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', borderRadius: '2px' }}>
-        <div style={{ width: `${((qNum + 1) / questions.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #00ffe0, #0af)', borderRadius: '2px', transition: 'width 0.4s' }} />
+        <div style={{ width: `${((qNum + 1) / questions.length) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #a78bfa, #818cf8)', borderRadius: '2px', transition: 'width 0.4s' }} />
       </div>
       <div style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '20px' }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.65rem', color: ac, marginBottom: '10px' }}>◆ INTERVIEWER ASKS</div>
@@ -172,7 +172,7 @@ export default function InterviewCoach() {
           ))}
         </div>
       </div>
-      <div style={{ background: isDark ? 'rgba(0,255,224,0.04)' : 'rgba(0,137,123,0.04)', border: `1px solid ${isDark ? 'rgba(0,255,224,0.12)' : 'rgba(0,137,123,0.15)'}`, borderRadius: '12px', padding: '16px' }}>
+      <div style={{ background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.12)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '16px' }}>
         <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.65rem', color: ac, marginBottom: '8px' }}>◆ WHAT TO EXPECT</div>
         {[`${TOTAL_Q} questions tailored to ${role}`, '2 minutes per question with countdown timer', 'AI scores each answer and gives detailed feedback', 'Final report card with improvement tips'].map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '6px' }}>

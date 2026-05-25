@@ -32,7 +32,7 @@ const tableW = () => MIN_W + 60;
 export default function SchemaVisualizer() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac = isDark ? '#00ffe0' : '#00897b';
+  const ac = isDark ? '#a78bfa' : '#7c3aed';
 
   const [sql,      setSql]      = useState('');
   const [tables,   setTables]   = useState([]);
@@ -123,7 +123,7 @@ export default function SchemaVisualizer() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? ac : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: fileName ? (isDark ? 'rgba(0,255,224,0.04)' : 'rgba(0,137,123,0.04)') : 'transparent', transition: 'all 0.2s' }}>
+      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? ac : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: fileName ? (isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)') : 'transparent', transition: 'all 0.2s' }}>
         <input ref={fileRef} type="file" accept=".sql,.txt" style={{ display: 'none' }} onChange={handleSqlFile} />
         <span style={{ fontSize: '1.4rem' }}>{fileName ? '📄' : '⬆️'}</span>
         <div>
@@ -181,7 +181,7 @@ export default function SchemaVisualizer() {
       )}
       {tables.length > 0 && (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {tables.map(t => <span key={t.name} style={{ background: isDark ? 'rgba(0,255,224,0.08)' : 'rgba(0,137,123,0.08)', border: `1px solid ${ac}33`, borderRadius: '100px', padding: '3px 12px', fontFamily: "'Space Mono',monospace", fontSize: '0.68rem', color: ac }}>{t.name} ({t.cols.length} cols)</span>)}
+          {tables.map(t => <span key={t.name} style={{ background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.08)', border: `1px solid ${ac}33`, borderRadius: '100px', padding: '3px 12px', fontFamily: "'Space Mono',monospace", fontSize: '0.68rem', color: ac }}>{t.name} ({t.cols.length} cols)</span>)}
         </div>
       )}
     </div>

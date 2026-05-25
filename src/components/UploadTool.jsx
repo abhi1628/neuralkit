@@ -245,12 +245,12 @@ export default function UploadTool({ prompt, filename, icon, label }) {
                   style={{ flex: 1, minWidth: '200px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#1a1a1a', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem', outline: 'none' }}
                 />
                 <button onClick={askFollowUp} disabled={qaLoading || !followUpQuestion.trim()}
-                  style={{ background: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: qaLoading || !followUpQuestion.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  style={{ background: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: qaLoading || !followUpQuestion.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {qaLoading ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
                 </button>
               </div>
               {qaAnswer && (
-                <div style={{ marginTop: '16px', background: isDark ? 'rgba(0,255,224,0.04)' : 'rgba(0,137,123,0.04)', border: `1px solid ${isDark ? 'rgba(0,255,224,0.15)' : 'rgba(0,137,123,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
+                <div style={{ marginTop: '16px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
                   <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: ac, marginBottom: '12px', letterSpacing: '0.1em' }}>◆ ANSWER WITH CITATIONS</div>
                   {qaAnswer.split('\n').map((line, i) => <div key={i} style={{ marginBottom: line.trim() === '' ? '12px' : '6px' }}>{line}</div>)}
                 </div>

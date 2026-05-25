@@ -10,7 +10,7 @@ import InterviewCoach from './InterviewCoach';
 export default function DevToolsPanel() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac = isDark ? '#00ffe0' : '#00897b';
+  const ac = isDark ? '#a78bfa' : '#7c3aed';
   const [active, setActive] = useState(0);
   const info = DEV_TOOLS[active];
 

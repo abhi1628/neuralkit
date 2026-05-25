@@ -55,12 +55,12 @@ export default function ResumeBuilderTool() {
   const grid2  = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' };
   const cardStyle = { background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '16px' };
   const removeBtn = (onClick) => <button onClick={onClick} style={{ background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.3)', borderRadius: '6px', padding: '3px 10px', color: '#ff6b6b', fontSize: '0.72rem', cursor: 'pointer' }}>Remove</button>;
-  const addBtn = (onClick, text) => <button onClick={onClick} style={{ background: 'rgba(0,255,224,0.06)', border: `1px dashed ${ac}`, borderRadius: '10px', padding: '10px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.75rem', cursor: 'pointer', width: '100%' }}>{text}</button>;
+  const addBtn = (onClick, text) => <button onClick={onClick} style={{ background: 'rgba(167,139,250,0.06)', border: `1px dashed ${ac}`, borderRadius: '10px', padding: '10px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.75rem', cursor: 'pointer', width: '100%' }}>{text}</button>;
 
   const navBtns = (canNext = true) => (
     <div style={{ display: 'flex', gap: '12px', marginTop: '24px', paddingTop: '16px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
       {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '10px 20px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.85rem', cursor: 'pointer' }}>← Back</button>}
-      <button onClick={() => setStep(s => s + 1)} disabled={!canNext} style={{ background: canNext ? 'linear-gradient(135deg, #00ffe0, #0af)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 24px', color: canNext ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: canNext ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace" }}>Next →</button>
+      <button onClick={() => setStep(s => s + 1)} disabled={!canNext} style={{ background: canNext ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 24px', color: canNext ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: canNext ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace" }}>Next →</button>
     </div>
   );
 
@@ -169,7 +169,7 @@ export default function ResumeBuilderTool() {
         ))}
       </div>
       <div style={{ height: '3px', background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
-        <div style={{ width: `${((step) / (STEPS.length - 1)) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #00ffe0, #0af)', transition: 'width 0.4s' }} />
+        <div style={{ width: `${((step) / (STEPS.length - 1)) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #a78bfa, #818cf8)', transition: 'width 0.4s' }} />
       </div>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, marginTop: '8px' }}>Step {step + 1} of {STEPS.length}: {STEPS[step]}</div>
     </div>
@@ -178,7 +178,7 @@ export default function ResumeBuilderTool() {
   // ── Done Screen ───────────────────────────────────────────────
   if (step === 7 && resumeData) return (
     <div ref={topRef} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ background: 'rgba(0,255,224,0.04)', border: '1px solid rgba(0,255,224,0.2)', borderRadius: '14px', padding: '24px' }}>
+      <div style={{ background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '14px', padding: '24px' }}>
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px' }}>✅ RESUME READY</div>
         <div style={{ fontSize: '1.05rem', fontWeight: 700, color: isDark ? '#fff' : '#0f172a', marginBottom: '4px' }}>{resumeData.name}</div>
         <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.45)' : '#64748b', fontFamily: "'Space Mono', monospace", marginBottom: '18px' }}>
@@ -188,7 +188,7 @@ export default function ResumeBuilderTool() {
           ⚠ Review carefully before sending to employers. AI-generated content may need adjustments.
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button onClick={downloadPdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={downloadPdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
             {downloadingPdf ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Building...</> : '⬇ Download PDF'}
           </button>
           <button onClick={() => { setStep(0); setResumeData(null); setBuildError(''); setAgreed(false); setData(BLANK_DATA()); }} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '10px 16px', color: isDark ? 'rgba(255,255,255,0.5)' : '#334155', fontSize: '0.82rem', cursor: 'pointer' }}>↺ Build New Resume</button>
@@ -356,7 +356,7 @@ export default function ResumeBuilderTool() {
         {buildError && <div className="error-box">⚠ {buildError}</div>}
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => setStep(5)} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '10px 20px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.85rem', cursor: 'pointer' }}>← Back</button>
-          <button onClick={generate} disabled={!agreed || generating} style={{ background: agreed && !generating ? 'linear-gradient(135deg, #00ffe0, #0af)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 28px', color: agreed && !generating ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: agreed && !generating ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={generate} disabled={!agreed || generating} style={{ background: agreed && !generating ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 28px', color: agreed && !generating ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: agreed && !generating ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
             {generating ? <><span className="spinner" style={{ width: '14px', height: '14px' }} />Generating Resume...</> : '✨ Generate My Resume →'}
           </button>
         </div>

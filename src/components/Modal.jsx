@@ -14,7 +14,7 @@ export default function Modal({ title, content, onClose }) {
         <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', lineHeight: 1.8, whiteSpace: 'pre-line' }}>{content}</div>
         <button
           onClick={onClose}
-          style={{ marginTop: '20px', background: 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '8px', padding: '10px 20px', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+          style={{ marginTop: '20px', background: isDark ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', border: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
           aria-label="Close modal"
         >
           Close

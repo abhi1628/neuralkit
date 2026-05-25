@@ -103,7 +103,7 @@ export default function CodePlayground() {
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
         {LANGUAGES.map(l => (
           <button key={l.value} onClick={() => switchLang(l)}
-            style={{ background: lang.value === l.value ? 'linear-gradient(135deg, #00ffe0, #0af)' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'), border: lang.value === l.value ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '100px', padding: '8px 18px', color: lang.value === l.value ? '#000' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.7)'), fontFamily: "'Space Mono', monospace", fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: lang.value === l.value ? '0 0 16px rgba(0,255,224,0.3)' : 'none' }}
+            style={{ background: lang.value === l.value ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'), border: lang.value === l.value ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '100px', padding: '8px 18px', color: lang.value === l.value ? '#000' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.7)'), fontFamily: "'Space Mono', monospace", fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: lang.value === l.value ? '0 0 16px rgba(167,139,250,0.3)' : 'none' }}
             aria-label={`Switch to ${l.label}`}>
             {l.icon} {l.label}
           </button>
@@ -124,7 +124,7 @@ export default function CodePlayground() {
               <button key={b.label} onClick={b.action} style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '8px', padding: '6px 14px', color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer' }}>{b.label}</button>
             ))}
             <button onClick={runCode} disabled={running}
-              style={{ background: running ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '8px', padding: '6px 20px', color: running ? 'var(--text-muted)' : '#000', fontFamily: "'Space Mono', monospace", fontSize: '0.78rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ background: running ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '8px', padding: '6px 20px', color: running ? 'var(--text-muted)' : '#000', fontFamily: "'Space Mono', monospace", fontSize: '0.78rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               aria-label="Run code">
               {running ? <><span className="spinner" style={{ width: '10px', height: '10px' }} />Running...</> : '▶ Run'}
             </button>
@@ -145,9 +145,9 @@ export default function CodePlayground() {
             <div style={{ padding: '10px 20px', background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: runError ? '#ff6b6b' : ac, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{runError ? '⚠ Error' : '◆ Output'}</span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); }} style={{ background: 'rgba(0,255,224,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
+                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); }} style={{ background: 'rgba(167,139,250,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
                 <button onClick={explainCode} disabled={explaining}
-                  style={{ background: explaining ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'rgba(0,255,224,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: explaining ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: explaining ? 'not-allowed' : 'pointer' }}>
+                  style={{ background: explaining ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: explaining ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: explaining ? 'not-allowed' : 'pointer' }}>
                   {explaining ? 'Explaining...' : '🧠 Ask AI to Explain'}
                 </button>
               </div>
@@ -161,7 +161,7 @@ export default function CodePlayground() {
 
       {/* AI Explanation */}
       {explanation && (
-        <div style={{ marginTop: '20px', background: 'rgba(0,255,224,0.03)', border: `1px solid ${ac}1F`, borderRadius: '16px', padding: '24px 28px' }}>
+        <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.03)', border: `1px solid ${ac}1F`, borderRadius: '16px', padding: '24px 28px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '20px', paddingBottom: '12px', borderBottom: `1px solid ${ac}1A` }}>🧠 AI Explanation</div>
           {formatExplanation(explanation)}
           <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(''); setOutput(''); setRunError(false); }} />
@@ -178,7 +178,7 @@ export default function CodePlayground() {
           <span style={{ color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.25)' }}>·</span>
           <span>Standard library only</span>
           <span style={{ color: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.25)' }}>·</span>
-          <span onClick={() => window.open('https://colab.research.google.com', '_blank', 'noopener,noreferrer')} style={{ color: isDark ? '#00ffe0' : '#00897b', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px', fontWeight: 600 }}>Use Colab for ML/DL</span>
+          <span onClick={() => window.open('https://colab.research.google.com', '_blank', 'noopener,noreferrer')} style={{ color: isDark ? '#a78bfa' : '#7c3aed', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px', fontWeight: 600 }}>Use Colab for ML/DL</span>
         </div>
       </div>
     </section>

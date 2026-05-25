@@ -10,7 +10,7 @@ Apr,74000,32000,42000
 May,69000,29000,40000
 Jun,82000,38000,44000`;
 
-const COLORS = ['#00ffe0','#0af','#a78bfa','#f59e0b','#f87171','#34d399','#fb923c','#60a5fa','#e879f9','#4ade80'];
+const COLORS = ['#a78bfa','#818cf8','#a78bfa','#f59e0b','#f87171','#34d399','#fb923c','#60a5fa','#e879f9','#4ade80'];
 
 const CHART_TYPES = [
   { id: 'bar',     label: 'Bar',     icon: '▬' },
@@ -27,7 +27,7 @@ const CHART_TYPES = [
 export default function CsvVisualizer() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac = isDark ? '#00ffe0' : '#00897b';
+  const ac = isDark ? '#a78bfa' : '#7c3aed';
 
   const [csv,       setCsv]       = useState('');
   const [headers,   setHeaders]   = useState([]);
@@ -193,7 +193,7 @@ export default function CsvVisualizer() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? ac : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: fileName ? (isDark ? 'rgba(0,255,224,0.04)' : 'rgba(0,137,123,0.04)') : 'transparent', transition: 'all 0.2s' }}>
+      <div onClick={() => fileRef.current?.click()} style={{ border: `2px dashed ${fileName ? ac : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '12px', padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', background: fileName ? (isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)') : 'transparent', transition: 'all 0.2s' }}>
         <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={handleCsvFile} />
         <span style={{ fontSize: '1.4rem' }}>{fileName ? '📊' : '⬆️'}</span>
         <div>

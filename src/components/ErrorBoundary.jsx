@@ -12,7 +12,7 @@ export default class ErrorBoundary extends React.Component {
           <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️</div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.5rem', marginBottom: '12px' }}>Something went wrong</h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '24px' }}>Please refresh the page to continue.</p>
-          <button onClick={() => window.location.reload()} style={{ background: 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#000', fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={() => window.location.reload()} style={{ background: isDark ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', border: 'none', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
             Refresh Page
           </button>
         </div>

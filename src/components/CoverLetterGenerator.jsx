@@ -77,7 +77,7 @@ export default function CoverLetterGenerator({ resumeData, jobDescription }) {
   );
 
   return (
-    <div style={{ marginTop: '20px', background: 'rgba(0,255,224,0.04)', border: '1px solid rgba(0,255,224,0.15)', borderRadius: '14px', padding: '20px 24px' }}>
+    <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: '14px', padding: '20px 24px' }}>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '10px' }}>◆ COVER LETTER GENERATOR</div>
       <p style={{ color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', fontSize: '0.9rem', marginBottom: '16px', lineHeight: 1.6 }}>Generate a tailored cover letter using your resume and a job description.</p>
       <div style={{ marginBottom: '14px' }}>
@@ -95,7 +95,7 @@ export default function CoverLetterGenerator({ resumeData, jobDescription }) {
       </div>
       {error && <div className="error-box" style={{ marginBottom: '12px' }}>⚠ {error}</div>}
       <button onClick={generate} disabled={loading || !jobDesc.trim()}
-        style={{ background: loading || !jobDesc.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: loading || !jobDesc.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: loading || !jobDesc.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
+        style={{ background: loading || !jobDesc.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: loading || !jobDesc.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: loading || !jobDesc.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
         {loading ? <><span className="spinner" />Generating...</> : '✨ Generate Cover Letter →'}
       </button>
     </div>

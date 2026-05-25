@@ -6,7 +6,7 @@ import { escapeHtml } from '../utils';
 export default function UserFeedback() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const ac     = isDark ? '#00ffe0' : '#00897b';
+  const ac     = isDark ? '#a78bfa' : '#7c3aed';
 
   const [name,             setName]             = useState('');
   const [comment,          setComment]          = useState('');
@@ -89,7 +89,7 @@ export default function UserFeedback() {
               aria-label="Your feedback" />
             {error && <div style={{ color: '#ff6b6b', fontSize: '0.78rem', fontFamily: "'Space Mono',monospace" }}>⚠ {error}</div>}
             <button onClick={submitFeedback} disabled={rating === 0 || submitting}
-              style={{ alignSelf: 'flex-start', background: rating === 0 || submitting ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg,#00ffe0,#0af)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: rating === 0 || submitting ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: rating === 0 || submitting ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono',monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ alignSelf: 'flex-start', background: rating === 0 || submitting ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg,#a78bfa,#818cf8)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: rating === 0 || submitting ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: rating === 0 || submitting ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono',monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
               aria-label="Submit feedback">
               {submitting ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Submitting...</> : 'Submit Feedback →'}
             </button>

@@ -10,7 +10,7 @@ export default function WordCounter({ text, limit }) {
   const barColor = () => {
     if (pct >= 100) return '#ff6b6b';
     if (pct >= 80)  return theme === 'dark' ? '#febc2e' : '#d97706';
-    if (words > 0)  return theme === 'dark' ? '#00ffe0' : '#0a6b5e';
+    if (words > 0)  return theme === 'dark' ? '#a78bfa' : '#5b21b6';
     return theme === 'dark' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.4)';
   };
 

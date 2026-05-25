@@ -126,10 +126,10 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
   }
 
   if (step === 'prompt') return (
-    <div style={{ marginTop: '20px', background: 'rgba(0,255,224,0.04)', border: '1px solid rgba(0,255,224,0.15)', borderRadius: '14px', padding: '20px 24px' }}>
+    <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: '14px', padding: '20px 24px' }}>
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '10px' }}>◆ NEXT STEP</div>
       <p style={{ color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)', fontSize: '0.9rem', marginBottom: '16px', lineHeight: 1.6 }}>Want to build an <strong>improved, ATS-optimized resume</strong> based on this analysis?</p>
-      <button onClick={() => setStep('disclaimer')} style={{ background: 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Space Mono', monospace" }}>✨ Build Improved Resume →</button>
+      <button onClick={() => setStep('disclaimer')} style={{ background: 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 24px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: "'Space Mono', monospace" }}>✨ Build Improved Resume →</button>
     </div>
   );
 
@@ -149,14 +149,14 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
         <span style={{ fontSize: '0.85rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)', fontWeight: 500 }}>I understand and agree to proceed</span>
       </label>
       <div style={{ display: 'flex', gap: '12px' }}>
-        <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? 'linear-gradient(135deg, #00ffe0, #0af)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 24px', color: agreed ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: agreed ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace" }}>Generate Resume →</button>
+        <button onClick={generateResume} disabled={!agreed} style={{ background: agreed ? 'linear-gradient(135deg, #a78bfa, #818cf8)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'), border: 'none', borderRadius: '10px', padding: '10px 24px', color: agreed ? '#000' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), fontWeight: 700, fontSize: '0.85rem', cursor: agreed ? 'pointer' : 'not-allowed', fontFamily: "'Space Mono', monospace" }}>Generate Resume →</button>
         <button onClick={() => { setStep('prompt'); setAgreed(false); }} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '10px 20px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '0.85rem', cursor: 'pointer' }}>Cancel</button>
       </div>
     </div>
   );
 
   if (step === 'generating') return (
-    <div style={{ marginTop: '20px', background: 'rgba(0,255,224,0.04)', border: '1px solid rgba(0,255,224,0.15)', borderRadius: '14px', padding: '32px 24px', textAlign: 'center' }}>
+    <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.04)', border: '1px solid rgba(167,139,250,0.15)', borderRadius: '14px', padding: '32px 24px', textAlign: 'center' }}>
       <span className="spinner" style={{ width: '20px', height: '20px', display: 'block', margin: '0 auto 14px' }} />
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.85rem', color: ac }}>Generating your improved resume...</div>
       <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginTop: '8px' }}>This may take 10–20 seconds</div>
@@ -186,7 +186,7 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
         ⚠ Review all content before sending. AI may not capture every nuance of your experience.
       </div>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #00ffe0, #0af)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
           {downloadingPdf ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Building...</> : '⬇ Download PDF'}
         </button>
         <button onClick={() => { setStep('prompt'); setResumeData(null); setBuildError(''); setAgreed(false); }} style={{ background: 'transparent', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '10px 16px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '0.82rem', cursor: 'pointer' }}>↺ Regenerate</button>

@@ -107,7 +107,7 @@ export default function TriviaSection() {
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.2em', textTransform: 'uppercase' }}>◆ Daily AI Trivia</div>
           {score.total > 0 && (
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', background: 'rgba(0,255,224,0.1)', border: `1px solid ${ac}33`, borderRadius: '100px', padding: '3px 12px', color: ac }}>Score: {score.score}/{score.total}</div>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', background: 'rgba(167,139,250,0.1)', border: `1px solid ${ac}33`, borderRadius: '100px', padding: '3px 12px', color: ac }}>Score: {score.score}/{score.total}</div>
               <button onClick={shareScore} className="share-score-btn" aria-label="Copy score">{shared ? 'Copied!' : 'Share Score'}</button>
             </div>
           )}
@@ -124,14 +124,14 @@ export default function TriviaSection() {
                 let border = `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`;
                 let color = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
                 if (selected) {
-                  if (correct)      { bg = 'rgba(0,255,224,0.12)'; border = `1px solid ${ac}`; color = ac; }
+                  if (correct)      { bg = 'rgba(167,139,250,0.12)'; border = `1px solid ${ac}`; color = ac; }
                   else if (isThis)  { bg = 'rgba(255,80,80,0.1)';  border = '1px solid #ff6b6b'; color = '#ff6b6b'; }
                 }
                 return <button key={opt} onClick={() => handleAnswer(opt)} style={{ background: bg, border, borderRadius: '10px', padding: '14px 16px', color, fontSize: '0.85rem', cursor: selected ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif", textAlign: 'left', transition: 'all 0.2s' }}>{opt}</button>;
               })}
             </div>
             {selected && (
-              <div style={{ background: isCorrect ? 'rgba(0,255,224,0.06)' : 'rgba(255,180,0,0.06)', border: `1px solid ${isCorrect ? `${ac}33` : 'rgba(255,180,0,0.2)'}`, borderRadius: '12px', padding: '16px', marginBottom: '20px', fontSize: '0.85rem', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)', lineHeight: 1.7 }}>
+              <div style={{ background: isCorrect ? 'rgba(167,139,250,0.06)' : 'rgba(255,180,0,0.06)', border: `1px solid ${isCorrect ? `${ac}33` : 'rgba(255,180,0,0.2)'}`, borderRadius: '12px', padding: '16px', marginBottom: '20px', fontSize: '0.85rem', color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)', lineHeight: 1.7 }}>
                 {isCorrect ? 'Correct! ' : `Not quite. Answer: ${trivia.answer}. `}{trivia.fact}
               </div>
             )}
