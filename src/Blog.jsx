@@ -1,34 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
- 
-import atsResume from "./posts/ats-resume-2026";
-import python from "./posts/python-312-313-314-differences";
-import gitGuide from "./posts/git-github-first-job";
-import systemDesign from "./posts/system-design-interview-patterns";
-import aiCoding from "./posts/ai-coding-assistants-2026";
-import sqlWindow from "./posts/sql-window-functions-ctes-2026";
-import ciscoIdeathon from "./posts/cisco-ideathon-2026";
-import modelSwapping from "./posts/model-swapping-ai-engineering-2026";
+
+import atsResume       from "./posts/ats-resume-2026";
+import python          from "./posts/python-312-313-314-differences";
+import gitGuide        from "./posts/git-github-first-job";
+import systemDesign    from "./posts/system-design-interview-patterns";
+import aiCoding        from "./posts/ai-coding-assistants-2026";
+import sqlWindow       from "./posts/sql-window-functions-ctes-2026";
+import ciscoIdeathon   from "./posts/cisco-ideathon-2026";
+import modelSwapping   from "./posts/model-swapping-ai-engineering-2026";
 import fullstackRoadmap from "./posts/fullstack-roadmap-2026";
- 
+
 export const BLOG_POSTS = [
-  atsResume,
-  python,
-  gitGuide,
-  systemDesign,
-  aiCoding,
-  sqlWindow,
-  ciscoIdeathon,
-  modelSwapping,
-  fullstackRoadmap,
+  atsResume, python, gitGuide, systemDesign, aiCoding,
+  sqlWindow, ciscoIdeathon, modelSwapping, fullstackRoadmap,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-// ── Blog Components ───────────────────────────────────────────
+// ── renderContent (unchanged) ─────────────────────────────────
 function renderContent(block, i, theme) {
   const isDark = theme === "dark";
-  const text = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
-  const muted = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
-  const ac = "#0891b2";
+  const text   = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
+  const muted  = isDark ? "rgba(255,255,255,0.5)"  : "rgba(0,0,0,0.5)";
+  const ac     = "#0891b2";
   const border = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
 
   switch (block.type) {
@@ -38,7 +31,7 @@ function renderContent(block, i, theme) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Space Mono',monospace", fontSize: "0.75rem" }}>
             <thead>
               <tr>
-                {["Version", "Released", "Status", "Key Highlights"].map(h => (
+                {["Version","Released","Status","Key Highlights"].map(h => (
                   <th key={h} style={{ padding: "10px 14px", textAlign: "left", background: isDark ? "#1f2937" : "#f0fdfa", color: ac, borderBottom: `2px solid ${ac}33`, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
@@ -182,7 +175,7 @@ function renderContent(block, i, theme) {
       return (
         <div key={i} style={{ margin: "24px 0", display: "flex", flexDirection: "column", gap: "12px" }}>
           {block.items.map((item, j) => (
-            <div key={j} style={{ display: "flex", gap: "14px", alignItems: "flex-start", background: isDark ? "rgba(248,113,113,0.04)" : "rgba(248,113,113,0.04)", border: "1px solid rgba(248,113,113,0.15)", borderRadius: "10px", padding: "14px 16px" }}>
+            <div key={j} style={{ display: "flex", gap: "14px", alignItems: "flex-start", background: "rgba(248,113,113,0.04)", border: "1px solid rgba(248,113,113,0.15)", borderRadius: "10px", padding: "14px 16px" }}>
               <span style={{ color: "#f87171", fontSize: "1rem", flexShrink: 0, marginTop: "1px" }}>✗</span>
               <div>
                 <div style={{ fontWeight: 700, fontSize: "0.88rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "4px" }}>{item.title}</div>
@@ -219,6 +212,319 @@ function renderContent(block, i, theme) {
   }
 }
 
+// ── BlogComments component ────────────────────────────────────
+function BlogComments({ slug, theme }) {
+  const isDark = theme === "dark";
+  const ac     = "#0891b2";
+
+  const [likeCount,  setLikeCount]  = useState(0);
+  const [liked,      setLiked]      = useState(false);
+  const [likeAnim,   setLikeAnim]   = useState(false);
+  const [comments,   setComments]   = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [liking,     setLiking]     = useState(false);
+  const [name,       setName]       = useState("");
+  const [message,    setMessage]    = useState("");
+  const [error,      setError]      = useState("");
+  const [success,    setSuccess]    = useState(false);
+  const [commentErr, setCommentErr] = useState("");
+  const formRef = useRef(null);
+
+  // ── Fetch likes + comments ──────────────────────────────────
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/blog-reactions?slug=${encodeURIComponent(slug)}`)
+      .then(r => r.json())
+      .then(data => {
+        setLikeCount(data.likeCount || 0);
+        setLiked(data.liked || false);
+        setComments(data.comments || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  // ── Like handler ────────────────────────────────────────────
+  async function handleLike() {
+    if (liked || liking) return;
+    setLiking(true);
+    setLikeAnim(true);
+    setTimeout(() => setLikeAnim(false), 600);
+    try {
+      const r = await fetch(`/api/blog-reactions?slug=${encodeURIComponent(slug)}&type=like`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+      });
+      const data = await r.json();
+      if (r.ok || r.status === 409) {
+        setLikeCount(data.likeCount ?? likeCount + 1);
+        setLiked(true);
+      }
+    } catch {}
+    setLiking(false);
+  }
+
+  // ── Comment submit ──────────────────────────────────────────
+  async function handleComment(e) {
+    e.preventDefault();
+    if (!message.trim()) { setCommentErr("Please write something before submitting."); return; }
+    if (message.trim().length > 500) { setCommentErr("Comment too long (max 500 chars)."); return; }
+    setSubmitting(true); setCommentErr(""); setError("");
+    try {
+      const r = await fetch(`/api/blog-reactions?slug=${encodeURIComponent(slug)}&type=comment`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), message: message.trim() }),
+      });
+      const data = await r.json();
+      if (r.ok) {
+        setComments(prev => [data, ...prev]);
+        setName(""); setMessage(""); setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+        setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+      } else {
+        setCommentErr(data.error || "Failed to post comment.");
+      }
+    } catch { setCommentErr("Connection error. Please try again."); }
+    setSubmitting(false);
+  }
+
+  // ── Shared styles ───────────────────────────────────────────
+  const card = {
+    background: isDark ? "rgba(255,255,255,0.03)" : "#fff",
+    border: `1px solid ${isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.09)"}`,
+    borderRadius: "14px",
+    padding: "18px 20px",
+  };
+
+  const inputStyle = {
+    width: "100%",
+    boxSizing: "border-box",
+    background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+    border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}`,
+    borderRadius: "10px",
+    padding: "10px 14px",
+    color: isDark ? "#fff" : "#1a1a1a",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: "0.88rem",
+    outline: "none",
+  };
+
+  const labelStyle = {
+    fontFamily: "'Space Mono',monospace",
+    fontSize: "0.62rem",
+    color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.45)",
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    marginBottom: "7px",
+    display: "block",
+  };
+
+  const textPrimary   = isDark ? "#fff"                      : "#1a1a1a";
+  const textSecondary = isDark ? "rgba(255,255,255,0.6)"     : "rgba(0,0,0,0.6)";
+  const textMuted     = isDark ? "rgba(255,255,255,0.35)"    : "rgba(0,0,0,0.4)";
+  const divider       = isDark ? "rgba(255,255,255,0.06)"    : "rgba(0,0,0,0.07)";
+
+  return (
+    <div style={{ marginTop: "56px" }}>
+
+      {/* ── Section header ── */}
+      <div style={{ borderTop: `1px solid ${divider}`, paddingTop: "40px", marginBottom: "32px" }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "6px" }}>◆ Reactions</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+          <h3 style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.3rem", fontWeight: 800, color: textPrimary, letterSpacing: "-0.02em", margin: 0 }}>
+            Likes & Comments
+          </h3>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: textMuted }}>
+            {loading ? "Loading..." : `${comments.length} comment${comments.length !== 1 ? "s" : ""}`}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Like button ── */}
+      <div style={{ marginBottom: "36px" }}>
+        <button
+          onClick={handleLike}
+          disabled={liked || liking}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "10px",
+            background: liked
+              ? (isDark ? "rgba(239,68,68,0.15)" : "rgba(239,68,68,0.08)")
+              : (isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
+            border: `1px solid ${liked
+              ? "rgba(239,68,68,0.4)"
+              : (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.12)")}`,
+            borderRadius: "100px",
+            padding: "10px 22px",
+            cursor: liked ? "default" : "pointer",
+            transition: "all 0.25s",
+            transform: likeAnim ? "scale(1.1)" : "scale(1)",
+          }}
+          aria-label={liked ? "Already liked" : "Like this article"}
+        >
+          <span style={{
+            fontSize: "1.3rem",
+            transition: "transform 0.3s",
+            display: "inline-block",
+            transform: likeAnim ? "scale(1.4)" : "scale(1)",
+          }}>
+            {liked ? "❤️" : "🤍"}
+          </span>
+          <span style={{
+            fontFamily: "'Space Mono',monospace",
+            fontSize: "0.82rem",
+            fontWeight: 700,
+            color: liked ? "#ef4444" : textSecondary,
+          }}>
+            {likeCount} {likeCount === 1 ? "like" : "likes"}
+          </span>
+          {!liked && (
+            <span style={{ fontSize: "0.72rem", color: textMuted, fontFamily: "'Space Mono',monospace" }}>
+              · tap to like
+            </span>
+          )}
+        </button>
+        {liked && (
+          <div style={{ marginTop: "8px", fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: isDark ? "rgba(239,68,68,0.7)" : "#dc2626" }}>
+            ✓ You liked this article
+          </div>
+        )}
+      </div>
+
+      {/* ── Comment form ── */}
+      <div style={{ ...card, marginBottom: "28px" }} ref={formRef}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "18px" }}>
+          💬 Leave a Comment
+        </div>
+
+        {success ? (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: "1.8rem", marginBottom: "8px" }}>🎉</div>
+            <div style={{ color: "#34d399", fontFamily: "'Space Mono',monospace", fontSize: "0.82rem", fontWeight: 700 }}>
+              Comment posted!
+            </div>
+            <div style={{ color: textMuted, fontSize: "0.78rem", marginTop: "4px" }}>
+              Thanks for sharing your thoughts.
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleComment} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div>
+              <label style={labelStyle}>Your Name (optional)</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Anonymous"
+                maxLength={50}
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = `${ac}66`}
+                onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Comment *</label>
+              <textarea
+                value={message}
+                onChange={e => { setMessage(e.target.value); setCommentErr(""); }}
+                placeholder="Share your thoughts, questions, or feedback about this article..."
+                rows={4}
+                maxLength={500}
+                style={{ ...inputStyle, resize: "vertical", lineHeight: 1.7, minHeight: "100px" }}
+                onFocus={e => e.target.style.borderColor = `${ac}66`}
+                onBlur={e => e.target.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.12)"}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+                {commentErr
+                  ? <span style={{ color: "#ef4444", fontSize: "0.72rem", fontFamily: "'Space Mono',monospace" }}>⚠ {commentErr}</span>
+                  : <span />
+                }
+                <span style={{ fontSize: "0.65rem", color: message.length > 450 ? "#f59e0b" : textMuted, fontFamily: "'Space Mono',monospace" }}>
+                  {message.length}/500
+                </span>
+              </div>
+            </div>
+
+            {/* Privacy notice */}
+            <div style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.07)"}`, borderRadius: "8px", padding: "10px 14px", fontSize: "0.72rem", color: textMuted, fontFamily: "'Space Mono',monospace", lineHeight: 1.6 }}>
+              🔒 Your name is masked publicly (A***). No account needed.
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting || !message.trim()}
+              style={{
+                alignSelf: "flex-start",
+                background: submitting || !message.trim()
+                  ? (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)")
+                  : "linear-gradient(135deg,#00ffe0,#0af)",
+                border: "none",
+                borderRadius: "10px",
+                padding: "10px 24px",
+                color: submitting || !message.trim()
+                  ? (isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)")
+                  : "#000",
+                fontFamily: "'Space Mono',monospace",
+                fontWeight: 700,
+                fontSize: "0.82rem",
+                cursor: submitting || !message.trim() ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                transition: "all 0.2s",
+              }}
+            >
+              {submitting
+                ? <><span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(0,0,0,0.2)", borderTop: "2px solid #000", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Posting...</>
+                : "Post Comment →"
+              }
+            </button>
+          </form>
+        )}
+      </div>
+
+      {/* ── Comments list ── */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "32px", color: textMuted, fontFamily: "'Space Mono',monospace", fontSize: "0.78rem" }}>
+          Loading comments...
+        </div>
+      ) : comments.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "36px 20px", border: `1px dashed ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "14px" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "10px" }}>💬</div>
+          <div style={{ color: textMuted, fontFamily: "'Space Mono',monospace", fontSize: "0.78rem" }}>
+            No comments yet. Be the first!
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {comments.map((c, i) => (
+            <div key={c.id || i} style={card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px", flexWrap: "wrap", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {/* Avatar */}
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `${ac}20`, border: `1px solid ${ac}33`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Space Mono',monospace", fontSize: "0.75rem", fontWeight: 700, color: ac, flexShrink: 0 }}>
+                    {(c.name === "Anonymous" ? "A" : c.name.charAt(0)).toUpperCase()}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: "0.88rem", color: textPrimary }}>
+                    {c.name || "Anonymous"}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.65rem", color: textMuted, fontFamily: "'Space Mono',monospace", whiteSpace: "nowrap" }}>
+                  {new Date(c.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </div>
+              <p style={{ fontSize: "0.88rem", color: textSecondary, lineHeight: 1.75, margin: 0, textAlign: "left", wordBreak: "break-word" }}>
+                {c.message}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Blog List Page ────────────────────────────────────────────
 export function BlogList({ theme }) {
   const navigate = useNavigate();
@@ -230,19 +536,16 @@ export function BlogList({ theme }) {
   return (
     <div style={{ minHeight: "100vh", background: isDark ? "#060a0f" : "#f5f5f5", width: "100%" }}>
       <div style={{ maxWidth: "860px", margin: "0 auto", padding: "80px 24px 100px" }}>
-        {/* Back */}
         <button onClick={() => navigate("/")} style={{ background: "transparent", border: "none", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", marginBottom: "48px", display: "flex", alignItems: "center", gap: "6px", padding: 0 }}>
           ← Back to ZeroAPI
         </button>
 
-        {/* Header */}
         <div style={{ marginBottom: "56px" }}>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "14px" }}>◆ Learn</div>
           <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 800, color: isDark ? "#fff" : "#1a1a1a", letterSpacing: "-0.03em", marginBottom: "12px", lineHeight: 1.1, textAlign: "left" }}>Guides & Tutorials</h1>
           <p style={{ color: isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.6)", fontSize: "1rem", fontWeight: 300, textAlign: "left" }}>Practical guides for developers, students, and job seekers. New articles every week.</p>
         </div>
 
-        {/* Articles */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {BLOG_POSTS.map(post => (
             <article key={post.slug} onClick={() => navigate(`/learn/${post.slug}`)}
@@ -265,7 +568,6 @@ export function BlogList({ theme }) {
             </article>
           ))}
 
-          {/* Coming soon */}
           <div style={{ background: isDark ? "rgba(255,255,255,0.015)" : "rgba(0,0,0,0.03)", border: `1px dashed ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)"}`, borderRadius: "16px", padding: "32px", textAlign: "center" }}>
             <div style={{ fontSize: "1.5rem", marginBottom: "10px" }}>✍️</div>
             <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", letterSpacing: "0.1em" }}>MORE ARTICLES COMING WEEKLY</div>
@@ -279,12 +581,11 @@ export function BlogList({ theme }) {
 
 // ── Blog Post Page ────────────────────────────────────────────
 export function BlogPost({ theme }) {
-  const { slug } = useParams();
-  const navigate = useNavigate();
-  const isDark = theme === "dark";
-  const ac = "#0891b2";
-
-  const post = BLOG_POSTS.find(p => p.slug === slug);
+  const { slug }   = useParams();
+  const navigate   = useNavigate();
+  const isDark     = theme === "dark";
+  const ac         = "#0891b2";
+  const post       = BLOG_POSTS.find(p => p.slug === slug);
 
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
@@ -299,12 +600,12 @@ export function BlogPost({ theme }) {
   }
 
   function shareText(platform) {
-    const url = `https://zeroapi.in/learn/${post.slug}`;
+    const url  = `https://zeroapi.in/learn/${post.slug}`;
     const text = `${post.title} — ${url}`;
-    if (platform === "twitter") window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    if (platform === "twitter")  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     if (platform === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     if (platform === "linkedin") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
-    if (platform === "copy") { navigator.clipboard.writeText(url).catch(() => {}); }
+    if (platform === "copy")     navigator.clipboard.writeText(url).catch(() => {});
   }
 
   return (
@@ -337,13 +638,15 @@ export function BlogPost({ theme }) {
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "14px" }}>Share This Article</div>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             {[
-              { label: "𝕏 Twitter", platform: "twitter", bg: "#1a1a1a", color: "#fff" },
-              { label: "💬 WhatsApp", platform: "whatsapp", bg: "#25d366", color: "#fff" },
-              { label: "💼 LinkedIn", platform: "linkedin", bg: "#0077b5", color: "#fff" },
-              { label: "🔗 Copy Link", platform: "copy", bg: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", color: isDark ? "#fff" : "#1a1a1a" },
+              { label: "𝕏 Twitter",   platform: "twitter",  bg: "#1a1a1a",                                              color: "#fff"                        },
+              { label: "💬 WhatsApp", platform: "whatsapp", bg: "#25d366",                                              color: "#fff"                        },
+              { label: "💼 LinkedIn", platform: "linkedin", bg: "#0077b5",                                              color: "#fff"                        },
+              { label: "🔗 Copy Link",platform: "copy",     bg: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", color: isDark ? "#fff" : "#1a1a1a"  },
             ].map(btn => (
               <button key={btn.platform} onClick={() => shareText(btn.platform)}
-                style={{ background: btn.bg, border: "none", borderRadius: "8px", padding: "9px 18px", color: btn.color, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", fontWeight: 500 }}>{btn.label}</button>
+                style={{ background: btn.bg, border: "none", borderRadius: "8px", padding: "9px 18px", color: btn.color, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", fontWeight: 500 }}>
+                {btn.label}
+              </button>
             ))}
           </div>
         </div>
@@ -363,10 +666,15 @@ export function BlogPost({ theme }) {
           </div>
         </div>
 
+        {/* ── Likes & Comments ── */}
+        <BlogComments slug={post.slug} theme={theme} />
+
         {/* Back button */}
-        <div style={{ marginTop: "32px" }}>
+        <div style={{ marginTop: "40px" }}>
           <button onClick={() => navigate("/learn")}
-            style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "8px 20px", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.55)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>← More Articles</button>
+            style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "8px 20px", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.55)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>
+            ← More Articles
+          </button>
         </div>
       </div>
     </div>
