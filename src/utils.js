@@ -184,7 +184,7 @@ export function formatOutput(text, theme) {
 import confetti from 'canvas-confetti';
 
 export function fireConfetti() {
-  const colors   = ['#00ffe0', '#a78bfa', '#ffffff', '#00aaff'];
+  const colors   = ['#a78bfa', '#a78bfa', '#ffffff', '#00aaff'];
   const defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.94, startVelocity: 20, colors };
   const end      = Date.now() + 1500;
   const frame    = () => {
