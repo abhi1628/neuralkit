@@ -205,14 +205,30 @@ function AppInner() {
   );
 }
 
+// ── Page wrappers (pass theme prop cleanly) ───────────────────
+import { BlogList, BlogPost } from './Blog';
+import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
+import About   from './pages/About';
+
+function BlogListPage()  { const { theme } = useTheme(); return <BlogList  theme={theme} />; }
+function BlogPostPage()  { const { theme } = useTheme(); return <BlogPost  theme={theme} />; }
+function PrivacyPage()   { const { theme } = useTheme(); return <Privacy   theme={theme} />; }
+function ContactPage()   { const { theme } = useTheme(); return <Contact   theme={theme} />; }
+function AboutPage()     { const { theme } = useTheme(); return <About     theme={theme} />; }
+
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
   return (
     <ErrorBoundary>
       <Routes>
-        <Route path="/"      element={<AppInner />} />
-        <Route path="/learn" element={<div>Learn page</div>} />
-        <Route path="*"      element={<AppInner />} />
+        <Route path="/"            element={<AppInner />} />
+        <Route path="/learn"       element={<BlogListPage />} />
+        <Route path="/learn/:slug" element={<BlogPostPage />} />
+        <Route path="/privacy"     element={<PrivacyPage />} />
+        <Route path="/contact"     element={<ContactPage />} />
+        <Route path="/about"       element={<AboutPage />} />
+        <Route path="*"            element={<AppInner />} />
       </Routes>
     </ErrorBoundary>
   );
