@@ -1,7 +1,7 @@
 // src/components/CoverLetterGenerator.jsx
 import { useState } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL } from '../constants';
+import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { copyToClipboard, downloadAsPDF, fetchWithBackoff } from '../utils';
 
 export default function CoverLetterGenerator({ resumeData, jobDescription }) {
@@ -25,7 +25,7 @@ export default function CoverLetterGenerator({ resumeData, jobDescription }) {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.7,
+          model: TOOL_MODELS.coverLetter, max_tokens: 900, temperature: 0.7,
           messages: [
             { role: 'system', content: `You are an expert career coach and cover letter writer.\n\nRULES:\n- Match the applicant's skills from their resume to the job description naturally\n- Use specific achievements and metrics from the resume data\n- Tone: ${tone === 'enthusiastic' ? 'warm, energetic, passionate' : tone === 'formal' ? 'traditional, conservative, corporate' : 'balanced, confident, professional'}\n- Length: ${length === 'short' ? '200-250 words (3 paragraphs)' : length === 'long' ? '400-500 words (5-6 paragraphs)' : '300-350 words (4 paragraphs)'}\n- Start with a hook that references the company/role specifically\n- End with a strong call to action\n- NEVER use generic phrases like "I am writing to apply" or "your job posting on"\n- Use active voice, specific examples, avoid buzzwords` },
             { role: 'user', content: `Resume Data:\n${JSON.stringify(resumeData, null, 2)}\n\nJob Description:\n${jobDesc}\n\nGenerate the cover letter now.` },

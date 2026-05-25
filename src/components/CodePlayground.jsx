@@ -1,7 +1,7 @@
 // src/components/CodePlayground.jsx
 import { useState, useRef, useCallback } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, LANGUAGES, LANG_MAP, EXAMPLES } from '../constants';
+import { GROQ_API_URL, LANGUAGES, LANG_MAP, EXAMPLES, TOOL_MODELS } from '../constants';
 import { trackEvent, fetchWithBackoff } from '../utils';
 import LineNumbers from './LineNumbers';
 import OutputActions from './OutputActions';
@@ -59,7 +59,7 @@ export default function CodePlayground() {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 500,
+          model: TOOL_MODELS.codePlayground, max_tokens: 500,
           messages: [
             { role: 'system', content: `You are an expert ${lang.label} educator. Explain the given code clearly:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.` },
             { role: 'user',   content: `Explain this ${lang.label} code:\n\n${code}` },

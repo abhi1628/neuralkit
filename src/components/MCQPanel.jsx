@@ -1,7 +1,7 @@
 // src/components/MCQPanel.jsx
 import { useState, useRef, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, WORD_LIMIT, EXAMPLES } from '../constants';
+import { GROQ_API_URL, WORD_LIMIT, EXAMPLES, MODELS, TOOL_MODELS } from '../constants';
 import { sanitizeInput, sanitizeOutput, trackEvent, countWords, fetchWithBackoff } from '../utils';
 import WordCounter from './WordCounter';
 import TryExample from './TryExample';
@@ -29,7 +29,7 @@ export default function MCQPanel({ tool }) {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.9,
+          model: TOOL_MODELS.mcqGenerator, max_tokens: 900, temperature: 0.9,
           messages: [
             { role: 'system', content: tool.systemPrompt + '\n\nCRITICAL: Generate completely different questions from any previously shown. Focus on different sub-topics, angles, and difficulty levels.' },
             { role: 'user',   content: sanitized + historyContext },

@@ -1,7 +1,7 @@
 // src/components/ResumeBuilder.jsx
 import { useState } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL } from '../constants';
+import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { loadScript, fetchWithBackoff } from '../utils';
 
 export default function ResumeBuilder({ originalText, analysisText, onDataParsed }) {
@@ -22,7 +22,7 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 1500,
+          model: TOOL_MODELS.resumeBuilder, max_tokens: 1500,
           messages: [
             { role: 'system', content: `You are an expert resume writer and ATS optimization specialist. Given original resume text and analysis feedback, generate an improved resume.\n\nCRITICAL: Respond ONLY with a valid JSON object. No preamble, no markdown backticks.\n\nFormat:\n{"name":"Full Name","contact":{"email":"","phone":"","location":"","linkedin":""},"summary":"2-3 sentence professional summary","experience":[{"title":"","company":"","dates":"","bullets":["action verb + achievement"]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"soft":[],"tools":[]},"certifications":[],"projects":[{"name":"","description":"","tech":""}]}\n\nRules:\n- Extract ONLY information from the original resume. Never invent or add fake data.\n- Improve bullet points to start with strong action verbs.\n- Add metrics where they exist in the original.\n- Omit sections with no data.\n- Return ONLY valid JSON.` },
             { role: 'user', content: `Original Resume:\n${originalText}\n\nAnalysis Feedback:\n${analysisText}` },

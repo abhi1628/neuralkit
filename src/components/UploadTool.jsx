@@ -1,7 +1,7 @@
 // src/components/UploadTool.jsx
 import { useState, useRef, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, WORD_LIMIT_UPLOAD } from '../constants';
+import { GROQ_API_URL, WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants';
 import { loadScript, trackEvent, formatOutput, fetchWithBackoff } from '../utils';
 import OutputActions from './OutputActions';
 import ResumeBuilder from './ResumeBuilder';
@@ -122,7 +122,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.3,
+          model: label === 'Analyze Resume' ? TOOL_MODELS.resumeAnalyzer : TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
           messages: [
             { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
             { role: 'user',   content: contextForLLM },
@@ -157,7 +157,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 600, temperature: 0.3,
+          model: TOOL_MODELS.documentQA, max_tokens: 600, temperature: 0.3,
           messages: [
             { role: 'system', content: `You are a precise research assistant. Answer using ONLY the provided chunks.\nCRITICAL RULES:\n1. Every factual sentence MUST end with a citation like [Source: filename, page X]\n2. If you quote directly, use [Source: filename, page X, exact quote]\n3. If the answer isn't in the chunks, say "I couldn't find that in the document."\n4. Never make up citations.` },
             { role: 'user',   content: `Document excerpts:\n\n${context}\n\nQuestion: ${followUpQuestion}` },

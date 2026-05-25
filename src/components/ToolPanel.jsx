@@ -1,7 +1,7 @@
 // src/components/ToolPanel.jsx
 import { useState, useRef, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, WORD_LIMIT, EXAMPLES } from '../constants';
+import { GROQ_API_URL, WORD_LIMIT, EXAMPLES, MODELS } from '../constants';
 import { sanitizeInput, sanitizeOutput, trackEvent, countWords, formatOutput, fetchWithBackoff } from '../utils';
 import WordCounter from './WordCounter';
 import TryExample from './TryExample';
@@ -28,7 +28,7 @@ export default function ToolPanel({ tool }) {
     try {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 800, messages: [{ role: 'system', content: tool.systemPrompt }, { role: 'user', content: sanitized }] }),
+        body: JSON.stringify({ model: tool.model || MODELS.MEDIUM, max_tokens: 800, messages: [{ role: 'system', content: tool.systemPrompt }, { role: 'user', content: sanitized }] }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) {

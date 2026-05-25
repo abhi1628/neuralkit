@@ -1,7 +1,7 @@
 // src/components/ResumeBuilderTool.jsx
 import { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL } from '../constants';
+import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { loadScript, fetchWithBackoff } from '../utils';
 
 const STEPS = ['Personal Info', 'Summary & Target', 'Experience', 'Education', 'Skills', 'Projects & Extras', 'Review & Generate'];
@@ -71,7 +71,7 @@ export default function ResumeBuilderTool() {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 1500,
+          model: TOOL_MODELS.resumeBuilderTool, max_tokens: 1500,
           messages: [
             { role: 'system', content: `You are an expert resume writer and ATS specialist. Given structured form data, produce a polished, ATS-optimized resume as JSON.\nCRITICAL: Return ONLY valid JSON — no markdown backticks, no preamble.\nRules:\n- Rewrite bullet points with strong action verbs and quantify where context implies metrics\n- Polish the summary into 2-3 compelling sentences for the target role\n- Keep ALL information exactly. Never fabricate any detail.\n- Omit empty sections entirely.\nOutput format: {"name":"","contact":{"email":"","phone":"","location":"","linkedin":"","github":""},"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"soft":[],"tools":[]},"certifications":[],"projects":[{"name":"","description":"","tech":""}],"languages":[],"achievements":[]}` },
             { role: 'user', content: `Target Role: ${data.target}\nName: ${data.name} | Email: ${data.email} | Phone: ${data.phone} | Location: ${data.location}\nLinkedIn: ${data.linkedin} | GitHub: ${data.github}\n\nSummary: ${data.summary}\n\nExperience:\n${data.experience.map(e => `${e.title} at ${e.company} (${e.startDate}–${e.current ? 'Present' : e.endDate})\n${e.bullets}`).join('\n\n')}\n\nEducation:\n${data.education.map(e => `${e.degree} in ${e.field}, ${e.institution}, ${e.year}, GPA: ${e.gpa}`).join('\n')}\n\nTechnical Skills: ${data.techSkills}\nTools: ${data.tools}\nSoft Skills: ${data.softSkills}\n\nProjects:\n${data.projects.map(p => `${p.name} (${p.tech}): ${p.description}`).join('\n')}\n\nCertifications:\n${data.certs}\nLanguages: ${data.languages}\nAchievements:\n${data.achievements}` },

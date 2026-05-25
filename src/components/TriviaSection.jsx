@@ -1,7 +1,7 @@
 // src/components/TriviaSection.jsx
 import { useState, useEffect, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL } from '../constants';
+import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { fireConfetti, fetchWithBackoff } from '../utils';
 
 export default function TriviaSection() {
@@ -52,7 +52,7 @@ export default function TriviaSection() {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 300, temperature: 1.2,
+          model: TOOL_MODELS.trivia, max_tokens: 300, temperature: 1.2,
           messages: [
             { role: 'system', content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:\n{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
             { role: 'user',   content: `Generate a UNIQUE trivia question (seed:${seed}) specifically about: ${topic}. Make it different from common questions.` },
