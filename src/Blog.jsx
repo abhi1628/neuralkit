@@ -216,12 +216,17 @@ function renderContent(block, i, theme) {
 function BlogComments({ slug, theme }) {
   const isDark = theme === "dark";
   const LIKE_KEY = `zeroapi_liked_${slug}`;
-  const ac = isDark ? "#a78bfa" : "#7c3aed";
+  const ac       = isDark ? "#a78bfa" : "#7c3aed";
 
-  // ── Init liked from localStorage instantly (no flash on refresh) ──
-  const [likeCount,  setLikeCount]  = useState(0);
-  const [liked,      setLiked]      = useState(() => {
+  // Init liked from localStorage instantly — no flash on refresh
+  const [liked, setLiked] = useState(() => {
     try { return localStorage.getItem(LIKE_KEY) === "true"; } catch { return false; }
+  });
+
+  // If user already liked, start count at 1 so it matches liked state
+  // API will update this to the real count once it loads
+  const [likeCount, setLikeCount] = useState(() => {
+    try { return localStorage.getItem(LIKE_KEY) === "true" ? 1 : 0; } catch { return 0; }
   });
   const [likeAnim,   setLikeAnim]   = useState(false);
   const [comments,   setComments]   = useState([]);
