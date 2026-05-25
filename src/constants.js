@@ -40,8 +40,8 @@ export const TOOL_MODELS = {
   mcqGenerator:         MODELS.MEDIUM,     // structured MCQ format
   codePlayground:       MODELS.MEDIUM,     // code explanation
   interviewQuestions:   MODELS.MEDIUM,     // question generation
-  interviewEval:        MODELS.LIGHT,      // simple scoring JSON
-  trivia:               MODELS.LIGHT,      // single question JSON
+  interviewEval:        MODELS.MEDIUM,     // scoring JSON — medium more reliable
+  trivia:               MODELS.MEDIUM,     // JSON output — 8b more reliable than gemma
   askAuthor:            MODELS.LIGHT,      // conversational reply
 };
 
