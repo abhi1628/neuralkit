@@ -108,28 +108,28 @@ const appStyles = `
   .tool-card-inactive { background: var(--bg-secondary) !important; border-color: var(--border-medium) !important; }
   .tool-card-inactive:hover { border-color: var(--accent) !important; background: var(--accent-light) !important; }
 
-  @media (max-width: 768px) {
-    .nav-links { display: none !important; }
-    .hamburger-btn { display: flex !important; }
-    .theme-toggle-btn { margin-left: 0 !important; }
-    .hero-section { padding: 100px 20px 60px !important; min-height: auto !important; }
-    .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
-    .tools-section { padding: 60px 20px 80px !important; }
-    .tool-row { flex-direction: column !important; }
-    .tool-panel { padding: 24px !important; }
-    .mcq-grid { grid-template-columns: 1fr !important; }
-    .trivia-grid { grid-template-columns: 1fr !important; }
-    .trivia-section { padding: 40px 20px !important; }
-    #playground { padding: 60px 20px !important; }
-    .about-section { padding: 60px 20px !important; }
-    .about-buttons { flex-direction: column !important; align-items: center !important; }
-    .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
-    nav { padding: 14px 20px !important; }
-    .nav-try-btn { display: none !important; }
-    .mobile-menu { pointer-events: auto !important; }
-    footer { padding: 28px 20px !important; }
-    .hero-logo-large { width: 100px !important; height: 100px !important; }
-  }
+    @media (max-width: 768px) {
+      .nav-links { display: none !important; }
+      .hamburger-btn { display: flex !important; }
+      .theme-toggle-btn { margin-left: 0 !important; }
+      .hero-section { padding: 100px 16px 60px !important; min-height: auto !important; }
+      .hero-title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
+      .tools-section { padding: 60px 16px 80px !important; }
+      .tool-row { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .tool-panel { padding: 20px !important; }
+      .mcq-grid { grid-template-columns: 1fr !important; }
+      .trivia-grid { grid-template-columns: 1fr !important; }
+      .trivia-section { padding: 40px 16px !important; }
+      #playground { padding: 60px 16px !important; }
+      .about-section { padding: 60px 16px !important; }
+      .about-buttons { flex-direction: column !important; align-items: center !important; }
+      .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 16px !important; }
+      nav { padding: 14px 16px !important; }
+      .nav-try-btn { display: none !important; }
+      .mobile-menu { pointer-events: auto !important; }
+      footer { padding: 28px 16px !important; }
+      .hero-logo-large { width: 100px !important; height: 100px !important; }
+    }
   .mobile-menu { isolation: isolate; }
   @supports (backdrop-filter: blur(20px)) {
     .mobile-menu { backdrop-filter: blur(20px) saturate(180%); }

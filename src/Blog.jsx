@@ -251,14 +251,11 @@ function BlogComments({ slug, theme }) {
         return r.json();
       })
       .then(data => {
-        setLikeCount(data.likeCount || 0);
-        // ── KEY FIX ──────────────────────────────────────────
-        // Do NOT use data.liked to set liked state.
-        // IP detection on Vercel is unreliable (edge nodes, mobile IPs,
-        // CDN layers). localStorage is the single source of truth for
-        // whether THIS user liked this post.
-        // API only provides the shared count visible to everyone.
-        // ─────────────────────────────────────────────────────
+        const serverCount  = data.likeCount || 0;
+        const localLiked   = localStorage.getItem(LIKE_KEY) === "true";
+        // If user liked locally but API says 0, keep at least 1
+        // Prevents the "0 likes + You liked this" mismatch
+        setLikeCount(localLiked && serverCount === 0 ? 1 : serverCount);
         setComments(data.comments || []);
       })
       .catch(err => {

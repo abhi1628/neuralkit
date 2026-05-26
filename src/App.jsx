@@ -84,7 +84,7 @@ function AIToolsSection({ activeTool, setActiveTool }) {
       </div>
 
       {/* Tool selector grid */}
-      <div className="tool-row" style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+      <div className="tool-row" style={{ display: 'flex', gap: '10px', marginBottom: '32px', flexWrap: 'wrap' }}>
         {ALL_TOOL_CARDS.map((t, i) => (
           <ToolCard key={t.id} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === i}
             onClick={() => { setActiveTool(i); trackEvent('tool_selected', { tool_name: t.name }); }} />
