@@ -23,7 +23,7 @@ export default function DevToolsPanel() {
           Tools that go beyond text — diagrams, charts, and simulations that ChatGPT can&apos;t render.
         </p>
       </div>
-      <div className="tool-row" style={{ display: 'flex', gap: '16px', marginBottom: '36px' }}>
+      <div className="tool-row" style={{ display: 'flex', gap: '10px', marginBottom: '36px', flexWrap: 'wrap' }}>
         {DEV_TOOLS.map((t, i) => (
           <ToolCard key={t.id} icon={t.icon} name={t.name} tagline={t.tagline} active={active === i} onClick={() => setActive(i)} fullWidth={false} />
         ))}
