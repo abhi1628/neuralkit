@@ -1,9 +1,4 @@
 // api/blog-reactions.js
-// Handles blog post likes and comments
-// Supabase tables needed:
-//   blog_likes   (id, post_slug, ip_hash, created_at)
-//   blog_comments(id, post_slug, name, message, created_at)
-
 import crypto from 'crypto';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -16,7 +11,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
 ];
 
-// ── Rate limit store ──────────────────────────────────────────
+// ── Rate limiting ─────────────────────────────────────────────
 if (!global.blogReactionRateStore) global.blogReactionRateStore = new Map();
 const rateStore = global.blogReactionRateStore;
 
@@ -42,32 +37,49 @@ function checkRate(key, limit, windowMs) {
   return true;
 }
 
-// ── Hash IP for privacy ───────────────────────────────────────
+// ── IP hash ───────────────────────────────────────────────────
 function hashIp(ip) {
   return crypto.createHash('sha256').update(ip + 'zeroapi-salt-2025').digest('hex').slice(0, 32);
 }
 
 // ── Supabase helpers ──────────────────────────────────────────
 const sbHeaders = {
-  apikey: SUPABASE_KEY,
+  apikey:        SUPABASE_KEY,
   Authorization: `Bearer ${SUPABASE_KEY}`,
   'Content-Type': 'application/json',
-  Prefer: 'return=representation',
+  Prefer:        'return=representation',
 };
 
 async function sbGet(table, query) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, { headers: sbHeaders });
-  return r.json();
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('[blog-reactions] Missing SUPABASE_URL or SUPABASE_SECRET_KEY env vars');
+    return [];
+  }
+  const url = `${SUPABASE_URL}/rest/v1/${table}?${query}`;
+  const r   = await fetch(url, { headers: sbHeaders });
+  const data = await r.json();
+  if (!r.ok) {
+    console.error(`[blog-reactions] sbGet ${table} failed — status ${r.status}:`, JSON.stringify(data));
+    return [];
+  }
+  return data;
 }
 
 async function sbPost(table, body) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: 'POST', headers: sbHeaders, body: JSON.stringify(body),
-  });
-  return { status: r.status, data: await r.json() };
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error('[blog-reactions] Missing SUPABASE_URL or SUPABASE_SECRET_KEY env vars');
+    return { status: 500, data: { error: 'Missing env vars' } };
+  }
+  const url = `${SUPABASE_URL}/rest/v1/${table}`;
+  const r   = await fetch(url, { method: 'POST', headers: sbHeaders, body: JSON.stringify(body) });
+  const data = await r.json();
+  if (!r.ok) {
+    console.error(`[blog-reactions] sbPost ${table} failed — status ${r.status}:`, JSON.stringify(data));
+  }
+  return { status: r.status, data };
 }
 
-// ── Main handler ──────────────────────────────────────────────
+// ── Handler ───────────────────────────────────────────────────
 export default async function handler(req, res) {
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
@@ -75,92 +87,85 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
   const ipHash   = hashIp(clientIp);
   const { slug, type } = req.query;
 
   if (!slug) return res.status(400).json({ error: 'post slug required' });
 
-  // ── GET — fetch likes count + whether IP liked + comments ──
+  // ── GET ───────────────────────────────────────────────────
   if (req.method === 'GET') {
     if (!checkRate(`blog_get_${clientIp}`, 60, 60000))
       return res.status(429).json({ error: 'Too many requests.' });
 
     try {
-      // Like count for this post
-      const likes = await sbGet('blog_likes', `select=id&post_slug=eq.${encodeURIComponent(slug)}`);
+      const [likes, comments] = await Promise.all([
+        sbGet('blog_likes',    `select=id&post_slug=eq.${encodeURIComponent(slug)}`),
+        sbGet('blog_comments', `select=id,name,message,created_at&post_slug=eq.${encodeURIComponent(slug)}&order=created_at.desc&limit=50`),
+      ]);
+
       const likeCount = Array.isArray(likes) ? likes.length : 0;
-
-      // Did this IP already like?
-      const myLike = await sbGet('blog_likes',
-        `select=id&post_slug=eq.${encodeURIComponent(slug)}&ip_hash=eq.${ipHash}&limit=1`);
-      const liked = Array.isArray(myLike) && myLike.length > 0;
-
-      // Comments for this post
-      const comments = await sbGet('blog_comments',
-        `select=id,name,message,created_at&post_slug=eq.${encodeURIComponent(slug)}&order=created_at.desc&limit=50`);
 
       const sanitizedComments = Array.isArray(comments)
         ? comments.map(c => ({
             id:         c.id,
-            name:       c.name === 'Anonymous' || !c.name
+            name:       !c.name || c.name === 'Anonymous'
               ? 'Anonymous'
               : c.name.split(' ').map(p => p.charAt(0) + '***').join(' '),
-            message:    c.message?.replace(/[<>]/g, '').slice(0, 300) || '',
+            message:    (c.message || '').replace(/[<>]/g, '').slice(0, 300),
             created_at: c.created_at,
           }))
         : [];
 
-      return res.status(200).json({ likeCount, liked, comments: sanitizedComments });
+      return res.status(200).json({ likeCount, comments: sanitizedComments });
     } catch (err) {
-      console.error('blog-reactions GET error:', err);
+      console.error('[blog-reactions] GET error:', err);
       return res.status(500).json({ error: 'Failed to fetch reactions' });
     }
   }
 
-  // ── POST — add like or add comment ────────────────────────
+  // ── POST ──────────────────────────────────────────────────
   if (req.method === 'POST') {
+
     // Like
     if (type === 'like') {
       if (!checkRate(`blog_like_${clientIp}`, 20, 3600000))
-        return res.status(429).json({ error: 'Too many likes. Try again later.' });
+        return res.status(429).json({ error: 'Too many likes.' });
 
       try {
-        // Check if already liked
+        // Check duplicate
         const existing = await sbGet('blog_likes',
           `select=id&post_slug=eq.${encodeURIComponent(slug)}&ip_hash=eq.${ipHash}&limit=1`);
-
         if (Array.isArray(existing) && existing.length > 0) {
-          return res.status(409).json({ error: 'Already liked', liked: true });
+          const allLikes = await sbGet('blog_likes', `select=id&post_slug=eq.${encodeURIComponent(slug)}`);
+          return res.status(409).json({ likeCount: Array.isArray(allLikes) ? allLikes.length : 1, liked: true });
         }
 
-        await sbPost('blog_likes', { post_slug: slug, ip_hash: ipHash });
+        const { status } = await sbPost('blog_likes', { post_slug: slug, ip_hash: ipHash });
+        if (status !== 201) {
+          return res.status(500).json({ error: 'Failed to save like — check Vercel logs' });
+        }
 
-        // Return updated count
         const allLikes = await sbGet('blog_likes', `select=id&post_slug=eq.${encodeURIComponent(slug)}`);
         return res.status(201).json({ likeCount: Array.isArray(allLikes) ? allLikes.length : 1, liked: true });
       } catch (err) {
-        console.error('blog-reactions like error:', err);
+        console.error('[blog-reactions] like error:', err);
         return res.status(500).json({ error: 'Failed to save like' });
       }
     }
 
     // Comment
     if (type === 'comment') {
-      // Rate limit: 3 comments per hour per IP
       if (!checkRate(`blog_comment_${clientIp}`, 3, 3600000))
         return res.status(429).json({ error: 'Too many comments. Try again in an hour.' });
 
       const { name, message } = req.body || {};
-
       if (!message || message.trim().length < 2)
         return res.status(400).json({ error: 'Comment is too short.' });
       if (message.trim().length > 500)
         return res.status(400).json({ error: 'Comment too long (max 500 characters).' });
 
-      const cleanName = name
-        ? name.trim().slice(0, 50).replace(/[<>]/g, '').replace(/[^\w\s.-]/g, '') || 'Anonymous'
-        : 'Anonymous';
+      const cleanName = (name || '').trim().slice(0, 50).replace(/[<>]/g, '') || 'Anonymous';
       const cleanMsg  = message.trim().slice(0, 500).replace(/[<>]/g, '').replace(/javascript:/gi, '');
 
       try {
@@ -169,17 +174,17 @@ export default async function handler(req, res) {
           name:      cleanName,
           message:   cleanMsg,
         });
-        if (status !== 201) return res.status(500).json({ error: 'Failed to save comment' });
+        if (status !== 201) return res.status(500).json({ error: 'Failed to save comment — check Vercel logs' });
 
         const saved = Array.isArray(data) ? data[0] : data;
         return res.status(201).json({
           id:         saved.id,
-          name:       'Anonymous', // always mask immediately for privacy
+          name:       'Anonymous',
           message:    cleanMsg,
           created_at: saved.created_at,
         });
       } catch (err) {
-        console.error('blog-reactions comment error:', err);
+        console.error('[blog-reactions] comment error:', err);
         return res.status(500).json({ error: 'Failed to save comment' });
       }
     }
