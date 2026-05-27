@@ -69,7 +69,12 @@ const posts = [
   slug: 'fullstack-roadmap-2026',
   title: 'The 2026 Full-Stack Roadmap: What to Learn (And What to Skip)',
   excerpt: 'The full-stack definition changed in 2026. It is no longer just React + Node. Here is the exact stack that gets you hired — and the technologies you should stop wasting time on.'
-}
+},
+  {
+  slug: "how-agentic-ai-actually-works-simple-python",
+  title: "How Agentic AI Actually Works: The Simple Python Nobody Shows You",
+  excerpt: "Strip away the buzzwords. Under the hood, multi-agent systems are just async functions sharing state. Here is the 40-line Python implementation nobody talks about."
+  }
 ];
 
 // Generate static HTML for each blog post
