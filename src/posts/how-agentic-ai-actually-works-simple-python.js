@@ -82,7 +82,7 @@ shared_memory = {
 
 # 2. Agent Alpha: The Researcher
 async def researcher_agent():
-    print("[🔍 Researcher]: Agent initialized. Scanning for data...")
+    print("[Researcher]: Agent initialized. Scanning for data...")
     shared_memory["status"] = "RESEARCHING"
     
     # Simulating a heavy network/API call (e.g., an LLM prompt or web scrape)
@@ -94,28 +94,28 @@ async def researcher_agent():
 
 # 3. Agent Beta: The Writer
 async def writer_agent():
-    print("[✍️ Writer]: Agent initialized. Monitoring memory stream...")
+    print("[Writer]: Agent initialized. Monitoring memory stream...")
     
     # Active, event-driven monitoring loop
     while shared_memory["status"] != "RESEARCH_READY":
-        print("[✍️ Writer]: Target data not available yet. Yielding CPU control...")
+        print("[Writer]: Target data not available yet. Yielding CPU control...")
         await asyncio.sleep(1)  # Crucial: hands execution back to the event loop
         
-    print("[✍️ Writer]: State change detected! Processing raw payload...")
+    print("[Writer]: State change detected! Processing raw payload...")
     shared_memory["status"] = "WRITING"
     
     # Simulating the text synthesis phase
     await asyncio.sleep(2) 
     
     raw_data = shared_memory["raw_research"]
-    shared_memory["final_article"] = f"🔥 BREAKING TECH NEWS: {raw_data} #Python"
+    shared_memory["final_article"] = f"BREAKING TECH NEWS: {raw_data} #Python"
     shared_memory["status"] = "COMPLETED"
-    print("[✍️ Writer]: Final output generated successfully.")
+    print("[Writer]: Final output generated successfully.")
 
 # 4. The Orchestrator
 async def main():
     start_time = time.time()
-    print("--- 🤖 Orchestrator: Launching Asynchronous Multi-Agent Team ---")
+    print("--- Orchestrator: Launching Asynchronous Multi-Agent Team ---")
     
     # Fires BOTH agents into the background concurrently
     await asyncio.gather(
@@ -123,7 +123,7 @@ async def main():
         writer_agent()
     )
     
-    print("\\n--- 🏁 Lifecycle Complete ---")
+    print("\\n--- Lifecycle Complete ---")
     print(f"Final Result: {shared_memory['final_article']}")
     print(f"Total Execution Time: {time.time() - start_time:.2f} seconds")
 
