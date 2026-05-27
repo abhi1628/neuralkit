@@ -10,10 +10,12 @@ import sqlWindow       from "./posts/sql-window-functions-ctes-2026";
 import ciscoIdeathon   from "./posts/cisco-ideathon-2026";
 import modelSwapping   from "./posts/model-swapping-ai-engineering-2026";
 import fullstackRoadmap from "./posts/fullstack-roadmap-2026";
+import agenticaiWorking from "./posts/how-agentic-ai-actually-works-simple-python";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
   sqlWindow, ciscoIdeathon, modelSwapping, fullstackRoadmap,
+  agenticaiWorking,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
