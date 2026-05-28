@@ -74,6 +74,11 @@ const posts = [
   slug: "how-agentic-ai-actually-works-simple-python",
   title: "How Agentic AI Actually Works: The Simple Python Nobody Shows You",
   excerpt: "Strip away the buzzwords. Under the hood, multi-agent systems are just async functions sharing state. Here is the 40-line Python implementation nobody talks about."
+  },
+  {
+  slug: "agentic-ai-roadmap-from-zero-to-production",
+  title: "The No-BS Roadmap to Learning Agentic AI: From Zero to Production",
+  excerpt: "Stop chasing every new framework. Agentic AI has a clear skill stack, and most people are learning it backwards. Here is the exact path from first principles to shipping production multi-agent systems."
   }
 ];
 
