@@ -187,7 +187,7 @@ Layer 1: Async Python
     {
       type: "cta",
       text: "Read: How Agentic AI Actually Works →",
-      href: "/how-agentic-ai-actually-works-simple-python",
+      href: "https://www.zeroapi.in/learn/how-agentic-ai-actually-works-simple-python",
       note: "The 40-line pure Python implementation that demystifies everything"
     }
   ]
