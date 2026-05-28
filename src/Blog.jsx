@@ -11,7 +11,7 @@ import ciscoIdeathon   from "./posts/cisco-ideathon-2026";
 import modelSwapping   from "./posts/model-swapping-ai-engineering-2026";
 import fullstackRoadmap from "./posts/fullstack-roadmap-2026";
 import agenticaiWorking from "./posts/how-agentic-ai-actually-works-simple-python";
-import agenticaiRoadmap from "./agentic-ai-roadmap-from-zero-to-production";
+import agenticaiRoadmap from "./posts/agentic-ai-roadmap-from-zero-to-production";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
