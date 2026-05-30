@@ -101,7 +101,13 @@ export default async function handler(req, res) {
 
     return res.status(201).json({ message: "subscribed" });
   } catch (err) {
-    console.error("Subscribe error:", err);
-    return res.status(500).json({ error: "Failed to subscribe. Please try again." });
-  }
+  console.error("Subscribe error:", err);
+  // Return actual error for debugging (remove in production later)
+  return res.status(500).json({ 
+    error: "Failed to subscribe. Please try again.",
+    debug: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+}
+
 }
