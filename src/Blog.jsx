@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import ArticleSubscribe from "./components/ArticleSubscribe";
 
 import atsResume       from "./posts/ats-resume-2026";
 import python          from "./posts/python-312-313-314-differences";
@@ -711,8 +712,12 @@ export function BlogPost({ theme }) {
           </div>
         </div>
 
+        {/* ── Subscribe ── */}
+        <ArticleSubscribe theme={theme} postSlug={post.slug} />
+
         {/* ── Likes & Comments ── */}
         <BlogComments slug={post.slug} theme={theme} />
+
 
         {/* Back button */}
         <div style={{ marginTop: "40px" }}>
