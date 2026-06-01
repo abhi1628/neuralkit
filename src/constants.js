@@ -21,7 +21,7 @@ export const MODELS = {
   // Fast + capable — code, summaries, Q&A, MCQs
   MEDIUM:    'llama-3.1-8b-instant',
   // 32k context — large document uploads
-  LARGE_CTX: 'mixtral-8x7b-32768',
+  LARGE_CTX: 'llama-3.1-8b-instant',
   // Quick tasks — trivia, interview eval, ask author
   LIGHT:     'gemma2-9b-it',
 };
