@@ -79,6 +79,11 @@ const posts = [
   slug: "agentic-ai-roadmap-from-zero-to-production",
   title: "The No-BS Roadmap to Learning Agentic AI: From Zero to Production",
   excerpt: "Stop chasing every new framework. Agentic AI has a clear skill stack, and most people are learning it backwards. Here is the exact path from first principles to shipping production multi-agent systems."
+  },
+  {
+  slug: "30-data-science-interview-questions-2026-faang",
+  title: "30 Data Science Interview Questions That Actually Get Asked in 2026.",
+  excerpt: "Forget generic prep lists. These are the exact questions Google, Meta, Amazon, Netflix, and Stripe asked candidates this year — with answers that separate the hire from the almost-hire."
   }
 ];
 
