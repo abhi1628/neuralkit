@@ -27,49 +27,59 @@ export function escapeHtml(text) {
 // Automatically retries on Groq 429 rate-limit errors.
 // Attempts: 1st retry after ~2s, 2nd after ~4s, 3rd after ~8s.
 // Jitter (±500ms random) prevents all users retrying simultaneously.
-export async function fetchWithBackoff(url, options, maxRetries = 3) {
-  let attempt = 0;
+export async function fetchWithBackoff(url, options, maxRetries = 5) {
+    let attempt = 0;
 
-  while (attempt <= maxRetries) {
-    let response;
-    try {
-      response = await fetch(url, options);
-    } catch (networkErr) {
-      // Network failure (offline, DNS) — don't retry
-      throw new Error('Connection error. Please check your network and try again.');
+    while (attempt <= maxRetries) {
+        let response;
+        try {
+            response = await fetch(url, options);
+        } catch (networkErr) {
+            // Network failure (offline, DNS) — don't retry
+            throw new Error('Connection error. Please check your network and try again.');
+        }
+
+        // Success
+        if (response.ok) return response;
+
+        // Rate limited by Groq — backoff and retry
+        if (response.status === 429) {
+            attempt++;
+            if (attempt > maxRetries) break;
+
+            // Check for Retry-After header from Groq (in seconds)
+            const retryAfter = response.headers.get('Retry-After');
+            let delay;
+
+            if (retryAfter) {
+                // Groq tells us exactly how long to wait
+                delay = parseInt(retryAfter) * 1000;
+                console.warn(`[ZeroAPI] Groq rate limit. Retry-After: ${retryAfter}s. Retry ${attempt}/${maxRetries}`);
+            } else {
+                // Fallback to exponential backoff: 2s → 4s → 8s → 16s → 32s + jitter
+                const baseDelay = Math.pow(2, attempt) * 1000;
+                const jitter = Math.random() * 500;
+                delay = baseDelay + jitter;
+                console.warn(`[ZeroAPI] Rate limited. Retry ${attempt}/${maxRetries} in ${(delay / 1000).toFixed(1)}s`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+        }
+
+        // Server error (500, 503) — retry once
+        if (response.status >= 500 && attempt < 1) {
+            attempt++;
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            continue;
+        }
+
+        // Any other error — return as-is, let the caller handle
+        return response;
     }
 
-    // Success
-    if (response.ok) return response;
-
-    // Rate limited by Groq — backoff and retry
-    if (response.status === 429) {
-      attempt++;
-      if (attempt > maxRetries) break;
-
-      // Exponential delay: 2s → 4s → 8s + up to 500ms random jitter
-      const baseDelay = Math.pow(2, attempt) * 1000;
-      const jitter    = Math.random() * 500;
-      const delay     = baseDelay + jitter;
-
-      console.warn(`[ZeroAPI] Rate limited. Retry ${attempt}/${maxRetries} in ${(delay / 1000).toFixed(1)}s`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      continue;
-    }
-
-    // Server error (500, 503) — retry once
-    if (response.status >= 500 && attempt < 1) {
-      attempt++;
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      continue;
-    }
-
-    // Any other error — return as-is, let the caller handle
-    return response;
-  }
-
-  // All retries exhausted
-  throw new Error('Service is busy right now. Please wait a moment and try again.');
+    // All retries exhausted
+    throw new Error('Service is busy right now. Please wait a moment and try again.');
 }
 
 // ── Analytics ─────────────────────────────────────────────────
