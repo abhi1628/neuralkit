@@ -13,7 +13,7 @@ export const WORD_LIMIT_UPLOAD = 40000;
 // HEAVY   → llama-3.3-70b-versatile  (best reasoning, 6k TPM bucket)
 // MEDIUM  → llama-3.1-8b-instant     (fast, capable, separate 6k TPM bucket)
 // LARGE-CTX → llama-3.1-8b-instant   (128k context window, best for big docs)
-// LIGHT   → gemma2-9b-it             (fast, separate bucket, simple tasks)
+// LIGHT   → llama-3.1-8b-instant     (fast, separate bucket, simple tasks)
 
 export const MODELS = {
   // Needs best reasoning — resume logic, JSON generation
@@ -23,7 +23,7 @@ export const MODELS = {
   // 128k context — large document uploads (mixtral decommissioned)
   LARGE_CTX: 'llama-3.1-8b-instant',
   // Quick tasks — trivia, interview eval
-  LIGHT:     'gemma2-9b-it',
+  LIGHT:     'llama-3.1-8b-instant',
 };
 
 // ── Tool → Model assignments ──────────────────────────────────
