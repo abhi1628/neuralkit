@@ -82,7 +82,7 @@ const posts = [
   },
   {
   slug: "30-data-science-interview-questions-2026-faang",
-  title: "30 Data Science Interview Questions That Actually Get Asked in 2026.",
+  title: "30 Data Science Interview Questions That Actually You Should Know In 2026.",
   excerpt: "Forget generic prep lists. These are the exact questions Google, Meta, Amazon, Netflix, and Stripe asked candidates this year — with answers that separate the hire from the almost-hire."
   }
 ];
