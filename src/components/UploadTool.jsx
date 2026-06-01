@@ -24,14 +24,14 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   const [qaAnswer,          setQaAnswer]          = useState('');
   const [parsedResumeData,  setParsedResumeData]  = useState(null);
   const [qaLoading,         setQaLoading]         = useState(false);
-  const [chunkProgress,     setChunkProgress]     = useState(null); // { current, total, finalizing }
+  const [chunkProgress,     setChunkProgress]     = useState(null);
   const fileRef = useRef(null);
   const topRef  = useRef(null);
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Chunking constants
-  const SUMMARY_CHUNK_SIZE = 4000;  // chars per chunk (~1000 tokens input)
+  // Chunking constants — increased for fewer API calls
+  const SUMMARY_CHUNK_SIZE = 5000;
 
   const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
 
@@ -178,23 +178,20 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         return;
       }
 
-      // Large doc — multi-model parallel map-reduce
-      // Each model has its own separate TPM bucket on Groq (free tier):
-      //   gemma2-9b-it          → 15,000 TPM  (assigned most chunks)
-      //   llama-3.1-8b-instant  →  6,000 TPM
-      //   llama-3.3-70b-versatile→ 6,000 TPM  (reserved for final synthesis)
+      // Large doc — sequential chunk processing with delays
+      // Sequential prevents rate limit collisions from parallel requests.
+      // All active models — no deprecated gemma2-9b-it.
       //
-      // Pool pattern [gemma, 8b, gemma, gemma] repeating:
-      //   chunk 0,2,3,6,7… → gemma2   (high TPM, safe for many chunks)
-      //   chunk 1,5,9…     → 8b-instant
-      //   chunk 4,8,12…    → (back to gemma — 70b saved for final only)
-      // This keeps every model safely under its TPM limit even for ~50-page docs.
+      // Pool pattern [8b, 70b, 8b, 8b] repeating:
+      //   chunk 0,2,3,6,7… → llama-3.1-8b-instant  (6K TPM, fast & cheap)
+      //   chunk 1,5,9…     → llama-3.3-70b-versatile (6K TPM, best reasoning)
+      // 70b reserved for final synthesis only.
 
       const MODEL_POOL = [
-        'llama-3.1-8b-instant',   // ← 6K TPM bucket, fast
-        'llama-3.3-70b-versatile', // ← 6K TPM bucket, best reasoning
-        'llama-3.1-8b-instant',   // ← back to 8b
-        'llama-3.1-8b-instant',   // ← 8b again
+        'llama-3.1-8b-instant',     // 6K TPM, 560 T/s — workhorse
+        'llama-3.3-70b-versatile',  // 6K TPM, 280 T/s — best reasoning
+        'llama-3.1-8b-instant',     // 6K TPM
+        'llama-3.1-8b-instant',     // 6K TPM
       ];
 
       // Step 1: split into chunks
@@ -205,44 +202,57 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       setChunkProgress({ completed: 0, total: textChunks.length, finalizing: false });
 
-      // Step 2: batched parallel — fire 3 chunks at a time across model buckets
-      // Why batched (not fully parallel): if multiple users hit simultaneously,
-      // fully parallel would combine into 20+ concurrent requests → TPM overflow.
-      // Batches of 3 with a 2s gap keeps peak load manageable while staying
-      // ~5× faster than sequential.
-      const BATCH_SIZE = 3;
+      // Step 2: sequential processing with delays
+      // Sequential prevents rate limit collisions.
+      // 3 second delay between chunks to stay under Groq TPM limits.
       let completedCount = 0;
       const results = [];
 
-      const summarizeChunk = (chunk, i) => {
+      const summarizeChunk = async (chunk, i) => {
         const model = MODEL_POOL[i % MODEL_POOL.length];
-        return fetchWithBackoff(GROQ_API_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const res = await fetchWithBackoff(GROQ_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model, max_tokens: 500, temperature: 0.3,
+            model: model,
+            max_tokens: 500,
+            temperature: 0.3,
             messages: [
-              { role: 'system', content: 'You are a precise document analyst. Summarize the key points from this document section in 4-6 bullet points. Preserve numbers, names, findings, and methodology details. Be concise.' },
-              { role: 'user',   content: `Section ${i + 1} of ${textChunks.length}:\n\n${chunk}` },
+              {
+                role: 'system',
+                content: 'You are a precise document analyst. Summarize the key points from this document section in 4-6 bullet points. Preserve numbers, names, findings, and methodology details. Be concise.'
+              },
+              {
+                role: 'user',
+                content: `Section ${i + 1} of ${textChunks.length}:\n\n${chunk}`
+              },
             ],
           }),
-        })
-        .then(r => r.json())
-        .then(data => {
-          completedCount++;
-          setChunkProgress({ completed: completedCount, total: textChunks.length, finalizing: false });
-          if (data?.error) throw new Error(`Section ${i + 1}: ${data.error.message}`);
-          return { index: i, text: data?.choices?.[0]?.message?.content || '' };
-        });
+        }, 5);
+
+        const data = await res.json();
+        if (data?.error) throw new Error(`Section ${i + 1}: ${data.error.message}`);
+        return { index: i, text: data?.choices?.[0]?.message?.content || '' };
       };
 
-      for (let b = 0; b < textChunks.length; b += BATCH_SIZE) {
-        const batch = textChunks.slice(b, b + BATCH_SIZE);
-        const batchResults = await Promise.all(
-          batch.map((chunk, j) => summarizeChunk(chunk, b + j))
-        );
-        results.push(...batchResults);
-        // 2s gap between batches — prevents TPM spike when multiple users active
-        if (b + BATCH_SIZE < textChunks.length) await delay(2000);
+      for (let i = 0; i < textChunks.length; i++) {
+        const chunk = textChunks[i];
+        console.warn(`[ZeroAPI] Processing chunk ${i + 1}/${textChunks.length}`);
+
+        try {
+          const result = await summarizeChunk(chunk, i);
+          results.push(result);
+          completedCount++;
+          setChunkProgress({ completed: completedCount, total: textChunks.length, finalizing: false });
+        } catch (err) {
+          console.error(`[ZeroAPI] Chunk ${i + 1} failed:`, err.message);
+          throw err;
+        }
+
+        // 3 second delay between chunks to stay under rate limits
+        if (i < textChunks.length - 1) {
+          await delay(3000);
+        }
       }
 
       // Preserve original section order before combining
@@ -251,7 +261,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         .map(r => `[Section ${r.index + 1}/${textChunks.length}]\n${r.text}`);
 
       // Step 3: final meta-summary on the best model (llama-3.3-70b)
-      // Small 3s buffer so the 70b bucket is clear before this request
+      // 3s buffer so the 70b bucket is clear before this request
       setChunkProgress({ completed: textChunks.length, total: textChunks.length, finalizing: true });
       await delay(3000);
 
@@ -366,7 +376,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
           </button>
           {chunkProgress && !chunkProgress.finalizing && (
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
-              ⚡ Running {chunkProgress.total} sections in parallel across 2 AI models
+              ⚡ Running {chunkProgress.total} sections sequentially across 2 AI models
             </div>
           )}
         </>
