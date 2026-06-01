@@ -1,6 +1,6 @@
 const post = {
   slug: "30-data-science-interview-questions-2026-faang",
-  title: "30 Data Science Interview Questions That Actually Get Asked in 2026 (With Real Company Names)",
+  title: "30 Data Science Interview Questions That Actually Get Asked in 2026",
   date: "June 01, 2026",
   readTime: "18 min read",
   category: "Data Science",
