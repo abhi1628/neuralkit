@@ -191,10 +191,10 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       // This keeps every model safely under its TPM limit even for ~50-page docs.
 
       const MODEL_POOL = [
-        'gemma2-9b-it',           // 15k TPM — workhorse
-        'llama-3.1-8b-instant',   // 6k TPM
-        'gemma2-9b-it',           // 15k TPM
-        'gemma2-9b-it',           // 15k TPM
+        'llama-3.1-8b-instant',   // ← 6K TPM bucket, fast
+        'llama-3.3-70b-versatile', // ← 6K TPM bucket, best reasoning
+        'llama-3.1-8b-instant',   // ← back to 8b
+        'llama-3.1-8b-instant',   // ← 8b again
       ];
 
       // Step 1: split into chunks
