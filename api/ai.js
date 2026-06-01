@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 const safeMaxTokens = Math.min(parseInt(max_tokens) || 1000, 2000);
 
 // 🛡️ Validate model against whitelist
-const ALLOWED_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"];
+const ALLOWED_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
 const safeModel = ALLOWED_MODELS.includes(model) ? model : "llama-3.3-70b-versatile";
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: "Missing messages array" });
