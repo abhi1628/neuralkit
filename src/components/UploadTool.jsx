@@ -24,8 +24,15 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   const [qaAnswer,          setQaAnswer]          = useState('');
   const [parsedResumeData,  setParsedResumeData]  = useState(null);
   const [qaLoading,         setQaLoading]         = useState(false);
+  const [chunkProgress,     setChunkProgress]     = useState(null); // { current, total, finalizing }
   const fileRef = useRef(null);
   const topRef  = useRef(null);
+
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Chunking constants — keeps each request safely under Groq free-tier 6k TPM
+  const SUMMARY_CHUNK_SIZE = 4000;  // chars (~1000 tokens input)
+  const CHUNK_DELAY_MS     = 16000; // 16 s gap → max 3 requests/min → ~5250 tokens/min < 6000 TPM
 
   const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
 
@@ -111,33 +118,129 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
   async function analyze() {
     if (!extractedText) return;
+
+    // ── Resume path (unchanged) ──────────────────────────────
     if (label === 'Analyze Resume') {
       if (isResearchPaper(extractedText)) { setError('❌ This appears to be an academic document. Please upload a CV or resume file.'); return; }
       if (!isResumeLike(extractedText))   { setError('❌ The uploaded file doesn\'t appear to be a resume. Please upload a proper CV or resume.'); return; }
+      setLoading(true); setOutput(''); setError('');
+      trackEvent('tool_run', { tool_name: label });
+      const contextForLLM = chunks.length > 0 ? chunks.slice(0, 20).map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n') : extractedText;
+      try {
+        const res = await fetchWithBackoff(GROQ_API_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: TOOL_MODELS.resumeAnalyzer, max_tokens: 900, temperature: 0.3,
+            messages: [
+              { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
+              { role: 'user',   content: contextForLLM },
+            ],
+          }),
+        });
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+          setOutput(data.choices[0].message.content);
+        } else if (data?.error) {
+          setError(`API Error: ${data.error.message}`);
+        } else {
+          setError('Unexpected response. Please try again.');
+        }
+      } catch (e) { setError(e.message || 'Connection error. Please try again.'); }
+      setLoading(false);
+      return;
     }
-    setLoading(true); setOutput(''); setError('');
+
+    // ── Document Summarizer path — chunked map-reduce ────────
+    setLoading(true); setOutput(''); setError(''); setChunkProgress(null);
     trackEvent('tool_run', { tool_name: label });
-    const contextForLLM = chunks.length > 0 ? chunks.slice(0, 20).map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n') : extractedText;
+
     try {
-      const res = await fetchWithBackoff(GROQ_API_URL, {
+      // Small doc — single pass (fast path)
+      if (extractedText.length <= SUMMARY_CHUNK_SIZE) {
+        const res = await fetchWithBackoff(GROQ_API_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
+            messages: [
+              { role: 'system', content: prompt },
+              { role: 'user',   content: extractedText },
+            ],
+          }),
+        });
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+          setOutput(data.choices[0].message.content);
+        } else if (data?.error) {
+          setError(`API Error: ${data.error.message}`);
+        } else {
+          setError('Unexpected response. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Large doc — chunked map-reduce
+      // Step 1: split into SUMMARY_CHUNK_SIZE chunks
+      const textChunks = [];
+      for (let i = 0; i < extractedText.length; i += SUMMARY_CHUNK_SIZE) {
+        textChunks.push(extractedText.slice(i, i + SUMMARY_CHUNK_SIZE));
+      }
+
+      const partialSummaries = [];
+
+      // Step 2: summarize each chunk individually
+      for (let i = 0; i < textChunks.length; i++) {
+        setChunkProgress({ current: i + 1, total: textChunks.length, finalizing: false });
+
+        // Delay before each request (except first) to stay under 6k TPM
+        if (i > 0) await delay(CHUNK_DELAY_MS);
+
+        const res = await fetchWithBackoff(GROQ_API_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: TOOL_MODELS.documentSummarizer, max_tokens: 500, temperature: 0.3,
+            messages: [
+              { role: 'system', content: 'You are a precise document analyst. Summarize the key points from this document section in 4-6 bullet points. Preserve numbers, names, findings, and methodology details. Be concise.' },
+              { role: 'user',   content: `Section ${i + 1} of ${textChunks.length}:\n\n${textChunks[i]}` },
+            ],
+          }),
+        });
+        const data = await res.json();
+        if (data?.choices?.[0]?.message?.content) {
+          partialSummaries.push(`[Section ${i + 1}/${textChunks.length}]\n${data.choices[0].message.content}`);
+        } else if (data?.error) {
+          throw new Error(`Section ${i + 1} failed: ${data.error.message}`);
+        }
+      }
+
+      // Step 3: final meta-summary from partial results
+      setChunkProgress({ current: textChunks.length, total: textChunks.length, finalizing: true });
+      await delay(CHUNK_DELAY_MS);
+
+      const combinedSummaries = partialSummaries.join('\n\n');
+      const finalRes = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: label === 'Analyze Resume' ? TOOL_MODELS.resumeAnalyzer : TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
+          model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
           messages: [
-            { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
-            { role: 'user',   content: contextForLLM },
+            { role: 'system', content: prompt + '\n\nYou will receive section-by-section summaries of a larger document. Synthesize them into one comprehensive final summary following the format above.' },
+            { role: 'user',   content: `Document section summaries:\n\n${combinedSummaries}\n\nProvide the final comprehensive summary.` },
           ],
         }),
       });
-      const data = await res.json();
-      if (data?.choices?.[0]?.message?.content) {
-        setOutput(data.choices[0].message.content);
-      } else if (data?.error) {
-        setError(`API Error: ${data.error.message}`);
+      const finalData = await finalRes.json();
+      if (finalData?.choices?.[0]?.message?.content) {
+        setOutput(finalData.choices[0].message.content);
+      } else if (finalData?.error) {
+        setError(`API Error: ${finalData.error.message}`);
       } else {
         setError('Unexpected response. Please try again.');
       }
-    } catch (e) { setError(e.message || 'Connection error. Please try again.'); }
+    } catch (e) {
+      setError(e.message || 'Connection error. Please try again.');
+    }
+
+    setChunkProgress(null);
     setLoading(false);
   }
 
@@ -211,8 +314,22 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       {extractedText && (
         <button onClick={analyze} disabled={loading} className={`run-btn ${loading ? 'run-btn-disabled' : ''}`} aria-label={label}>
-          {loading ? <><span className="spinner" />Analyzing...</> : `→ ${label}`}
+          {loading ? (
+            <>
+              <span className="spinner" />
+              {chunkProgress
+                ? chunkProgress.finalizing
+                  ? 'Finalizing summary…'
+                  : `Summarizing section ${chunkProgress.current} of ${chunkProgress.total}…`
+                : 'Analyzing…'}
+            </>
+          ) : `→ ${label}`}
         </button>
+        {chunkProgress && !chunkProgress.finalizing && (
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
+            Large document detected · processing in sections · est. {Math.ceil((chunkProgress.total + 1) * 16 / 60)} min
+          </div>
+        )}
       )}
 
       {error && (
