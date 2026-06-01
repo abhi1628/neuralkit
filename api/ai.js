@@ -54,21 +54,21 @@ const safeModel = ALLOWED_MODELS.includes(model) ? model : "llama-3.3-70b-versat
   const isHeavyRequest = Array.isArray(messages) &&
     messages.some(m => typeof m.content === 'string' && m.content.length > 1500);
 
-  if (isHeavyRequest) {
+if (isHeavyRequest) {
     const heavyKey = `heavy_${clientIp}`;
     if (!global.heavyMap) global.heavyMap = new Map();
     const heavyEntry = global.heavyMap.get(heavyKey);
-    if (heavyEntry && now - heavyEntry.windowStart < 60000) {
-      if (heavyEntry.count >= 5) {
-        return res.status(429).json({
-          error: 'Large document limit reached. Please wait a moment before summarizing again.'
-        });
-      }
-      heavyEntry.count++;
+    if (heavyEntry && now - heavyEntry.windowStart < 120000) {  // 2 minutes window
+        if (heavyEntry.count >= 10) {  // 10 heavy requests per 2 minutes
+            return res.status(429).json({
+                error: 'Large document limit reached. Please wait a moment before summarizing again.'
+            });
+        }
+        heavyEntry.count++;
     } else {
-      global.heavyMap.set(heavyKey, { windowStart: now, count: 1 });
+        global.heavyMap.set(heavyKey, { windowStart: now, count: 1 });
     }
-  }
+}
 
   try {
     const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
