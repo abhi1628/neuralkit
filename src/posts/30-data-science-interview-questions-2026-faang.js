@@ -668,7 +668,7 @@ PRODUCT & BUSINESS
     {
       type: "cta",
       text: "Read: The Agentic AI Roadmap →",
-      href: "/blog/agentic-ai-roadmap-from-zero-to-production",
+      href: "https://www.zeroapi.in/learn/agentic-ai-roadmap-from-zero-to-production",
       note: "Because every data scientist in 2026 needs to understand autonomous systems"
     }
   ]
