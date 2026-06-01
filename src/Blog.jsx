@@ -13,11 +13,12 @@ import modelSwapping   from "./posts/model-swapping-ai-engineering-2026";
 import fullstackRoadmap from "./posts/fullstack-roadmap-2026";
 import agenticaiWorking from "./posts/how-agentic-ai-actually-works-simple-python";
 import agenticaiRoadmap from "./posts/agentic-ai-roadmap-from-zero-to-production";
+import datascienceInterview from "./posts/30-data-science-interview-questions-2026-faang";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
   sqlWindow, ciscoIdeathon, modelSwapping, fullstackRoadmap,
-  agenticaiWorking, agenticaiRoadmap,
+  agenticaiWorking, agenticaiRoadmap,datascienceInterview,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
