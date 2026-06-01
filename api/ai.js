@@ -27,12 +27,47 @@ const safeModel = ALLOWED_MODELS.includes(model) ? model : "llama-3.3-70b-versat
   const rateKey = `rate_${clientIp}`;
   const now = Date.now();
   if (!global.rateMap) global.rateMap = new Map();
+  if (!global.heavyMap) global.heavyMap = new Map();
+
+  // Cleanup old entries every 10 minutes to prevent memory leaks
+  if (!global.cleanupStarted) {
+    global.cleanupStarted = true;
+    setInterval(() => {
+      const now = Date.now();
+      for (const [k, v] of global.rateMap.entries())  { if (now - v.windowStart > 300000) global.rateMap.delete(k); }
+      for (const [k, v] of global.heavyMap.entries()) { if (now - v.windowStart > 60000)  global.heavyMap.delete(k); }
+    }, 600000);
+  }
   const entry = global.rateMap.get(rateKey);
   if (entry && now - entry.windowStart < 300000) {
     if (entry.count >= 20) return res.status(429).json({ error: "Too many requests. Try again in a few minutes." });
     entry.count++;
   } else {
     global.rateMap.set(rateKey, { windowStart: now, count: 1 });
+  }
+
+  // ── Heavy request limiter (Fix 3) ────────────────────────────
+  // Document summarization fires multiple chunk requests rapidly.
+  // This separate limit allows max 5 chunk-sized requests per minute per IP,
+  // which is enough for one full document but blocks abuse/spam.
+  // "Heavy" = large prompt (content > 1500 chars) with meaningful output requested.
+  const isHeavyRequest = Array.isArray(messages) &&
+    messages.some(m => typeof m.content === 'string' && m.content.length > 1500);
+
+  if (isHeavyRequest) {
+    const heavyKey = `heavy_${clientIp}`;
+    if (!global.heavyMap) global.heavyMap = new Map();
+    const heavyEntry = global.heavyMap.get(heavyKey);
+    if (heavyEntry && now - heavyEntry.windowStart < 60000) {
+      if (heavyEntry.count >= 5) {
+        return res.status(429).json({
+          error: 'Large document limit reached. Please wait a moment before summarizing again.'
+        });
+      }
+      heavyEntry.count++;
+    } else {
+      global.heavyMap.set(heavyKey, { windowStart: now, count: 1 });
+    }
   }
 
   try {
