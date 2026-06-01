@@ -205,9 +205,16 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       setChunkProgress({ completed: 0, total: textChunks.length, finalizing: false });
 
-      // Step 2: fire ALL chunk requests in parallel — each on its own model bucket
+      // Step 2: batched parallel — fire 3 chunks at a time across model buckets
+      // Why batched (not fully parallel): if multiple users hit simultaneously,
+      // fully parallel would combine into 20+ concurrent requests → TPM overflow.
+      // Batches of 3 with a 2s gap keeps peak load manageable while staying
+      // ~5× faster than sequential.
+      const BATCH_SIZE = 3;
       let completedCount = 0;
-      const chunkPromises = textChunks.map((chunk, i) => {
+      const results = [];
+
+      const summarizeChunk = (chunk, i) => {
         const model = MODEL_POOL[i % MODEL_POOL.length];
         return fetchWithBackoff(GROQ_API_URL, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -226,10 +233,17 @@ export default function UploadTool({ prompt, filename, icon, label }) {
           if (data?.error) throw new Error(`Section ${i + 1}: ${data.error.message}`);
           return { index: i, text: data?.choices?.[0]?.message?.content || '' };
         });
-      });
+      };
 
-      // Wait for all parallel requests to finish
-      const results = await Promise.all(chunkPromises);
+      for (let b = 0; b < textChunks.length; b += BATCH_SIZE) {
+        const batch = textChunks.slice(b, b + BATCH_SIZE);
+        const batchResults = await Promise.all(
+          batch.map((chunk, j) => summarizeChunk(chunk, b + j))
+        );
+        results.push(...batchResults);
+        // 2s gap between batches — prevents TPM spike when multiple users active
+        if (b + BATCH_SIZE < textChunks.length) await delay(2000);
+      }
 
       // Preserve original section order before combining
       const partialSummaries = results
