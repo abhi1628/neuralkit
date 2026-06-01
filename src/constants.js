@@ -4,7 +4,7 @@ export const GROQ_API_URL     = '/api/ai';
 export const VISITOR_API_URL  = '/api/visitors';
 export const GA_ID            = 'G-FTQS5X9WF3';
 export const WORD_LIMIT        = 12000;
-export const WORD_LIMIT_UPLOAD = 40000;
+export const WORD_LIMIT_UPLOAD = 12000;
 
 // ── Model Routing ─────────────────────────────────────────────
 // Each model has its OWN separate rate limit bucket on Groq.
