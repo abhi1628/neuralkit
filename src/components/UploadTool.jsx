@@ -313,23 +313,25 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       </div>
 
       {extractedText && (
-        <button onClick={analyze} disabled={loading} className={`run-btn ${loading ? 'run-btn-disabled' : ''}`} aria-label={label}>
-          {loading ? (
-            <>
-              <span className="spinner" />
-              {chunkProgress
-                ? chunkProgress.finalizing
-                  ? 'Finalizing summary…'
-                  : `Summarizing section ${chunkProgress.current} of ${chunkProgress.total}…`
-                : 'Analyzing…'}
-            </>
-          ) : `→ ${label}`}
-        </button>
-        {chunkProgress && !chunkProgress.finalizing && (
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
-            Large document detected · processing in sections · est. {Math.ceil((chunkProgress.total + 1) * 16 / 60)} min
-          </div>
-        )}
+        <>
+          <button onClick={analyze} disabled={loading} className={`run-btn ${loading ? 'run-btn-disabled' : ''}`} aria-label={label}>
+            {loading ? (
+              <>
+                <span className="spinner" />
+                {chunkProgress
+                  ? chunkProgress.finalizing
+                    ? 'Finalizing summary…'
+                    : `Summarizing section ${chunkProgress.current} of ${chunkProgress.total}…`
+                  : 'Analyzing…'}
+              </>
+            ) : `→ ${label}`}
+          </button>
+          {chunkProgress && !chunkProgress.finalizing && (
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
+              Large document detected · processing in sections · est. {Math.ceil((chunkProgress.total + 1) * 16 / 60)} min
+            </div>
+          )}
+        </>
       )}
 
       {error && (
