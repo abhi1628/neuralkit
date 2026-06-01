@@ -4,15 +4,15 @@ export const GROQ_API_URL     = '/api/ai';
 export const VISITOR_API_URL  = '/api/visitors';
 export const GA_ID            = 'G-FTQS5X9WF3';
 export const WORD_LIMIT        = 12000;
-export const WORD_LIMIT_UPLOAD = 25000;
+export const WORD_LIMIT_UPLOAD = 40000;
 
 // ── Model Routing ─────────────────────────────────────────────
 // Each model has its OWN separate rate limit bucket on Groq.
 // Assigning the right model per task = multiple quota pools for free.
 //
 // HEAVY   → llama-3.3-70b-versatile  (best reasoning, 6k TPM bucket)
-// MEDIUM  → llama-3.1-8b-instant     (fast, capable, separate 20k TPM bucket)
-// LARGE-CTX → mixtral-8x7b-32768    (32k context window, best for big docs)
+// MEDIUM  → llama-3.1-8b-instant     (fast, capable, separate 6k TPM bucket)
+// LARGE-CTX → llama-3.1-8b-instant   (128k context window, best for big docs)
 // LIGHT   → gemma2-9b-it             (fast, separate bucket, simple tasks)
 
 export const MODELS = {
@@ -20,9 +20,9 @@ export const MODELS = {
   HEAVY:     'llama-3.3-70b-versatile',
   // Fast + capable — code, summaries, Q&A, MCQs
   MEDIUM:    'llama-3.1-8b-instant',
-  // 32k context — large document uploads
+  // 128k context — large document uploads (mixtral decommissioned)
   LARGE_CTX: 'llama-3.1-8b-instant',
-  // Quick tasks — trivia, interview eval, ask author
+  // Quick tasks — trivia, interview eval
   LIGHT:     'gemma2-9b-it',
 };
 
@@ -33,7 +33,7 @@ export const TOOL_MODELS = {
   resumeAnalyzer:       MODELS.HEAVY,      // ATS scoring, complex analysis
   resumeBuilderTool:    MODELS.HEAVY,      // wizard JSON output
   coverLetter:          MODELS.MEDIUM,     // writing task, 8b handles well
-  documentSummarizer:   MODELS.LARGE_CTX,  // large files, needs 32k context
+  documentSummarizer:   MODELS.LARGE_CTX,  // large files, 128k context
   documentQA:           MODELS.LARGE_CTX,  // Q&A on big docs
   researchSummarizer:   MODELS.MEDIUM,     // structured output, 8b is fine
   codeExplainer:        MODELS.MEDIUM,     // code analysis, 8b excels here
@@ -42,7 +42,7 @@ export const TOOL_MODELS = {
   interviewQuestions:   MODELS.MEDIUM,     // question generation
   interviewEval:        MODELS.MEDIUM,     // scoring JSON — medium more reliable
   trivia:               MODELS.MEDIUM,     // JSON output — 8b more reliable than gemma
-  askAuthor:            MODELS.LIGHT,      // conversational reply
+  askAuthor:            MODELS.MEDIUM,     // upgraded: 8b more reliable than gemma
 };
 
 export const DANGEROUS_INPUT_PATTERNS = [
