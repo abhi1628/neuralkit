@@ -30,9 +30,8 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Chunking constants — keeps each request safely under Groq free-tier 6k TPM
-  const SUMMARY_CHUNK_SIZE = 4000;  // chars (~1000 tokens input)
-  const CHUNK_DELAY_MS     = 16000; // 16 s gap → max 3 requests/min → ~5250 tokens/min < 6000 TPM
+  // Chunking constants
+  const SUMMARY_CHUNK_SIZE = 4000;  // chars per chunk (~1000 tokens input)
 
   const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
 
@@ -179,49 +178,74 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         return;
       }
 
-      // Large doc — chunked map-reduce
-      // Step 1: split into SUMMARY_CHUNK_SIZE chunks
+      // Large doc — multi-model parallel map-reduce
+      // Each model has its own separate TPM bucket on Groq (free tier):
+      //   gemma2-9b-it          → 15,000 TPM  (assigned most chunks)
+      //   llama-3.1-8b-instant  →  6,000 TPM
+      //   llama-3.3-70b-versatile→ 6,000 TPM  (reserved for final synthesis)
+      //
+      // Pool pattern [gemma, 8b, gemma, gemma] repeating:
+      //   chunk 0,2,3,6,7… → gemma2   (high TPM, safe for many chunks)
+      //   chunk 1,5,9…     → 8b-instant
+      //   chunk 4,8,12…    → (back to gemma — 70b saved for final only)
+      // This keeps every model safely under its TPM limit even for ~50-page docs.
+
+      const MODEL_POOL = [
+        'gemma2-9b-it',           // 15k TPM — workhorse
+        'llama-3.1-8b-instant',   // 6k TPM
+        'gemma2-9b-it',           // 15k TPM
+        'gemma2-9b-it',           // 15k TPM
+      ];
+
+      // Step 1: split into chunks
       const textChunks = [];
       for (let i = 0; i < extractedText.length; i += SUMMARY_CHUNK_SIZE) {
         textChunks.push(extractedText.slice(i, i + SUMMARY_CHUNK_SIZE));
       }
 
-      const partialSummaries = [];
+      setChunkProgress({ completed: 0, total: textChunks.length, finalizing: false });
 
-      // Step 2: summarize each chunk individually
-      for (let i = 0; i < textChunks.length; i++) {
-        setChunkProgress({ current: i + 1, total: textChunks.length, finalizing: false });
-
-        // Delay before each request (except first) to stay under 6k TPM
-        if (i > 0) await delay(CHUNK_DELAY_MS);
-
-        const res = await fetchWithBackoff(GROQ_API_URL, {
+      // Step 2: fire ALL chunk requests in parallel — each on its own model bucket
+      let completedCount = 0;
+      const chunkPromises = textChunks.map((chunk, i) => {
+        const model = MODEL_POOL[i % MODEL_POOL.length];
+        return fetchWithBackoff(GROQ_API_URL, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: TOOL_MODELS.documentSummarizer, max_tokens: 500, temperature: 0.3,
+            model, max_tokens: 500, temperature: 0.3,
             messages: [
               { role: 'system', content: 'You are a precise document analyst. Summarize the key points from this document section in 4-6 bullet points. Preserve numbers, names, findings, and methodology details. Be concise.' },
-              { role: 'user',   content: `Section ${i + 1} of ${textChunks.length}:\n\n${textChunks[i]}` },
+              { role: 'user',   content: `Section ${i + 1} of ${textChunks.length}:\n\n${chunk}` },
             ],
           }),
+        })
+        .then(r => r.json())
+        .then(data => {
+          completedCount++;
+          setChunkProgress({ completed: completedCount, total: textChunks.length, finalizing: false });
+          if (data?.error) throw new Error(`Section ${i + 1}: ${data.error.message}`);
+          return { index: i, text: data?.choices?.[0]?.message?.content || '' };
         });
-        const data = await res.json();
-        if (data?.choices?.[0]?.message?.content) {
-          partialSummaries.push(`[Section ${i + 1}/${textChunks.length}]\n${data.choices[0].message.content}`);
-        } else if (data?.error) {
-          throw new Error(`Section ${i + 1} failed: ${data.error.message}`);
-        }
-      }
+      });
 
-      // Step 3: final meta-summary from partial results
-      setChunkProgress({ current: textChunks.length, total: textChunks.length, finalizing: true });
-      await delay(CHUNK_DELAY_MS);
+      // Wait for all parallel requests to finish
+      const results = await Promise.all(chunkPromises);
+
+      // Preserve original section order before combining
+      const partialSummaries = results
+        .sort((a, b) => a.index - b.index)
+        .map(r => `[Section ${r.index + 1}/${textChunks.length}]\n${r.text}`);
+
+      // Step 3: final meta-summary on the best model (llama-3.3-70b)
+      // Small 3s buffer so the 70b bucket is clear before this request
+      setChunkProgress({ completed: textChunks.length, total: textChunks.length, finalizing: true });
+      await delay(3000);
 
       const combinedSummaries = partialSummaries.join('\n\n');
       const finalRes = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
+          model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.3,
           messages: [
             { role: 'system', content: prompt + '\n\nYou will receive section-by-section summaries of a larger document. Synthesize them into one comprehensive final summary following the format above.' },
             { role: 'user',   content: `Document section summaries:\n\n${combinedSummaries}\n\nProvide the final comprehensive summary.` },
@@ -320,15 +344,15 @@ export default function UploadTool({ prompt, filename, icon, label }) {
                 <span className="spinner" />
                 {chunkProgress
                   ? chunkProgress.finalizing
-                    ? 'Finalizing summary…'
-                    : `Summarizing section ${chunkProgress.current} of ${chunkProgress.total}…`
+                    ? 'Synthesizing final summary…'
+                    : `Processing sections… (${chunkProgress.completed}/${chunkProgress.total} done)`
                   : 'Analyzing…'}
               </>
             ) : `→ ${label}`}
           </button>
           {chunkProgress && !chunkProgress.finalizing && (
             <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
-              Large document detected · processing in sections · est. {Math.ceil((chunkProgress.total + 1) * 16 / 60)} min
+              ⚡ Running {chunkProgress.total} sections in parallel across 2 AI models
             </div>
           )}
         </>
