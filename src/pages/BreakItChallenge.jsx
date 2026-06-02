@@ -19,13 +19,18 @@ const CHALLENGE_CATEGORIES = [
         solves: 1247,
         description: "dropna() silently drops rows. Your revenue calculation is wrong but looks right.",
         setup: "You're analyzing sales data for Q3. The CSV has columns: product, price, quantity. Some quantities are missing (NaN). You need total revenue. The code below seems correct — but the result is wrong.",
-        brokenCode: `import pandas as pd
-
-df = pd.read_csv("sales.csv")
-df.dropna(inplace=True)
-df["revenue"] = df["price"] * df["quantity"]
-
-print(f"Total revenue: ${df['revenue'].sum():.2f}")`,
+        "import pandas as pd\n\n" +
+  "df = pd.read_csv(\"sales.csv\")\n\n" +
+  "# Check what we dropped\n" +
+  "rows_before = len(df)\n" +
+  "df_clean = df.dropna(subset=[\"quantity\"])  // Only drop where quantity is missing\n" +
+  "rows_after = len(df_clean)\n" +
+  "print(f\"Dropped {rows_before - rows_after} rows with missing quantity\")\n\n" +
+  "df_clean[\"revenue\"] = df_clean[\"price\"] * df_clean[\"quantity\"]\n\n" +
+  "# Verify: any zero quantities?\n" +
+  "zero_qty = (df_clean[\"quantity\"] == 0).sum()\n" +
+  "print(f\"Rows with zero quantity: {zero_qty}\")\n\n" +
+  "print(f\"Total revenue: ${df_clean['revenue'].sum():.2f}\")",
         language: "python",
         hints: [
           "Look at how missing values are handled. What does dropna() actually do?",
