@@ -6,6 +6,14 @@ import { TOOLS, DEV_TOOLS, GA_ID } from './constants';
 import { loadGA, fetchVisitorCount, trackEvent } from './utils';
 import appStyles from './appStyles';
 
+// ── Page imports ──────────────────────────────
+import { BlogList, BlogPost } from './Blog';
+import Privacy from './pages/Privacy';
+import Contact from './pages/Contact';
+import About   from './pages/About';
+import BreakIt from './pages/BreakIt';
+import BreakItChallenge from './pages/BreakItChallenge';
+
 // ── Components ────────────────────────────────────────────────
 import ErrorBoundary   from './components/ErrorBoundary';
 import ScrollToTop     from './components/ScrollToTop';
@@ -204,13 +212,6 @@ function AppInner() {
 }
 
 // ── Page wrappers (pass theme prop cleanly) ───────────────────
-import { BlogList, BlogPost } from './Blog';
-import Privacy from './pages/Privacy';
-import Contact from './pages/Contact';
-import About   from './pages/About';
-import BreakIt from './pages/BreakIt';
-import BreakItChallenge from './pages/BreakItChallenge';
-
 function BlogListPage()  { const { theme } = useTheme(); return <BlogList  theme={theme} />; }
 function BlogPostPage()  { const { theme } = useTheme(); return <BlogPost  theme={theme} />; }
 function PrivacyPage()   { const { theme } = useTheme(); return <Privacy   theme={theme} />; }
