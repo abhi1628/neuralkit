@@ -209,6 +209,7 @@ import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
 import About   from './pages/About';
 import BreakIt from './pages/BreakIt';
+import BreakItChallenge from './pages/BreakItChallenge';
 
 function BlogListPage()  { const { theme } = useTheme(); return <BlogList  theme={theme} />; }
 function BlogPostPage()  { const { theme } = useTheme(); return <BlogPost  theme={theme} />; }
@@ -216,6 +217,7 @@ function PrivacyPage()   { const { theme } = useTheme(); return <Privacy   theme
 function ContactPage()   { const { theme } = useTheme(); return <Contact   theme={theme} />; }
 function AboutPage()     { const { theme } = useTheme(); return <About     theme={theme} />; }
 function BreakItPage()   { const { theme } = useTheme(); return <BreakIt theme={theme} />; }
+function BreakItChallengePage() { const { theme } = useTheme(); return <BreakItChallenge theme={theme} />; }
 
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
@@ -230,6 +232,7 @@ export default function App() {
         <Route path="/about"       element={<AboutPage />} />
         <Route path="*"            element={<AppInner />} />
         <Route path="/breakit" element={<BreakItPage />} />
+        <Route path="/breakit/:slug" element={<BreakItChallengePage />} />
       </Routes>
     </ErrorBoundary>
   );
