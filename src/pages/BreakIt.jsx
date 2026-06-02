@@ -207,16 +207,21 @@ export default function BreakIt({ theme }) {
         )}
 
         {/* ── Submit Your Bug CTA ── */}
-        <div style={{ marginTop: "48px", background: isDark ? "rgba(167,139,250,0.03)" : "rgba(124,58,237,0.04)", border: `1px dashed ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "16px", padding: "32px", textAlign: "center" }}>
-          <div style={{ fontSize: "1.8rem", marginBottom: "12px" }}>🐛</div>
-          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "8px" }}>Found a nasty bug in production?</div>
-          <div style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)", marginBottom: "16px", lineHeight: 1.6 }}>
-            Submit it and help thousands of developers learn from your pain.
-          </div>
-          <button style={{ background: "transparent", border: `1px solid ${ac}44`, borderRadius: "10px", padding: "10px 24px", color: ac, fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }}>
-            Submit a Bug →
-          </button>
-        </div>
+<div style={{ marginTop: "48px", background: isDark ? "rgba(167,139,250,0.03)" : "rgba(124,58,237,0.04)", border: `1px dashed ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "16px", padding: "32px", textAlign: "center" }}>
+  <div style={{ fontSize: "1.8rem", marginBottom: "12px" }}>🐛</div>
+  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "8px" }}>Found a nasty bug in production?</div>
+  <div style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.55)", marginBottom: "16px", lineHeight: 1.6 }}>
+    Submit it and help thousands of developers learn from your pain.
+  </div>
+  <button 
+    onClick={() => navigate("/contact")}
+    style={{ background: "transparent", border: `1px solid ${ac}44`, borderRadius: "10px", padding: "10px 24px", color: ac, fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", transition: "all 0.2s" }}
+    onMouseEnter={e => { e.currentTarget.style.background = `${ac}11`; }}
+    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+  >
+    Submit a Bug →
+  </button>
+</div>
       </div>
     </div>
   );
