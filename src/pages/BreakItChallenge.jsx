@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
 
-// ── Challenge Data (same as BreakIt.jsx, but with full code) ──
+// ── Challenge Data ────────────────────────────────────────────
 const CHALLENGE_CATEGORIES = [
   {
     id: "python",
@@ -19,20 +19,20 @@ const CHALLENGE_CATEGORIES = [
         solves: 1247,
         description: "dropna() silently drops rows. Your revenue calculation is wrong but looks right.",
         setup: "You're analyzing sales data for Q3. The CSV has columns: product, price, quantity. Some quantities are missing (NaN). You need total revenue. The code below seems correct — but the result is wrong.",
-        brokenCode: `import pandas as pd
+        brokenCode: String.raw`import pandas as pd
 
 df = pd.read_csv("sales.csv")
 df.dropna(inplace=True)
 df["revenue"] = df["price"] * df["quantity"]
 
-print(f"Total revenue: \\${df['revenue'].sum():.2f}")`,
+print(f"Total revenue: ${df['revenue'].sum():.2f}")`,
         language: "python",
         hints: [
           "Look at how missing values are handled. What does dropna() actually do?",
           "Check what happens when quantity is 0 vs NaN. Are they treated the same?",
           "dropna() drops ANY row with ANY NaN. What if price is missing too? How would you know?",
         ],
-        solution: `import pandas as pd
+        solution: String.raw`import pandas as pd
 
 df = pd.read_csv("sales.csv")
 
@@ -49,11 +49,7 @@ zero_qty = (df_clean["quantity"] == 0).sum()
 print(f"Rows with zero quantity: {zero_qty}")
 
 print(f"Total revenue: ${df_clean['revenue'].sum():.2f}")`,
-        explanation: `The bug: df.dropna() drops ANY row with ANY missing value. If even one column has NaN, the entire row is gone. This silently removes valid data where only non-critical columns are missing.
-
-The fix: Use dropna(subset=["quantity"]) to only drop rows where the specific column you need is missing. Also, check for zero vs NaN — 0 is valid data, NaN is missing data. The original code conflated them.
-
-The lesson: "Silent failures are worse than loud crashes."`,
+        explanation: "The bug: df.dropna() drops ANY row with ANY missing value. If even one column has NaN, the entire row is gone. This silently removes valid data where only non-critical columns are missing.\n\nThe fix: Use dropna(subset=[\"quantity\"]) to only drop rows where the specific column you need is missing. Also, check for zero vs NaN — 0 is valid data, NaN is missing data. The original code conflated them.\n\nThe lesson: \"Silent failures are worse than loud crashes.\"",
         lesson: "Silent failures are worse than loud crashes.",
         related: ["type-conversion-trap", "merge-mayhem"],
       },
@@ -99,11 +95,7 @@ for fid in form_ids_int:
         print(f"ID {fid} found")
     else:
         print(f"ID {fid} MISSING")`,
-        explanation: `The bug: String "101" and integer 101 are different types. In Python, "101" == 101 returns False. The 'in' operator uses equality comparison, so "101" in [101, 102, 103] is False for every element. The code silently reports all IDs as missing.
-
-The fix: Convert to the same type before comparison. Using set() also gives O(1) lookup instead of O(n) list scan.
-
-The lesson: "Type safety isn't a preference — it's a requirement."`,
+        explanation: "The bug: String \"101\" and integer 101 are different types. In Python, \"101\" == 101 returns False. The 'in' operator uses equality comparison, so \"101\" in [101, 102, 103] is False for every element. The code silently reports all IDs as missing.\n\nThe fix: Convert to the same type before comparison. Using set() also gives O(1) lookup instead of O(n) list scan.\n\nThe lesson: \"Type safety isn't a preference — it's a requirement.\"",
         lesson: "Type safety isn't a preference — it's a requirement.",
         related: ["silent-data-killer", "merge-mayhem"],
       },
@@ -161,11 +153,7 @@ print(result)
 result = customers.merge(orders, left_on="id", right_on="customer_id", how="left")
 assert len(result) == len(orders), "Unexpected row explosion!"
 print(f"Customers with orders: {result['customer_id'].notna().sum()}")`,
-        explanation: `The bug: A left join with duplicate keys in the right table creates duplicate rows in the result. Customer 1 has 2 orders → 2 rows. Customer 2 has 3 orders → 3 rows. Customer 3 has 0 orders → 1 row (with NaN). Total: 6 rows, not 3.
-
-The fix: Aggregate (groupby) before merging if you only need one row per customer. Or validate row counts after merge to catch unexpected explosions.
-
-The lesson: "Joins multiply. Always validate your row count."`,
+        explanation: "The bug: A left join with duplicate keys in the right table creates duplicate rows in the result. Customer 1 has 2 orders → 2 rows. Customer 2 has 3 orders → 3 rows. Customer 3 has 0 orders → 1 row (with NaN). Total: 6 rows, not 3.\n\nThe fix: Aggregate (groupby) before merging if you only need one row per customer. Or validate row counts after merge to catch unexpected explosions.\n\nThe lesson: \"Joins multiply. Always validate your row count.\"",
         lesson: "Joins multiply. Always validate your row count.",
         related: ["silent-data-killer", "accuracy-trap"],
       },
@@ -185,21 +173,21 @@ The lesson: "Joins multiply. Always validate your row count."`,
         solves: 1567,
         description: "You reported training accuracy. Your model is useless in production.",
         setup: "You trained a Random Forest and got 99% accuracy. You proudly report this to your manager. The model goes to production and fails completely.",
-        brokenCode: `from sklearn.model_selection import train_test_split
+        brokenCode: String.raw`from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 model = RandomForestClassifier()
 model.fit(X_train, y_train)
 
-print(f"Accuracy: {model.score(X_train, y_train):.2f}")`,
+print(f"Accuracy: ${model.score(X_train, y_train):.2f}")`,
         language: "python",
         hints: [
           "What dataset is model.score() using here? Training or test?",
           "Training accuracy on a complex model like Random Forest is almost always near 100%.",
           "The real question is: how does it perform on UNSEEN data?",
         ],
-        solution: `from sklearn.model_selection import train_test_split, cross_val_score
+        solution: String.raw`from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -208,20 +196,16 @@ model.fit(X_train, y_train)
 
 # WRONG: Training accuracy (memorization)
 train_acc = model.score(X_train, y_train)
-print(f"Training accuracy: {train_acc:.2f} — IGNORE THIS")
+print(f"Training accuracy: ${train_acc:.2f} — IGNORE THIS")
 
 # RIGHT: Test accuracy (generalization)
 test_acc = model.score(X_test, y_test)
-print(f"Test accuracy: {test_acc:.2f}")
+print(f"Test accuracy: ${test_acc:.2f}")
 
 # BETTER: Cross-validation (more robust)
 cv_scores = cross_val_score(model, X_train, y_train, cv=5)
-print(f"CV accuracy: {cv_scores.mean():.2f} (+/- {cv_scores.std():.2f})")`,
-        explanation: `The bug: model.score(X_train, y_train) evaluates on training data. A Random Forest with enough trees will memorize training data, giving ~99% accuracy. This tells you nothing about real-world performance.
-
-The fix: Always evaluate on held-out test data. Better yet, use cross-validation for more robust estimates. Report test accuracy, not training accuracy.
-
-The lesson: "The metric you report is the metric you optimize. Choose wrong, optimize garbage."`,
+print(f"CV accuracy: ${cv_scores.mean():.2f} (+/- ${cv_scores.std():.2f})")`,
+        explanation: "The bug: model.score(X_train, y_train) evaluates on training data. A Random Forest with enough trees will memorize training data, giving ~99% accuracy. This tells you nothing about real-world performance.\n\nThe fix: Always evaluate on held-out test data. Better yet, use cross-validation for more robust estimates. Report test accuracy, not training accuracy.\n\nThe lesson: \"The metric you report is the metric you optimize. Choose wrong, optimize garbage.\"",
         lesson: "The metric you report is the metric you optimize. Choose wrong, optimize garbage.",
         related: ["leaky-validation", "silent-data-killer"],
       },
@@ -233,7 +217,7 @@ The lesson: "The metric you report is the metric you optimize. Choose wrong, opt
         solves: 423,
         description: "Preprocessing before split. Your CV scores are lies.",
         setup: "You scaled your features and handled missing values before train_test_split. Your cross-validation scores look amazing. Your test score is terrible.",
-        brokenCode: `from sklearn.preprocessing import StandardScaler
+        brokenCode: String.raw`from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestClassifier
 
@@ -245,14 +229,14 @@ y = df["target"]
 
 model = RandomForestClassifier()
 scores = cross_val_score(model, X_scaled, y, cv=5)
-print(f"CV accuracy: {scores.mean():.2f}")`,
+print(f"CV accuracy: ${scores.mean():.2f}")`,
         language: "python",
         hints: [
           "When you scale all data before splitting, what information leaks from test to train?",
           "The mean imputation used ALL data including the test fold's future information.",
           "In cross-validation, each fold should be treated as unseen during preprocessing.",
         ],
-        solution: `from sklearn.preprocessing import StandardScaler
+        solution: String.raw`from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
@@ -269,17 +253,13 @@ pipeline = Pipeline([
 
 # Pipeline ensures scaler only sees training folds
 scores = cross_val_score(pipeline, X, y, cv=StratifiedKFold(5, shuffle=True, random_state=42))
-print(f"CV accuracy: {scores.mean():.2f}")
+print(f"CV accuracy: ${scores.mean():.2f}")
 
 # For final evaluation: fit on full train, evaluate on held-out test
 pipeline.fit(X_train, y_train)
 test_score = pipeline.score(X_test, y_test)
-print(f"Test accuracy: {test_score:.2f}")`,
-        explanation: `The bug: Preprocessing (scaling, imputation) on ALL data before splitting leaks information from test folds into training. The scaler learns the global mean (including test data). The imputer uses global statistics. Your model effectively "cheats" by seeing test data patterns during preprocessing.
-
-The fix: Use sklearn Pipeline. Preprocessing steps execute inside each CV fold, only seeing training data. This simulates real production where new data arrives unscaled.
-
-The lesson: "Preprocessing is part of training. Not a pre-step."`,
+print(f"Test accuracy: ${test_score:.2f}")`,
+        explanation: "The bug: Preprocessing (scaling, imputation) on ALL data before splitting leaks information from test folds into training. The scaler learns the global mean (including test data). The imputer uses global statistics. Your model effectively \"cheats\" by seeing test data patterns during preprocessing.\n\nThe fix: Use sklearn Pipeline. Preprocessing steps execute inside each CV fold, only seeing training data. This simulates real production where new data arrives unscaled.\n\nThe lesson: \"Preprocessing is part of training. Not a pre-step.\"",
         lesson: "Preprocessing is part of training. Not a pre-step.",
         related: ["accuracy-trap", "cache-invalidation"],
       },
@@ -330,11 +310,7 @@ INNER JOIN customers c ON o.customer_id = c.customer_id
 WHERE c.country = 'IN'
 ORDER BY o.order_date DESC
 LIMIT 100 OFFSET 0;`,
-        explanation: `The bug: IN with a correlated subquery is O(n²) — for every row in orders, scan all matching customers. SELECT * pulls unnecessary columns, increasing I/O. No LIMIT means sorting ALL matching rows. No index means full table scan.
-
-The fix: Use JOIN with proper indexing. Select only needed columns. Add LIMIT for pagination. Always EXPLAIN ANALYZE before deploying.
-
-The lesson: "Performance is a feature you ship on day one, or a bug you discover on day 100."`,
+        explanation: "The bug: IN with a correlated subquery is O(n²) — for every row in orders, scan all matching customers. SELECT * pulls unnecessary columns, increasing I/O. No LIMIT means sorting ALL matching rows. No index means full table scan.\n\nThe fix: Use JOIN with proper indexing. Select only needed columns. Add LIMIT for pagination. Always EXPLAIN ANALYZE before deploying.\n\nThe lesson: \"Performance is a feature you ship on day one, or a bug you discover on day 100.\"",
         lesson: "Performance is a feature you ship on day one, or a bug you discover on day 100.",
         related: ["merge-mayhem", "cache-invalidation"],
       },
@@ -369,12 +345,12 @@ for uid in range(1, 1000):
           "There's no timeout. The request could hang forever.",
           "If it crashes at user 847, how do you resume without re-fetching 1-846?",
         ],
-        solution: `import requests
+        solution: String.raw`import requests
 import time
 import json
 
 def get_user_data(user_id, max_retries=3):
-    url = f"https://api.example.com/users/{user_id}"
+    url = f"https://api.example.com/users/${user_id}"
     
     for attempt in range(max_retries):
         try:
@@ -408,12 +384,8 @@ for uid in range(1, 1000):
         with open("checkpoint.json", "w") as f:
             json.dump({"last_processed": uid, "results": results}, f)
 
-print(f"Successfully fetched {len(results)}/999 users")`,
-        explanation: `The bug: No status check means any non-200 response crashes on response.json(). No timeout means requests hang indefinitely. No retry means transient failures are fatal. No logging means you can't debug. No checkpoint means you restart from scratch.
-
-The fix: Check status with raise_for_status(). Add timeout. Exponential backoff for retries. Log every failure. Save checkpoints to resume.
-
-The lesson: "Code that works in your notebook is not production code. The difference is what happens when things break."`,
+print(f"Successfully fetched ${len(results)}/999 users")`,
+        explanation: "The bug: No status check means any non-200 response crashes on response.json(). No timeout means requests hang indefinitely. No retry means transient failures are fatal. No logging means you can't debug. No checkpoint means you restart from scratch.\n\nThe fix: Check status with raise_for_status(). Add timeout. Exponential backoff for retries. Log every failure. Save checkpoints to resume.\n\nThe lesson: \"Code that works in your notebook is not production code. The difference is what happens when things break.\"",
         lesson: "Code that works in your notebook is not production code. The difference is what happens when things break.",
         related: ["secure-api-key", "optimized-query"],
       },
@@ -448,15 +420,15 @@ print(response.choices[0].message.content)`,
           "None gets passed to Groq. What does the API do with a None key?",
           "How do you prevent a hardcoded key from being committed to Git?",
         ],
-        solution: `import os
+        solution: String.raw`import os
 from groq import Groq
 
 # FAIL FAST — validate immediately
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     raise ValueError(
-        "GROQ_API_KEY not found!\\n"
-        "Set it with: export GROQ_API_KEY='your-key'\\n"
+        "GROQ_API_KEY not found!\n"
+        "Set it with: export GROQ_API_KEY='your-key'\n"
         "Or create a .env file (and add .env to .gitignore!)"
     )
 
@@ -477,11 +449,7 @@ print(response.choices[0].message.content)
 # .env
 # *.key
 # config/secrets.json`,
-        explanation: `The bug: os.getenv returns None silently if the variable is missing. This None propagates to the API client, which may fail with a cryptic error or worse — use a default/demo key that racks up charges. Hardcoded "temporary" keys get committed to Git and leak.
-
-The fix: Validate immediately. Fail fast with a clear message. Check key format. Use .env files with .gitignore. Never let None propagate.
-
-The lesson: "Security isn't a feature. It's the absence of a class of bugs you don't know you have yet."`,
+        explanation: "The bug: os.getenv returns None silently if the variable is missing. This None propagates to the API client, which may fail with a cryptic error or worse — use a default/demo key that racks up charges. Hardcoded \"temporary\" keys get committed to Git and leak.\n\nThe fix: Validate immediately. Fail fast with a clear message. Check key format. Use .env files with .gitignore. Never let None propagate.\n\nThe lesson: \"Security isn't a feature. It's the absence of a class of bugs you don't know you have yet.\"",
         lesson: "Security isn't a feature. It's the absence of a class of bugs you don't know you have yet.",
         related: ["api-that-works", "leaky-validation"],
       },
@@ -501,20 +469,20 @@ The lesson: "Security isn't a feature. It's the absence of a class of bugs you d
         solves: 345,
         description: "Redis cache never expires. Users see 3-day-old data. 'It works on my machine.'",
         setup: "You added Redis caching to speed up your API. It worked great in dev. After 3 days in production, users started reporting stale data. Prices were wrong. Inventory counts were off. But 'it works on your machine' because you restarted the server.",
-        brokenCode: `import redis
+        brokenCode: String.raw`import redis
 import json
 
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 def get_product_price(product_id):
     # Check cache first
-    cached = r.get(f"price:{product_id}")
+    cached = r.get(f"price:${product_id}")
     if cached:
         return json.loads(cached)
     
     # Fetch from DB
-    price = db.query(f"SELECT price FROM products WHERE id = {product_id}")
-    r.set(f"price:{product_id}", json.dumps(price))
+    price = db.query(f"SELECT price FROM products WHERE id = ${product_id}")
+    r.set(f"price:${product_id}", json.dumps(price))
     return price`,
         language: "python",
         hints: [
@@ -522,20 +490,20 @@ def get_product_price(product_id):
           "How long does the cache live? Forever? What's Redis's default TTL?",
           "When you restart your dev server, does the cache persist? What about production?",
         ],
-        solution: `import redis
+        solution: String.raw`import redis
 import json
 from datetime import timedelta
 
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 def get_product_price(product_id):
-    cache_key = f"price:{product_id}"
+    cache_key = f"price:${product_id}"
     
     # Check cache with TTL awareness
     cached = r.get(cache_key)
     if cached:
         ttl = r.ttl(cache_key)
-        print(f"Cache hit! TTL remaining: {ttl}s")
+        print(f"Cache hit! TTL remaining: ${ttl}s")
         return json.loads(cached)
     
     # Fetch from DB (use parameterized query!)
@@ -556,16 +524,12 @@ def get_product_price(product_id):
 # On price update in admin panel:
 def update_price(product_id, new_price):
     db.execute("UPDATE products SET price = ? WHERE id = ?", (new_price, product_id))
-    r.delete(f"price:{product_id}")  # Invalidate immediately
+    r.delete(f"price:${product_id}")  # Invalidate immediately
     r.publish("price_updates", json.dumps({
         "product_id": product_id,
         "new_price": new_price
     }))`,
-        explanation: `The bug: r.set() without TTL means cache lives forever. Database updates never reflect in cache. Dev server restarts clear Redis (flush), masking the bug. Production Redis persists across deploys. Stale data accumulates indefinitely.
-
-The fix: Always set TTL (r.setex). Implement cache invalidation on data changes. Use pub/sub for cross-service invalidation. Monitor cache hit rates and TTL effectiveness.
-
-The lesson: "There are only two hard things in Computer Science: cache invalidation and naming things."`,
+        explanation: "The bug: r.set() without TTL means cache lives forever. Database updates never reflect in cache. Dev server restarts clear Redis (flush), masking the bug. Production Redis persists across deploys. Stale data accumulates indefinitely.\n\nThe fix: Always set TTL (r.setex). Implement cache invalidation on data changes. Use pub/sub for cross-service invalidation. Monitor cache hit rates and TTL effectiveness.\n\nThe lesson: \"There are only two hard things in Computer Science: cache invalidation and naming things.\"",
         lesson: "There are only two hard things in Computer Science: cache invalidation and naming things.",
         related: ["optimized-query", "leaky-validation"],
       },
@@ -657,7 +621,6 @@ export default function BreakItChallenge({ theme }) {
   }
 
   function openInPlayground() {
-    // Navigate to playground with code pre-filled
     const encodedCode = encodeURIComponent(challenge.brokenCode);
     navigate(`/?playground=true&lang=${challenge.language}&code=${encodedCode}`);
   }
