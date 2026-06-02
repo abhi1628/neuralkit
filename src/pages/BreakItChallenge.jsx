@@ -1,3 +1,7 @@
+// src/pages/BreakItChallenge.jsx
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
 // ── Production-Grade Challenge Data (5 Per Category) ────────────────────────────────────────────
 const CHALLENGE_CATEGORIES = [
   {
@@ -258,7 +262,7 @@ print(f"Accuracy: \${model.score(X_train, y_train):.2f}")`,
         language: "python",
         hints: [
           "What dataset is model.score() using here? Training or test?",
-          "Training accuracy on a complex model like Random Forest is almost always near 100%.",
+          "Training accuracy on acomplex model like Random Forest is almost always near 100%.",
           "The real question is: how does it perform on UNSEEN data?",
         ],
         solution: String.raw`from sklearn.model_selection import train_test_split, cross_val_score
@@ -348,9 +352,8 @@ print(f"Test accuracy: \${test_score:.2f}")`,
         brokenCode: String.raw`from sklearn.metrics import accuracy_score
 import numpy as np
 
-# Anomaly detection: 990 clear health, 10 disease carriers
-y_true = np.array([0]*990 + [1]*10)
-y_pred = np.zeros(1000) # Broken dummy prediction: predicts normal for everyone
+ y_true = np.array([0]*990 + [1]*10)
+y_pred = np.zeros(1000) # Broken dummy prediction
 
 print(f"Deployment Accuracy Check: \${accuracy_score(y_true, y_pred)*100:.1f}%")`,
         language: "python",
@@ -389,12 +392,10 @@ from sklearn.linear_model import LinearRegression
 time_series_data = np.random.randn(1000, 5)
 asset_returns = np.random.randn(1000)
 
-# Standard shuffled validation
 kf = KFold(n_splits=5, shuffle=True)
 scores = []
 
 for train_idx, test_idx in kf.split(time_series_data):
-    # This structure blends historical and future samples arbitrarily!
     X_tr, X_te = time_series_data[train_idx], time_series_data[test_idx]
     y_tr, y_te = asset_returns[train_idx], asset_returns[test_idx]
     
@@ -415,7 +416,6 @@ from sklearn.linear_model import LinearRegression
 time_series_data = np.random.randn(1000, 5)
 asset_returns = np.random.randn(1000)
 
-# Chronological forward validation anchor
 tscv = TimeSeriesSplit(n_splits=5)
 scores = []
 
@@ -427,7 +427,7 @@ for train_idx, test_idx in tscv.split(time_series_data):
     scores.append(model.score(X_te, y_te))
 
 print(f"Causally Secure Time Validation Array Score: \${np.mean(scores):.3f}")`,
-        explanation: "The bug: Shuffled validation routines cross-contaminate chronological matrices. They insert elements from $T_{plus}$ intervals directly into structural historical baseline evaluation algorithms, essentially letting models read the future before predicting past vectors.\n\nThe fix: Restructure validation pipelines using `TimeSeriesSplit` frameworks to form an expanding evaluation sequence that always respects historical temporal causality boundaries.",
+        explanation: "The bug: Shuffled validation routines cross-contaminate chronological matrices. They insert elements from futures directly into historical baseline models.",
         lesson: "Never let your data look forward in time.",
         related: ["leaky-validation", "optimized-query"]
       },
@@ -439,15 +439,13 @@ print(f"Causally Secure Time Validation Array Score: \${np.mean(scores):.3f}")`,
         solves: 312,
         description: "Staking long Sigmoid stacks inside deeply nested neural network systems triggers gradient attenuation blocks.",
         setup: "You stack up an 8-layer custom deep network to process computer vision features. Training starts, but layer weight updates for the early nodes drop directly to absolute zero.",
-        brokenCode: String.raw`# Abstract architecture sequence
-import torch
+        brokenCode: String.raw`import torch
 import torch.nn as nn
 
-# Chaining high-depth Sigmoid units
 layers = []
 for _ in range(8):
     layers.append(nn.Linear(64, 64))
-    layers.append(nn.Sigmoid()) # Activation choice
+    layers.append(nn.Sigmoid())
 
 model = nn.Sequential(*layers)
 inputs = torch.randn(32, 64)
@@ -456,13 +454,12 @@ outputs = model(inputs)
 loss = outputs.sum()
 loss.backward()
 
-# Look at the structural parameter derivative profiles for original layer
 print(f"Gradient profile depth zero: {model[0].weight.grad.abs().mean().item()}")`,
         language: "python",
         hints: [
           "Differentiate the Sigmoid function. What is its maximum possible slope outcome value?",
-          "The maximum derivative of Sigmoid is `0.25`. What happens when you chain eight values under `0.25` using the mathematical Chain Rule?",
-          "Consider using activations that prevent gradient attenuation, such as `ReLU` or `LeakyReLU` styles."
+          "The maximum derivative of Sigmoid is 0.25. Chaining eight together dampens gradients exponentially.",
+          "Consider using activations that prevent gradient attenuation, such as ReLU structures."
         ],
         solution: String.raw`import torch
 import torch.nn as nn
@@ -470,7 +467,7 @@ import torch.nn as nn
 layers = []
 for _ in range(8):
     layers.append(nn.Linear(64, 64))
-    layers.append(nn.ReLU()) # Safe, bounded alternative scaling choice
+    layers.append(nn.ReLU())
 
 model = nn.Sequential(*layers)
 inputs = torch.randn(32, 64)
@@ -480,7 +477,7 @@ loss = outputs.sum()
 loss.backward()
 
 print(f"Healthy Gradient profile depth zero: {model[0].weight.grad.abs().mean().item()}")`,
-        explanation: "The bug: The derivative ceiling for a Sigmoid function caps tightly at `0.25`. Backpropagating deep structures through standard Chain Rule matrix multiplications scales this fractional output exponentially ($0.25^8$). This drops early system layer updating capacities to zero.\n\nThe fix: Swap out flattened saturating functions in core hidden deep hidden spaces for un-attenuated alternatives like `ReLU`, which evaluate backprop gradients cleanly without downstream scaling decay.",
+        explanation: "The bug: The derivative ceiling for a Sigmoid function caps tightly at 0.25. Multiplying these fractional chains together causes early network weights to stall out entirely.",
         lesson: "Sigmoids belong in the output layer; ReLUs belong in the hidden layer.",
         related: ["leaky-validation", "cache-invalidation"]
       }
@@ -559,14 +556,8 @@ FROM customers c
 WHERE NOT EXISTS (
     SELECT 1 FROM orders o 
     WHERE o.customer_id = c.customer_id
-);
-
--- Alternative approach using a left join filter:
--- SELECT c.customer_id, c.name 
--- FROM customers c 
--- LEFT JOIN orders o ON c.customer_id = o.customer_id
--- WHERE o.customer_id IS NULL;`,
-        explanation: "The bug: Under standard SQL logic parameters, `NOT IN (1, 2, NULL)` expands out into a long conditional chain: `(id <> 1) AND (id <> 2) AND (id <> NULL)`. Since comparing any value to `NULL` returns `Unknown`, the entire statement collapses and yields an empty dataset.",
+);`,
+        explanation: "The bug: Under standard SQL logic parameters, NOT IN expansions yield Unknown evaluations if any constituent element contains an unassigned NULL, causing the return stack to evaluate completely empty.",
         lesson: "Never use NOT IN if the underlying subquery column can contain NULL values.",
         related: ["optimized-query", "silent-data-killer"]
       },
@@ -581,22 +572,20 @@ WHERE NOT EXISTS (
         brokenCode: `SELECT 
     COUNT(*) as total_users,
     COUNT(profile_bio) as filled_bios,
-    -- This expression returns incorrect statistics if you pass wrong arguments
     (COUNT(*) / COUNT(*)) * 100 as metrics_ratio
 FROM users;`,
         language: "sql",
         hints: [
           "Does `COUNT(*)` care about the difference between missing column entries vs active field shapes?",
           "How can you make a count conditional based on the presence of values?",
-          "Use standard conditional logic aggregations like `SUM(CASE WHEN ... THEN 1 ELSE 0 END)`."
+          "Target specific columns inside your completion metrics."
         ],
         solution: `SELECT 
     COUNT(*) as total_users,
     COUNT(profile_bio) as filled_bios,
-    -- Target the nullable field explicitly to accurately capture variations
     (COUNT(profile_bio) * 100.0 / COUNT(*)) as true_completion_percentage
 FROM users;`,
-        explanation: "The bug: `COUNT(*)` targets total rows within a specified container block regardless of value compositions. Conversely, targeting standard metrics using `COUNT(column)` skips instances evaluating as `NULL`. Mixing these distinct aggregation properties can warp your ratios.",
+        explanation: "The bug: COUNT(*) counts raw layout boundaries regardless of missing internals. Evaluating fields requires explicit specific arguments.",
         lesson: "Understand the subtle differences in row evaluation behavior between COUNT(*) and COUNT(column).",
         related: ["silent-data-killer", "type-conversion-trap"]
       },
@@ -622,7 +611,7 @@ HAVING region = 'EU';`,
 FROM sales
 WHERE region = 'EU'
 GROUP BY store_id;`,
-        explanation: "The bug: The query engine applies `WHERE` filters *before* aggregating data, drastically reducing row overhead. Placing row-level criteria into `HAVING` forces the system to group your entire global catalog before filtering, creating massive, unnecessary compute cycles.",
+        explanation: "The bug: HAVING forces global sorting matrices to construct inside memory tiers before evaluation filtering takes place, starving query execution pipelines.",
         lesson: "Use WHERE to filter individual rows; reserve HAVING strictly for aggregated group metrics.",
         related: ["optimized-query", "merge-mayhem"]
       },
@@ -635,7 +624,6 @@ GROUP BY store_id;`,
         description: "Direct string string interpolation within execution scripts opens injection vulnerabilities.",
         setup: "You write a secure profile search feature. An automated penetration scanner flags that input variations can scrub or reveal the entire internal dataset.",
         brokenCode: `def get_user_profile(user_input_id):
-    # DANGEROUS: direct string interpolation
     query = f"SELECT * FROM accounts WHERE id = '{user_input_id}'"
     return db.execute(query)`,
         language: "sql",
@@ -645,10 +633,9 @@ GROUP BY store_id;`,
           "Look up parameterized query execution patterns for your database drivers."
         ],
         solution: `def get_user_profile(user_input_id):
-    # Pass inputs as isolated parameter variables separate from execution commands
     query = "SELECT * FROM accounts WHERE id = ?"
     return db.execute(query, (user_input_id,))`,
-        explanation: "The bug: Inserting raw user strings into database execution commands alters the statement's structural syntax tree. This security flaw allows malicious inputs to break out of data fields and execute rogue database directives.",
+        explanation: "The bug: Mixing raw variable string builders with structural commands lets third-party inputs manipulate logic syntax directly.",
         lesson: "Always decouple code logic from user data inputs using parameterized queries.",
         related: ["secure-api-key", "api-that-works"]
       }
@@ -688,7 +675,7 @@ import time
 import json
 
 def get_user_data(user_id, max_retries=3):
-    url = f"https://api.example.com/users/${user_id}"
+    url = f"https://api.example.com/users/\${user_id}"
     
     for attempt in range(max_retries):
         try:
@@ -736,10 +723,8 @@ print(f"Successfully fetched \${len(results)}/999 users")`,
         description: "Concurrent non-atomic API updates cause state data overwrites under load.",
         setup: "You deploy a high-speed ticket booking endpoint. Under flash sale traffic conditions, your systems oversell single available seats to multiple users simultaneously.",
         brokenCode: `async def buy_ticket(user_id, ticket_id):
-    # Fetch current assignment status
     ticket = await db.fetch_row("SELECT * FROM tickets WHERE id = ?", ticket_id)
     if ticket["owned_by"] is None:
-        # A separate incoming async task can slip right in here before this next update fires!
         await db.execute("UPDATE tickets SET owned_by = ? WHERE id = ?", user_id, ticket_id)
         return {"status": "success"}
     return {"status": "sold_out"}`,
@@ -750,7 +735,6 @@ print(f"Successfully fetched \${len(results)}/999 users")`,
           "Look into using optimistic concurrency controls, select-for-update flags, or atomic updates."
         ],
         solution: `async def buy_ticket(user_id, ticket_id):
-    # Force an atomic write verification to ensure exclusive row updates
     updated_rows = await db.execute(
         "UPDATE tickets SET owned_by = ? WHERE id = ? AND owned_by IS NULL", 
         user_id, ticket_id
@@ -776,8 +760,8 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # DANGEROUS: Permissive wildcard setup
-    allow_credentials=True, # Incompatible with generic wildcards
+    allow_origins=["*"], 
+    allow_credentials=True, 
     allow_methods=["*"],
     allow_headers=["*"],
 )`,
@@ -798,7 +782,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type"],
 )`,
-        explanation: "The bug: Using a universal wildcard `allow_origins=[\"*\"]` alongside credential sharing options is a dangerous mismatch. Modern web browsers reject this configuration to prevent third-party scripts from reading secure user session contexts.",
+        explanation: "The bug: Wildcard matching policies cannot process active contextual credentials safely without security exposure, inducing native browser connection failures.",
         lesson: "Never use wildcards in CORS configuration when credentials are enabled.",
         related: ["secure-api-key", "un-parameterized-injection"]
       },
@@ -811,9 +795,7 @@ app.add_middleware(
         description: "Orphaned background loop calls leak continuous socket references across requests.",
         setup: "You write a push notification feature for an express service API. Everything runs fine initially, but the container runs out of RAM and crashes every 4 hours under heavy load.",
         brokenCode: `app.post('/api/notify', (req, res) => {
-    // Background execution trigger
     sendLogsToAnalyticsServer(req.body); 
-    // If the analytics server hangs or runs slowly, un-awaited promises pile up in memory!
     res.status(200).send({ processing: true });
 });`,
         language: "javascript",
@@ -823,14 +805,13 @@ app.add_middleware(
           "Isolate background tasks with explicit timeouts and error catching blocks."
         ],
         solution: `app.post('/api/notify', (req, res) => {
-    // Decouple background execution safely with an un-awaited wrapper containing catch locks
     sendLogsToAnalyticsServer(req.body)
         .timeout(5000)
         .catch(err => console.error("Logged background telemetry failure safely: ", err));
         
     res.status(200).send({ processing: true });
 });`,
-        explanation: "The bug: Spawning background tasks without attaching error catches or timeout limits means stalled network requests can hang in memory indefinitely. Over time, these orphaned promises consume system resources until the container runs out of RAM and crashes.",
+        explanation: "The bug: Firing un-awaited async tasks into background thread processes without establishing timeouts triggers continuous descriptor leaks if third-party endpoints hang.",
         lesson: "Every background promise must have a timeout and a catch block.",
         related: ["api-that-works", "cache-invalidation"]
       },
@@ -845,7 +826,6 @@ app.add_middleware(
         brokenCode: `const express = require('express');
 const app = express();
 
-// Parsers without size boundaries can ingest uninhibited payload sizes
 app.use(express.json()); 
 
 app.post('/api/submit', (req, res) => {
@@ -860,13 +840,12 @@ app.post('/api/submit', (req, res) => {
         solution: `const express = require('express');
 const app = express();
 
-// Apply strict payload limits to protect memory buffers
 app.use(express.json({ limit: '10kb' })); 
 
 app.post('/api/submit', (req, res) => {
     res.send({ status: "received" });
 });`,
-        explanation: "The bug: By default, many body parsing frameworks will ingest incoming payloads without size restrictions. This allows an attacker to send huge strings that flood the server's memory buffers, starving other active network routines.",
+        explanation: "The bug: Processing generic input allocations without enforcing a payload threshold allows excessive memory buffers to flood memory channels, starving system threads.",
         lesson: "Always restrict inbound payload limits at the gateway or middleware layer.",
         related: ["api-that-works", "secure-api-key"]
       }
@@ -904,7 +883,6 @@ print(response.choices[0].message.content)`,
         solution: String.raw`import os
 from groq import Groq
 
-# FAIL FAST — validate immediately
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     raise ValueError(
@@ -913,23 +891,16 @@ if not api_key:
         "Or create a .env file (and add .env to .gitignore!)"
     )
 
-# Validate format (basic check)
 if not api_key.startswith("gsk_"):
     raise ValueError("GROQ_API_KEY looks invalid. Should start with 'gsk_'")
 
 client = Groq(api_key=api_key)
 
-# Use the client...
 response = client.chat.completions.create(
     model="llama-3.3-70b-versatile",
     messages=[{"role": "user", "content": "Hello"}]
 )
-print(response.choices[0].message.content)
-
-# .gitignore must include:
-# .env
-# *.key
-// config/secrets.json`,
+print(response.choices[0].message.content)`,
         explanation: "The bug: os.getenv returns None silently if the variable is missing. This None propagates to the API client, which may fail with a cryptic error or worse — use a default/demo key that racks up charges. Hardcoded \"temporary\" keys get committed to Git and leak.\n\nThe fix: Validate immediately. Fail fast with a clear message. Check key format. Use .env files with .gitignore. Never let None propagate.\n\nThe lesson: \"Security isn't a feature. It's the absence of a class of bugs you don't know you have yet.\"",
         lesson: "Security isn't a feature. It's the absence of a class of bugs you don't know you have yet.",
         related: ["api-that-works", "leaky-validation"],
@@ -948,7 +919,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 3000
-# Danger: No explicit USER configuration defaults execution to root permissions!
 CMD ["node", "server.js"]`,
         language: "dockerfile",
         hints: [
@@ -963,10 +933,9 @@ RUN npm install
 COPY . .
 EXPOSE 3000
 
-# Secure action: Drop down container capabilities before running application entry points
 USER node
 CMD ["node", "server.js"]`,
-        explanation: "The bug: Omitting the `USER` instruction leaves the container running with root privileges. If an attacker manages to break out of the application loop via a code exploit, they inherit full root access, dramatically increasing the threat of a host infrastructure compromise.",
+        explanation: "The bug: Failing to explicitly invoke a low-privilege runtime account causes the build container engine to fallback onto raw root system permission layers.",
         lesson: "Always follow the Principle of Least Privilege when structuring container execution rules.",
         related: ["secure-api-key", "un-parameterized-injection"]
       },
@@ -981,7 +950,6 @@ CMD ["node", "server.js"]`,
         brokenCode: `FROM python:3.10-slim
 WORKDIR /workspace
 COPY . .
-# Using raw application run scripts directly as PID 1 breaks signal forwarding chains
 CMD ["python", "process_monitor.py"]`,
         language: "dockerfile",
         hints: [
@@ -990,14 +958,13 @@ CMD ["python", "process_monitor.py"]`,
           "Using `tini` ensures that child processes are properly reaped and system signals are handled correctly."
         ],
         solution: `FROM python:3.10-slim
-# Inject a lightweight init system to handle system signals and reap orphan processes
 RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 WORKDIR /workspace
 COPY . .
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "process_monitor.py"]`,
-        explanation: "The bug: The first process inside a container runs as PID 1, inheriting system responsibilities like handling OS signals and reaping orphan child processes. Standard application runtimes aren't built for this, which can cause dead sub-processes to remain stuck in memory as resource-draining 'zombies.'",
+        explanation: "The bug: Standard runtimes evaluated as application layer triggers under PID 1 often lack sub-process signal recycling capabilities, causing dead container threads to map out as memory-draining orphans.",
         lesson: "Always use an init system like tini when your containers spawn frequent child processes.",
         related: ["root-container-vulnerability", "unhandled-promise-leak"]
       },
@@ -1015,7 +982,7 @@ CMD ["python", "process_monitor.py"]`,
         {
             "Sid": "PublicModelDownloadAccess",
             "Effect": "Allow",
-            "Principal": "*", // DANGEROUS: Grants access to everyone on the internet
+            "Principal": "*", 
             "Action": "s3:GetObject",
             "Resource": "arn:aws:s3:::my-ml-models-bucket/*"
         }
@@ -1041,7 +1008,7 @@ CMD ["python", "process_monitor.py"]`,
         }
     ]
 }`,
-        explanation: "The bug: Granting anonymous global access to your model storage buckets leaves your intellectual property completely unprotected. Anyone can download your proprietary model weights, racking up massive data transfer fees on your cloud account.",
+        explanation: "The bug: Assigning wildcards to your bucket resource keys lets external unauthenticated parties download internal model weights, inflating bandwidth usage billing costs.",
         lesson: "Never grant anonymous public access policies to buckets containing proprietary assets or data packages.",
         related: ["secure-api-key", "cors-wildcard-exposure"]
       },
@@ -1062,7 +1029,7 @@ spec:
     spec:
       containers:
       - name: processor
-        image: python:latest # DANGEROUS: Floating reference point change risks breaking builds`,
+        image: python:latest`,
         language: "yaml",
         hints: [
           "What concrete version guarantees do tags like `:latest` actually provide when pulled across different environments?",
@@ -1078,9 +1045,8 @@ spec:
     spec:
       containers:
       - name: processor
-        # Lock your configuration down to an explicit, immutable version tag
         image: python:3.10.12-slim-bullseye`,
-        explanation: "The bug: The `:latest` tag is a moving target that points to whatever image was most recently pushed upstream. Relying on it means different nodes in your cluster can pull completely different software versions, breaking build consistency.",
+        explanation: "The bug: Treating dynamic keyword tags like `:latest` as baseline environment versions exposes nodes to hidden changes whenever underlying dependencies are compiled.",
         lesson: "Production infrastructure definitions must lock down explicitly immutable image versions or SHA hashes.",
         related: ["root-container-vulnerability", "api-that-works"]
       }
@@ -1106,12 +1072,10 @@ import json
 r = redis.Redis(host='localhost', port=6379, db=0)
 
 def get_product_price(product_id):
-    # Check cache first
     cached = r.get(f"price:\${product_id}")
     if cached:
         return json.loads(cached)
     
-    # Fetch from DB
     price = db.query(f"SELECT price FROM products WHERE id = \${product_id}")
     r.set(f"price:\${product_id}", json.dumps(price))
     return price`,
@@ -1130,36 +1094,22 @@ r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 def get_product_price(product_id):
     cache_key = f"price:\${product_id}"
     
-    # Check cache with TTL awareness
     cached = r.get(cache_key)
     if cached:
         ttl = r.ttl(cache_key)
         print(f"Cache hit! TTL remaining: \${ttl}s")
         return json.loads(cached)
     
-    # Fetch from DB (use parameterized query!)
     price = db.query("SELECT price FROM products WHERE id = ?", (product_id,))
-    
-    # Set with TTL — cache expires, forcing refresh
     r.setex(cache_key, timedelta(hours=1), json.dumps(price))
     
-    # Publish invalidation event for other services
     r.publish("price_updates", json.dumps({
         "product_id": product_id,
         "new_price": price,
         "timestamp": time.time()
     }))
     
-    return price
-
-# On price update in admin panel:
-def update_price(product_id, new_price):
-    db.execute("UPDATE products SET price = ? WHERE id = ?", (new_price, product_id))
-    r.delete(f"price:\${product_id}")  # Invalidate immediately
-    r.publish("price_updates", json.dumps({
-        "product_id": product_id,
-        "new_price": new_price
-    }))`,
+    return price`,
         explanation: "The bug: r.set() without TTL means cache lives forever. Database updates never reflect in cache. Dev server restarts clear Redis (flush), masking the bug. Production Redis persists across deploys. Stale data accumulates indefinitely.\n\nThe fix: Always set TTL (r.setex). Implement cache invalidation on data changes. Use pub/sub for cross-service invalidation. Monitor cache hit rates and TTL effectiveness.\n\nThe lesson: \"There are only two hard things in Computer Science: cache invalidation and naming things.\"",
         lesson: "There are only two hard things in Computer Science: cache invalidation and naming things.",
         related: ["optimized-query", "leaky-validation"],
@@ -1175,8 +1125,6 @@ def update_price(product_id, new_price):
         brokenCode: `def get_homepage_feed():
     data = redis.get("homepage_data")
     if data is None:
-        # If millions of parallel users hit this empty window simultaneously under load, 
-        # they will all flood the database with duplicate queries at once!
         data = db.fetch_heavy_feed_computation()
         redis.set("homepage_data", data, ex=3600)
     return data`,
@@ -1189,18 +1137,15 @@ def update_price(product_id, new_price):
         solution: `def get_homepage_feed():
     data = redis.get("homepage_data")
     if data is None:
-        # Acquire a distributed lock so only one worker updates the database
         with redis.lock("lock:homepage_data", blocking_timeout=5):
-            # Double check cache status after acquiring lock
             data = redis.get("homepage_data")
             if data is None:
                 data = db.fetch_heavy_feed_computation()
-                # Add a small random jitter to the TTL window to distribute future expiration times
                 import random
                 ttl_with_jitter = 3600 + random.randint(0, 300)
                 redis.set("homepage_data", data, ex=ttl_with_jitter)
     return data`,
-        explanation: "The bug: When a highly popular cache key expires, thousands of concurrent requests can fall through to the database simultaneously before a new cache value can be written. This sudden traffic spike overloads the database engine.",
+        explanation: "The bug: When popular cache states lapse under massive execution load, hundreds of thread loops tumble onto downstream backends at once before the update sequence settles.",
         lesson: "Protect expensive cache misses using distributed locks and randomize your TTL windows with jitter.",
         related: ["cache-invalidation", "optimized-query"]
       },
@@ -1220,7 +1165,6 @@ def fetch_with_retry(url):
         try:
             return requests.get(url, timeout=2)
         except requests.exceptions.RequestException:
-            # DANGEROUS: Aggressive, immediate retries can flood struggling downstream services!
             time.sleep(0) 
     raise Exception("System Failure")`,
         language: "python",
@@ -1238,12 +1182,10 @@ def fetch_with_retry(url):
         try:
             return requests.get(url, timeout=2)
         except requests.exceptions.RequestException:
-            # Implement exponential backoff paired with randomized noise adjustments
             backoff = (2 ** attempt) + random.uniform(0, 1)
-            print(f"Service busy. Throttling retry for {backoff:.2f} seconds...")
             time.sleep(backoff)
     raise Exception("System Failure")`,
-        explanation: "The bug: Hammering a struggling service with immediate retries creates a 'retry storm.' This spikes traffic levels right when the service needs breathing room to recover, amplifying minor delays into full-scale outages.",
+        explanation: "The bug: Rapidly retrying failed connections loop-floods processing channels precisely when backing systems require recovery space, causing small network stutters to swell into outages.",
         lesson: "Always implement exponential backoff and randomized jitter on network client retries.",
         related: ["api-that-works", "thundering-herd-crash"]
       },
@@ -1256,10 +1198,7 @@ def fetch_with_retry(url):
         description: "Querying asynchronous read-replicas immediately after writing to a master database serves stale data to users.",
         setup: "You build an update profile bio feature. A user updates their bio, hits refresh, and gets confused because the page still displays their old text.",
         brokenCode: `def update_and_show_profile(user_id, new_bio):
-    # Write directly to the primary database instance
     primary_db.execute("UPDATE users SET bio = ? WHERE id = ?", new_bio, user_id)
-    
-    # WRONG: Querying a read-replica immediately before replication lag finishes serves stale data!
     profile = replica_db.fetch_row("SELECT bio FROM users WHERE id = ?", user_id)
     return profile`,
         language: "python",
@@ -1270,11 +1209,9 @@ def fetch_with_retry(url):
         ],
         solution: `def update_and_show_profile(user_id, new_bio):
     primary_db.execute("UPDATE users SET bio = ? WHERE id = ?", new_bio, user_id)
-    
-    # Secure action: Route critical profile reads directly through the primary database to ensure consistency
     profile = primary_db.fetch_row("SELECT bio FROM users WHERE id = ?", user_id)
     return profile`,
-        explanation: "The bug: Master-replica architectures rely on asynchronous replication. If you read from a replica right after writing to the master, replication lag means the replica may still serve the old data, breaking user expectations.",
+        explanation: "The bug: Secondary replication arrays operate on asynchronous cycles. Fetching state vectors right after a primary update returns old parameters before sync tasks settle.",
         lesson: "Always route 'read-your-own-writes' requests directly through your primary database.",
         related: ["cache-invalidation", "merge-mayhem"]
       },
@@ -1286,11 +1223,9 @@ def fetch_with_retry(url):
         solves: 894,
         description: "Tracking rate limit counters in-memory inside load-balanced clusters allows users to bypass restriction ceilings.",
         setup: "You configure a rate limiter to allow a maximum of 60 requests per minute. However, malicious actors manage to spam your endpoints with over 200 requests per minute without getting blocked.",
-        brokenCode: `# In-memory storage dictionary tracking request counts
-LOCAL_RATE_LIMIT_CACHE = {}
+        brokenCode: `LOCAL_RATE_LIMIT_CACHE = {}
 
 def is_rate_limited(client_ip):
-    # DANGEROUS: Local memory scopes are completely isolated from separate load-balanced nodes!
     current_count = LOCAL_RATE_LIMIT_CACHE.get(client_ip, 0)
     if current_count >= 60:
         return True
@@ -1302,20 +1237,279 @@ def is_rate_limited(client_ip):
           "You need a shared, central data store to manage traffic limits across your cluster.",
           "Use a fast distributed key-value store like Redis to handle global rate-limiting counters."
         ],
-        solution: `# Connect your tracking to a shared distributed memory tier
-def is_rate_limited(client_ip):
-    # Increment a shared, atomic counter with a sliding window expiration
+        solution: `def is_rate_limited(client_ip):
     current_count = redis.incr(f"rate:{client_ip}")
     if current_count == 1:
         redis.expire(f"rate:{client_ip}", 60)
-        
     if current_count > 60:
         return True
     return False`,
-        explanation: "The bug: In-memory dictionaries track state locally on a single machine. In a load-balanced cluster, requests from the same IP get routed across different servers, scattering the count and rendering the rate limiter ineffective.",
+        explanation: "The bug: In-memory monitoring scopes lock transaction histories strictly inside local servers, allowing distributed balancer calls to distribute hits across nodes and escape filters.",
         lesson: "Rate-limiting mechanisms in distributed architectures must use a shared, centralized data store.",
         related: ["cache-invalidation", "secure-api-key"]
       }
     ]
   }
 ];
+
+// ── Helper: Find challenge by slug ────────────────────────────
+function findChallenge(slug) {
+  for (const cat of CHALLENGE_CATEGORIES) {
+    const ch = cat.challenges.find(c => c.slug === slug);
+    if (ch) return { ...ch, category: cat };
+  }
+  return null;
+}
+
+// ── Helper: Find next challenge ─────────────────────────────
+function findNextChallenge(currentSlug) {
+  const all = CHALLENGE_CATEGORIES.flatMap(c => c.challenges);
+  const idx = all.findIndex(c => c.slug === currentSlug);
+  return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+}
+
+const LEVEL_COLORS = {
+  beginner: { bg: "rgba(52,211,153,0.12)", border: "rgba(52,211,153,0.3)", text: "#34d399" },
+  intermediate: { bg: "rgba(251,191,36,0.12)", border: "rgba(251,191,36,0.3)", text: "#b45309" },
+  advanced: { bg: "rgba(248,113,113,0.12)", border: "rgba(248,113,113,0.3)", text: "#f87171" }
+};
+
+// ── BreakIt Challenge Page ────────────────────────────────────
+export default function BreakItChallenge({ theme }) {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const isDark = theme === "dark";
+  const ac = isDark ? "#a78bfa" : "#7c3aed";
+
+  const [hintIndex, setHintIndex] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
+  const [solved, setSolved] = useState(false);
+  const [streak, setStreak] = useState(() => {
+    try { return parseInt(localStorage.getItem("breakit_streak") || "0"); } catch { return 0; }
+  });
+  const [solvedToday, setSolvedToday] = useState(() => {
+    try { return localStorage.getItem("breakit_last_solve") === new Date().toDateString(); } catch { return false; }
+  });
+
+  const challenge = findChallenge(slug);
+  const nextChallenge = challenge ? findNextChallenge(challenge.slug) : null;
+
+  useEffect(() => { window.scrollTo(0, 0); }, [slug]);
+
+  if (!challenge) {
+    return (
+      <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
+        <div style={{ fontSize: "3rem" }}>🐛</div>
+        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>Challenge not found</div>
+        <button onClick={() => navigate("/breakit")} style={{ background: "linear-gradient(135deg,#a78bfa,#0af)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#000", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>
+          ← All Challenges
+        </button>
+      </div>
+    );
+  }
+
+  const lc = LEVEL_COLORS[challenge.level];
+
+  function handleSolve() {
+    if (!solved) {
+      setSolved(true);
+      const today = new Date().toDateString();
+      const lastSolve = localStorage.getItem("breakit_last_solve");
+      
+      let newStreak = streak;
+      if (lastSolve === today) {
+        // Already solved today
+      } else if (lastSolve === new Date(Date.now() - 86400000).toDateString()) {
+        newStreak = streak + 1;
+      } else {
+        newStreak = 1;
+      }
+      
+      localStorage.setItem("breakit_streak", newStreak.toString());
+      localStorage.setItem("breakit_last_solve", today);
+      localStorage.setItem(`breakit_solved_${slug}`, "true");
+      setStreak(newStreak);
+      setSolvedToday(true);
+    }
+  }
+
+  function openInPlayground() {
+    const encodedCode = encodeURIComponent(challenge.brokenCode);
+    navigate(`/?playground=true&lang=${challenge.language}&code=${encodedCode}`);
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", width: "100%" }}>
+      <div style={{ maxWidth: "860px", margin: "0 auto", padding: "100px 24px 80px" }}>
+        <button onClick={() => navigate("/breakit")} style={{ background: isDark ? "rgba(167,139,250,0.08)" : "rgba(124,58,237,0.07)", border: `1px solid ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "8px", color: isDark ? "#a78bfa" : "#7c3aed", fontSize: "0.82rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", marginBottom: "36px", display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", fontWeight: 600 }}>
+          ← All Challenges
+        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+          <span style={{ background: `${challenge.category.color}18`, border: `1px solid ${challenge.category.color}33`, borderRadius: "100px", padding: "4px 14px", fontSize: "0.68rem", fontFamily: "'Space Mono',monospace", color: challenge.category.color }}>
+            {challenge.category.icon} {challenge.category.name}
+          </span>
+          <span style={{ background: lc.bg, border: `1px solid ${lc.border}`, borderRadius: "100px", padding: "4px 14px", fontSize: "0.68rem", fontFamily: "'Space Mono',monospace", color: lc.text, textTransform: "uppercase" }}>
+            {challenge.level}
+          </span>
+          <span style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>
+            ⏱ {challenge.time} · 🔧 {challenge.solves.toLocaleString()} fixes
+          </span>
+        </div>
+
+        <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 800, color: isDark ? "#fff" : "#1a1a1a", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: "12px", textAlign: "left" }}>
+          {challenge.title}
+        </h1>
+        <p style={{ fontSize: "1.05rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", lineHeight: 1.7, textAlign: "left", marginBottom: "32px" }}>
+          {challenge.description}
+        </p>
+
+        {(solved || solvedToday) && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.25)", borderRadius: "100px", padding: "6px 16px", marginBottom: "24px", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", color: "#34d399" }}>
+            🔥 {solvedToday ? "Solved today!" : "Solved!"} · Streak: {streak} days
+          </div>
+        )}
+
+        <div style={{ marginBottom: "32px" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+            ◆ The Setup
+          </div>
+          <p style={{ fontSize: "0.95rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.8, textAlign: "left", borderLeft: `3px solid ${ac}`, paddingLeft: "16px" }}>
+            {challenge.setup}
+          </p>
+        </div>
+
+        <div style={{ marginBottom: "32px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: "#f87171", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+              ◆ Broken Code
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button onClick={() => navigator.clipboard.writeText(challenge.brokenCode)} style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.15)"}`, borderRadius: "8px", padding: "6px 14px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", cursor: "pointer" }}>
+                📋 Copy
+              </button>
+              <button onClick={openInPlayground} style={{ background: "linear-gradient(135deg, #a78bfa, #818cf8)", border: "none", borderRadius: "8px", padding: "6px 18px", color: "#000", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer" }}>
+                ▶ Run in Playground
+              </button>
+            </div>
+          </div>
+          <pre style={{ background: isDark ? "#0d1117" : "#1a1a2e", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "12px", padding: "20px", margin: 0, overflowX: "auto", fontFamily: "'Space Mono',monospace", fontSize: "0.82rem", lineHeight: 1.8, color: "#e6edf3", whiteSpace: "pre", textAlign: "left" }}>
+            <code>{challenge.brokenCode}</code>
+          </pre>
+        </div>
+
+        <div style={{ marginBottom: "32px" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+            ◆ Hints
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {challenge.hints.map((hint, i) => (
+              <div key={i} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {i < hintIndex ? (
+                  <div style={{ background: isDark ? "rgba(167,139,250,0.06)" : "rgba(124,58,237,0.06)", border: `1px solid ${ac}22`, borderRadius: "10px", padding: "14px 18px" }}>
+                    <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: ac, marginBottom: "6px" }}>
+                      HINT {i + 1} / {challenge.hints.length}
+                    </div>
+                    <div style={{ fontSize: "0.88rem", color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", lineHeight: 1.6 }}>
+                      {hint}
+                    </div>
+                  </div>
+                ) : i === hintIndex ? (
+                  <button onClick={() => setHintIndex(i + 1)} style={{ background: isDark ? "rgba(167,139,250,0.08)" : "rgba(124,58,237,0.08)", border: `1px dashed ${ac}44`, borderRadius: "10px", padding: "14px 18px", color: ac, fontFamily: "'Space Mono',monospace", fontSize: "0.82rem", cursor: "pointer", textAlign: "left", width: "100%" }}>
+                    💡 Reveal Hint {i + 1} / {challenge.hints.length}
+                  </button>
+                ) : (
+                  <div style={{ background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)", border: `1px dashed ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "10px", padding: "14px 18px", color: isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)", fontFamily: "'Space Mono',monospace", fontSize: "0.82rem", textAlign: "left" }}>
+                    🔒 Hint {i + 1} locked
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          <button onClick={handleSolve} disabled={solved} style={{ background: solved ? "rgba(52,211,153,0.15)" : "linear-gradient(135deg, #34d399, #10b981)", border: "none", borderRadius: "12px", padding: "14px 32px", color: solved ? "#34d399" : "#000", fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: "0.9rem", cursor: solved ? "default" : "pointer", transition: "all 0.2s" }}>
+            {solved ? "✓ Bug Fixed!" : "🐛 I Found the Bug!"}
+          </button>
+          <button onClick={() => setShowSolution(!showSolution)} style={{ background: "transparent", border: `1px solid ${showSolution ? "#f87171" : ac}44`, borderRadius: "12px", padding: "14px 32px", color: showSolution ? "#f87171" : ac, fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer" }}>
+            {showSolution ? "Hide Solution" : "👀 Show Solution"}
+          </button>
+        </div>
+
+        {showSolution && (
+          <div style={{ marginBottom: "32px" }}>
+            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: "#34d399", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+              ◆ The Fix
+            </div>
+            <pre style={{ background: isDark ? "#0d1117" : "#1a1a2e", border: "1px solid rgba(52,211,153,0.2)", borderRadius: "12px", padding: "20px", margin: 0, overflowX: "auto", fontFamily: "'Space Mono',monospace", fontSize: "0.82rem", lineHeight: 1.8, color: "#e6edf3", whiteSpace: "pre", textAlign: "left", marginBottom: "20px" }}>
+              <code>{challenge.solution}</code>
+            </pre>
+            
+            <div style={{ background: isDark ? "rgba(52,211,153,0.06)" : "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: "12px", padding: "20px 24px" }}>
+              <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.62rem", color: "#34d399", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>
+                ◆ Explanation
+              </div>
+              <div style={{ fontSize: "0.9rem", color: isDark ? "rgba(255,255,255,0.75)" : "rgba(0,0,0,0.75)", lineHeight: 1.8, textAlign: "left", whiteSpace: "pre-line" }}>
+                {challenge.explanation}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginBottom: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: `1px solid ${ac}22`, borderRadius: "14px", padding: "24px 28px", textAlign: "center" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>
+            ◆ The Lesson
+          </div>
+          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5 }}>
+            "{challenge.lesson}"
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", paddingTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            {challenge.related.map(relSlug => {
+              const rel = findChallenge(relSlug);
+              if (!rel) return null;
+              return (
+                <button key={relSlug} onClick={() => navigate(`/breakit/${relSlug}`)} style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`, borderRadius: "8px", padding: "8px 16px", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", cursor: "pointer" }}>
+                  {rel.title} →
+                </button>
+              );
+            })}
+          </div>
+          {nextChallenge && (
+            <button onClick={() => navigate(`/breakit/${nextChallenge.slug}`)} style={{ background: "linear-gradient(135deg, #a78bfa, #0af)", border: "none", borderRadius: "12px", padding: "12px 24px", color: "#000", fontFamily: "'Space Mono',monospace", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}>
+              Next Challenge: {nextChallenge.title} →
+            </button>
+          )}
+        </div>
+
+        <div style={{ marginTop: "40px", textAlign: "center" }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "14px" }}>
+            Share This Challenge
+          </div>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+            {[
+              { label: "𝕏 Twitter", platform: "twitter", bg: "#1a1a1a", color: "#fff" },
+              { label: "💬 WhatsApp", platform: "whatsapp", bg: "#25d366", color: "#fff" },
+              { label: "💼 LinkedIn", platform: "linkedin", bg: "#0077b5", color: "#fff" },
+              { label: "🔗 Copy Link", platform: "copy", bg: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)", color: isDark ? "#fff" : "#1a1a1a" },
+            ].map(btn => (
+              <button key={btn.platform} onClick={() => {
+                const url = `https://zeroapi.in/breakit/${challenge.slug}`;
+                const text = `I just fixed "${challenge.title}" on ZeroAPI BreakIt! ${url}`;
+                if (btn.platform === "twitter") window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+                else if (btn.platform === "whatsapp") window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+                else if (btn.platform === "linkedin") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
+                else if (btn.platform === "copy") navigator.clipboard.writeText(url);
+              }} style={{ background: btn.bg, border: "none", borderRadius: "8px", padding: "9px 18px", color: btn.color, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", fontWeight: 500 }}>
+                {btn.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
