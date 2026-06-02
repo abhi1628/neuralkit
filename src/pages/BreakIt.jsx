@@ -220,3 +220,4 @@ export default function BreakIt({ theme }) {
       </div>
     </div>
   );
+}
