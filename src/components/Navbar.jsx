@@ -29,6 +29,7 @@ export default function Navbar({ setActiveSection }) {
     { label: 'AI Tools',    action: () => { setActiveSection?.('ai');  scrollTo('tools');    } },
     { label: 'Dev Tools',   action: () => { setActiveSection?.('dev'); scrollTo('devtools'); } },
     { label: 'Learn',       action: () => navigate('/learn')                                   },
+    { label: 'BreakIt',     action: () => navigate('/breakit')                                 },
     { label: 'Playground',  action: () => scrollTo('playground')                               },
     { label: 'About',       action: () => scrollTo('about')                                    },
   ];
