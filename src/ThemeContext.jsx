@@ -15,7 +15,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('zeroapi_theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-    // Overriding document.body styles directly via JS removed to prevent theme switching color flashes.
+    // Explicit document.body overrides removed to guarantee simultaneous CSS transitions.
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
