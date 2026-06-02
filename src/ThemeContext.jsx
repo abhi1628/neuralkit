@@ -15,13 +15,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('zeroapi_theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      document.body.style.backgroundColor = '#08070f';
-      document.body.style.color = '#f1f5f9';
-    } else {
-      document.body.style.backgroundColor = '#faf8ff';
-      document.body.style.color = '#1e1b4b';
-    }
+    // Overriding document.body styles directly via JS removed to prevent theme switching color flashes.
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
