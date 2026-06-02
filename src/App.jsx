@@ -155,7 +155,8 @@ function AboutSection({ currentYear }) {
           style={{ background: 'linear-gradient(135deg, #ff0000, #cc0000)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
           ▶ YouTube: pyofpython
         </button>
-        <button onClick={() => window.open('https://www.linkedin.com/in/abhishek-singh-data-science/', '_blank', 'noopener,noreferrer')}
+        {/* FIXED LINK: Replaced broken URL with your active working handle string */}
+        <button onClick={() => window.open('https://www.linkedin.com/in/abhishek-singh-170726123', '_blank', 'noopener,noreferrer')}
           style={{ background: '#0077b5', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
           LinkedIn
         </button>
