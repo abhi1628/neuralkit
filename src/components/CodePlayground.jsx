@@ -1,5 +1,6 @@
 // src/components/CodePlayground.jsx
 import { useState, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, LANGUAGES, LANG_MAP, EXAMPLES, TOOL_MODELS } from '../constants';
 import { trackEvent, fetchWithBackoff } from '../utils';
@@ -11,8 +12,25 @@ export default function CodePlayground() {
   const isDark = theme === 'dark';
   const ac = 'var(--accent)';
 
-  const [lang,        setLang]        = useState(LANGUAGES[0]);
-  const [code,        setCode]        = useState(LANGUAGES[0].starter);
+  // Read URL params FIRST (before any state that depends on them)
+  const [searchParams] = useSearchParams();
+  const prefilledCode = searchParams.get('code');
+  const prefilledLang = searchParams.get('lang');
+
+  // Initialize state based on URL params or defaults
+  const [lang, setLang] = useState(() => {
+    if (prefilledLang) {
+      const found = LANGUAGES.find(l => l.value === prefilledLang);
+      return found || LANGUAGES[0];
+    }
+    return LANGUAGES[0];
+  });
+
+  const [code, setCode] = useState(() => {
+    if (prefilledCode) return decodeURIComponent(prefilledCode);
+    return lang.starter;
+  });
+
   const [output,      setOutput]      = useState('');
   const [running,     setRunning]     = useState(false);
   const [explaining,  setExplaining]  = useState(false);
