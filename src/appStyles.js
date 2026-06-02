@@ -10,7 +10,7 @@ const appStyles = `
     --border-subtle: rgba(124,58,237,0.07); --border-medium: rgba(124,58,237,0.14); --border-strong: rgba(124,58,237,0.25);
     --error: #dc2626; --error-bg: rgba(220,38,38,0.07); --warning: #b45309; --success: #059669;
     --gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-    --gradient-text: linear-gradient(135deg, #a78bfa 0%, #818cf8 60%, #c084fc 100%);
+    --gradient-text: linear-gradient(135deg, #7c3aed 0%, #4f46e5 60%, #6366f1 100%);
     --glow: 0 0 32px rgba(124,58,237,0.35);
   }
   [data-theme="dark"] {
@@ -29,7 +29,7 @@ const appStyles = `
     box-sizing: border-box; 
     margin: 0; 
     padding: 0; 
-    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
   html, body { 
     width: 100%; 
@@ -37,9 +37,22 @@ const appStyles = `
     background: var(--bg-primary); 
     color: var(--text-primary); 
     overflow-x: hidden; 
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.3s ease;
   }
   #root { width: 100%; }
+
+  /* Lock in your hero titles to use CSS transitions directly */
+  .hero-title { 
+    color: var(--text-primary) !important; 
+    transition: color 0.3s ease;
+    animation: fadeUp 0.9s ease forwards; 
+  }
+  .hero-title span.gradient-span {
+    background: var(--gradient-text) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+  }
 
   @keyframes spin      { to { transform: rotate(360deg); } }
   @keyframes spinSlow  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -49,7 +62,6 @@ const appStyles = `
   @keyframes pulse     { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
   @keyframes glowPulse { 0%, 100% { filter: drop-shadow(0 0 12px rgba(167,139,250,0.5)); } 50% { filter: drop-shadow(0 0 28px rgba(167,139,250,0.9)); } }
 
-  .hero-title     { animation: fadeUp 0.9s ease forwards; }
   .hero-sub       { animation: fadeUp 0.9s ease 0.2s both; }
   .hero-cta       { animation: fadeUp 0.9s ease 0.4s both; }
   .tools-section  { animation: fadeUp 0.9s ease 0.15s both; }
@@ -130,6 +142,7 @@ const appStyles = `
     .tool-row { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
     .tool-panel { padding: 20px !important; }
     .mcq-grid { grid-template-columns: 1fr !important; }
+    .mcq-question { font-size: 0.88rem !important; }
     .trivia-grid { grid-template-columns: 1fr !important; }
     .trivia-section { padding: 40px 16px !important; }
     #playground { padding: 60px 16px !important; }
