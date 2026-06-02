@@ -6,30 +6,30 @@ import { TOOLS, DEV_TOOLS, GA_ID } from './constants';
 import { loadGA, fetchVisitorCount, trackEvent } from './utils';
 import appStyles from './appStyles';
 
-// ── Page imports ──────────────────────────────
+// ── Page imports (ALL AT TOP) ───────────────────────────────
 import { BlogList, BlogPost } from './Blog';
 import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
-import About   from './pages/About';
+import About from './pages/About';
 import BreakIt from './pages/BreakIt';
 import BreakItChallenge from './pages/BreakItChallenge';
 
 // ── Components ────────────────────────────────────────────────
-import ErrorBoundary   from './components/ErrorBoundary';
-import ScrollToTop     from './components/ScrollToTop';
-import Modal           from './components/Modal';
-import Navbar          from './components/Navbar';
-import HeroSection     from './components/HeroSection';
-import TriviaSection   from './components/TriviaSection';
-import ToolCard        from './components/ToolCard';
-import ToolPanel       from './components/ToolPanel';
-import MCQPanel        from './components/MCQPanel';
-import UploadTool      from './components/UploadTool';
+import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
+import Modal from './components/Modal';
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import TriviaSection from './components/TriviaSection';
+import ToolCard from './components/ToolCard';
+import ToolPanel from './components/ToolPanel';
+import MCQPanel from './components/MCQPanel';
+import UploadTool from './components/UploadTool';
 import ResumeBuilderTool from './components/ResumeBuilderTool';
-import DevToolsPanel   from './components/DevToolsPanel';
-import CodePlayground  from './components/CodePlayground';
-import AskAuthor       from './components/AskAuthor';
-import UserFeedback    from './components/UserFeedback';
+import DevToolsPanel from './components/DevToolsPanel';
+import CodePlayground from './components/CodePlayground';
+import AskAuthor from './components/AskAuthor';
+import UserFeedback from './components/UserFeedback';
 
 // ── AI Tools section ──────────────────────────────────────────
 const UPLOAD_TOOLS = [
