@@ -57,12 +57,11 @@ export default function HeroSection({ visitorCount, particles }) {
   const navigate   = useNavigate();
   const isDark     = theme === 'dark';
   const ac         = isDark ? '#a78bfa' : '#7c3aed';
-  const gradient   = isDark
+  
+  const gradient = isDark
     ? 'linear-gradient(135deg, #a78bfa, #818cf8)'
     : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)';
-  const gradientText = isDark
-    ? 'linear-gradient(135deg, #c084fc 0%, #a78bfa 50%, #818cf8 100%)'
-    : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 60%, #6366f1 100%)';
+    
   const glow = isDark
     ? '0 0 40px rgba(167,139,250,0.45)'
     : '0 0 32px rgba(124,58,237,0.35)';
@@ -84,9 +83,10 @@ export default function HeroSection({ visitorCount, particles }) {
         FREE AI TOOLS · ZERO API KEY · ZERO SIGNUP
       </div>
 
-      <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(2rem, 6vw, 6rem)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: '24px', maxWidth: '900px', color: isDark ? '#f1f5f9' : '#1e1b4b', wordBreak: 'keep-all' }}>
+      {/* Headline - Color tracking decoupled from JS to eliminate light/dark flashes */}
+      <h1 className="hero-title" style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(2rem, 6vw, 6rem)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: '24px', maxWidth: '900px', wordBreak: 'keep-all' }}>
         <span>Your AI </span>
-        <span style={{ background: gradientText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>Superpower</span>
+        <span className="gradient-span">Superpower</span>
         <br /><span>Starts Here</span>
       </h1>
 
@@ -110,7 +110,7 @@ export default function HeroSection({ visitorCount, particles }) {
       <div style={{ marginTop: '56px', display: 'flex', gap: '60px', justifyContent: 'center', flexWrap: 'wrap' }}>
         {[{ n: visitorCount ? visitorCount.toLocaleString() : '...', label: 'Visitors' }, { n: '0', label: 'Signup Required' }, { n: '∞', label: 'Possibilities' }].map(({ n, label }) => (
           <div key={label} style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', fontWeight: 800, background: gradientText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{n}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', fontWeight: 800, class: 'hero-title' }}>{n}</div>
             <div style={{ fontSize: '0.7rem', color: isDark ? 'rgba(241,245,249,0.38)' : '#6d6a8a', letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Space Mono', monospace", marginTop: '4px' }}>{label}</div>
           </div>
         ))}
@@ -132,7 +132,7 @@ export default function HeroSection({ visitorCount, particles }) {
             <div key={f.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               <span style={{ fontSize: '1rem', flexShrink: 0 }}>{f.icon}</span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: isDark ? '#f1f5f9' : '#1e1b4b' }}>{f.label}</div>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{f.label}</div>
                 <div style={{ fontSize: '0.73rem', color: isDark ? 'rgba(241,245,249,0.4)' : '#6d6a8a', marginTop: '2px' }}>{f.desc}</div>
               </div>
             </div>
