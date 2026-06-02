@@ -1335,7 +1335,7 @@ export default function BreakItChallenge({ theme }) {
 
   function openInPlayground() {
     const encodedCode = encodeURIComponent(challenge.brokenCode);
-    navigate(`/?playground=true&lang=${challenge.language}&code=${encodedCode}`);
+    navigate(`/?playground=true&lang=${challenge.language}&code=${encodedCode}#playground`);
   }
 
   return (
