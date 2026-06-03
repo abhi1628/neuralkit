@@ -134,6 +134,56 @@ const posts = [
     slug: "cpp-data-structure-performance",
     title: "C++ Data Structure Performance: Eliminating Sequential Lookups in Data Gateways",
     excerpt: "Searching through sequential array configurations drops high-throughput packet routing down to a slow linear O(N) complexity curve. Learn how to achieve lightning-fast O(1) speeds using unordered hash maps."
+  },
+  {
+    slug: "iam-security-best-practices",
+    title: "AWS IAM Security Best Practices: Eliminating Over-Privileged Wildcard Resource Exposures",
+    excerpt: "A single '*' wildcard in an S3 or IAM bucket policy can expose proprietary enterprise assets to the public internet. Learn how to architect strict, cross-account least-privilege validation frameworks."
+  },
+  {
+    slug: "mastering-cors-architectures",
+    title: "Mastering CORS Architectures: Fixing Cross-Origin Authorization Browser Blocks",
+    excerpt: "Combining universal origin wildcards with active credentials flags triggers immediate browser security blocks. Here is how to configure a dynamic, production-ready origin allowlist middleware."
+  },
+  {
+    slug: "preventing-ssrf-vulnerabilities",
+    title: "Preventing SSRF Vulnerabilities: Hardening Internal Proxies Against Metadata Exploits",
+    excerpt: "Allowing users to supply raw routing URLs opens the door to Server-Side Request Forgery. Discover how to isolate internal cloud server metadata blocks and drop private subnet connection requests."
+  },
+  {
+    slug: "hardening-docker-containers",
+    title: "Hardening Docker Containers: Dropping Root Permissions for Low-Privilege Isolation",
+    excerpt: "Defaulting container runtime contexts to root execution leaves your entire host node vulnerable to isolation breaks. Learn the explicit user allocation steps needed to satisfy enterprise security audits."
+  },
+  {
+    slug: "container-process-lifecycles",
+    title: "Container Process Lifecycles: Preventing PID 1 Thread Starvation and Process Leaks",
+    excerpt: "Standard language runtimes lack system init capabilities and leave finished background sub-processes trapped as zombies inside memory maps. Discover how to regulate lifecycles using tiny init daemons."
+  },
+  {
+    slug: "kubernetes-probe-orchestration",
+    title: "Kubernetes Probe Orchestration: Defending Applications Against Liveness Death Spirals",
+    excerpt: "Pointing automated cluster monitoring to heavy database synchronization lanes turns localized traffic surges into terminal pod restart loops. Here is how to decouple your orchestration health checks."
+  },
+  {
+    slug: "caching-strategies-at-scale",
+    title: "Caching Strategies at Scale: Mitigating Thundering Herd Traffic Avalanches",
+    excerpt: "Simultaneous global cache key expirations send millions of concurrent requests crashing straight into downstream databases. Learn how to implement mutual exclusion locks and time-based expiration jitter."
+  },
+  {
+    slug: "resilient-microservice-architectures",
+    title: "Resilient Microservice Architectures: Implementing Circuit Breakers and Exponential Backoff",
+    excerpt: "Immediate network retry loops turn minor downstream timeouts into total, cascading system outages. Learn how to protect recovery windows using exponential backoff delays and randomized jitter offsets."
+  },
+  {
+    slug: "scaling-stateless-gateways",
+    title: "Scaling Stateless Gateways: Migrating In-Memory Rate Limiters to Centralized Distributed States",
+    excerpt: "Tracking rate limit thresholds inside local server memory variables breaks completely behind a load balancer cluster. Discover how to enforce global traffic limits cleanly using shared, atomic distributed caches."
+  },
+  {
+    slug: "asynchronous-resource-management",
+    title: "Asynchronous Resource Management: Eliminating Heap Leaks in Un-Timed Background Promises",
+    excerpt: "Firing un-timed background workers without exception catch blocks causes memory leak build-ups when external endpoints drop connections. Learn how to wrap execution traces using strict timeout race conditions."
   }
 ];
 
