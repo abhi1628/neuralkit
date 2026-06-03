@@ -46,28 +46,44 @@ export default function DevToolsPanel() {
 }
 
 // ── 2. PLACED HERE: Named export block cleanly attached at the bottom ──
+// src/components/DevToolsPanel.jsx - Bottom Section Fix
+
 export function AnalyticsDashboardSnippet() {
   const [metrics, setMetrics] = useState({ views: {}, runs: {} });
   const [loading, setLoading] = useState(true);
+  
+  // ✅ FIXED: Initializing theme references to eliminate the reference error crash
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const ac = isDark ? '#a78bfa' : '#7c3aed';
 
   useEffect(() => {
     fetch('/api/analytics-stats')
       .then(res => res.json())
-      .then(data => { setMetrics(data); setLoading(false); })
+      .then(data => { 
+        setMetrics(data); 
+        setLoading(false); 
+      })
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.8rem", color: "var(--accent)", padding: "20px 0" }}>Collecting platform usage logs...</div>;
+  if (loading) {
+    return (
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.8rem", color: ac, padding: "20px 0" }}>
+        Collecting platform usage logs...
+      </div>
+    );
+  }
 
   return (
-    <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px', color: isDark ? '#fff' : '#1a1a1a' }}>
       <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, margin: 0 }}>📊 Platform Performance Dashboard</h3>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flexWrap: 'wrap' }}>
         {/* View Frequency Logs */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--accent)', marginBottom: '10px' }}>◆ SEO PAGE VIEWS</div>
-          {Object.entries(metrics.views).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No active page views logged yet.</span> : 
+        <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: ac, marginBottom: '10px' }}>◆ SEO PAGE VIEWS</div>
+          {Object.entries(metrics.views || {}).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No active page views logged yet.</span> : 
             Object.entries(metrics.views).map(([key, val]) => (
               <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0' }}>
                 <span style={{ fontFamily: "'Space Mono', monospace" }}>/{key}</span>
@@ -77,9 +93,9 @@ export function AnalyticsDashboardSnippet() {
         </div>
 
         {/* Runtime Model Generation Counts */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#34d399', marginBottom: '10px' }}>◆ MODEL RUN INVOCATIONS</div>
-          {Object.entries(metrics.runs).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No execution logs transmitted.</span> : 
+          {Object.entries(metrics.runs || {}).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No execution logs transmitted.</span> : 
             Object.entries(metrics.runs).map(([key, val]) => (
               <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0' }}>
                 <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.75rem' }}>{key}</span>
