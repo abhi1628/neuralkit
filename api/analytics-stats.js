@@ -1,4 +1,10 @@
 // api/analytics-stats.js
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 const ALLOWED_ORIGINS = ["https://zeroapi.in", "https://www.zeroapi.in", "http://localhost:5173", "http://localhost:3000"];
 
@@ -14,13 +20,6 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { Redis } = require('@upstash/redis');
-    
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
-
     const rawData = await redis.hgetall("zeroapi:analytics");
     const stats = { views: {}, runs: {} };
     
@@ -39,7 +38,6 @@ export default async function handler(req, res) {
     return res.status(200).json(stats);
   } catch (err) {
     console.error("[Analytics Stats Fetch Crash]:", err.message);
-    // Fall back to clean empty sets instead of throwing a 500 error if connection lags
     return res.status(200).json({ views: {}, runs: {}, note: "Cache sync pending" });
   }
 }
