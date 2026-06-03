@@ -25,13 +25,22 @@ export default function Navbar({ setActiveSection }) {
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
+  // Helper to post view analytics for internal tab navigations
+  const trackSectionView = (sectionName) => {
+    fetch('/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'view', targetId: `section-${sectionName}` })
+    }).catch(() => {});
+  };
+
   const navLinks = [
-    { label: 'AI Tools',    action: () => { setActiveSection?.('ai');  scrollTo('tools');    } },
-    { label: 'Dev Tools',   action: () => { setActiveSection?.('dev'); scrollTo('devtools'); } },
-    { label: 'Learn',       action: () => navigate('/learn')                                   },
-    { label: 'BreakIt',     action: () => navigate('/breakit')                                 },
-    { label: 'Playground',  action: () => scrollTo('playground')                               },
-    { label: 'About',       action: () => scrollTo('about')                                    },
+    { label: 'AI Tools',    action: () => { setActiveSection?.('ai');  scrollTo('tools'); trackSectionView('ai-tools'); } },
+    { label: 'Dev Tools',   action: () => { setActiveSection?.('dev'); scrollTo('devtools'); trackSectionView('dev-tools'); } },
+    { label: 'Learn',       action: () => { navigate('/learn'); trackSectionView('blog-list'); } },
+    { label: 'BreakIt',     action: () => { navigate('/breakit'); trackSectionView('breakit-dashboard'); } },
+    { label: 'Playground',  action: () => { scrollTo('playground'); trackSectionView('playground'); } },
+    { label: 'About',       action: () => { scrollTo('about'); trackSectionView('about'); } },
   ];
 
   return (
@@ -50,10 +59,10 @@ export default function Navbar({ setActiveSection }) {
             </defs>
             <circle cx="60" cy="60" r="48" fill="none" stroke="url(#ng1)" strokeWidth="3.5" strokeDasharray="220 80" strokeLinecap="round" />
             <circle cx="60" cy="60" r="34" fill="none" stroke={isDark ? 'rgba(167,139,250,0.3)' : 'rgba(124,58,237,0.3)'} strokeWidth="1.5" strokeDasharray="160 60" strokeLinecap="round" />
-            <circle cx="60" cy="12"  r="4" fill={isDark ? '#a78bfa' : '#7c3aed'} />
+            <circle cx="60" cy="12" r="4" fill={isDark ? '#a78bfa' : '#7c3aed'} />
             <circle cx="108" cy="60" r="4" fill={isDark ? '#818cf8' : '#4f46e5'} />
             <circle cx="60" cy="108" r="4" fill={isDark ? '#a78bfa' : '#7c3aed'} />
-            <circle cx="12" cy="60"  r="4" fill={isDark ? '#818cf8' : '#4f46e5'} />
+            <circle cx="12" cy="60" r="4" fill={isDark ? '#818cf8' : '#4f46e5'} />
             <line x1="60" y1="12"  x2="60" y2="22"  stroke={isDark ? '#a78bfa' : '#7c3aed'} strokeWidth="2" />
             <line x1="108" y1="60" x2="98" y2="60"  stroke={isDark ? '#818cf8' : '#4f46e5'} strokeWidth="2" />
             <line x1="60" y1="108" x2="60" y2="98"  stroke={isDark ? '#a78bfa' : '#7c3aed'} strokeWidth="2" />
