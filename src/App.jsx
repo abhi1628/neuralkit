@@ -26,7 +26,7 @@ import ToolPanel from './components/ToolPanel';
 import MCQPanel from './components/MCQPanel';
 import UploadTool from './components/UploadTool';
 import ResumeBuilderTool from './components/ResumeBuilderTool';
-import DevToolsPanel from './components/DevToolsPanel';
+import DevToolsPanel, { AnalyticsDashboardSnippet } from './components/DevToolsPanel'; // FIXED: Imported analytics block
 import CodePlayground from './components/CodePlayground';
 import AskAuthor from './components/AskAuthor';
 import UserFeedback from './components/UserFeedback';
@@ -58,6 +58,7 @@ Be honest, specific, and constructive.`,
 ];
 
 function AIToolsSection({ activeTool, setActiveTool }) {
+  const navigate = useNavigate(); // FIXED: Added to allow direct routing on card actions
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const ac = isDark ? '#a78bfa' : '#7c3aed';
@@ -95,8 +96,20 @@ function AIToolsSection({ activeTool, setActiveTool }) {
       {/* Tool selector grid */}
       <div className="tool-row" style={{ display: 'flex', gap: '10px', marginBottom: '32px', flexWrap: 'wrap' }}>
         {ALL_TOOL_CARDS.map((t, i) => (
-          <ToolCard key={t.id} icon={t.icon} name={t.name} tagline={t.tagline} active={activeTool === i}
-            onClick={() => { setActiveTool(i); trackEvent('tool_selected', { tool_name: t.name }); }} />
+          <ToolCard 
+            key={t.id} 
+            icon={t.icon} 
+            name={t.name} 
+            tagline={t.tagline} 
+            active={activeTool === i}
+            onClick={() => { 
+              setActiveTool(i); 
+              trackEvent('tool_selected', { tool_name: t.name });
+              
+              // OPTIONAL: Enforce explicit route jumps to dedicated SEO pages instantly on tap
+              // navigate(`/tools/${t.id}`); 
+            }} 
+          />
         ))}
       </div>
 
@@ -156,7 +169,6 @@ function AboutSection({ currentYear }) {
           style={{ background: 'linear-gradient(135deg, #ff0000, #cc0000)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
           ▶ YouTube: pyofpython
         </button>
-        {/* FIXED LINK: Replaced broken URL with your active working handle string */}
         <button onClick={() => window.open('https://www.linkedin.com/in/abhishek-singh-170726123', '_blank', 'noopener,noreferrer')}
           style={{ background: '#0077b5', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
           LinkedIn
@@ -204,6 +216,15 @@ function AppInner() {
       {activeSection === 'dev' && <DevToolsPanel />}
       {activeSection === 'ai'  && <CodePlayground />}
 
+      {/* FIXED/ADDED: Visible local handler layout fallback link for new visible sections */}
+      {activeSection === 'analytics' && (
+        <section id="analytics-section" style={{ maxWidth: '960px', margin: '0 auto', padding: '80px 32px' }}>
+          <div style={{ background: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.03)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '20px', padding: '36px' }}>
+            <AnalyticsDashboardSnippet />
+          </div>
+        </section>
+      )}
+
       <AskAuthorSection />
       <UserFeedback />
       <AboutSection currentYear={currentYear} />
@@ -224,11 +245,24 @@ function BreakItChallengePage() { const { theme } = useTheme(); return <BreakItC
 
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
+  const { theme } = useTheme(); // FIXED: Pulled out state cleanly for wrapper padding definitions
   return (
     <ErrorBoundary>
       <Routes>
         <Route path="/"            element={<AppInner />} />
+        
+        {/* ✅ REGISTERED: CRAWLER FRIENDLY ISOLATED SEO VIEW PATHS */}
         <Route path="/tools/:toolSlug" element={<ToolDetailView />} />
+        
+        {/* ✅ REGISTERED: DEDICATED ADMIN STATS LOOKUP ROUTE LINK */}
+        <Route path="/dashboard" element={
+          <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '120px 32px' }}>
+            <div style={{ maxWidth: '960px', margin: '0 auto', background: theme === 'dark' ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.03)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '20px', padding: '36px' }}>
+              <AnalyticsDashboardSnippet />
+            </div>
+          </div>
+        } />
+
         <Route path="/learn"       element={<BlogListPage />} />
         <Route path="/learn/:slug" element={<BlogPostPage />} />
         <Route path="/privacy"     element={<PrivacyPage />} />
