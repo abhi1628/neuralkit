@@ -94,7 +94,6 @@
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
-</urlset>
 <!-- ── Cloud & Architecture Global Challenges ────────── -->
   <url>
     <loc>https://zeroapi.in/breakit/cloud-iam-exposure</loc>
@@ -146,3 +145,4 @@
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
+</urlset>
