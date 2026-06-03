@@ -35,10 +35,10 @@ export default function InterviewCoach() {
   async function startInterview() {
     setLoading(true); setError('');
     try {
-      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
+      const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          capability: 'light-model', max_tokens: 600,
+          model: TOOL_MODELS.interviewQuestions, max_tokens: 600,
           messages: [
             { role: 'system', content: `You are a technical interviewer. Generate exactly ${TOTAL_Q} interview questions for a ${level} ${role} position. Return ONLY a JSON array of strings — no numbering, no preamble, no markdown. Example: ["Question one?","Question two?"]` },
             { role: 'user',   content: `Generate ${TOTAL_Q} varied interview questions covering technical knowledge, problem solving, and situational scenarios for ${level} ${role}.` },
@@ -59,10 +59,10 @@ export default function InterviewCoach() {
     setTimerActive(false); clearInterval(timerRef.current);
     setLoading(true);
     try {
-      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
+      const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          capability: 'large-model', max_tokens: 500,
+          model: TOOL_MODELS.interviewEval, max_tokens: 400,
           messages: [
             { role: 'system', content: `You are a senior technical interviewer evaluating a ${level} ${role} candidate. Respond ONLY with valid JSON: {"score":7,"feedback":"...","strength":"...","improvement":"..."}. Score is 1-10. Keep feedback under 60 words.` },
             { role: 'user',   content: `Question: ${questions[qNum]}\n\nCandidate answer: ${answer}\n\nTime taken: ${120 - timeLeft} seconds of 120.` },

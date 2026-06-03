@@ -74,10 +74,9 @@ export default function CodePlayground() {
     setExplaining(true); setExplanation('');
     trackEvent('playground_explain', { language: lang.label });
     try {
-      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
+      const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          capability: 'coding-model',
           model: TOOL_MODELS.codePlayground, max_tokens: 500,
           messages: [
             { role: 'system', content: `You are an expert ${lang.label} educator. Explain the given code clearly:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.` },

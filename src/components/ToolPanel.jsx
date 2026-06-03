@@ -26,9 +26,9 @@ export default function ToolPanel({ tool }) {
     setLoading(true); setOutput(''); setError('');
     trackEvent('tool_run', { tool_name: tool.name, input_length: sanitized.length });
     try {
-      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
+      const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ capability: tool.model || 'fast-model',, max_tokens: 800, messages: [{ role: 'system', content: tool.systemPrompt }, { role: 'user', content: sanitized }] }),
+        body: JSON.stringify({ model: tool.model || MODELS.MEDIUM, max_tokens: 800, messages: [{ role: 'system', content: tool.systemPrompt }, { role: 'user', content: sanitized }] }),
       });
       const data = await res.json();
       if (data?.choices?.[0]?.message?.content) {
