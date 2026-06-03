@@ -129,15 +129,27 @@ export default async function handler(req, res) {
     }
   }
 
-  try {
+try {
     const { res: groqRes, data } = await callGroq(safeModel, messages, safeMaxTokens, temperature);
     
-    // Increment specific invocation model trackers inside memory map layers
-    if (groqRes.ok && global.analyticsMap) {
-      const currentLabelId = model || "default-model";
-      global.analyticsMap.runs[currentLabelId] = (global.analyticsMap.runs[currentLabelId] || 0) + 1;
+    // ✅ NEW UPDATED REDIS TELEMETRY INJECTION
+    if (groqRes.ok) {
+      try {
+        const { Redis } = require('@upstash/redis');
+        const redis = new Redis({
+          url: process.env.UPSTASH_REDIS_REST_URL,
+          token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        });
+        
+        const currentLabelId = model || "default-model";
+        // Atomically increment the runs counter inside your permanent cloud hash map
+        await redis.hincrby("zeroapi:analytics", `runs:${currentLabelId}`, 1);
+      } catch (redisErr) {
+        console.error("Telemetry write skip:", redisErr.message);
+      }
     }
 
+    // FIXED: Ensure you keep 'res.status' matching the original response handler
     return res.status(groqRes.status).json(data);
   } catch {
     return res.status(500).json({ error: "AI service unavailable. Please try again." });
