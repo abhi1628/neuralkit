@@ -1,22 +1,17 @@
 // api/ai.js — Proxies all AI requests to Groq, keeps API key server-side
 
-// ── Model config ──────────────────────────────────────────────
-// Capability aliases → actual model names
-// When Groq deprecates a model, update here only. No component changes needed.
 const MODEL_WHITELIST = [
   "llama-3.3-70b-versatile",
   "llama-3.1-8b-instant",
 ];
 
-// Intra-Groq fallback chain: if primary model fails, retry with fallback.
-// Handles deprecations automatically — tool stays alive even if a model goes down.
 const MODEL_FALLBACKS = {
   "llama-3.3-70b-versatile": "llama-3.1-8b-instant",
   "llama-3.1-8b-instant":    "llama-3.3-70b-versatile",
 };
 
 const DEFAULT_MODEL   = "llama-3.3-70b-versatile";
-const MAX_TOKENS_CAP  = 2000; // prevent cost bombing
+const MAX_TOKENS_CAP  = 2000;
 
 const ALLOWED_ORIGINS = [
   "https://zeroapi.in",
@@ -25,10 +20,11 @@ const ALLOWED_ORIGINS = [
   "http://localhost:3000",
 ];
 
-// ── Rate limit stores ─────────────────────────────────────────
 function initGlobals() {
   if (!global.rateMap)        global.rateMap   = new Map();
   if (!global.heavyMap)       global.heavyMap  = new Map();
+  // Initialize analytics matrix storage mapping states in node runtime memory
+  if (!global.analyticsMap)   global.analyticsMap = { views: {}, runs: {} };
   if (!global.cleanupStarted) {
     global.cleanupStarted = true;
     setInterval(() => {
@@ -39,9 +35,6 @@ function initGlobals() {
   }
 }
 
-// ── Groq fetch helper with fallback ──────────────────────────
-// Tries primary model first. If Groq returns a deprecation/model error,
-// automatically retries once with the fallback model.
 async function callGroq(modelName, messages, maxTokens, temperature) {
   const body = JSON.stringify({
     model:       modelName,
@@ -60,8 +53,6 @@ async function callGroq(modelName, messages, maxTokens, temperature) {
   });
 
   const data = await groqRes.json();
-
-  // Detect model deprecation / not supported errors from Groq
   const errMsg = data?.error?.message || "";
   const isModelError = !groqRes.ok && (
     errMsg.includes("decommissioned") ||
@@ -90,9 +81,7 @@ async function callGroq(modelName, messages, maxTokens, temperature) {
   return { res: groqRes, data };
 }
 
-// ── Main handler ──────────────────────────────────────────────
 export default async function handler(req, res) {
-  // CORS
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -108,17 +97,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing messages array" });
   }
 
-  // 🛡️ Sanitize model — whitelist only, safe default fallback
   const safeModel     = MODEL_WHITELIST.includes(model) ? model : DEFAULT_MODEL;
-  // 🛡️ Cap max_tokens — prevent runaway cost
   const safeMaxTokens = Math.min(parseInt(max_tokens) || 1000, MAX_TOKENS_CAP);
 
-  // ── Rate limiting ─────────────────────────────────────────
   initGlobals();
   const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress;
   const now      = Date.now();
 
-  // General limit: 20 requests per 5 minutes per IP
   const rateKey   = `rate_${clientIp}`;
   const rateEntry = global.rateMap.get(rateKey);
   if (rateEntry && now - rateEntry.windowStart < 300000) {
@@ -130,8 +115,6 @@ export default async function handler(req, res) {
     global.rateMap.set(rateKey, { windowStart: now, count: 1 });
   }
 
-  // Heavy limit: 10 large-prompt requests per 2 minutes per IP
-  // Prevents a single user from exhausting org-level Groq TPM via chunked summarization
   const isHeavyRequest = messages.some(m => typeof m.content === "string" && m.content.length > 1500);
   if (isHeavyRequest) {
     const heavyKey   = `heavy_${clientIp}`;
@@ -146,9 +129,15 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── Call Groq with automatic fallback ────────────────────
   try {
     const { res: groqRes, data } = await callGroq(safeModel, messages, safeMaxTokens, temperature);
+    
+    // Increment specific invocation model trackers inside memory map layers
+    if (groqRes.ok && global.analyticsMap) {
+      const currentLabelId = model || "default-model";
+      global.analyticsMap.runs[currentLabelId] = (global.analyticsMap.runs[currentLabelId] || 0) + 1;
+    }
+
     return res.status(groqRes.status).json(data);
   } catch {
     return res.status(500).json({ error: "AI service unavailable. Please try again." });
