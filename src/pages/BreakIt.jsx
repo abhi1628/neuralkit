@@ -136,7 +136,95 @@ const CHALLENGE_CATEGORIES = [
       { slug: "cloud-stateless-bypass", title: "The Stateless Gateway Bypass", level: "intermediate", time: "5 min", solves: 1670, description: "[Distributed Systems] Tracking high-volume rate limits inside local memory blocks lets traffic escape protection layers.", theorySlug: "scaling-stateless-gateways" },
       { slug: "cloud-promise-leak", title: "The Dangling Background Leak", level: "advanced", time: "6 min", solves: 910, description: "[Runtime Optimization] Firing un-timed background workers without exception catch blocks continuously siphons RAM channels.", theorySlug: "asynchronous-resource-management" }
     ]
-  }
+  },
+   {
+    id: "java-elite-track",
+    name: "Java Elite Sprint",
+    icon: "☕",
+    color: "#f89820",
+    challenges: [
+      { 
+        slug: "java-string-pool-leak", 
+        title: "The Undying String Intern Leak", 
+        level: "advanced", 
+        time: "6 min", 
+        solves: 1845, 
+        description: "Forcing millions of dynamically split unique tokens directly into the JVM global intern pool bypasses GC and overflows Metaspace memory." 
+      },
+      { 
+        slug: "java-autoboxing-leak", 
+        title: "The Phantom Boxed Accumulator", 
+        level: "intermediate", 
+        time: "4 min", 
+        solves: 3412, 
+        description: "Declaring loop accumulators as object wrappers (Long) instead of primitives (long) triggers implicit autoboxing churn on heavy loops." 
+      },
+      { 
+        slug: "java-hashmap-corruption", 
+        title: "The Disappearing Hash Key", 
+        level: "advanced", 
+        time: "7 min", 
+        solves: 984, 
+        description: "Using custom map key classes without overriding identity contracts (equals/hashCode) causes logical lookup queries to return null." 
+      },
+      { 
+        slug: "java-concurrent-modification", 
+        title: "The Brittle Session Pruner", 
+        level: "intermediate", 
+        time: "5 min", 
+        solves: 4125, 
+        description: "Modifying structural collections directly inside enhanced collection loops desynchronizes index counters, triggering a crash." 
+      },
+      { 
+        slug: "java-integer-cache", 
+        title: "The Boundary Valuation Glitch", 
+        level: "beginner", 
+        time: "3 min", 
+        solves: 6102, 
+        description: "Evaluating object wrapper instances using direct relational identity operators (==) fails completely outside the cached -128 to 127 integer zone." 
+      },
+      { 
+        slug: "java-thread-local-leak", 
+        title: "The Undying Web Request Siphon", 
+        level: "advanced", 
+        time: "8 min", 
+        solves: 742, 
+        description: "Failing to drop ThreadLocal allocations within pooled thread reuse structures leaks request frames indefinitely across transaction boundaries." 
+      },
+      { 
+        slug: "java-volatile-visibility", 
+        title: "The Unresponsive Shutdown Switch", 
+        level: "intermediate", 
+        time: "5 min", 
+        solves: 2195, 
+        description: "Thread management loops operating without volatile constraints trap flag reads tightly inside local CPU caches, ignoring external shutdown prompts." 
+      },
+      { 
+        slug: "java-double-checked-locking", 
+        title: "The Broken Thread-Safe Singleton", 
+        level: "advanced", 
+        time: "7 min", 
+        solves: 1040, 
+        description: "Un-parameterized lazy singletons expose partially constructed memory allocation addresses due to runtime compiler instruction reordering loops." 
+      },
+      { 
+        slug: "java-stream-starvation", 
+        title: "The Frozen Parallel Stream Gateway", 
+        level: "advanced", 
+        time: "6 min", 
+        solves: 1210, 
+        description: "Chaining heavy blocking external network fetches directly into standard parallel stream layers starves the shared common ForkJoinPool runtime threads." 
+      },
+      { 
+        slug: "java-try-with-resources-leak", 
+        title: "The Ghost File Descriptor Leak", 
+        level: "beginner", 
+        time: "4 min", 
+        solves: 5420, 
+        description: "Failing to guarantee automatic stream closure paths via structural try-with-resources containers leaves system file descriptors trapped open on errors." 
+      }
+    ]
+  } 
 ];
 
 const LEVEL_COLORS = {
