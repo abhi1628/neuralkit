@@ -1915,6 +1915,214 @@ def is_rate_limited(client_ip):
         preparationGuide: "/learn/asynchronous-resource-management"
       }
     ]
+  },
+    {
+    id: "java-elite-track",
+    name: "Java Elite Technical Sprint",
+    icon: "☕",
+    color: "#f89820",
+    challenges: [
+      {
+        slug: "java-string-pool-leak",
+        title: "The Undying String Intern Leak",
+        level: "advanced",
+        time: "6 min",
+        solves: 1845,
+        description: "Dynamic string processing operations saturate the JVM PermGen/Metaspace memory over continuous runtime execution pipelines.",
+        setup: "You are building a high-throughput transaction log parser. To save heap space, you use memory management tricks on repetitive string configurations. The system runs flawlessly in local testing, but under massive production payload streams, it triggers a catastrophic OutOfMemoryError (OOM). Identify the structural caching leak.",
+        brokenCode: `import java.util.*;\n\npublic class LogProcessor {\n    // TRAP: Forcing millions of dynamically generated unique string inputs \n    // directly into the JVM global intern pool bypasses garbage collection constraints!\n    public void parseIncomingStream(List<String> rawLogs) {\n        for (String log : rawLogs) {\n            String metadataToken = log.split("-")[0];\n            String structuredKey = metadataToken.intern();\n            System.out.println("Processing chunk entry: " + structuredKey);\n        }\n    }\n}`,
+        language: "java",
+        hints: [
+          "The .intern() method tells the JVM to store strings directly in the shared native memory string literal pool.",
+          "Are these split token keys globally repetitive, or are they uniquely generated dynamic IDs?",
+          "If dynamic keys are interned, the JVM Garbage Collector cannot free them from Metaspace, causing a permanent memory siphon. Use a local bounded cache instead."
+        ],
+        solution: `import java.util.*;\nimport java.util.concurrent.*;\n\npublic class LogProcessor {\n    private final Map<String, String> localCache = new ConcurrentHashMap<>();\n\n    public void parseIncomingStream(List<String> rawLogs) {\n        for (String log : rawLogs) {\n            String metadataToken = log.split("-")[0];\n            \n            // Clean Fix: Use a bounded local map instead of saturating JVM Metaspace\n            String structuredKey = localCache.computeIfAbsent(metadataToken, k -> k);\n            System.out.println("Processing chunk entry: " + structuredKey);\n        }\n    }\n}`,
+        explanation: "The Bug: The .intern() method pushes objects into the JVM String Pool. Because these elements are pinned globally, they escape normal garbage collection sweeps. Dynamic log tokens accumulate until the Metaspace/PermGen sector overflows.\n\nThe Fix: Replace JVM string interning with a local ConcurrentHashMap configuration. This isolates the scope to the application layer where references can clear naturally.",
+        lesson: "Never invoke .intern() on unbounded dynamically generated runtime string patterns.",
+        related: ["java-autoboxing-leak", "java-stream-starvation"]
+      },
+      {
+        slug: "java-autoboxing-leak",
+        title: "The Phantom Boxed Accumulator",
+        level: "intermediate",
+        time: "4 min",
+        solves: 3412,
+        description: "A financial metric aggregator siphons memory and experiences huge latency spikes during continuous calculations.",
+        setup: "You implement an optimization tracking module to calculate the cumulative micro-fees of transaction metrics. Under stress testing, processing speeds drop drastically and memory profile graphs show a sawtooth shape with high garbage collection churn. Fix the performance bottleneck.",
+        brokenCode: `public class FeeCalculator {\n    public static Long calculateTotalFees(int[] feeElements) {\n        // TRAP: Using object wrapper Long inside a primitive iteration block\n        // forces Java to implicitly instantiate a brand-new object wrapper on every add operation!\n        Long totalFeeVolume = 0L;\n        for (int fee : feeElements) {\n            totalFeeVolume += fee;\n        }\n        return totalFeeVolume;\n    }\n}`,
+        language: "java",
+        hints: [
+          "Look closely at the data type used to declare totalFeeVolume.",
+          "Every time primitive 'fee' is added to boxed 'Long', Java runs Long.valueOf(), creating an object on the heap.",
+          "Change the accumulator loop variable to a primitive long to perform raw hardware-level additions."
+        ],
+        solution: `public class FeeCalculator {\n    public static Long calculateTotalFees(int[] feeElements) {\n        // Clean Fix: Accumulate using native primitives to prevent boxing allocation churn\n        long totalFeeVolume = 0L;\n        for (int fee : feeElements) {\n            totalFeeVolume += fee;\n        }\n        return totalFeeVolume;\n    }\n}`,
+        explanation: "The Bug: Declaring the loop accumulator as an object wrapper (Long) instead of a primitive (long) forces implicit autoboxing. On every iteration loop, Java instantiates a new Long object instance on the heap, producing millions of short-lived dummy objects that choke the Garbage Collector.",
+        lesson: "Prefer primitives over object wrappers inside high-frequency execution loops.",
+        related: ["java-string-pool-leak", "java-hashmap-corruption"]
+      },
+      {
+        slug: "java-hashmap-corruption",
+        title: "The Disappearing Hash Key",
+        level: "advanced",
+        time: "7 min",
+        solves: 984,
+        description: "Active system tokens stored inside a collection structure return null even when they definitely exist in the dataset.",
+        setup: "You are designing a real-time gateway session manager using a HashMap to link security data structures to user accounts. Users intermittently experience session drops, and lookup checks return null even though data was just inserted. Uncover the hash lookup leak.",
+        brokenCode: `import java.util.*;\n\npublic class SessionTracker {\n    public static class AccountKey {\n        public String userId;\n        public AccountKey(String id) { this.userId = id; }\n    }\n\n    public static void main(String[] args) {\n        Map<AccountKey, String> sessionMap = new HashMap<>();\n        AccountKey key = new AccountKey("USER_X");\n        sessionMap.put(key, "ACTIVE_SESSION");\n        \n        // TRAP: Attempting to look up using a logical match returns null \n        // because the key model doesn't override identity contracts!\n        System.out.println(sessionMap.get(new AccountKey("USER_X")));\n    }\n}`,
+        language: "java",
+        hints: [
+          "How does a HashMap determine if two objects match? It calls hashCode() and equals().",
+          "If your custom class doesn't explicitly implement these overrides, Java falls back to Object's default behavior, which compares memory addresses.",
+          "Implement valid equals() and hashCode() override layers based on the immutable parameters of your key class."
+        ],
+        solution: `import java.util.*;\n\npublic class SessionTracker {\n    public static class AccountKey {\n        public String userId;\n        public AccountKey(String id) { this.userId = id; }\n\n        // Clean Fix: Override equals and hashCode to ensure consistent structural lookup matching\n        @Override\n        public boolean equals(Object o) {\n            if (this == o) return true;\n            if (o == null || getClass() != o.getClass()) return false;\n            AccountKey that = (AccountKey) o;\n            return Objects.equals(userId, that.userId);\n        }\n\n        @Override\n        public int hashCode() {\n            return Objects.hash(userId);\n        }\n    }\n\n    public static void main(String[] args) {\n        Map<AccountKey, String> sessionMap = new HashMap<>();\n        AccountKey key = new AccountKey("USER_X");\n        sessionMap.put(key, "ACTIVE_SESSION");\n        System.out.println(sessionMap.get(new AccountKey("USER_X"))); // Returns ACTIVE_SESSION\n    }\n}`,
+        explanation: "The Bug: HashMap uses hashCode and equals to bucket and pinpoint keys. Without custom implementations, Java relies on memory references. Consequently, identical logical models fail lookup validation steps.",
+        lesson: "Always override equals() and hashCode() when using custom classes as map keys.",
+        related: ["java-concurrent-modification", "java-integer-cache"]
+      },
+      {
+        slug: "java-concurrent-modification",
+        title: "The Brittle Session Pruner",
+        level: "intermediate",
+        time: "5 min",
+        solves: 4125,
+        description: "A clean-up routing utility throws a raw ConcurrentModificationException when clearing disconnected terminal lines.",
+        setup: "You are writing a routine cleanup function to scan your server's open connection lists and drop channels that have gone cold. The logic performs flawlessly with lone entries but throws a fatal exception as soon as multi-node cluster sweeps drop elements under load.",
+        brokenCode: `import java.util.*;\n\npublic class ChannelPruner {\n    public void dropInactiveNodes(List<String> liveSockets) {\n        // TRAP: Modifying a collection wrapper directly while traversing it\n        // using a standard enhanced for-loop invalidates internal index counters!\n        for (String socketId : liveSockets) {\n            if (socketId.contains("OFFLINE")) {\n                liveSockets.remove(socketId);\n            }\n        }\n    }\n}`,
+        language: "java",
+        hints: [
+          "Java's enhanced for-loop translates to an implicit Iterator behind the scenes.",
+          "If you modify a list while iterating over it via any method other than the iterator's own remove() function, it crashes.",
+          "Use explicit iterator handlers, or rely on modern Java 8+ lambda utilities like .removeIf()."
+        ],
+        solution: `import java.util.*;\n\npublic class ChannelPruner {\n    public void dropInactiveNodes(List<String> liveSockets) {\n        // Clean Fix: Leverage lambda expression engines to handle structural mutation safely\n        liveSockets.removeIf(socketId -> socketId.contains("OFFLINE"));\n    }\n}`,
+        explanation: "The Bug: Modifying structural dimensions while iterating via an standard enhanced loop desynchronizes internal modification counters (modCount). This triggers an immediate ConcurrentModificationException crash.",
+        lesson: "Never modify a collection directly during active iteration sweeps; use an explicit Iterator or removeIf().",
+        related: ["java-hashmap-corruption", "java-stream-starvation"]
+      },
+      {
+        slug: "java-integer-cache",
+        title: "The Boundary Valuation Glitch",
+        level: "beginner",
+        time: "3 min",
+        solves: 6102,
+        description: "An automated inventory matcher passes unit testing for small counts but fails validation criteria for high quantities.",
+        setup: "You write a verification checker to confirm if item barcodes across stock arrays line up. The code works perfectly for items with batch counts below 100, but fails to match identical high quantities above 150. Fix this data type parsing gap.",
+        brokenCode: `public class IdentityMatcher {\n    public static boolean verifyBatchQuantity(Integer stockVolumeA, Integer stockVolumeB) {\n        // TRAP: Evaluating object reference types using standard equality operators \n        // works only within specific implicit internal JVM caching configurations!\n        return stockVolumeA == stockVolumeB;\n    }\n}`,
+        language: "java",
+        hints: [
+          "The variables are declared as object wrappers (Integer), not native primitives.",
+          "The '==' operator checks reference memory locations when applied to objects, not actual underlying values.",
+          "Java caches Integer references only between -128 and 127. Beyond that range, new objects are created. Use the .equals() method."
+        ],
+        solution: `public class IdentityMatcher {\n    public static boolean verifyBatchQuantity(Integer stockVolumeA, Integer stockVolumeB) {\n        if (stockVolumeA == null || stockVolumeB == null) return false;\n        // Clean Fix: Enforce true content evaluation via standard object equals definitions\n        return stockVolumeA.equals(stockVolumeB);\n    }\n}`,
+        explanation: "The Bug: Java caches Integer references for values from -128 to 127. Within this range, '==' yields true because instances match. Outside this boundary, Java instantiates new objects, causing memory references to diverge and '==' to fail.",
+        lesson: "Always evaluate object wrappers using .equals() instead of the identity relational operator (==).",
+        related: ["java-autoboxing-leak", "java-hashmap-corruption"]
+      },
+      {
+        slug: "java-thread-local-leak",
+        title: "The Undying Web Request Siphon",
+        level: "advanced",
+        time: "8 min",
+        solves: 742,
+        description: "An Enterprise application leaks database user connection context metrics across serverless web containers.",
+        setup: "You utilize ThreadLocal to store tracking variables for thread contexts in an application server. The metrics map correctly, but over long deployment durations, memory footprints steadily climb until the application container crashes. Identify the leak.",
+        brokenCode: `public class WebRequestContext {\n    private static final ThreadLocal<byte[]> contextBuffer = new ThreadLocal<>();\n\n    public void initializeRequest(byte[] rawPayload) {\n        // TRAP: Setting reference parameters inside pooled worker execution vectors\n        // maintains reference links to objects long after web tracking calls wrap up!\n        contextBuffer.set(rawPayload);\n        processContextLogic();\n    }\n    private void processContextLogic() { /* operational execution */ }\n}`,
+        language: "java",
+        hints: [
+          "Application servers reuse threads inside persistent thread pools.",
+          "If a thread is kept alive indefinitely, when does its ThreadLocal map discard values?",
+          "You must invoke the .remove() method within a try-finally framework to clear thread memory states upon transaction cleanup operations."
+        ],
+        solution: `public class WebRequestContext {\n    private static final ThreadLocal<byte[]> contextBuffer = new ThreadLocal<>();\n\n    public void initializeRequest(byte[] rawPayload) {\n        try {\n            contextBuffer.set(rawPayload);\n            processContextLogic();\n        } finally {\n            // Clean Fix: Cleanly strip contextual assignments when threads return to application pools\n            contextBuffer.remove();\n        }\n    }\n    private void processContextLogic() { /* operational execution */ }\n}`,
+        explanation: "The Bug: ThreadLocal mappings link data objects to the active execution thread. Because application servers recycle threads using thread pools, un-removed parameters persist indefinitely, causing memory leaks across request boundaries.",
+        lesson: "Always invoke the ThreadLocal .remove() method within a finally block once operations conclude.",
+        related: ["java-string-pool-leak", "java-volatile-visibility"]
+      },
+      {
+        slug: "java-volatile-visibility",
+        title: "The Unresponsive Shutdown Switch",
+        level: "intermediate",
+        time: "5 min",
+        solves: 2195,
+        description: "Background monitoring task processes fail to respond to clean signal triggers from master thread instances.",
+        setup: "You write a thread management loop where a worker thread monitors low-level network traffic until a master supervisor flag trips. However, calling stopMonitoring() from the parent thread fails to halt the worker, causing it to run indefinitely.",
+        brokenCode: `public class ServerTask implements Runnable {\n    // TRAP: Without explicit access synchronization directives, \n    // changes made by thread instances get cached locally in individual CPU cores!\n    private boolean executionActive = true;\n\n    public void run() {\n        while (executionActive) {\n            // Perform active telemetry monitoring updates loop background tasks\n        }\n        System.out.println("Worker thread cleanly terminated.");\n    }\n\n    public void stopMonitoring() {\n        this.executionActive = false;\n    }\n}`,
+        language: "java",
+        hints: [
+          "Modern CPU architectures assign local memory caches directly to individual processing cores.",
+          "If thread A updates executionActive, how does thread B know its local cache reference is now outdated?",
+          "Mark the state tracking parameter with the 'volatile' modifier keyword to guarantee multi-core visibility sync handlers."
+        ],
+        solution: `public class ServerTask implements Runnable {\n    // Clean Fix: Enforce direct native CPU core memory visibility via the volatile keyword\n    private volatile boolean executionActive = true;\n\n    public void run() {\n        while (executionActive) {\n            // Perform active telemetry monitoring updates loop background tasks\n        }\n        System.out.println("Worker thread cleanly terminated.");\n    }\n\n    public void stopMonitoring() {\n        this.executionActive = false;\n    }\n}`,
+        explanation: "The Bug: Without explicit synchronization guarantees, CPU cores cache variable references locally. Changes made by one processing core are not visible to other threads, trapping the application in an infinite loop.",
+        lesson: "Use volatile modifiers on flag parameters accessed across separate concurrent threads without standard locks.",
+        related: ["java-thread-local-leak", "java-double-checked-locking"]
+      },
+      {
+        slug: "java-double-checked-locking",
+        title: "The Broken Thread-Safe Singleton",
+        level: "advanced",
+        time: "7 min",
+        solves: 1040,
+        description: "A lazy-loading singleton database configuration client instance intermittently returns partially constructed data states.",
+        setup: "You build a thread-safe singleton initialization layer to manage high-speed data client connection instances. Under high multi-threaded access spikes, threads occasionally receive a valid reference pointer to an object that is still incomplete.",
+        brokenCode: `public class MasterDatabaseClient {\n    private static MasterDatabaseClient coreInstance;\n    private MasterDatabaseClient() { /* heavy resource configurations loaded here */ }\n\n    public static MasterDatabaseClient getInstance() {\n        // TRAP: Instruction re-ordering operations during runtime compilation allow \n        // instances to publish reference addresses before initializations wrap up!\n        if (coreInstance == null) {\n            synchronized (MasterDatabaseClient.class) {\n                if (coreInstance == null) {\n                    coreInstance = new MasterDatabaseClient();\n                }\n            }\n        }\n        return coreInstance;\n    }\n}`,
+        language: "java",
+        hints: [
+          "Instantiating an object involves memory allocation, constructor execution, and reference assignment.",
+          "Compilers can reorder these operations. Consequently, a thread might read a non-null reference before initialization concludes.",
+          "Declare the instance volatile to insert a memory barrier that prevents instruction reordering."
+        ],
+        solution: `public class MasterDatabaseClient {\n    // Clean Fix: Introduce volatile visibility constraints to neutralize instruction re-ordering anomalies\n    private static volatile MasterDatabaseClient coreInstance;\n    private MasterDatabaseClient() { /* heavy resource configurations loaded here */ }\n\n    public static MasterDatabaseClient getInstance() {\n        if (coreInstance == null) {\n            synchronized (MasterDatabaseClient.class) {\n                if (coreInstance == null) {\n                    coreInstance = new MasterDatabaseClient();\n                }\n            }\n        }\n        return coreInstance;\n    }\n}`,
+        explanation: "The Bug: The process `new MasterDatabaseClient()` is non-atomic. Java compiles this step into memory space allocations followed by reference assignments. Instruction reordering can publish the reference address prematurely, causing concurrent lookups to read incomplete states.",
+        lesson: "Always tag reference variables with volatile constraints when using double-checked locking singleton layers.",
+        related: ["java-volatile-visibility", "java-concurrent-modification"]
+      },
+      {
+        slug: "java-stream-starvation",
+        title: "The Frozen Parallel Stream Gateway",
+        level: "advanced",
+        time: "6 min",
+        solves: 1210,
+        description: "High-volume business analytics workers lock up completely, causing global API route delays across unrelated modules.",
+        setup: "You utilize parallel stream structures to process batch logs. The module performs exceptionally well, but periodically, your app's global communication threads freeze, stalling unrelated application features. Uncover the resource leak.",
+        brokenCode: `import java.util.*;\n\npublic class DataAnalyzer {\n    public void runHeavyCalculations(List<String> analyticsPayload) {\n        // TRAP: Executing heavy blocking external network tasks inside a shared parallel stream array\n        // starves the default JVM-wide ForkJoinPool cluster worker pipelines!\n        analyticsPayload.parallelStream().forEach(dataPoint -> {\n            performHeavyBlockingNetworkFetch(dataPoint);\n        });\n    }\n    private void performHeavyBlockingNetworkFetch(String target) { /* network access */ }\n}`,
+        language: "java",
+        hints: [
+          "All standard .parallelStream() tasks execute inside a single, shared JVM-wide ForkJoinPool.commonPool().",
+          "If a blocking network operation stalls inside this pool, it consumes a worker thread.",
+          "Isolate heavy blocking workflows by submitting them to a dedicated, custom thread execution pool."
+        ],
+        solution: `import java.util.*;\nimport java.util.concurrent.*;\n\npublic class DataAnalyzer {\n    private final ForkJoinPool customNetworkThreadPool = new ForkJoinPool(8);\n\n    public void runHeavyCalculations(List<String> analyticsPayload) {\n        // Clean Fix: Submit operations to an isolated, custom execution sandbox container\n        customNetworkThreadPool.submit(() -> {\n            analyticsPayload.parallelStream().forEach(dataPoint -> {\n                performHeavyBlockingNetworkFetch(dataPoint);\n            });\n        }).join();\n    }\n    private void performHeavyBlockingNetworkFetch(String target) { /* network access */ }\n}`,
+        explanation: "The Bug: Parallel stream processes utilize the shared ForkJoinPool.commonPool(). Introducing heavy blocking network operations inside this container starves the pool, causing all other parallel loops in the application to hang.",
+        lesson: "Never run long-lived blocking network or I/O activities inside shared common parallel stream channels.",
+        related: ["java-concurrent-modification", "java-thread-local-leak"]
+      },
+      {
+        slug: "java-try-with-resources-leak",
+        title: "The Ghost File Descriptor Leak",
+        level: "beginner",
+        time: "4 min",
+        solves: 5420,
+        description: "An automated document processor exhausts system storage handles, failing on large batch file imports.",
+        setup: "You write an asset indexing utility designed to read file input data arrays consecutively. Even though you explicitly close file handlers at the end of the logic loop, the application throws a 'Too many open files' exception under heavy usage. Resolve the resource leak.",
+        brokenCode: `import java.io.*;\n\npublic class FileIndexer {\n    public void processDataFile(String targetPath) throws IOException {\n        // TRAP: Traditional nested error initialization pathways risk bypass tracking loops\n        // if system resource allocation faults trigger exceptions prior to execution wrappers!\n        BufferedReader dataReader = new BufferedReader(new FileReader(targetPath));\n        String inputLine = dataReader.readLine();\n        System.out.println("Read payload index marker: " + inputLine);\n        dataReader.close();\n    }\n}`,
+        language: "java",
+        hints: [
+          "What happens if an unexpected exception fires on the readLine() step?",
+          "The dataReader.close() instruction will be skipped, leaving the underlying operating system file handle unreleased.",
+          "Refactor the instantiation flow to use Java 7+ try-with-resources syntax to guarantee automatic handle closure."
+        ],
+        solution: `import java.io.*;\n\npublic class FileIndexer {\n    public void processDataFile(String targetPath) throws IOException {\n        // Clean Fix: Utilize target resource declaration blocks to enforce native safe breakdown cleanup sequences\n        try (BufferedReader dataReader = new BufferedReader(new FileReader(targetPath))) {\n            String inputLine = dataReader.readLine();\n            System.out.println("Read payload index marker: " + inputLine);\n        }\n    }\n}`,
+        explanation: "The Bug: If a runtime exception occurs prior to explicitly invoking close(), file handles remain open in the background. Over continuous processing loops, this behavior exhausts your operating system's file descriptor pools.",
+        lesson: "Always leverage try-with-resources setups when interacting with AutoCloseable data stream handles.",
+        related: ["java-string-pool-leak", "java-autoboxing-leak"]
+      }
+    ]
   }
 ];
 
