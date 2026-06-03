@@ -1,7 +1,7 @@
 // src/components/UploadTool.jsx
 import { useState, useRef, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-// FIXED: Changed GROQ_API_URL to CENTRAL_AI_URL
+// FIXED: Changed GROQ_API_URL to CENTRAL_AI_URL cleanly
 import { CENTRAL_AI_URL, WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants';
 import { loadScript, trackEvent, formatOutput, fetchWithBackoff } from '../utils';
 import OutputActions from './OutputActions';
@@ -130,7 +130,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         setChunkProgress({ current: i + 1, total: textChunks.length });
         const chunk = textChunks[i];
 
-        // FETCH 1: Swapped to CENTRAL_AI_URL and requested abstract 'fast-model' capability
         const res = await fetchWithBackoff(CENTRAL_AI_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -156,7 +155,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       if (filename === 'resume-analysis') {
         try {
-          // FETCH 2: Swapped to CENTRAL_AI_URL and requested high-precision 'large-model' capability
           const jsonRes = await fetchWithBackoff(CENTRAL_AI_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -173,7 +171,8 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
           const jsonData = await jsonRes.json();
           if (jsonRes.ok && jsonData.choices?.[0]?.message?.content) {
-            const parsedCleanString = jsonData.choices[0].message.content.trim().replace(/^```json/i, '').replace(/```$/, '').trim();
+            const parsedCleanString = jsonData.choices[0].message.content.trim().replace(/^```json/i, '').replace(/
+```$/, '').trim();
             setParsedResumeData(JSON.parse(parsedCleanString));
           }
         } catch (jsonErr) {
@@ -185,7 +184,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       console.error(err);
       setError(err.message || 'The gateway encountered a processing timeout during data orchestration.');
     } finally {
-      // FIXED: Restored valid 'finally' keyword structure
       setLoading(false);
       setChunkProgress(null);
     }
@@ -200,7 +198,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const sanitizedQuestion = followUpQuestion.trim();
       trackEvent('file_qa_submitted', { filename });
 
-      // FETCH 3: Swapped to CENTRAL_AI_URL and requested 'fast-model' capability
       const res = await fetchWithBackoff(CENTRAL_AI_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -229,7 +226,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Target Upload Area */}
+      
       <div 
         onClick={() => fileRef.current?.click()}
         style={{ border: `2px dashed ${error ? '#f87171' : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '14px', padding: '40px 20px', textAlign: 'center', cursor: (extracting || loading) ? 'not-allowed' : 'pointer', background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)', transition: 'all 0.2s' }}
@@ -251,7 +248,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         </div>
       </div>
 
-      {/* Loading Progress Bars */}
+      
       {extracting && (
         <div style={{ textAlign: 'center', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
           <span className="spinner" style={{ marginRight: '8px' }} /> Unpacking file text vectors safely...
@@ -269,7 +266,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       {error && <div className="error-box">⚠️ {error}</div>}
 
-      {/* Main Analysis Output Panel */}
+      
       {output && (
         <div style={{ marginTop: '12px' }}>
           <div className="output-panel" style={{ marginBottom: '32px' }}>
@@ -277,7 +274,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
             {renderedOutputElements}
           </div>
 
-          {/* Contextual Interactive Document Q&A Block */}
+          
           <div style={{ background: isDark ? 'rgba(255,255,255,0.015)' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '16px', padding: '28px', marginBottom: '32px' }}>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', color: isDark ? '#fff' : '#1a1a1a', marginBottom: '6px' }}>
               💬 Chat with Document Data
@@ -294,17 +291,16 @@ export default function UploadTool({ prompt, filename, icon, label }) {
                 placeholder="e.g., What are the clear performance figures or structural limitations mentioned?"
                 style={{ flex: 1, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#000', fontSize: '0.88rem', outline: 'none' }}
               />
-              {/* FIXED: Removed escaped string backslashes from className property */}
               <button 
                 onClick={submitFollowUp}
                 disabled={qaLoading || !followUpQuestion.trim()}
-                style={{ background: (qaLoading || !followUpQuestion.trim()) ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
+                style={{ background: 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 {qaLoading ? (
-                  <>
-                    <span className="spinner" style={{ width: '12px', height: '12px', marginRight: '6px' }} />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="spinner" style={{ width: '12px', height: '12px' }} />
                     Searching...
-                  </>
+                  </span>
                 ) : (
                   'Ask →'
                 )}
@@ -318,15 +314,15 @@ export default function UploadTool({ prompt, filename, icon, label }) {
             )}
           </div>
 
-          <OutputActions text={output} filename={filename} />
+          <OutputActions text="{output}" filename="{filename}"/>
         </div>
       )}
 
-      {/* Downstream Integrated Tool Interfaces */}
+      
       {parsedResumeData && filename === 'resume-analysis' && (
         <div style={{ marginTop: '24px', borderTop: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingTop: '32px' }}>
-          <ResumeBuilder prefilledData={parsedResumeData} />
-          <CoverLetterGenerator resumeText={extractedText} />
+          <ResumeBuilder prefilledData="{parsedResumeData}"/>
+          <CoverLetterGenerator resumeText="{extractedText}"/>
         </div>
       )}
     </div>
