@@ -1,5 +1,6 @@
 // src/components/DevToolsPanel.jsx
-import { useState } from 'react';
+// 1. ADDED: useEffect hook imported here cleanly
+import { useState, useEffect } from 'react'; 
 import { useTheme } from '../ThemeContext';
 import { DEV_TOOLS } from '../constants';
 import ToolCard from './ToolCard';
@@ -41,5 +42,52 @@ export default function DevToolsPanel() {
         {active === 2 && <InterviewCoach />}
       </div>
     </section>
+  );
+}
+
+// ── 2. PLACED HERE: Named export block cleanly attached at the bottom ──
+export function AnalyticsDashboardSnippet() {
+  const [metrics, setMetrics] = useState({ views: {}, runs: {} });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/analytics-stats')
+      .then(res => res.json())
+      .then(data => { setMetrics(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.8rem", color: "var(--accent)", padding: "20px 0" }}>Collecting platform usage logs...</div>;
+
+  return (
+    <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, margin: 0 }}>📊 Platform Performance Dashboard</h3>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flexWrap: 'wrap' }}>
+        {/* View Frequency Logs */}
+        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: 'var(--accent)', marginBottom: '10px' }}>◆ SEO PAGE VIEWS</div>
+          {Object.entries(metrics.views).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No active page views logged yet.</span> : 
+            Object.entries(metrics.views).map(([key, val]) => (
+              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0' }}>
+                <span style={{ fontFamily: "'Space Mono', monospace" }}>/{key}</span>
+                <span style={{ fontWeight: 700 }}>{val} views</span>
+              </div>
+            ))}
+        </div>
+
+        {/* Runtime Model Generation Counts */}
+        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: '#34d399', marginBottom: '10px' }}>◆ MODEL RUN INVOCATIONS</div>
+          {Object.entries(metrics.runs).length === 0 ? <span style={{ fontSize: '0.8rem', color: 'gray' }}>No execution logs transmitted.</span> : 
+            Object.entries(metrics.runs).map(([key, val]) => (
+              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0' }}>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.75rem' }}>{key}</span>
+                <span style={{ fontWeight: 700, color: '#34d399' }}>{val} calls</span>
+              </div>
+            ))}
+        </div>
+      </div>
+    </div>
   );
 }
