@@ -30,6 +30,7 @@ import DevToolsPanel from './components/DevToolsPanel';
 import CodePlayground from './components/CodePlayground';
 import AskAuthor from './components/AskAuthor';
 import UserFeedback from './components/UserFeedback';
+import ToolDetailView from './pages/ToolDetailView';
 
 // ── AI Tools section ──────────────────────────────────────────
 const UPLOAD_TOOLS = [
@@ -227,6 +228,7 @@ export default function App() {
     <ErrorBoundary>
       <Routes>
         <Route path="/"            element={<AppInner />} />
+        <Route path="/tools/:toolSlug" element={<ToolDetailView />} />
         <Route path="/learn"       element={<BlogListPage />} />
         <Route path="/learn/:slug" element={<BlogPostPage />} />
         <Route path="/privacy"     element={<PrivacyPage />} />
