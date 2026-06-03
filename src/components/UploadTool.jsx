@@ -1,7 +1,7 @@
 // src/components/UploadTool.jsx
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react'; // FIXED: Added useEffect for view tracking
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants';
+import { WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants'; // Cleaned up GROQ_API_URL reference
 import { loadScript, trackEvent, formatOutput, fetchWithBackoff } from '../utils';
 import OutputActions from './OutputActions';
 import ResumeBuilder from './ResumeBuilder';
@@ -33,11 +33,22 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
   const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
 
+  // ── NEW FIXED: Telemetry Page View Trigger ──
+  useEffect(() => {
+    // Registers dynamic paths on dashboard using the passed down unique filename mapping
+    fetch('/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'view', targetId: filename })
+    }).catch(() => {});
+  }, [filename]);
+
   function isResearchPaper(text) {
     const lower = text.toLowerCase();
     return ACADEMIC_KEYWORDS.filter(kw => lower.includes(kw)).length >= 4;
   }
 
+  // Handles standard fallback mappings accurately
   function isResumeLike(text) {
     const lower = text.toLowerCase();
     const coreSections = ['experience','work experience','employment','professional experience','education','qualification','qualifications','academic background','skills','technical skills','core competencies','expertise','languages','contact','personal details','address','phone','email','projects','key projects','portfolio'];
@@ -116,7 +127,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   async function analyze() {
     if (!extractedText) return;
 
-    // Dispatch invocation event directly to tracking data models
     const dispatchTelemetry = (toolId) => {
       fetch('/api/track-event', {
         method: 'POST',
@@ -133,7 +143,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       dispatchTelemetry('resume-analyzer');
       const contextForLLM = chunks.length > 0 ? chunks.slice(0, 20).map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n') : extractedText;
       try {
-        const res = await fetchWithBackoff(GROQ_API_URL, {
+        const res = await fetchWithBackoff('/api/ai', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: TOOL_MODELS.resumeAnalyzer, max_tokens: 900, temperature: 0.3,
@@ -162,7 +172,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
     try {
       if (extractedText.length <= SUMMARY_CHUNK_SIZE) {
-        const res = await fetchWithBackoff(GROQ_API_URL, {
+        const res = await fetchWithBackoff('/api/ai', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
@@ -203,7 +213,8 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       const summarizeChunk = async (chunk, i) => {
         const model = MODEL_POOL[i % MODEL_POOL.length];
-        const res = await fetchWithBackoff(GROQ_API_URL, {
+        // ✅ FIXED: Swapped GROQ_API_URL out for secure internal wrapper path
+        const res = await fetchWithBackoff('/api/ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -252,7 +263,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       await delay(3000);
 
       const combinedSummaries = partialSummaries.join('\n\n');
-      const finalRes = await fetchWithBackoff(GROQ_API_URL, {
+      const finalRes = await fetchWithBackoff('/api/ai', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.3,
@@ -291,7 +302,8 @@ export default function UploadTool({ prompt, filename, icon, label }) {
     if (!top.length || top[0].score === 0) { setQaAnswer("I couldn't find relevant information in the document to answer that question."); setQaLoading(false); return; }
     const context = top.map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n');
     try {
-      const res = await fetchWithBackoff(GROQ_API_URL, {
+      // ✅ FIXED: Rerouted Document Context Q&A endpoint from direct vendor URL to safe local proxy
+      const res = await fetchWithBackoff('/api/ai', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: TOOL_MODELS.documentQA, max_tokens: 600, temperature: 0.3,
@@ -369,7 +381,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       {error && (
         <div>
-          <div className="error-box">⚠ {error}</div>
+          <div className="error-box">⚠️ {error}</div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
             <button onClick={handleClear} className="action-btn" style={{ color: ac, borderColor: ac }} aria-label="Clear and try again">↺ Clear</button>
           </div>
