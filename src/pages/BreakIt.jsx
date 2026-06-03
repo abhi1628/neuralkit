@@ -81,7 +81,44 @@ const CHALLENGE_CATEGORIES = [
       { slug: "read-your-own-writes-gap", title: "The Mirror Dimension Gap", level: "intermediate", time: "6 min", solves: 712, description: "Querying asynchronous read-replicas immediately after writing to a master database serves stale data to users." },
       { slug: "rate-limit-stateless-bypass", title: "The Stateless Gateway Bypass", level: "intermediate", time: "5 min", solves: 894, description: "Tracking rate limit counters in-memory inside load-balanced clusters allows users to bypass restriction ceilings." }
     ]
-  }
+  },
+  {
+      id: "cisco-ideathon",
+      name: "Cisco Ideathon Sprint",
+      icon: "🌐",
+      color: "#00bce4",
+      challenges: [
+        { slug: "cisco-async-leak", title: "The Dangling Websocket Listener", level: "advanced", time: "6 min", solves: 2405, description: "[Cisco Ideathon 2025] Telemetry sockets leak memory across connection refreshes during router monitoring simulations." },
+        { slug: "cisco-packet-race", title: "The Out-of-Order Packet Buffer", level: "advanced", time: "8 min", solves: 1102, description: "[Cisco Ideathon 2025] High-throughput async routers process packet fragments out of sequence under micro-burst traffic loads." },
+        { slug: "cisco-subnet-overflow", title: "The Classless Subnet Overflow", level: "intermediate", time: "5 min", solves: 1890, description: "[Cisco Ideathon 2024] A custom bitwise IP configuration parser crashes completely on specific edge-case subnet masks." },
+        { slug: "cisco-unhandled-rejection", title: "The Express Network Hang", level: "intermediate", time: "4 min", solves: 3120, description: "[Interview Technical Round] Backend microservice server crashes when a physical networking device drops connections abruptly." },
+        { slug: "cisco-deadlock-queue", title: "The Thread Lock Deadlock", level: "advanced", time: "7 min", solves: 894, description: "[Cisco Ideathon 2023] Parallel package analytical components lock up indefinitely trying to access sharing telemetry streams." },
+        { slug: "cisco-slowloris-timeout", title: "The Corrupt HTTP Gateway", level: "intermediate", time: "5 min", solves: 1450, description: "[Cisco Ideathon 2024] Network load balancer keeps connections open forever when attackers send partial HTTP headers." },
+        { slug: "cisco-checksum-failure", title: "The Malformed Checksum Matcher", level: "beginner", time: "3 min", solves: 4120, description: "[Cisco Ninja Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations." },
+        { slug: "cisco-token-bucket", title: "The Exploded Rate Limiter", level: "advanced", time: "6 min", solves: 978, description: "[Cisco Ideathon 2025] High-speed gateway bypass lets traffic slip past strict packet-per-second constraints." },
+        { slug: "cisco-dangling-pool", title: "The Orphaned Thread Pool", level: "advanced", time: "9 min", solves: 531, description: "[Interview System Round] Background packet analyzer worker threads remain allocated without releasing kernel loops." },
+        { slug: "cisco-dns-cache-poison", title: "The Stateless DNS Lookup Bypass", level: "intermediate", time: "6 min", solves: 1340, description: "[Cisco Ideathon 2024] Dynamic nameserver lookups bypass local cache configurations, flooding external DNS nodes." }
+      ]
+    },
+    // ── PASTE THE NEW TCS TRACK HERE ──
+    {
+      id: "tcs-digital-ninja",
+      name: "TCS Digital / Ninja",
+      icon: "💻",
+      color: "#6366f1",
+      challenges: [
+        { slug: "tcs-time-complexity", title: "Optimizing the Subarray Sum", level: "advanced", time: "6 min", solves: 4210, description: "[TCS Digital 2025] A brute-force nested loop times out on large input profiles ($N > 10^5$) inside the compiler." },
+        { slug: "tcs-integer-overflow", title: "The Product Array Overflow", level: "intermediate", time: "5 min", solves: 2980, description: "[TCS Digital 2025] Accumulator scripts break and output negative numbers when running extreme test configurations." },
+        { slug: "tcs-string-leak", title: "The Silent String Churn", level: "beginner", time: "4 min", solves: 5120, description: "[TCS Ninja 2024] Repeated character string concatenation runs out of memory on standard compiler environments." },
+        { slug: "tcs-matrix-boundary", title: "The Empty Matrix Search Collapse", level: "beginner", time: "3 min", solves: 6410, description: "[TCS Ninja 2025] Grid tracking calculations trigger unexpected index errors when processing dynamic empty array inputs." },
+        { slug: "tcs-float-precision", title: "The Broken Currency Rounder", level: "intermediate", time: "4 min", solves: 3205, description: "[TCS Digital 2024] Base-2 float accumulator logic drifts and miscalculates salary metrics during high-volume loops." },
+        { slug: "tcs-hash-collision", title: "The Plunging Hash Retrieval", level: "advanced", time: "7 min", solves: 1150, description: "[Interview Advanced Track] Custom lookup logic drops from $O(1)$ to a linear $O(N)$ lookup speed because of collision leaks." },
+        { slug: "tcs-binary-search-edge", title: "The Missing End Index", level: "intermediate", time: "4 min", solves: 2890, description: "[TCS Ninja 2025] Custom optimized binary search logic fails to check the final array boundary element correctly." },
+        { slug: "tcs-recursion-stack", title: "The Un-Memoized Fibonacci Stack", level: "intermediate", time: "5 min", solves: 3760, description: "[Interview Logic Round] Recursive dynamic programming functions hit maximum stack size limits without memoization buffers." },
+        { slug: "tcs-graph-cycle", title: "The Infinite Dependency Loop", level: "advanced", time: "8 min", solves: 945, description: "[TCS Digital 2024] Route analytical loops hang indefinitely when mapping components containing cyclic nodes." },
+        { slug: "tcs-type-evaluation", title: "The Loose Type Validation Slip", level: "beginner", time: "3 min", solves: 4890, description: "[TCS Ninja 2024] Dynamic input comparisons evaluate invalid user data models safely instead of throwing errors." }
+      ]
+    }
 ];
 
 const LEVEL_COLORS = {
