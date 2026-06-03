@@ -1249,7 +1249,434 @@ def is_rate_limited(client_ip):
         related: ["cache-invalidation", "secure-api-key"]
       }
     ]
-  }
+  },
+  {
+    id: "cisco-ideathon",
+    name: "Cisco Ideathon Sprint",
+    icon: "🌐",
+    color: "#00bce4",
+    challenges: [
+      {
+        slug: "cisco-async-leak",
+        title: "The Dangling Websocket Listener",
+        level: "advanced",
+        time: "6 min",
+        solves: 2405,
+        description: "[Cisco Ideathon 2025] Telemetry sockets leak memory across connection refreshes during router monitoring simulations.",
+        setup: "You are designing a core telemetry dashboard tracking Cisco router clusters. The system works fine initially but crashes with an Out-of-Memory (OOM) error after processing 5,000 asynchronous device socket events. Clear the memory leakage pattern inside the server event tracking block.",
+        brokenCode: `const WebSocket = require('ws');\nconst wss = new WebSocket.Server({ port: 8080 });\n\nlet telemetryCycles = 0;\n\nwss.on('connection', (ws) => {\n  // TRAP: A new telemetry interval loops indefinitely per connection,\n  // but remains in memory when client nodes disconnect!\n  setInterval(() => {\n    telemetryCycles++;\n    ws.send(JSON.stringify({ telemetryId: telemetryCycles, status: \"ROUTER_OK\" }));\n  }, 100);\n\n  ws.on('close', () => {\n    console.log(\"Cisco Edge Node Disconnected.\");\n  });\n});`,
+        language: "javascript",
+        hints: [
+          "When is the setInterval loop created? Once per connection context.",
+          "If 1,000 edge switches connect and reconnect, how many intervals stay running?",
+          "Assign setInterval to a local reference variable and invoke clearInterval inside the close event payload."
+        ],
+        solution: `const WebSocket = require('ws');\nconst wss = new WebSocket.Server({ port: 8080 });\n\nlet telemetryCycles = 0;\n\nwss.on('connection', (ws) => {\n  const telemetryInterval = setInterval(() => {\n    telemetryCycles++;\n    try {\n      ws.send(JSON.stringify({ telemetryId: telemetryCycles, status: \"ROUTER_OK\" }));\n    } catch (e) {\n      clearInterval(telemetryInterval);\n    }\n  }, 100);\n\n  ws.on('close', () => {\n    clearInterval(telemetryInterval);\n    console.log(\"Cisco Edge Node Disconnected Safely.\");\n  });\n});`,
+        explanation: "The Bug: Cisco systems demand zero resource wastage. Chaining anonymous event intervals inside an open node network creates an active memory siphon when client channels terminate without clearing intervals from the main Node.js event loop thread.\n\nThe Fix: Save your interval to a reference handler pointer, and cleanly run clearInterval() as soon as the 'close' event fires to free memory space.",
+        lesson: "Always tear down active polling configurations when sockets close.",
+        related: ["cisco-packet-race", "cisco-dangling-pool"],
+        preparationGuide: "/learn/debugging-asynchronous-network-protocols"
+      },
+      {
+        slug: "cisco-packet-race",
+        title: "The Out-of-Order Packet Buffer",
+        level: "advanced",
+        time: "8 min",
+        solves: 1102,
+        description: "[Cisco Ideathon 2025] High-throughput async routers process packet fragments out of sequence under micro-burst traffic loads.",
+        setup: "During network burst conditions, chunks of data payloads hit the router out of sequence. The tracking buffer maps them directly to a string as they arrive, corrupting the final payload stream structure. Implement a structured sequential layout map layer.",
+        brokenCode: `let processingBuffer = \"\";\n\nasync function receivedPacketChunk(packetStream) {\n  // TRAP: Appends chunk data straight to the base sequence as they finish resolving,\n  // completely ignoring the chronological structural sequence ids!\n  const chunkData = await fetchPacketPayload(packetStream.id);\n  processingBuffer += chunkData.text;\n  return processingBuffer;\n}`,
+        language: "javascript",
+        hints: [
+          "Async tasks resolve at different times. A larger chunk 1 might resolve after a smaller chunk 2.",
+          "You must look at the sequence metadata ID attached to each network stream frame.",
+          "Store chunks inside a structured key-value index map object or array before rendering the output sequence."
+        ],
+        solution: `let orderedBufferMap = {};\n\nasync function receivedPacketChunk(packetStream) {\n  const chunkData = await fetchPacketPayload(packetStream.id);\n  orderedBufferMap[packetStream.sequenceIndex] = chunkData.text;\n  \n  let structuredPayload = \"\";\n  const totalKeys = Object.keys(orderedBufferMap).length;\n  for (let i = 0; i < totalKeys; i++) {\n    if (orderedBufferMap[i]) structuredPayload += orderedBufferMap[i];\n  }\n  return structuredPayload;\n}`,
+          explanation: "The Bug: Concurrency does not mean chronologically sequential. High-speed networking data frames often route through varying topologies, arriving completely out of alignment. Appending them blindly triggers packet corruption errors.",
+          lesson: "Never assume asynchronous loops settle in structural order under load conditions.",
+          related: ["cisco-async-leak", "cisco-token-bucket"],
+          preparationGuide: "/learn/network-concurrency-patterns"
+        },
+        {
+          slug: "cisco-subnet-overflow",
+          title: "The Classless Subnet Overflow",
+          level: "intermediate",
+          time: "5 min",
+          solves: 1890,
+          description: "[Cisco Ideathon 2024] A custom bitwise IP configuration parser crashes completely on specific edge-case subnet masks.",
+          setup: "You are parsing inbound network masks to calculate available hosts. When given a boundary mask like /32 or /31, your bitwise calculation causes a bit shift overflow, triggering runtime mathematical crashes.",
+          brokenCode: `function getAvailableHosts(cidrSuffix) {\n  // TRAP: Moving bits by 32 positions exceeding base bounds \n  // triggers bitwise shifts overflow loops on boundary constraints!\n  const bitsRemaining = 32 - cidrSuffix;\n  return (1 << bitsRemaining) - 2;\n}`,
+          language: "javascript",
+          hints: [
+            "What happens if cidrSuffix is 32? bitsRemaining becomes 0, 1 << 0 is 1. 1 - 2 is -1 hosts. Valid?",
+            "What if cidrSuffix is 0? 1 << 32 in 32-bit signed integer operations wraps around to 1, causing incorrect outputs.",
+            "Add protective safety blocks for edge-case CIDR suffixes, or utilize Math.pow rules instead of raw bitwise operators."
+          ],
+          solution: `function getAvailableHosts(cidrSuffix) {\n  if (cidrSuffix >= 31) return 0;\n  if (cidrSuffix === 0) return Math.pow(2, 32) - 2;\n  return Math.pow(2, 32 - cidrSuffix) - 2;\n}`,
+          explanation: "The Bug: Standard bitwise operations in JavaScript operate tightly on 32-bit signed integer boundaries. Attempting to bit-shift parameters across 32 places overflows calculations, turning host counts into negative values.",
+          lesson: "Bitwise mathematical algorithms must explicitly guard edge-case parameter limits.",
+          related: ["cisco-packet-race", "cisco-slowloris-timeout"],
+          preparationGuide: "/learn/bitwise-networking-logic"
+        },
+        {
+          slug: "cisco-unhandled-rejection",
+          title: "The Express Network Hang",
+          level: "intermediate",
+          time: "4 min",
+          solves: 3120,
+          description: "[Interview Technical Round] Backend microservice server crashes when a physical networking device drops connections abruptly.",
+          setup: "Your server calls an external telemetry endpoint. If a field switch loses power and drops offline, your Express router route hangs forever or crashes the entire thread loop because of an unhandled async error state.",
+          brokenCode: `const express = require('express');\nconst app = express();\nconst axios = require('axios');\n\napp.get('/api/router/stats', async (req, res) => {\n  // TRAP: No catch block means a network drop crashes your node runtime instance!\n  const statusReport = await axios.get('https://hardware.edge.internal/telemetry');\n  res.send(statusReport.data);\n});`,
+          language: "javascript",
+          hints: [
+            "External devices fail constantly. An API must assume the target endpoint will drop offline.",
+            "Wrap your asynchronous await triggers inside comprehensive try/catch blocks.",
+            "Always return a clean error status code like 503 Service Unavailable instead of letting the thread hang."
+          ],
+          solution: `const express = require('express');\nconst app = express();\nconst axios = require('axios');\n\napp.get('/api/router/stats', async (req, res) => {\n  try {\n    const statusReport = await axios.get('https://hardware.edge.internal/telemetry', { timeout: 3000 });\n    return res.status(200).send(statusReport.data);\n  } catch (error) {\n    console.error(\"Safely isolated device network error: \", error.message);\n    return res.status(503).send({ error: \"Device Unreachable. Connection Timeout.\" });\n  }\n});`,
+          explanation: "The Bug: Unhandled promise rejections are critical vulnerabilities. If an underlying connection drops, the unhandled exception propagates up to the main Node.js process thread and causes it to crash.",
+          lesson: "Every external hardware network call must be bound to a strict timeout and a try/catch error handler.",
+          related: ["cisco-async-leak", "cisco-deadlock-queue"],
+          preparationGuide: "/learn/microservice-fault-tolerance"
+        },
+        {
+          slug: "cisco-deadlock-queue",
+          title: "The Thread Lock Deadlock",
+          level: "advanced",
+          time: "7 min",
+          solves: 894,
+          description: "[Cisco Ideathon 2023] Parallel package analytical components lock up indefinitely trying to access sharing telemetry streams.",
+          setup: "Two structural multi-threaded controller worker queues are processing parallel packet analytics. They both attempt to lock resource pools A and B simultaneously in inverted sequences, causing a complete system deadlock.",
+          brokenCode: `async function processRouteA(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}\n\nasync function processRouteB(resourceA, resourceB) {\n  await resourceB.lock();\n  await resourceA.lock();\n  resourceA.unlock(); resourceB.unlock();\n}`,
+          language: "javascript",
+          hints: [
+            "This is the classic Dining Philosophers deadlock scenario.",
+            "Deadlocks occur when resources are acquired in a conflicting order across separate threads.",
+            "Ensure that both execution tracks lock their required resources in the exact same sequence."
+          ],
+          solution: `async function processRouteA(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}\n\nasync function processRouteB(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}`,
+          explanation: "The Bug: Inverted locking hierarchies across concurrent worker queues create a cyclic dependency chain. Thread 1 locks resource A and waits for B, while Thread 2 locks resource B and waits for A, freezing both threads indefinitely.",
+          lesson: "Always acquire shared multi-resource locks in a consistent, standardized global sequence.",
+          related: ["cisco-unhandled-rejection", "cisco-dangling-pool"],
+          preparationGuide: "/learn/concurrent-system-architecture"
+        },
+        {
+          slug: "cisco-slowloris-timeout",
+          title: "The Corrupt HTTP Gateway",
+          level: "intermediate",
+          time: "5 min",
+          solves: 1450,
+          description: "[Cisco Ideathon 2024] Network load balancer keeps connections open forever when attackers send partial HTTP headers.",
+          setup: "Your system's HTTP socket layer keeps sockets open indefinitely for inbound streams, leaving your platform vulnerable to connection starvation attacks like Slowloris. Enforce explicit stream limits.",
+          brokenCode: `const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Gateway Connection Acknowledged');\n});\n\nserver.listen(8080);`,
+          language: "javascript",
+          hints: [
+            "If an attacker sends HTTP headers extremely slowly, the connection stays open indefinitely.",
+            "You must explicitly restrict header parsing windows at the server configuration level.",
+            "Leverage parameters like headersTimeout and requestTimeout to terminate unresponsive connections early."
+          ],
+          solution: `const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Gateway Connection Acknowledged');\n});\n\nserver.headersTimeout = 5000;\nserver.requestTimeout = 10000;\n\server.listen(8080);`,
+          explanation: "The Bug: Failing to enforce clear socket parsing timeout ceilings allows slow connection streams to consume your system's entire file descriptor allocation pool, blocking legitimate traffic.",
+          lesson: "Production network routing gateways must enforce strict timeout limits on connection requests.",
+          related: ["cisco-subnet-overflow", "cisco-token-bucket"],
+          preparationGuide: "/learn/hardening-network-gateways"
+        },
+        {
+          slug: "cisco-checksum-failure",
+          title: "The Malformed Checksum Matcher",
+          level: "beginner",
+          time: "3 min",
+          solves: 4120,
+          description: "[Cisco Ninja Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations.",
+          setup: "Your frame parser reads validation strings from an incoming network log. Even when the payload values are correct, the conditional check fails because of trailing carriage returns embedded inside the stream parsing layer.",
+          brokenCode: `function verifyFrameChecksum(logLine, expectedChecksum) {\n  const extractedChecksum = logLine.split('|')[3];\n  if (extractedChecksum === expectedChecksum) {\n    return \"FRAME_VALID\";\n  }\n  return \"FRAME_CORRUPTED\";\n}`,
+          language: "javascript",
+          hints: [
+            "Network logging streams frequently append invisible spacing bytes like \\n or \\r.",
+            "Use console.log(JSON.stringify(extractedChecksum)) to reveal any hidden whitespace characters.",
+            "Sanitize parsed data entries using the native .trim() method before evaluating equality checks."
+          ],
+          solution: `function verifyFrameChecksum(logLine, expectedChecksum) {\n  if (!logLine || !expectedChecksum) return \"FRAME_CORRUPTED\";\n  const extractedChecksum = logLine.split('|')[3];\n  if (extractedChecksum && extractedChecksum.trim().toLowerCase() === expectedChecksum.trim().toLowerCase()) {\n    return \"FRAME_VALID\";\n  }\n  return \"FRAME_CORRUPTED\";\n}`,
+          explanation: "The Bug: Raw string manipulations on network log streams routinely pass trailing spacing tokens along with data values. These hidden characters break strict equality checks, causing valid frames to be dropped.",
+          lesson: "Always sanitize and trim raw string data parsed from external network sources.",
+          related: ["cisco-packet-race", "cisco-dns-cache-poison"],
+          preparationGuide: "/learn/string-parsing-performance"
+        },
+        {
+          slug: "cisco-token-bucket",
+          title: "The Exploded Rate Limiter",
+          level: "advanced",
+          time: "6 min",
+          solves: 978,
+          description: "[Cisco Ideathon 2025] High-speed gateway bypass lets traffic slip past strict packet-per-second constraints.",
+          setup: "You implement a Token Bucket tracking method to protect a routing gateway. Under heavy multithreaded loads, race conditions allow bursts of parallel traffic to bypass your traffic limitation metrics entirely.",
+          brokenCode: `let availableTokens = 100;\n\nfunction allowPacketRoute() {\n  if (availableTokens > 0) {\n    availableTokens = availableTokens - 1;\n    return true;\n  }\n  return false;\n}`,
+          language: "javascript",
+          hints: [
+            "This is a classic non-atomic state operation race condition.",
+            "Multiple asynchronous threads can read availableTokens as > 0 before any single thread updates the count.",
+            "In corporate network environments, token deductions must execute as a single, atomic operation."
+          ],
+          solution: `let availableTokens = 100;\n\nfunction allowPacketRoute() {\n  if (availableTokens > 0) {\n    availableTokens--;\n    return true;\n  }\n  return false;\n}`,
+          explanation: "The Bug: Decoupling conditional boundary evaluations from assignment modifications creates an execution gap. Under high concurrency, hundreds of operations can slip through this gap before your application updates its state variables.",
+          lesson: "Rate-limiting check-and-modify steps must execute as a unified, atomic operation.",
+          related: ["cisco-packet-race", "cisco-slowloris-timeout"],
+          preparationGuide: "/learn/building-distributed-rate-limiters"
+        },
+        {
+          slug: "cisco-dangling-pool",
+          title: "The Orphaned Thread Pool",
+          level: "advanced",
+          time: "9 min",
+          solves: 531,
+          description: "[Interview System Round] Background packet analyzer worker threads remain allocated without releasing kernel loops.",
+          setup: "To handle expensive deep packet inspection tasks, you spawn dynamic system sub-processes. Your analysis loop completes its work, but the application forgets to terminate the child processes, leading to kernel thread starvation.",
+          brokenCode: `const { fork } = require('child_process');\n\nfunction analyzePacketData(packetPayload) {\n  const worker = fork('packetWorker.js');\n  worker.send({ payload: packetPayload });\n  worker.on('message', (result) => {\n    console.log(\"Analysis Completed: \", result);\n  });\n}`,
+          language: "javascript",
+          hints: [
+            "Spawning a separate OS thread or sub-process requires explicit lifecycle management.",
+            "If your application processes thousands of packets per second, orphaned child processes will quickly exhaust host system memory.",
+            "Invoke the child process's .kill() method as soon as your message callback completes."
+          ],
+          solution: `const { fork } = require('child_process');\n\nfunction analyzePacketData(packetPayload) {\n  const worker = fork('packetWorker.js');\n  worker.send({ payload: packetPayload });\n  worker.on('message', (result) => {\n    console.log(\"Analysis Completed: \", result);\n    worker.kill();\n  });\n  worker.on('error', (err) => { worker.kill(); });\n}`,
+          explanation: "The Bug: Child processes do not clean themselves up automatically when their parent execution block finishes. Leaving sub-processes open keeps file handles and memory resources allocated indefinitely, causing system crashes under production loads.",
+          lesson: "Always explicitly terminate sub-process threads once their computational work is done.",
+          related: ["cisco-async-leak", "cisco-deadlock-queue"],
+          preparationGuide: "/learn/mastering-node-child-processes"
+        },
+        {
+          slug: "cisco-dns-cache-poison",
+          title: "The Stateless DNS Lookup Bypass",
+          level: "intermediate",
+          time: "6 min",
+          solves: 1340,
+          description: "[Cisco Ideathon 2024] Dynamic nameserver lookups bypass local cache configurations, flooding external DNS nodes.",
+          setup: "Your system runs custom network name lookups dynamically for every inbound data request. Because your custom lookup wrapper bypasses your operating system's built-in DNS cache, it creates a massive I/O performance bottleneck.",
+          brokenCode: `const dns = require('dns');\n\nfunction lookupTargetServer(domainUrl) {\n  dns.lookup(domainUrl, (err, address) => {\n    console.log('Resolved destination pointer: ', address);\n  });\n}`,
+          language: "javascript",
+          hints: [
+            "Node's default dns.lookup calls the underlying OS getaddrinfo system, which can cause thread pool blocking under heavy load.",
+            "To mitigate this performance hit, wrap your network calls with an internal, in-memory caching layer."
+          ],
+          solution: `const dns = require('dns');\nconst cacheableMap = new Map();\n\nfunction lookupTargetServer(domainUrl) {\n  if (cacheableMap.has(domainUrl)) {\n    return console.log('Resolved destination from Cache: ', cacheableMap.get(domainUrl));\n  }\n  dns.lookup(domainUrl, (err, address) => {\n    if (!err) cacheableMap.set(domainUrl, address);\n    console.log('Resolved destination via Network: ', address);\n  });\n}`,
+          explanation: "The Bug: Bypassing local lookups to resolve addresses over the network for every transaction introduces a significant I/O performance bottleneck. This behavior degrades system throughput and makes your app vulnerable to outbound network starvation under load.",
+          lesson: "Always cache your system's outbound domain resolution lookups.",
+          related: ["cisco-checksum-failure", "cisco-token-bucket"],
+          preparationGuide: "/learn/optimizing-network-io"
+        }
+      ]
+    },
+    // ── 2. PASTE THE NEW EXTENDED TCS TRACK HERE ──
+    {
+      id: "tcs-digital-ninja",
+      name: "TCS Digital / Ninja",
+      icon: "💻",
+      color: "#6366f1",
+      challenges: [
+        {
+          slug: "tcs-time-complexity",
+          title: "Optimizing the Subarray Sum",
+          level: "advanced",
+          time: "6 min",
+          solves: 4210,
+          description: "[TCS Digital 2025] A brute-force nested loop times out on large input profiles ($N > 10^5$) inside the compiler.",
+          setup: "Given an array of integers, you must calculate the maximum sum of a contiguous subarray of size K. The brute-force code below passes small test cases but fails with a Time Limit Exceeded (TLE) error on large evaluation profiles ($N > 10^5$). Refactor the algorithm to achieve optimal linear performance.",
+          brokenCode: `function maxSubarraySum(arr, k) {\n  let maxVolumeSum = -Infinity;\n  for (let i = 0; i <= arr.length - k; i++) {\n    let currentWindowSum = 0;\n    for (let j = 0; j < k; j++) {\n      currentWindowSum += arr[i + j];\n    }\n    if (currentWindowSum > maxVolumeSum) maxVolumeSum = currentWindowSum;\n  }\n  return maxVolumeSum;\n}`,
+          language: "javascript",
+          hints: [
+            "TCS Digital advanced tracks use large test inputs to deliberately break nested loops ($O(N^2)$ or $O(N \times K)$).",
+            "Instead of recalculating the entire window sum from scratch, can you reuse the sum from the previous window?",
+            "Subtract the element leaving the window and add the new element entering it. This is the Sliding Window technique."
+          ],
+          solution: `function maxSubarraySum(arr, k) {\n  if (arr.length < k) return 0;\n  let maxVolumeSum = 0, currentWindowSum = 0;\n  for (let i = 0; i < k; i++) currentWindowSum += arr[i];\n  maxVolumeSum = currentWindowSum;\n  for (let i = k; i < arr.length; i++) {\n    currentWindowSum += arr[i] - arr[i - k];\n    if (currentWindowSum > maxVolumeSum) maxVolumeSum = currentWindowSum;\n  }\n  return maxVolumeSum;\n}`,
+          explanation: "The Bug: Re-summing overlapping window segments inside a nested loop structure forces the compiler to re-process identical data elements repeatedly. This drops performance to an inefficient $O(N \times K)$ time complexity, triggering TLE failures on large datasets.\n\nThe Fix: Convert the algorithm to a Sliding Window pattern. Reusing the previous window's sum reduces your runtime complexity to a highly efficient, single-pass linear $O(N)$ execution path.",
+          lesson: "When dealing with continuous array slices, replace nested loops with a Sliding Window approach.",
+          related: ["tcs-integer-overflow", "tcs-hash-collision"],
+          preparationGuide: "/learn/cracking-tcs-digital-time-complexity-bottlenecks"
+        },
+        {
+          slug: "tcs-integer-overflow",
+          title: "The Product Array Overflow",
+          level: "intermediate",
+          time: "5 min",
+          solves: 2980,
+          description: "[TCS Digital 2025] Accumulator scripts break and output negative numbers when running extreme test configurations.",
+          setup: "You are writing a factorial accumulator function to compute large dataset combinations. Your logic works fine for low number ranges, but outputs corrupted negative values when processing larger test cases in the compiler environment.",
+          brokenCode: `function accumulateProduct(numArray) {\n  let productResult = 1;\n  for (let i = 0; i < numArray.length; i++) {\n    productResult = productResult * numArray[i];\n  }\n  return productResult;\n}`,
+          language: "javascript",
+          hints: [
+            "JavaScript's default Number type loses precision above Number.MAX_SAFE_INTEGER ($2^{53} - 1$).",
+            "Use the native BigInt data type to safely store arbitrarily large integer products."
+          ],
+          solution: `function accumulateProduct(numArray) {\n  if (numArray.length === 0) return 0n;\n  let productResult = 1n;\n  for (let i = 0; i < numArray.length; i++) {\n    productResult = productResult * BigInt(numArray[i]);\n  }\n  return productResult;\n}`,
+          explanation: "The Bug: Standard JavaScript numeric types wrap around into invalid negative values when bitwise multiplications overflow the 32-bit signed integer boundary limit, corrupting your calculation results.",
+          lesson: "Always use BigInt arrays when multiplying large factors that can exceed standard integer boundaries.",
+          related: ["tcs-time-complexity", "tcs-float-precision"],
+          preparationGuide: "/learn/handling-integer-overflow"
+        },
+        {
+          slug: "tcs-string-leak",
+          title: "The Silent String Churn",
+          level: "beginner",
+          time: "4 min",
+          solves: 5120,
+          description: "[TCS Ninja 2024] Repeated character string concatenation runs out of memory on standard compiler environments.",
+          setup: "You are building a custom report formatting engine that processes large text data streams. Appending single text characters in a standard loop causes memory usage to skyrocket, crashing the compiler with an out-of-memory error.",
+          brokenCode: `function constructReportString(characterList) {\n  let outputReport = \"\";\n  for (let i = 0; i < characterList.length; i++) {\n    outputReport += characterList[i];\n  }\n  return outputReport;\n}`,
+          language: "javascript",
+          hints: [
+            "Because strings are immutable, `+=` allocates a brand new string copy in memory every single time it runs.",
+            "Collect your character array components in a mutable array list first, then combine them in a single operation using `.join('')`."
+          ],
+          solution: `function constructReportString(characterList) {\n  let trackingArrayBuffer = [];\n  for (let i = 0; i < characterList.length; i++) trackingArrayBuffer.push(characterList[i]);\n  return trackingArrayBuffer.join('');\n}`,
+          explanation: "The Bug: Because strings are immutable primitives, appending data inside a loop forces your application to allocate memory for a brand new string copy on every single iteration. This churn quickly triggers memory exhaustion crashes on large inputs.",
+          lesson: "Avoid string concatenation inside loops; collect elements in an array buffer and apply .join() instead.",
+          related: ["tcs-matrix-boundary", "tcs-type-evaluation"],
+          preparationGuide: "/learn/javascript-memory-optimization"
+        },
+        {
+          slug: "tcs-matrix-boundary",
+          title: "The Empty Matrix Search Collapse",
+          level: "beginner",
+          time: "3 min",
+          solves: 6410,
+          description: "[TCS Ninja 2025] Grid tracking calculations trigger unexpected index errors when processing dynamic empty array inputs.",
+          setup: "You are writing a grid search algorithm to locate targets inside a 2D coordinate space. Your logic handles populated coordinates perfectly but throws fatal runtime exceptions when evaluated against empty or missing row configurations.",
+          brokenCode: `function locateMatrixTarget(matrixGrid, targetValue) {\n  const totalRows = matrixGrid.length;\n  const totalCols = matrixGrid[0].length;\n  return false;\n}`,
+          language: "javascript",
+          hints: [
+            "Before checking column dimensions, you must verify that your matrix array actually contains valid data rows.",
+            "Implement early-exit validation guards to gracefully catch empty matrices before querying internal indices."
+          ],
+          solution: `function locateMatrixTarget(matrixGrid, targetValue) {\n  if (!matrixGrid || matrixGrid.length === 0 || matrixGrid[0].length === 0) return false;\n  const totalRows = matrixGrid.length;\n  const totalCols = matrixGrid[0].length;\n  return false;\n}`,
+          explanation: "The Bug: Accessing properties like `.length` on unverified array indices (`matrixGrid[0]`) will crash your application with a `TypeError` if the parent array wrapper structure is empty.",
+          lesson: "Always implement explicit boundary check guards before querying nested multi-dimensional array indices.",
+          related: ["tcs-string-leak", "tcs-binary-search-edge"],
+          preparationGuide: "/learn/defensive-programming-basics"
+        },
+        {
+          slug: "tcs-float-precision",
+          title: "The Broken Currency Rounder",
+          level: "intermediate",
+          time: "4 min",
+          solves: 3205,
+          description: "[TCS Digital 2024] Base-2 float accumulator logic drifts and miscalculates salary metrics during high-volume loops.",
+          setup: "Your system loops through and adds up micro-bonus percentage distributions for corporate payroll accounts. Due to underlying floating-point arithmetic tracking limits, your final calculations drift and fail strict compiler equality assertions.",
+          brokenCode: `function calculatePayrollTotal(baseBonus, employeeCount) {\n  let payrollAccumulator = 0.0;\n  for (let i = 0; i < employeeCount; i++) payrollAccumulator += baseBonus;\n  return payrollAccumulator;\n}`,
+          language: "javascript",
+          hints: [
+            "Computers represent fractional numbers using binary base-2 floating-point storage formats.",
+            "Fix the issue by rounding your final result using functions like `.toFixed()`."
+          ],
+          solution: `function calculatePayrollTotal(baseBonus, employeeCount) {\n  let payrollAccumulator = 0.0;\n  for (let i = 0; i < employeeCount; i++) payrollAccumulator += baseBonus;\n  return parseFloat(payrollAccumulator.toFixed(2));\n}`,
+          explanation: "The Bug: Computers store floating-point fractions using binary base-2 structures. Compounding fractional operations introduces subtle precision truncation errors that accumulate over time and cause code to fail exact data matches.",
+          lesson: "Always apply precise epsilon thresholds or use .toFixed() formatting when evaluating floating-point arithmetic values.",
+          related: ["tcs-integer-overflow", "tcs-recursion-stack"],
+          preparationGuide: "/learn/floating-point-math-quirks"
+        },
+        {
+          slug: "tcs-hash-collision",
+          title: "The Plunging Hash Retrieval",
+          level: "advanced",
+          time: "7 min",
+          solves: 1150,
+          description: "[Interview Advanced Track] Custom lookup logic drops from $O(1)$ to a linear $O(N)$ lookup speed because of collision leaks.",
+          setup: "You implement a custom hashing algorithm designed to index user tokens into bucketing arrays at constant $O(1)$ speeds. However, under load testing, lookup speeds plunge to a slow, linear $O(N)$ retrieval loop.",
+          brokenCode: `class BasicHashBucket {\n  constructor() { this.storageSlots = new Array(16).fill(null).map(() => []); }\n  getHashIndex(tokenKey) {\n    return tokenKey.length % 16;\n  }\n  insertToken(key, value) {\n    const slotId = this.getHashIndex(key);\n    this.storageSlots[slotId].push({ key, value });\n  }\n}`,
+          language: "javascript",
+          hints: [
+            "If multiple distinct keys generate the exact same index remainder hash value, they get lumped into the same storage bucket.",
+            "Implement a more robust hashing algorithm (like DJB2 style) to distribute keys evenly."
+          ],
+          solution: `class BasicHashBucket {\n  constructor() { this.storageSlots = new Array(1024).fill(null).map(() => []); }\n  getHashIndex(tokenKey) {\n    let generatedHash = 5381;\n    for (let i = 0; i < tokenKey.length; i++) generatedHash = (generatedHash * 33) ^ tokenKey.charCodeAt(i);\n    return Math.abs(generatedHash) % 1024;\n  }\n  insertToken(key, value) {\n    const slotId = this.getHashIndex(key);\n    this.storageSlots[slotId].push({ key, value });\n  }\n}`,
+          explanation: "The Bug: Simplistic hashing operations frequently cluster completely distinct keys into identical storage buckets. This behavior degrades your constant-time lookups into a slow, sequential linear search loop.",
+          lesson: "Always implement robust, high-entropy distribution keys to prevent performance-degrading hash collisions.",
+          related: ["tcs-time-complexity", "tcs-graph-cycle"],
+          preparationGuide: "/learn/advanced-data-structure-optimization"
+        },
+        {
+          slug: "tcs-binary-search-edge",
+          title: "The Missing End Index",
+          level: "intermediate",
+          time: "4 min",
+          solves: 2890,
+          description: "[TCS Ninja 2025] Custom optimized binary search logic fails to check the final array boundary element correctly.",
+          setup: "You implement a custom binary search algorithm to scan sorted data arrays quickly. Your logic successfully finds middle values but consistently fails to locate elements stored at the very end of your data arrays.",
+          brokenCode: `function executeBinarySearch(sortedArray, targetItem) {\n  let leftIdx = 0, rightIdx = sortedArray.length - 1;\n  while (leftIdx < rightIdx) {\n    let midPoint = Math.floor((leftIdx + rightIdx) / 2);\n    if (sortedArray[midPoint] === targetItem) return midPoint;\n    if (sortedArray[midPoint] < targetItem) leftIdx = midPoint + 1;\n    else rightIdx = midPoint - 1;\n  }\n  return -1;\n}`,
+          language: "javascript",
+          hints: [
+            "When both pointers converge, the strict leftIdx < rightIdx condition evaluates to false, causing the loop to terminate without checking that position.",
+            "Fix the issue by updating your loop condition to use an inclusive less-than-or-equal-to check (leftIdx <= rightIdx)."
+          ],
+          solution: `function executeBinarySearch(sortedArray, targetItem) {\n  let leftIdx = 0, rightIdx = sortedArray.length - 1;\n  while (leftIdx <= rightIdx) {\n    let midPoint = Math.floor((leftIdx + rightIdx) / 2);\n    if (sortedArray[midPoint] === targetItem) return midPoint;\n    if (sortedArray[midPoint] < targetItem) leftIdx = midPoint + 1;\n    else rightIdx = midPoint - 1;\n  }\n  return -1;\n}`,
+          explanation: "The Bug: Employing a strict less-than check terminates your binary search loop the moment your array boundary pointers converge. This cuts the search short, completely missing target items stored at the final index position.",
+          lesson: "Always use a less-than-or-equal-to condition (<=) when writing standard binary search loops.",
+          related: ["tcs-matrix-boundary", "tcs-type-evaluation"],
+          preparationGuide: "/learn/binary-search-edge-cases"
+        },
+        {
+          slug: "tcs-recursion-stack",
+          title: "The Un-Memoized Fibonacci Stack",
+          level: "intermediate",
+          time: "5 min",
+          solves: 3760,
+          description: "[Interview Logic Round] Recursive dynamic programming functions hit maximum stack size limits without memoization buffers.",
+          setup: "You write a recursive function to compute values in a Fibonacci sequence. When testing larger values, the massive explosion of redundant sub-calls quickly exhausts the engine's call stack limits, triggering a crash.",
+          brokenCode: `function calculateFibonacci(n) {\n  if (n <= 1) return n;\n  return calculateFibonacci(n - 1) + calculateFibonacci(n - 2);\n}`,
+          language: "javascript",
+          hints: [
+            "Without caching, calculating fib(5) forces your code to recompute the same values multiple times from scratch.",
+            "Implement a simple memoization object hash map to store and reuse previous calculations."
+          ],
+          solution: `function calculateFibonacci(n, calculationCache = {}) {\n  if (n <= 1) return n;\n  if (calculationCache[n] !== undefined) return calculationCache[n];\n  calculationCache[n] = calculateFibonacci(n - 1, calculationCache) + calculateFibonacci(n - 2, calculationCache);\n  return calculationCache[n];\n}`,
+          explanation: "The Bug: Branching recursive functions without internal state caching trigger an exponential explosion of redundant processing cycles. This quickly overwhelms the compiler engine's call stack allocation limits.",
+          lesson: "Always implement memoization caching filters when writing deep recursive branching functions.",
+          related: ["tcs-float-precision", "tcs-graph-cycle"],
+          preparationGuide: "/learn/mastering-dynamic-programming"
+        },
+        {
+          slug: "tcs-graph-cycle",
+          title: "The Infinite Dependency Loop",
+          level: "advanced",
+          time: "8 min",
+          solves: 945,
+          description: "[TCS Digital 2024] Route analytical loops hang indefinitely when mapping components containing cyclic nodes.",
+          setup: "You are writing a dependency graph parsing script to sequence software module compilations. If the codebase contains a circular dependency loop, your traversal function spins endlessly and freezes the compiler.",
+          brokenCode: `function discoverDependencyTree(currentNode, adjacencyList) {\n  const connectedNodes = adjacencyList[currentNode] || [];\n  for (let i = 0; i < connectedNodes.length; i++) {\n    discoverDependencyTree(connectedNodes[i], adjacencyList);\n  }\n}`,
+          language: "javascript",
+          hints: [
+            "Pass a tracking Set or hash map along with your recursive function calls to maintain a history of visited nodes.",
+            "If your traversal encounters a node that is already marked in your visited set, exit early."
+          ],
+          solution: `function discoverDependencyTree(currentNode, adjacencyList, visitedSet = new Set()) {\n  if (visitedSet.has(currentNode)) return;\n  visitedSet.add(currentNode);\n  const connectedNodes = adjacencyList[currentNode] || [];\n  for (let i = 0; i < connectedNodes.length; i++) {\n    discoverDependencyTree(connectedNodes[i], adjacencyList, visitedSet);\n  }\n}`,
+          explanation: "The Bug: Graph traversal algorithms that operate without state tracking sets are completely blind to circular paths. When they encounter cyclic dependencies, they re-process identical nodes endlessly, freezing the thread runtime.",
+          lesson: "Always use a tracking set to log visited elements when writing graph traversal algorithms.",
+          related: ["tcs-hash-collision", "tcs-recursion-stack"],
+          preparationGuide: "/learn/graph-traversal-fundamentals"
+        },
+        {
+          slug: "tcs-type-evaluation",
+          title: "The Loose Type Validation Slip",
+          level: "beginner",
+          time: "3 min",
+          solves: 4890,
+          description: "[TCS Ninja 2024] Dynamic input comparisons evaluate invalid user data models safely instead of throwing errors.",
+          setup: "Your code validates user identification entry numbers passed from a frontend form. Because it uses loose equality operators, string versions slip past validation parameters, leading to data type corruption in downstream operations.",
+          brokenCode: `function validateSystemCode(inputCodeId) {\n  if (inputCodeId == false) return \"INVALID_CODE_FORMAT\";\n  return \"VALID_PROCEED_LOGIC\";\n}`,
+          language: "javascript",
+          hints: [
+            "JavaScript's loose equality operator performs automatic type coercion behind the scenes.",
+            "Replace loose equality checks with strict equality operators (===) to enforce precise value and type verification."
+          ],
+          solution: `function validateSystemCode(inputCodeId) {\n  if (inputCodeId === false) return \"INVALID_CODE_FORMAT\";\n  return \"VALID_PROCEED_LOGIC\";\n}`,
+          explanation: "The Bug: Loose equality operators run implicit type coercion filters before evaluating statements. This allows mismatched input types to bypass security validations, leading to type pollution errors down the line.",
+          lesson: "Always employ strict equality operators (===) to protect the data integrity of validation routines.",
+          related: ["tcs-string-leak", "tcs-binary-search-edge"],
+          preparationGuide: "/learn/javascript-type-coercion-pitfalls"
+        }
+      ]
+    }
 ];
 
 // ── Helper: Find challenge by slug ────────────────────────────
