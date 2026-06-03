@@ -1676,7 +1676,225 @@ def is_rate_limited(client_ip):
           preparationGuide: "/learn/javascript-type-coercion-pitfalls"
         }
       ]
-    }
+    },
+  {
+    id: "cloud-architecture",
+    name: "Cloud & Architecture",
+    icon: "🏗️",
+    color: "#ec4899",
+    challenges: [
+      {
+        slug: "cloud-iam-exposure",
+        title: "The Over-Privileged S3 Bucket",
+        level: "intermediate",
+        time: "5 min",
+        solves: 1420,
+        description: "[AWS Cloud Track] A misconfigured resource policy exposes proprietary system assets to anonymous external domains.",
+        setup: "You are setting up an AWS S3 bucket access policy to share pre-trained ML model weights with a trusted third-party data analytics cluster. The configuration passes validation checks, but security auditing metrics immediately flag the deployment for violating global compliance parameters.",
+        brokenCode: `{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Sid": "CrossAccountModelSharing",\n      "Effect": "Allow",\n      "Principal": "*",\n      "Action": "s3:GetObject",\n      "Resource": "arn:aws:s3:::zeroapi-model-weights/*"\n    }\n  ]\n}`,
+        language: "json",
+        hints: [
+          "Setting Principal to a wildcard '*' grants read access to any client or domain across the entire public internet.",
+          "To secure the configuration, you must restrict the Principal value to your trusted partner's explicit AWS Account ARN.",
+          "Change Principal from '*' to an object mapping directly to an explicit root AWS Account ID structure."
+        ],
+        solution: `{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Sid": "CrossAccountModelSharingSecure",\n      "Effect": "Allow",\n      "Principal": {\n        "AWS": "arn:aws:iam::123456789012:root"\n      },\n      "Action": "s3:GetObject",\n      "Resource": "arn:aws:s3:::zeroapi-model-weights/*"\n    }\n  ]\n}`,
+        explanation: "The Bug: Utilizing wildcards within public cloud resource policy definitions creates an unintentional public disclosure gateway. Anyone on the internet can read or scrape your proprietary model weights, introducing severe security compliance failures.\n\nThe Fix: Restrict resource accessibility rules by assigning the Principal property directly to explicit, authorized cross-account AWS identifiers or individual IAM roles.",
+        lesson: "Never use public wildcards in access policies unless the resource is genuinely meant to be public.",
+        related: ["cloud-ssrf-metadata", "cloud-cors-wildcard"],
+        preparationGuide: "/learn/iam-security-best-practices"
+      },
+      {
+        slug: "cloud-cors-wildcard",
+        title: "The Open Vault Gateway",
+        level: "intermediate",
+        time: "4 min",
+        solves: 1980,
+        description: "[Production Gateway] Combining global origin wildcards with active credential configurations triggers browser blocks.",
+        setup: "An engineer configures a production backend middleware layout to handle cross-origin traffic easily. However, frontend web users report that user dashboard requests fail with critical browser console authorization blocks.",
+        brokenCode: `const express = require('express');\nconst cors = require('cors');\nconst app = express();\n\n// TRAP: Combining wildcard origin rules with credentials allowed flags\n// forces security rejections inside modern browser runtimes!\napp.use(cors({\n  origin: '*',\n  credentials: true\n}));`,
+        language: "javascript",
+        hints: [
+          "Modern web browsers strictly block cross-origin calls that combine wildcard origins with active credentials flags.",
+          "To allow credentials safely, you must replace the wildcard origin with an explicit list of trusted web domains.",
+          "Enforce strict array checking or absolute string origin maps to allow user cookies to pass through securely."
+        ],
+        solution: `const express = require('express');\nconst cors = require('cors');\nconst app = express();\n\nconst productionAllowlist = ['https://zeroapi.in', 'https://app.zeroapi.in'];\n\napp.use(cors({\n  origin: (origin, callback) => {\n    if (!origin || productionAllowlist.indexOf(origin) !== -1) {\n      callback(null, true);\n    } else {\n      callback(new Error('CORS Policy Rejection. Origin Unauthorized.'));\n    }\n  },\n  credentials: true\n}));`,
+        explanation: "The Bug: Combining standard wildcards with active cookie credentials introduces a dangerous cross-origin vulnerability. To prevent automated authentication scraping, browser engines explicitly reject requests where these configurations are combined.\n\nThe Fix: Define an explicit domain allowlist and map incoming requests to verified origin markers before issuing approval headers.",
+        lesson: "Universal wildcards and credential processing are mutually exclusive in secure production environments.",
+        related: ["cloud-iam-exposure", "cloud-stateless-bypass"],
+        preparationGuide: "/learn/mastering-cors-architectures"
+      },
+      {
+        slug: "cloud-ssrf-metadata",
+        title: "The Metadata Siphon",
+        level: "advanced",
+        time: "7 min",
+        solves: 890,
+        description: "[Systems Security] Un-sanitized proxy parameters allow attackers to extract internal server credentials.",
+        setup: "You implement an optimization service that pulls user-submitted image links to generate thumbnail assets. A security review flags that malicious actors can pass specific local parameters to scrape your internal cloud environment credentials.",
+        brokenCode: `const express = require('express');\nconst axios = require('axios');\nconst app = express();\n\napp.get('/api/proxy/thumbnail', async (req, res) => {\n  // TRAP: Accepting raw, un-sanitized user inputs directly into your system's \n  // internal HTTP client opens the door to Server-Side Request Forgery (SSRF)!\n  const targetUrl = req.query.url;\n  const response = await axios.get(targetUrl);\n  res.send(response.data);\n});`,
+        language: "javascript",
+        hints: [
+          "What happens if an attacker supplies an internal address like `http://169.254.169.254/latest/meta-data/`?",
+          "That IP maps directly to the AWS EC2 Instance Metadata Service, which can leak temporary server keys.",
+          "Implement a protective validation regex check or an absolute allowlist to restrict calls strictly to public web protocols."
+        ],
+        solution: `const express = require('express');\nconst axios = require('axios');\nconst app = express();\nconst { URL } = require('url');\n\napp.get('/api/proxy/thumbnail', async (req, res) => {\n  try {\n    const userUrl = new URL(req.query.url);\n    \n    // Block local lookups and internal infrastructure paths\n    if (['localhost', '127.0.0.1', '169.254.169.254'].includes(userUrl.hostname)) {\n      return res.status(403).send({ error: "Access Denied. Internal Destinations Blocked." });\n    }\n    \n    const response = await axios.get(userUrl.href, { timeout: 3000 });\n    return res.send(response.data);\n  } catch (err) {\n    return res.status(400).send({ error: "Malformed Connection Stream" });\n  }\n});`,
+        explanation: "The Bug: Processing user-supplied URLs without validation opens your app to Server-Side Request Forgery (SSRF). Attackers can trick your server into querying its own internal infrastructure, exposed databases, or cloud provider metadata endpoints to steal credentials.\n\nThe Fix: Enforce strict URL structural parsing, sanitize inputs against known internal ranges, and drop connections that point back to private subnets.",
+        lesson: "Treat every outbound request initiated by user input as a high-risk connection vector.",
+        related: ["cloud-iam-exposure", "cloud-docker-root"],
+        preparationGuide: "/learn/preventing-ssrf-vulnerabilities"
+      },
+      {
+        slug: "cloud-docker-root",
+        title: "The Root Privilege Breach",
+        level: "beginner",
+        time: "3 min",
+        solves: 3410,
+        description: "[Dockerfile Optimization] Building container runtime environments without restricted service users violates least-privilege standards.",
+        setup: "An automation engine compiles a microservice into a Docker container. Staging security checkers block the final deployment artifact because application dependencies run with dangerously high permission privileges inside the host node.",
+        brokenCode: `FROM node:18-alpine\nWORKDIR /usr/src/app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nEXPOSE 5000\n# TRAP: Omitting a dedicated user allocation forces the engine\n# to run your code with full root permissions by default!\nCMD ["node", "index.js"]`,
+        language: "dockerfile",
+        hints: [
+          "If an attacker exploits a code vulnerability within this application, they will inherit root access to the entire container environment.",
+          "Alpine Node base images include a pre-configured low-privilege system account called 'node'.",
+          "Add an explicit USER instruction before your entrypoint command to drop execution privileges."
+        ],
+        solution: `FROM node:18-alpine\nWORKDIR /usr/src/app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nEXPOSE 5000\n\n# Safely transition runtime context to a low-privilege system user\nUSER node\nCMD ["node", "index.js"]`,
+        explanation: "The Bug: Skipping explicit runtime account declarations causes container execution layers to default to full root access. If the application is compromised, attackers can leverage these high privileges to break isolation boundaries and attack the host cluster node.\n\nThe Fix: Use the USER command to drop process privileges down to non-root accounts before launching your application runtime.",
+        lesson: "Containers are not security boundaries. Never run your containerized code with root privileges.",
+        related: ["cloud-ssrf-metadata", "cloud-zombie-pid"],
+        preparationGuide: "/learn/hardening-docker-containers"
+      },
+      {
+        slug: "cloud-zombie-pid",
+        title: "The Zombie Process Apocalypse",
+        level: "advanced",
+        time: "7 min",
+        solves: 645,
+        description: "[Container Engineering] Running standalone scripts under PID 1 leaks dead child threads inside host runtimes.",
+        setup: "You deploy a high-frequency automation worker that executes thousands of short-lived shell sub-processes. After a few hours of operation, your container instances freeze up entirely due to a massive buildup of uncollected zombie processes.",
+        brokenCode: `FROM python:3.10-slim\nWORKDIR /workspace\nCOPY . .\nRUN pip install -r requirements.txt\n\n// TRAP: Standalone application layers evaluated under PID 1\n// do not automatically pick up and reap dead child processes!\nCMD ["python", "process_scheduler.py"]`,
+        language: "dockerfile",
+        hints: [
+          "In Linux systems, the process assigned to PID 1 is responsible for cleaning up orphan child processes.",
+          "Standard application runtimes like Python or Node do not include system init behaviors and will leak resource allocations when child threads exit.",
+          "Integrate a lightweight initialization daemon like 'tini' to handle process reaping and system signals cleanly."
+        ],
+        solution: `FROM python:3.10-slim\n# Install a lightweight system init layer\nRUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*\n\nWORKDIR /workspace\nCOPY . .\nRUN pip install -r requirements.txt\n\n# Bind the init harness to execute under PID 1\nENTRYPOINT ["/usr/bin/tini", "--"]\nCMD ["python", "process_scheduler.py"]`,
+        explanation: "The Bug: Standard languages executing under PID 1 inside Linux environments lack system init signal-reaping capabilities. When sub-processes exit, they remain in the process table as dead 'zombie' threads, eventually exhausting the system's available process pool.",
+        lesson: "Always use an initialization wrapper like tini when containers spawn frequent child sub-processes.",
+        related: ["cloud-docker-root", "cloud-promise-leak"],
+        preparationGuide: "/learn/container-process-lifecycles"
+      },
+      {
+        slug: "cloud-k8s-spiral",
+        title: "The Liveness Probe Death Spiral",
+        level: "advanced",
+        time: "8 min",
+        solves: 720,
+        description: "[Kubernetes Architecture] Pointing automated node health monitoring to heavy processing lanes triggers false restart loops.",
+        setup: "You configure a Kubernetes deployment structure with automated health validation monitors. During a sudden surge in user traffic, instead of scaling up gracefully, your pods are repeatedly terminated and restarted by the cluster scheduler.",
+        brokenCode: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: core-api-service\nspec:\n  template:\n    spec:\n      containers:\n      - name: web-node\n        image: zeroapi/core:v1\n        livenessProbe:\n          httpGet:\n            # TRAP: Pointing health probes to heavy computational operations\n            # triggers false timeouts and restart loops under load conditions!\n            path: /api/v1/analytics/db-sync-check\n            port: 8080\n          initialDelaySeconds: 15\n          periodSeconds: 10`,
+        language: "yaml",
+        hints: [
+          "When traffic surges, heavy operational paths experience processing delays and take longer to respond.",
+          "If the livenessProbe requests time out, Kubernetes falsely assumes your application is dead and triggers a forced restart.",
+          "Decouple system orchestration health checks from heavy downstream dependencies by using a lightweight, dedicated endpoint."
+        ],
+        solution: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: core-api-service\nspec:\n  template:\n    spec:\n      containers:\n      - name: web-node\n        image: zeroapi/core:v1\n        livenessProbe:\n          httpGet:\n            # Use an isolated, lightweight endpoint that doesn't hit external databases\n            path: /healthz\n            port: 8080\n          initialDelaySeconds: 5\n          periodSeconds: 10\n        readinessProbe:\n          httpGet:\n            path: /readyz\n            port: 8080\n          initialDelaySeconds: 10\n          periodSeconds: 10`,
+        explanation: "The Bug: Binding automated liveness check parameters to database connection steps or intensive analytical tasks introduces a risky architectural dependency. When system resource loads increase, these endpoints fail to respond in time, tricking the cluster into a destructive restart loop.",
+        lesson: "Keep your system health checks completely decoupled from heavy application dependencies.",
+        related: ["cloud-retry-storm", "cloud-promise-leak"],
+        preparationGuide: "/learn/kubernetes-probe-orchestration"
+      },
+      {
+        slug: "cloud-thundering-herd",
+        title: "The Thundering Herd Avalanche",
+        level: "advanced",
+        time: "6 min",
+        solves: 1130,
+        description: "[Cache Strategy] Simultaneous global key expirations trigger overwhelming traffic floods on downstream backends.",
+        setup: "Your system speeds up API response times by caching high-traffic dashboard feeds. However, exactly every hour on the dot, your primary database CPU utilization spikes to 100%, causing transient database connection drops.",
+        brokenCode: `async function fetchGlobalMetrics() {\n  const cacheKey = "dashboard:global:stats";\n  let data = await redis.get(cacheKey);\n  \n  // TRAP: When the cache expires, thousands of concurrent requests hit this block\n  // simultaneously, causing a massive traffic flood on your downstream database!\n  if (!data) {\n    data = await database.executeHeavyReportingQuery();\n    await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);\n  }\n  return JSON.parse(data);\n}`,
+        language: "javascript",
+        hints: [
+          "When a popular cache key expires under high traffic loads, thousands of concurrent requests will find a cache miss simultaneously.",
+          "This forces all active requests to drop down and query your database at the exact same moment.",
+          "Implement a distributed mutual exclusion lock to ensure only one worker thread rebuilds the cache at a time."
+        ],
+        solution: `async function fetchGlobalMetrics() {\n  const cacheKey = "dashboard:global:stats";\n  const lockKey = "lock:dashboard:global:stats";\n  \n  let data = await redis.get(cacheKey);\n  if (!data) {\n    // Acquire a mutual exclusion lock to protect your database\n    const acquiredLock = await redis.set(lockKey, "LOCKED", "NX", "PX", 5000);\n    \n    if (acquiredLock) {\n      data = await database.executeHeavyReportingQuery();\n      // Add a randomized time jitter to vary expiration windows\n      const randomJitter = Math.floor(Math.random() * 300);\n      await redis.set(cacheKey, JSON.stringify(data), "EX", 3600 + randomJitter);\n      await redis.del(lockKey);\n    } else {\n      // Wait briefly and try pulling from the rebuilt cache again\n      await new Promise(resolve => setTimeout(resolve, 200));\n      return fetchGlobalMetrics();\n    }\n  }\n  return JSON.parse(data);\n}`,
+        explanation: "The Bug: Allowing un-throttled, concurrent cache misses to pass through to your database under load creates a serious bottleneck. This thundering herd behavior can quickly crash expensive database infrastructure.",
+        lesson: "Protect expensive cache misses with distributed resource locks and introduce entropy using TTL jitter.",
+        related: ["cloud-retry-storm", "cloud-stateless-bypass"],
+        preparationGuide: "/learn/caching-strategies-at-scale"
+      },
+      {
+        slug: "cloud-retry-storm",
+        title: "The Cascading Retry Storm",
+        level: "intermediate",
+        time: "5 min",
+        solves: 2240,
+        description: "[Microservice Dynamics] Blind immediate network retry loops multiply a minor timeout glitch into a system-wide outage.",
+        setup: "A brief network hiccup introduces high latency into an internal payment confirmation system. Instead of recovering smoothly, the platform's client applications launch continuous, immediate retry requests, causing a complete system outage.",
+        brokenCode: `const axios = require('axios');\n\nasync function dispatchPaymentVerification(payload) {\n  // TRAP: Spamming a struggling server with rapid, immediate retries\n  // prevents it from recovering and amplifies minor hiccups into total outages!\n  for (let attempt = 1; attempt <= 5; attempt++) {\n    try {\n      return await axios.post('https://pay.internal/verify', payload);\n    } catch (error) {\n      console.log(\`Connection failure. Launching immediate retry attempt \${attempt}\`);\n    }\n  }\n  throw new Error("Payment Gateway Exhausted");\n}`,
+        language: "javascript",
+        hints: [
+          "Spamming an already overloaded microservice with immediate retries robs it of the processing recovery space it needs to self-heal.",
+          "Distribute retry requests over an expanding time frame by implementing an Exponential Backoff strategy.",
+          "Add a randomized 'jitter' offset to prevent groups of distinct client processes from retrying at the exact same millisecond."
+        ],
+        solution: `const axios = require('axios');\n\nasync function dispatchPaymentVerification(payload) {\n  const maxAttempts = 5;\n  for (let attempt = 1; attempt <= maxAttempts; attempt++) {\n    try {\n      return await axios.post('https://pay.internal/verify', payload, { timeout: 2000 });\n    } catch (error) {\n      if (attempt === maxAttempts) throw error;\n      \n      // Implement exponential backoff with randomized jitter tracking\n      const backoffDelay = Math.pow(2, attempt) * 1000;\n      const randomizedJitter = Math.random() * 1000;\n      const executionDelay = backoffDelay + randomizedJitter;\n      \n      console.log(\`Backing off connection for \${executionDelay.toFixed(0)}ms before retry\`);\n      await new Promise(resolve => setTimeout(resolve, executionDelay));\n    }\n  }\n}`,
+        explanation: "The Bug: Executing immediate, un-throttled retry loops when systems experience latency failures triggers a dangerous retry storm. This spikes traffic volumes and knocks down recovering downstream targets.",
+        lesson: "Always decouple retry algorithms using exponential backoff and randomized network jitter calculations.",
+        related: ["cloud-k8s-spiral", "cloud-thundering-herd"],
+        preparationGuide: "/learn/resilient-microservice-architectures"
+      },
+      {
+        slug: "cloud-stateless-bypass",
+        title: "The Stateless Gateway Bypass",
+        level: "intermediate",
+        time: "5 min",
+        solves: 1670,
+        description: "[Distributed Systems] Tracking high-volume rate limits inside local memory blocks lets traffic escape protection layers.",
+        setup: "You implement a middleware rate limiter designed to drop abusive traffic exceeding 60 requests per minute per user. The system passes tests locally, but malicious scraping tools bypass it completely in production.",
+        brokenCode: `const localRateLimitMap = new Map();\n\nfunction verifyTrafficLimits(clientIp) {\n  // TRAP: Storing tracking data inside local in-memory states \n  // breaks completely when your app is deployed behind a load balancer!\n  const totalHits = localRateLimitMap.get(clientIp) || 0;\n  if (totalHits >= 60) {\n    return false; // Drop request\n  }\n  localRateLimitMap.set(clientIp, totalHits + 1);\n  return true; // Accept request\n}`,
+        language: "javascript",
+        hints: [
+          "Production load balancers distribute incoming traffic across multiple independent application containers.",
+          "An in-memory tracking Map cannot share state data across these separate server instances.",
+          "Move your counter state data to a fast, shared centralized cache like Redis to maintain a global source of truth."
+        ],
+        solution: `// Move rate-limiting state management to a shared Redis cluster\nasync function verifyTrafficLimits(clientIp) {\n  const rateKey = \`rate:\${clientIp}\`;\n  \n  // Increment the global request counter atomically\n  const totalHits = await redis.incr(rateKey);\n  \n  if (totalHits === 1) {\n    // Set a strict 60-second sliding expiration window\n    await redis.expire(rateKey, 60);\n  }\n  \n  if (totalHits > 60) {\n    return false; // Rate limit exceeded, reject connection\n  }\n  return true; // Within limits, allow request\n}`,
+        explanation: "The Bug: Storing operational data inside local memory maps creates state isolation issues in clustered environments. Because the load balancer distributes requests across nodes, attackers can rotate connections to stay under local limits and exploit your app.",
+        lesson: "Rate-limiting and security filtering mechanisms in clustered systems must use shared, centralized data states.",
+        related: ["cloud-cors-wildcard", "cloud-thundering-herd"],
+        preparationGuide: "/learn/scaling-stateless-gateways"
+      },
+      {
+        slug: "cloud-promise-leak",
+        title: "The Dangling Background Leak",
+        level: "advanced",
+        time: "6 min",
+        solves: 910,
+        description: "[Runtime Optimization] Firing un-timed background workers without exception catch blocks continuously siphons RAM channels.",
+        setup: "You add an asynchronous logging module to process user click telemetry data in the background. While initially fast, your production server container consistently runs out of RAM and crashes every 4 hours under heavy user traffic.",
+        brokenCode: `const express = require('express');\nconst app = express();\n\napp.post('/api/v1/event/click', (req, res) => {\n  // TRAP: Spawning background promises without timeouts or catch handlers\n  // siphons server memory whenever downstream targets run slowly!\n  dispatchTelemetryToAnalyticsCluster(req.body);\n  \n  res.status(202).send({ processing: true });\n});`,
+        language: "javascript",
+        hints: [
+          "If the analytics endpoint experiences slowdowns, un-awaited background promises will accumulate in your app's memory heap.",
+          "Failing to handle async rejections can eventually stall the Node.js event loop or cause memory leaks.",
+          "Enforce explicit processing timeouts and wrap background promises with clear exception catch blocks."
+        ],
+        solution: `const express = require('express');\nconst app = express();\n\napp.post('/api/v1/event/click', (req, res) => {\n  // Handle background execution traces safely using explicit timeouts and error catches\n  Promise.race([\n    dispatchTelemetryToAnalyticsCluster(req.body),\n    new Promise((_, reject) => setTimeout(() => reject(new Error('Telemetry Connection Timeout')), 4000))\n  ])\n  .catch(err => {\n    console.error("Safely isolated background error trace: ", err.message);\n  });\n  \n  // Return an early response to keep user response paths fast\n  return res.status(202).send({ processing: true });\n});`,
+        explanation: "The Bug: Spawning un-awaited async operations without tracking constraints introduces an application memory leak. If external targets slow down or hang, these background actions stay allocated in the process heap, exhausting system memory.",
+        lesson: "Every background promise must be bound to an explicit execution timeout limit and an exception catch block.",
+        related: ["cloud-zombie-pid", "cloud-k8s-spiral"],
+        preparationGuide: "/learn/asynchronous-resource-management"
+      }
+    ]
+  }
 ];
 
 // ── Helper: Find challenge by slug ────────────────────────────
