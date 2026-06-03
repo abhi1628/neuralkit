@@ -1258,215 +1258,216 @@ def is_rate_limited(client_ip):
     challenges: [
       {
         slug: "cisco-async-leak",
-        title: "The Dangling Websocket Listener",
+        title: "The Dangling Thread Pool Leak",
         level: "advanced",
         time: "6 min",
         solves: 2405,
-        description: "[Cisco Ideathon 2025] Telemetry sockets leak memory across connection refreshes during router monitoring simulations.",
-        setup: "You are designing a core telemetry dashboard tracking Cisco router clusters. The system works fine initially but crashes with an Out-of-Memory (OOM) error after processing 5,000 asynchronous device socket events. Clear the memory leakage pattern inside the server event tracking block.",
-        brokenCode: `const WebSocket = require('ws');\nconst wss = new WebSocket.Server({ port: 8080 });\n\nlet telemetryCycles = 0;\n\nwss.on('connection', (ws) => {\n  // TRAP: A new telemetry interval loops indefinitely per connection,\n  // but remains in memory when client nodes disconnect!\n  setInterval(() => {\n    telemetryCycles++;\n    ws.send(JSON.stringify({ telemetryId: telemetryCycles, status: \"ROUTER_OK\" }));\n  }, 100);\n\n  ws.on('close', () => {\n    console.log(\"Cisco Edge Node Disconnected.\");\n  });\n});`,
-        language: "javascript",
+        description: "[Cisco Ideathon 2025] Telemetry thread workers leak memory across connection refreshes during router monitoring simulations.",
+        setup: "You are designing a core telemetry monitoring service in Python tracking Cisco router clusters. The system spawns a background thread executor for every incoming device connection. While testing under network volatility, the host machine crashes with an Out-of-Memory (OOM) error due to un-recycled worker threads.",
+        brokenCode: `import threading\nimport socket\nimport time\n\ndef handle_device_telemetry(device_socket):\n    while True:\n        try:\n            # TRAP: If the socket hangs without a timeout loop, the thread \n            # blocks here forever, leaking system memory resources!\n            data = device_socket.recv(1024)\n            if not data:\n                break\n            process_metrics(data)\n        except Exception:\n            pass\n\ndef start_server():\n    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    server.bind(('0.0.0.0', 8080))\n    server.listen(5)\n    while True:\n        client_sock, _ = server.accept()\n        t = threading.Thread(target=handle_device_telemetry, args=(client_sock,))\n        t.start()`,
+        language: "python",
         hints: [
-          "When is the setInterval loop created? Once per connection context.",
-          "If 1,000 edge switches connect and reconnect, how many intervals stay running?",
-          "Assign setInterval to a local reference variable and invoke clearInterval inside the close event payload."
+          "Threads in Python don't automatically terminate when a client disconnects if the read loop is stuck blocking on a dead socket.",
+          "You must implement an explicit connection socket timeout using `device_socket.settimeout(5.0)` to break out of the infinite while loop.",
+          "Ensure that your `except` block cleanly executes a `break` or `close()` action when a network anomaly occurs."
         ],
-        solution: `const WebSocket = require('ws');\nconst wss = new WebSocket.Server({ port: 8080 });\n\nlet telemetryCycles = 0;\n\nwss.on('connection', (ws) => {\n  const telemetryInterval = setInterval(() => {\n    telemetryCycles++;\n    try {\n      ws.send(JSON.stringify({ telemetryId: telemetryCycles, status: \"ROUTER_OK\" }));\n    } catch (e) {\n      clearInterval(telemetryInterval);\n    }\n  }, 100);\n\n  ws.on('close', () => {\n    clearInterval(telemetryInterval);\n    console.log(\"Cisco Edge Node Disconnected Safely.\");\n  });\n});`,
-        explanation: "The Bug: Cisco systems demand zero resource wastage. Chaining anonymous event intervals inside an open node network creates an active memory siphon when client channels terminate without clearing intervals from the main Node.js event loop thread.\n\nThe Fix: Save your interval to a reference handler pointer, and cleanly run clearInterval() as soon as the 'close' event fires to free memory space.",
-        lesson: "Always tear down active polling configurations when sockets close.",
-        related: ["cisco-packet-race", "cisco-dangling-pool"],
-        preparationGuide: "/learn/debugging-asynchronous-network-protocols"
+        solution: `import threading\nimport socket\n\ndef handle_device_telemetry(device_socket):\n    # FIX: Enforce an explicit connection timeout ceiling\n    device_socket.settimeout(5.0)\n    try:\n        while True:\n            try:\n                data = device_socket.recv(1024)\n                if not data:\n                    break\n                process_metrics(data)\n            except socket.timeout:\n                print("Connection dead. Exiting thread.")\n                break\n    finally:\n        device_socket.close() # Clean up resource allocations`,
+        explanation: "The Bug: Cisco evaluations strictly screen for resource leaks. Firing persistent execution loops without timeout bounds traps the runtime workers in a zombie state inside memory blocks when remote network interfaces go down silently.\n\nThe Fix: Configure a definitive network read timeout parameter (`settimeout`), catch the resulting connection exception, and execute an explicit breakdown sequence (`close()`) to free kernel resources.",
+        lesson: "Never spawn network worker threads without establishing strict socket read execution timeouts.",
+        related: ["cisco-packet-race", "cisco-deadlock-queue"],
+        preparationGuide: "/learn/python-network-concurrency"
       },
       {
         slug: "cisco-packet-race",
-        title: "The Out-of-Order Packet Buffer",
+        title: "The Packet Buffer Out-Of-Bounds",
         level: "advanced",
         time: "8 min",
         solves: 1102,
         description: "[Cisco Ideathon 2025] High-throughput async routers process packet fragments out of sequence under micro-burst traffic loads.",
-        setup: "During network burst conditions, chunks of data payloads hit the router out of sequence. The tracking buffer maps them directly to a string as they arrive, corrupting the final payload stream structure. Implement a structured sequential layout map layer.",
-        brokenCode: `let processingBuffer = \"\";\n\nasync function receivedPacketChunk(packetStream) {\n  // TRAP: Appends chunk data straight to the base sequence as they finish resolving,\n  // completely ignoring the chronological structural sequence ids!\n  const chunkData = await fetchPacketPayload(packetStream.id);\n  processingBuffer += chunkData.text;\n  return processingBuffer;\n}`,
-        language: "javascript",
+        setup: "You are optimizing a low-latency network frame assembler in C++. Incoming packet payloads contain a sequential header index tracking where they belong. Your buffer script writes frames to memory registers as they arrive, but drops transactions or overflows bounds when packet IDs arrive out of sequence.",
+        brokenCode: `#include <iostream>\n#include <string>\n\nstd::string globalPacketBuffer[5];\n\n// TRAP: Blindly uses incoming sequence IDs as direct indices for fixed-size arrays \n// without conducting any boundary validation checks!\nvoid insertPacketChunk(int sequenceId, std::string chunkText) {\n    globalPacketBuffer[sequenceId] = chunkText;\n}`,
+        language: "cpp",
         hints: [
-          "Async tasks resolve at different times. A larger chunk 1 might resolve after a smaller chunk 2.",
-          "You must look at the sequence metadata ID attached to each network stream frame.",
-          "Store chunks inside a structured key-value index map object or array before rendering the output sequence."
+          "Network frames can arrive completely out of sequence. What happens if a corrupted header carries an index of -5 or 100?",
+          "Writing to `globalPacketBuffer[100]` breaks memory boundaries, corrupts adjacent data blocks, and triggers a Segmentation Fault.",
+          "Implement defensive guard blocks to verify that the incoming sequence index sits safely within the boundaries of the allocated array tracking range."
         ],
-        solution: `let orderedBufferMap = {};\n\nasync function receivedPacketChunk(packetStream) {\n  const chunkData = await fetchPacketPayload(packetStream.id);\n  orderedBufferMap[packetStream.sequenceIndex] = chunkData.text;\n  \n  let structuredPayload = \"\";\n  const totalKeys = Object.keys(orderedBufferMap).length;\n  for (let i = 0; i < totalKeys; i++) {\n    if (orderedBufferMap[i]) structuredPayload += orderedBufferMap[i];\n  }\n  return structuredPayload;\n}`,
-          explanation: "The Bug: Concurrency does not mean chronologically sequential. High-speed networking data frames often route through varying topologies, arriving completely out of alignment. Appending them blindly triggers packet corruption errors.",
-          lesson: "Never assume asynchronous loops settle in structural order under load conditions.",
-          related: ["cisco-async-leak", "cisco-token-bucket"],
-          preparationGuide: "/learn/network-concurrency-patterns"
-        },
-        {
-          slug: "cisco-subnet-overflow",
-          title: "The Classless Subnet Overflow",
-          level: "intermediate",
-          time: "5 min",
-          solves: 1890,
-          description: "[Cisco Ideathon 2024] A custom bitwise IP configuration parser crashes completely on specific edge-case subnet masks.",
-          setup: "You are parsing inbound network masks to calculate available hosts. When given a boundary mask like /32 or /31, your bitwise calculation causes a bit shift overflow, triggering runtime mathematical crashes.",
-          brokenCode: `function getAvailableHosts(cidrSuffix) {\n  // TRAP: Moving bits by 32 positions exceeding base bounds \n  // triggers bitwise shifts overflow loops on boundary constraints!\n  const bitsRemaining = 32 - cidrSuffix;\n  return (1 << bitsRemaining) - 2;\n}`,
-          language: "javascript",
-          hints: [
-            "What happens if cidrSuffix is 32? bitsRemaining becomes 0, 1 << 0 is 1. 1 - 2 is -1 hosts. Valid?",
-            "What if cidrSuffix is 0? 1 << 32 in 32-bit signed integer operations wraps around to 1, causing incorrect outputs.",
-            "Add protective safety blocks for edge-case CIDR suffixes, or utilize Math.pow rules instead of raw bitwise operators."
-          ],
-          solution: `function getAvailableHosts(cidrSuffix) {\n  if (cidrSuffix >= 31) return 0;\n  if (cidrSuffix === 0) return Math.pow(2, 32) - 2;\n  return Math.pow(2, 32 - cidrSuffix) - 2;\n}`,
-          explanation: "The Bug: Standard bitwise operations in JavaScript operate tightly on 32-bit signed integer boundaries. Attempting to bit-shift parameters across 32 places overflows calculations, turning host counts into negative values.",
-          lesson: "Bitwise mathematical algorithms must explicitly guard edge-case parameter limits.",
-          related: ["cisco-packet-race", "cisco-slowloris-timeout"],
-          preparationGuide: "/learn/bitwise-networking-logic"
-        },
-        {
-          slug: "cisco-unhandled-rejection",
-          title: "The Express Network Hang",
-          level: "intermediate",
-          time: "4 min",
-          solves: 3120,
-          description: "[Interview Technical Round] Backend microservice server crashes when a physical networking device drops connections abruptly.",
-          setup: "Your server calls an external telemetry endpoint. If a field switch loses power and drops offline, your Express router route hangs forever or crashes the entire thread loop because of an unhandled async error state.",
-          brokenCode: `const express = require('express');\nconst app = express();\nconst axios = require('axios');\n\napp.get('/api/router/stats', async (req, res) => {\n  // TRAP: No catch block means a network drop crashes your node runtime instance!\n  const statusReport = await axios.get('https://hardware.edge.internal/telemetry');\n  res.send(statusReport.data);\n});`,
-          language: "javascript",
-          hints: [
-            "External devices fail constantly. An API must assume the target endpoint will drop offline.",
-            "Wrap your asynchronous await triggers inside comprehensive try/catch blocks.",
-            "Always return a clean error status code like 503 Service Unavailable instead of letting the thread hang."
-          ],
-          solution: `const express = require('express');\nconst app = express();\nconst axios = require('axios');\n\napp.get('/api/router/stats', async (req, res) => {\n  try {\n    const statusReport = await axios.get('https://hardware.edge.internal/telemetry', { timeout: 3000 });\n    return res.status(200).send(statusReport.data);\n  } catch (error) {\n    console.error(\"Safely isolated device network error: \", error.message);\n    return res.status(503).send({ error: \"Device Unreachable. Connection Timeout.\" });\n  }\n});`,
-          explanation: "The Bug: Unhandled promise rejections are critical vulnerabilities. If an underlying connection drops, the unhandled exception propagates up to the main Node.js process thread and causes it to crash.",
-          lesson: "Every external hardware network call must be bound to a strict timeout and a try/catch error handler.",
-          related: ["cisco-async-leak", "cisco-deadlock-queue"],
-          preparationGuide: "/learn/microservice-fault-tolerance"
-        },
-        {
-          slug: "cisco-deadlock-queue",
-          title: "The Thread Lock Deadlock",
-          level: "advanced",
-          time: "7 min",
-          solves: 894,
-          description: "[Cisco Ideathon 2023] Parallel package analytical components lock up indefinitely trying to access sharing telemetry streams.",
-          setup: "Two structural multi-threaded controller worker queues are processing parallel packet analytics. They both attempt to lock resource pools A and B simultaneously in inverted sequences, causing a complete system deadlock.",
-          brokenCode: `async function processRouteA(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}\n\nasync function processRouteB(resourceA, resourceB) {\n  await resourceB.lock();\n  await resourceA.lock();\n  resourceA.unlock(); resourceB.unlock();\n}`,
-          language: "javascript",
-          hints: [
-            "This is the classic Dining Philosophers deadlock scenario.",
-            "Deadlocks occur when resources are acquired in a conflicting order across separate threads.",
-            "Ensure that both execution tracks lock their required resources in the exact same sequence."
-          ],
-          solution: `async function processRouteA(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}\n\nasync function processRouteB(resourceA, resourceB) {\n  await resourceA.lock();\n  await resourceB.lock();\n  resourceB.unlock(); resourceA.unlock();\n}`,
-          explanation: "The Bug: Inverted locking hierarchies across concurrent worker queues create a cyclic dependency chain. Thread 1 locks resource A and waits for B, while Thread 2 locks resource B and waits for A, freezing both threads indefinitely.",
-          lesson: "Always acquire shared multi-resource locks in a consistent, standardized global sequence.",
-          related: ["cisco-unhandled-rejection", "cisco-dangling-pool"],
-          preparationGuide: "/learn/concurrent-system-architecture"
-        },
-        {
-          slug: "cisco-slowloris-timeout",
-          title: "The Corrupt HTTP Gateway",
-          level: "intermediate",
-          time: "5 min",
-          solves: 1450,
-          description: "[Cisco Ideathon 2024] Network load balancer keeps connections open forever when attackers send partial HTTP headers.",
-          setup: "Your system's HTTP socket layer keeps sockets open indefinitely for inbound streams, leaving your platform vulnerable to connection starvation attacks like Slowloris. Enforce explicit stream limits.",
-          brokenCode: `const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Gateway Connection Acknowledged');\n});\n\nserver.listen(8080);`,
-          language: "javascript",
-          hints: [
-            "If an attacker sends HTTP headers extremely slowly, the connection stays open indefinitely.",
-            "You must explicitly restrict header parsing windows at the server configuration level.",
-            "Leverage parameters like headersTimeout and requestTimeout to terminate unresponsive connections early."
-          ],
-          solution: `const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'text/plain' });\n  res.end('Gateway Connection Acknowledged');\n});\n\nserver.headersTimeout = 5000;\nserver.requestTimeout = 10000;\n\server.listen(8080);`,
-          explanation: "The Bug: Failing to enforce clear socket parsing timeout ceilings allows slow connection streams to consume your system's entire file descriptor allocation pool, blocking legitimate traffic.",
-          lesson: "Production network routing gateways must enforce strict timeout limits on connection requests.",
-          related: ["cisco-subnet-overflow", "cisco-token-bucket"],
-          preparationGuide: "/learn/hardening-network-gateways"
-        },
-        {
-          slug: "cisco-checksum-failure",
-          title: "The Malformed Checksum Matcher",
-          level: "beginner",
-          time: "3 min",
-          solves: 4120,
-          description: "[Cisco Ideathon Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations.",
-          setup: "Your frame parser reads validation strings from an incoming network log. Even when the payload values are correct, the conditional check fails because of trailing carriage returns embedded inside the stream parsing layer.",
-          brokenCode: `function verifyFrameChecksum(logLine, expectedChecksum) {\n  const extractedChecksum = logLine.split('|')[3];\n  if (extractedChecksum === expectedChecksum) {\n    return \"FRAME_VALID\";\n  }\n  return \"FRAME_CORRUPTED\";\n}`,
-          language: "javascript",
-          hints: [
-            "Network logging streams frequently append invisible spacing bytes like \\n or \\r.",
-            "Use console.log(JSON.stringify(extractedChecksum)) to reveal any hidden whitespace characters.",
-            "Sanitize parsed data entries using the native .trim() method before evaluating equality checks."
-          ],
-          solution: `function verifyFrameChecksum(logLine, expectedChecksum) {\n  if (!logLine || !expectedChecksum) return \"FRAME_CORRUPTED\";\n  const extractedChecksum = logLine.split('|')[3];\n  if (extractedChecksum && extractedChecksum.trim().toLowerCase() === expectedChecksum.trim().toLowerCase()) {\n    return \"FRAME_VALID\";\n  }\n  return \"FRAME_CORRUPTED\";\n}`,
-          explanation: "The Bug: Raw string manipulations on network log streams routinely pass trailing spacing tokens along with data values. These hidden characters break strict equality checks, causing valid frames to be dropped.",
-          lesson: "Always sanitize and trim raw string data parsed from external network sources.",
-          related: ["cisco-packet-race", "cisco-dns-cache-poison"],
-          preparationGuide: "/learn/string-parsing-performance"
-        },
-        {
-          slug: "cisco-token-bucket",
-          title: "The Exploded Rate Limiter",
-          level: "advanced",
-          time: "6 min",
-          solves: 978,
-          description: "[Cisco Ideathon 2025] High-speed gateway bypass lets traffic slip past strict packet-per-second constraints.",
-          setup: "You implement a Token Bucket tracking method to protect a routing gateway. Under heavy multithreaded loads, race conditions allow bursts of parallel traffic to bypass your traffic limitation metrics entirely.",
-          brokenCode: `let availableTokens = 100;\n\nfunction allowPacketRoute() {\n  if (availableTokens > 0) {\n    availableTokens = availableTokens - 1;\n    return true;\n  }\n  return false;\n}`,
-          language: "javascript",
-          hints: [
-            "This is a classic non-atomic state operation race condition.",
-            "Multiple asynchronous threads can read availableTokens as > 0 before any single thread updates the count.",
-            "In corporate network environments, token deductions must execute as a single, atomic operation."
-          ],
-          solution: `let availableTokens = 100;\n\nfunction allowPacketRoute() {\n  if (availableTokens > 0) {\n    availableTokens--;\n    return true;\n  }\n  return false;\n}`,
-          explanation: "The Bug: Decoupling conditional boundary evaluations from assignment modifications creates an execution gap. Under high concurrency, hundreds of operations can slip through this gap before your application updates its state variables.",
-          lesson: "Rate-limiting check-and-modify steps must execute as a unified, atomic operation.",
-          related: ["cisco-packet-race", "cisco-slowloris-timeout"],
-          preparationGuide: "/learn/building-distributed-rate-limiters"
-        },
-        {
-          slug: "cisco-dangling-pool",
-          title: "The Orphaned Thread Pool",
-          level: "advanced",
-          time: "9 min",
-          solves: 531,
-          description: "[Interview System Round] Background packet analyzer worker threads remain allocated without releasing kernel loops.",
-          setup: "To handle expensive deep packet inspection tasks, you spawn dynamic system sub-processes. Your analysis loop completes its work, but the application forgets to terminate the child processes, leading to kernel thread starvation.",
-          brokenCode: `const { fork } = require('child_process');\n\nfunction analyzePacketData(packetPayload) {\n  const worker = fork('packetWorker.js');\n  worker.send({ payload: packetPayload });\n  worker.on('message', (result) => {\n    console.log(\"Analysis Completed: \", result);\n  });\n}`,
-          language: "javascript",
-          hints: [
-            "Spawning a separate OS thread or sub-process requires explicit lifecycle management.",
-            "If your application processes thousands of packets per second, orphaned child processes will quickly exhaust host system memory.",
-            "Invoke the child process's .kill() method as soon as your message callback completes."
-          ],
-          solution: `const { fork } = require('child_process');\n\nfunction analyzePacketData(packetPayload) {\n  const worker = fork('packetWorker.js');\n  worker.send({ payload: packetPayload });\n  worker.on('message', (result) => {\n    console.log(\"Analysis Completed: \", result);\n    worker.kill();\n  });\n  worker.on('error', (err) => { worker.kill(); });\n}`,
-          explanation: "The Bug: Child processes do not clean themselves up automatically when their parent execution block finishes. Leaving sub-processes open keeps file handles and memory resources allocated indefinitely, causing system crashes under production loads.",
-          lesson: "Always explicitly terminate sub-process threads once their computational work is done.",
-          related: ["cisco-async-leak", "cisco-deadlock-queue"],
-          preparationGuide: "/learn/mastering-node-child-processes"
-        },
-        {
-          slug: "cisco-dns-cache-poison",
-          title: "The Stateless DNS Lookup Bypass",
-          level: "intermediate",
-          time: "6 min",
-          solves: 1340,
-          description: "[Cisco Ideathon 2024] Dynamic nameserver lookups bypass local cache configurations, flooding external DNS nodes.",
-          setup: "Your system runs custom network name lookups dynamically for every inbound data request. Because your custom lookup wrapper bypasses your operating system's built-in DNS cache, it creates a massive I/O performance bottleneck.",
-          brokenCode: `const dns = require('dns');\n\nfunction lookupTargetServer(domainUrl) {\n  dns.lookup(domainUrl, (err, address) => {\n    console.log('Resolved destination pointer: ', address);\n  });\n}`,
-          language: "javascript",
-          hints: [
-            "Node's default dns.lookup calls the underlying OS getaddrinfo system, which can cause thread pool blocking under heavy load.",
-            "To mitigate this performance hit, wrap your network calls with an internal, in-memory caching layer."
-          ],
-          solution: `const dns = require('dns');\nconst cacheableMap = new Map();\n\nfunction lookupTargetServer(domainUrl) {\n  if (cacheableMap.has(domainUrl)) {\n    return console.log('Resolved destination from Cache: ', cacheableMap.get(domainUrl));\n  }\n  dns.lookup(domainUrl, (err, address) => {\n    if (!err) cacheableMap.set(domainUrl, address);\n    console.log('Resolved destination via Network: ', address);\n  });\n}`,
-          explanation: "The Bug: Bypassing local lookups to resolve addresses over the network for every transaction introduces a significant I/O performance bottleneck. This behavior degrades system throughput and makes your app vulnerable to outbound network starvation under load.",
-          lesson: "Always cache your system's outbound domain resolution lookups.",
-          related: ["cisco-checksum-failure", "cisco-token-bucket"],
-          preparationGuide: "/learn/optimizing-network-io"
-        }
-      ]
-    },
+        solution: `#include <iostream>\n#include <string>\n\nstd::string globalPacketBuffer[5];\n\nvoid insertPacketChunk(int sequenceId, std::string chunkText) {\n    // FIX: Restrict transactions within safe layout tracking ranges\n    if (sequenceId < 0 || sequenceId >= 5) {\n        std::cerr << "Alert: Malformed network frame index dropped safely." << std::endl;\n        return; \n    }\n    globalPacketBuffer[sequenceId] = chunkText;\n}`,
+        explanation: "The Bug: Hardcoded routing structures do not natively protect memory banks from out-of-order data floods. Processing dynamic network inputs directly as array markers without bounds enforcement exposes your system to deep security vulnerabilities and stability crashes.",
+        lesson: "Never write an incoming network parameter to a memory array without enforcing a strict boundary limit validation.",
+        related: ["cisco-subnet-overflow", "cisco-deadlock-queue"],
+        preparationGuide: "/learn/defensive-cpp-memory-management"
+      },
+      {
+        slug: "cisco-subnet-overflow",
+        title: "The Classless Subnet Overflow",
+        level: "intermediate",
+        time: "5 min",
+        solves: 1890,
+        description: "[Cisco Ideathon 2024] A custom bitwise IP configuration parser crashes completely on specific edge-case subnet masks.",
+        setup: "You are writing a core bitwise subnet analyzer utility in C++ to compute available host capacities within CIDR ranges. When evaluated against boundary masks like /32 or /31, your bitwise left-shift calculations exceed integer register storage maximums, inducing structural compiler errors.",
+        brokenCode: `#include <iostream>\n\nunsigned int getAvailableHosts(int cidrSuffix) {\n    // TRAP: Shifting bit strings by 32 places or more on standard \n    // 32-bit integer layouts induces undefined behavioral compilation loops!\n    int bitsRemaining = 32 - cidrSuffix;\n    return (1 << bitsRemaining) - 2;\n}`,
+        language: "cpp",
+        hints: [
+          "In C++, shifting a 32-bit integer by 32 positions or a negative index triggers undefined behavior.",
+          "If the `cidrSuffix` is 32, `bitsRemaining` is 0. `1 << 0` is 1, yielding `1 - 2 = -1` which wraps to `4294967295` on an unsigned int.",
+          "Add protective guard blocks to handle point-to-point router links (/31 and /32) explicitly before running shifting masks."
+        ],
+        solution: `#include <iostream>\n\nunsigned int getAvailableHosts(int cidrSuffix) {\n    // FIX: Add strict validation barriers to handle boundary conditions safely\n    if (cidrSuffix >= 31) {\n        return 0; // /31 and /32 subnets contain 0 usable host addresses\n    }\n    if (cidrSuffix == 0) {\n        return 4294967294; // Global default routing space maximum\n    }\n    return (1UL << (32 - cidrSuffix)) - 2;\n}`,
+        explanation: "The Bug: Low-level architecture questions are a favorite of Cisco interviewers. Standard signed 32-bit shift manipulations overreach register boundaries when computing full network sizes, throwing arithmetic overflows or negative numbers into execution registers.",
+        lesson: "Always implement explicit input guard assertions before processing low-level bitwise operations.",
+        related: ["cisco-async-leak", "cisco-packet-race"],
+        preparationGuide: "/learn/low-level-bitwise-networking"
+      },
+      {
+        slug: "cisco-unhandled-rejection",
+        title: "The Python Connection Hang",
+        level: "intermediate",
+        time: "4 min",
+        solves: 3120,
+        description: "[Interview Technical Round] Backend automation scripts hang forever when a physical networking device drops connections abruptly.",
+        setup: "You write a Python script that polls hardware data metrics from field routing switches. If a switch loses connection power and drops offline, your synchronization loop hangs indefinitely, freezing your dashboard monitoring daemon.",
+        brokenCode: `import urllib.request\n\ndef fetch_switch_status():\n    # TRAP: Calling connection requests without defining an explicit timeout variable\n    # allows socket streams to wait indefinitely on dropped connections!\n    url = "http://192.168.1.50/api/v1/telemetry"\n    response = urllib.request.urlopen(url)\n    return response.read()`,
+        language: "python",
+        hints: [
+          "By default, standard python connection engines wait forever for socket state maps if a host goes silent without cleanly shutting down.",
+          "Pass a strict numerical timeout threshold constraint argument to the `.urlopen()` execution query.",
+          "Wrap the logic execution stream within explicit try/except safety containers to catch network connectivity issues gracefully."
+        ],
+        solution: `import urllib.request\nimport urllib.error\n\ndef fetch_switch_status():\n    url = "http://192.168.1.50/api/v1/telemetry"\n    try:\n      # FIX: Bind the request transaction to an explicit 3-second timeout window\n      response = urllib.request.urlopen(url, timeout=3.0)\n      return response.read()\n    except urllib.error.URLError as e:\n      print(f"Isolated connection failure safely: {e.reason}")\n      return None`,
+        explanation: "The Bug: Assuming target endpoints stay stable introduces vulnerability loops. If a physical hardware switch fails mid-transmission, the un-timed blocking socket hangs the entire execution loop pipeline.",
+        lesson: "Every outbound network transaction must enforce an explicit execution timeout ceiling.",
+        related: ["cisco-async-leak", "cisco-slowloris-timeout"],
+        preparationGuide: "/learn/handling-hardware-network-timeouts"
+      },
+      {
+        slug: "cisco-deadlock-queue",
+        title: "The Thread Lock Deadlock",
+        level: "advanced",
+        time: "7 min",
+        solves: 894,
+        description: "[Cisco Ideathon 2023] Parallel packet analytical components lock up indefinitely trying to access shared telemetry streams.",
+        setup: "Two tracking sub-threads inside a low-level Python packet controller application process real-time statistics. When high connection volumes hit the router, both tracks lock up simultaneously, freezing your engine process logs.",
+        brokenCode: `import threading\n\nlockA = threading.Lock()\nlockB = threading.Lock()\n\n# Thread 1 task runtime channel\ndef process_channel_one():\n    with lockA:\n        with lockB: # TRAP: Waits indefinitely on Thread 2 to drop lockB!\n            print("Channel 1 metrics mapped.")\n\n# Thread 2 task runtime channel\ndef process_channel_two():\n    with lockB:\n        with lockA: # TRAP: Waits indefinitely on Thread 1 to drop lockA!\n            print("Channel 2 metrics mapped.")`,
+        language: "python",
+        hints: [
+          "This condition forms the classic cross-dependency design flaw known as a Deadlock.",
+          "Deadlocks occur when independent concurrent processes try to acquire shared resource locks in conflicting orders.",
+          "Fix the lock synchronization state by standardizing the acquisition sequence uniformly across both executing threads."
+        ],
+        solution: `import threading\n\nlockA = threading.Lock()\nlockB = threading.Lock()\n\ndef process_channel_one():\n    with lockA:\n        with lockB:\n            print("Channel 1 metrics mapped.")\n\ndef process_channel_two():\n    # FIX: Standardize locking chain alignment order sequence\n    with lockA:\n        with lockB:\n            print("Channel 2 metrics mapped.")`,
+        explanation: "The Bug: Inverted resource acquisition structures inside high-concurrency systems create a circular wait chain. Thread 1 locks A and blocks waiting for B, while Thread 2 locks B and blocks waiting for A, locking up your background execution workers indefinitely.",
+        lesson: "Always acquire system multi-resource resource locks in a consistent, standardized global sequence.",
+        related: ["cisco-async-leak", "cisco-unhandled-rejection"],
+        preparationGuide: "/learn/concurrency-deadlock-prevention"
+      },
+      {
+        slug: "cisco-slowloris-timeout",
+        title: "The Un-Timed Socket Starvation",
+        level: "intermediate",
+        time: "5 min",
+        solves: 1450,
+        description: "[Cisco Ideathon 2024] Network load balancer keeps connections open forever when attackers send partial HTTP headers.",
+        setup: "You are programming a high-speed network parser tracking socket traffic frames in C++. While inspecting telemetry traffic under heavy load conditions, your server runs out of file descriptors because slow, malicious client nodes hold connection sockets open endlessly without transmitting data.",
+        brokenCode: `#include <iostream>\n#include <sys/socket.h>\n#include <unistd.h>\n\nvoid listenToIncomingConnection(int serverSocket) {\n    int clientSocket = accept(serverSocket, nullptr, nullptr);\n    char buffer[1024];\n    \n    // TRAP: Raw recv calls block the engine thread indefinitely until data arrives, \n    // letting bad actors starve the socket pool by opening connection loops and sending nothing!\n    int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);\n    close(clientSocket);\n}`,
+        language: "cpp",
+        hints: [
+          "By default, standard `recv` implementations block thread execution structures forever until an input packet arrives.",
+          "You must configure an explicit timeout value on your socket descriptors using `setsockopt` with the `SO_RCVTIMEO` flag parameter.",
+          "This ensures that if a client node fails to send data within a target threshold window, the socket terminates safely."
+        ],
+        solution: `#include <iostream>\n#include <sys/socket.h>\n#include <unistd.h>\n#include <sys/time.h>\n\nvoid listenToIncomingConnection(int serverSocket) {\n    int clientSocket = accept(serverSocket, nullptr, nullptr);\n    \n    // FIX: Attach an explicit kernel level read timeout to the socket interface descriptor\n    struct timeval tv;\n    tv.tv_sec = 4; // Force a strict 4-second timeout\n    tv.tv_usec = 0;\n    setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));\n    \n    char buffer[1024];\n    int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);\n    close(clientSocket);\n}`,
+        explanation: "The Bug: Allowing sockets to block indefinitely lets slow connection streams consume your system's file descriptor allocation pool. This exposes your routing gateway to denial-of-service starvation vulnerabilities.",
+        lesson: "Always set strict socket-level timeout flags (`SO_RCVTIMEO`) on low-level network processing systems.",
+        related: ["cisco-unhandled-rejection", "cisco-subnet-overflow"],
+        preparationGuide: "/learn/resilient-socket-programming"
+      },
+      {
+        slug: "cisco-checksum-failure",
+        title: "The Malformed Checksum Matcher",
+        level: "beginner",
+        time: "3 min",
+        solves: 4120,
+        description: "[Cisco Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations.",
+        setup: "Your system reads packet integrity keys from a raw hardware networking log file in Python. Even when the payload values are mathematically correct, your checksum validation loop flags them as corrupted due to hidden carriage return characters (`\\r\\n`) trailing inside your file line readers.",
+        brokenCode: `def verify_packet_checksum(log_line, expected_hex_hash):\n    # TRAP: Splitting data entries over string arrays leaves trailing whitespaces\n    # and line breaks intact, causing strict equality checks to fail!\n    data_tokens = log_line.split(",")\n    extracted_hash = data_tokens[2]\n    \n    if extracted_hash == expected_hex_hash:\n        return "CHECKSUM_OK"\n    return "CHECKSUM_CORRUPTED"`,
+        language: "python",
+        hints: [
+          "Network logging logs and raw terminal outputs frequently append invisible line breaks like `\\n` or `\\r` to strings.",
+          "Use `print(repr(extracted_hash))` to reveal any hidden whitespace characters sitting inside your variable.",
+          "Sanitize the extracted hash variable using the native `.strip()` method before comparing strings."
+        ],
+        solution: `def verify_packet_checksum(log_line, expected_hex_hash):\n    if not log_line or not expected_hex_hash:\n        return "CHECKSUM_CORRUPTED"\n        \n    data_tokens = log_line.split(",")\n    extracted_hash = data_tokens[2]\n    \n    # FIX: Strip trailing whitespaces and normalize casing structures\n    if extracted_hash.strip().lower() == expected_hex_hash.strip().lower():\n        return "CHECKSUM_OK"\n    return "CHECKSUM_CORRUPTED"`,
+        explanation: "The Bug: String parsing routines running on raw system logs pass invisible carriage return characters into your tracking variables. These hidden tokens cause strict equality checks to fail, leading your script to drop valid data packets.",
+        lesson: "Always strip trailing whitespace and match text casing when validating strings parsed from external system logs.",
+        related: ["cisco-packet-race", "cisco-dns-cache-poison"],
+        preparationGuide: "/learn/data-sanitization-techniques"
+      },
+      {
+        slug: "cisco-token-bucket",
+        title: "The Racing Rate Limiter",
+        level: "advanced",
+        time: "6 min",
+        solves: 978,
+        description: "[Cisco Ideathon 2025] High-speed gateway bypass lets traffic slip past strict packet-per-second constraints.",
+        setup: "You implement a Token Bucket mechanism in Python to prevent high-speed traffic flooding. Under heavy multi-threaded stress tests, bursts of parallel client packets successfully bypass your protection ceilings, exposing your application to traffic drops.",
+        brokenCode: `import time\n\ntokens_available = 50\n\ndef throttle_traffic_stream():\n    global tokens_available\n    # TRAP: Reading and updating state variables across concurrent operations \n    // without synchronization wrappers lets parallel requests bypass safety limits!\n    if tokens_available > 0:\n        time.sleep(0.001) # Simulate minor internal routing overhead\n        tokens_available -= 1\n        return "FORWARD_PACKET"\n    return "DROP_PACKET"`,
+        language: "python",
+        hints: [
+          "This issue highlights a non-atomic state operation bug known as a Race Condition.",
+          "Multiple asynchronous threads can evaluate the condition `tokens_available > 0` simultaneously before any single thread updates the counter.",
+          "Wrap your check-and-modify step inside a `threading.Lock()` container to ensure atomicity."
+        ],
+        solution: `import threading\nimport time\n\ntokens_available = 50\nbucket_lock = threading.Lock()\n\ndef throttle_traffic_stream():\n    global tokens_available\n    # FIX: Wrap state modifications inside a mutual exclusion lock to guarantee atomicity\n    with bucket_lock:\n        if tokens_available > 0:\n            tokens_available -= 1\n            return "FORWARD_PACKET"\n        return "DROP_PACKET"`,
+        explanation: "The Bug: Decoupling condition checking steps from variable assignment updates opens an execution window. Under high concurrency, hundreds of operations can slip through this gap before your application updates its state variables.",
+        lesson: "State modifications that govern rate-limiting or security filtering blocks must execute as a single, atomic operation.",
+        related: ["cisco-deadlock-queue", "cisco-packet-race"],
+        preparationGuide: "/learn/thread-safety-in-python"
+      },
+      {
+        slug: "cisco-dangling-pool",
+        title: "The Orphaned Process Leak",
+        level: "advanced",
+        time: "9 min",
+        solves: 531,
+        description: "[Interview System Round] Background packet analyzer sub-processes remain allocated without releasing system process tracks.",
+        setup: "To handle expensive deep packet inspection tasks without blocking your main application loop, you spawn sub-processes using Python's `multiprocessing` library. Everything runs fine initially, but the host system crashes after a few hours because of thousands of uncollected zombie processes.",
+        brokenCode: `import multiprocessing\nimport time\n\ndef run_packet_analysis(packet_data):\n    # Simulate deep processing logic layout\n    time.sleep(0.5)\n\ndef on_packet_received(packet_payload):\n    # TRAP: Spawning standalone sub-processes dynamically inside an active loop \n    # without calling join() or terminate() leaves dead tracks in the process table!\n    p = multiprocessing.Process(target=run_packet_analysis, args=(packet_payload,))\n    p.start()`,
+        language: "python",
+        hints: [
+          "Operating systems do not automatically clear down sub-processes when they finish execution if the parent task doesn't acknowledge them.",
+          "To clean up finished sub-processes, you must explicitly call `.join()` or leverage a managed process pool.",
+          "Refactor your logic to run tasks within a fixed-size `multiprocessing.Pool` structure to recycle system workers automatically."
+        ],
+        solution: `import multiprocessing\nimport time\n\ndef run_packet_analysis(packet_data):\n    time.sleep(0.5)\n\n# FIX: Initialize a fixed size managed process execution pool canvas\nprocess_pool = multiprocessing.Pool(processes=4)\n\ndef on_packet_received(packet_payload):\n    # Forward tracking components to your managed process pool worker array safely\n    process_pool.apply_async(run_packet_analysis, args=(packet_payload,))`,
+        explanation: "The Bug: Spawning unmanaged processes dynamically inside high-volume loops leads to resource leaks. Once the child tasks exit, they remain in the operating system's process table as zombie processes, eventually exhausting the host's process ID allocation limit.",
+        lesson: "Always run high-frequency background worker tasks inside a managed process execution pool.",
+        related: ["cisco-async-leak", "cisco-deadlock-queue"],
+        preparationGuide: "/learn/advanced-python-multiprocessing"
+      },
+      {
+        slug: "cisco-dns-cache-poison",
+        title: "The Un-Indexed Array Lookup Bottleneck",
+        level: "intermediate",
+        time: "6 min",
+        solves: 1340,
+        description: "[Cisco Ideathon 2024] Sequential routing configuration table scans cause high latency on high-throughput data gateways.",
+        setup: "You are programming an internal routing lookup module in C++. Every packet carrying a target device destination ID must match an active port assignment index. Under simulation testing, your lookup engine experiences high processing latency, dropping packet volumes.",
+        brokenCode: `#include <iostream>\n#include <vector>\n#include <string>\n\nstruct RouteRule { std::string targetIP; int portMapping; };\nstd::vector<RouteRule> globalRoutingTable;\n\n// TRAP: Linear loop searching through an un-indexed vector layout \n// forces a slow O(N) scan bottleneck for every single passing packet!\nint findTargetPort(std::string destinationIP) {\n    for (const auto& rule : globalRoutingTable) {\n        if (rule.targetIP == destinationIP) return rule.portMapping;\n    }\n    return -1;\n}`,
+        language: "cpp",
+        hints: [
+          "A sequential `for` loop must inspect every element one by one, dropping performance to a slow $O(N)$ runtime complexity curve.",
+          "If your routing table scales to thousands of entry markers, matching data fields becomes an expensive operation.",
+          "Replace the un-indexed vector storage framework with a highly optimized associative hash structure like `std::unordered_map` to achieve constant-time $O(1)$ lookups."
+        ],
+        solution: `#include <iostream>\n#include <unordered_map>\n\n// FIX: Migrate your storage infrastructure to a high speed associative hash index mapping layout\nstd::unordered_map<std::string, int> optimizedRoutingTable;\n\nint findTargetPort(std::string destinationIP) {\n    // Conduct lookups at constant O(1) velocity bounds regardless of table volume sizes\n    auto matchPointer = optimizedRoutingTable.find(destinationIP);\n    if (matchPointer != optimizedRoutingTable.end()) {\n        return matchPointer->second;\n    }\n    return -1;\n}`,
+        explanation: "The Bug: Employing sequential search metrics inside high-throughput packet processing channels introduces an architectural bottleneck. Scaling table capacities forces your routing engine to burn extensive CPU cycles, lowering data transmission speeds.",
+        lesson: "Always use associative hash data structures (`std::unordered_map`) to handle high-frequency system lookups.",
+        related: ["cisco-packet-race", "cisco-token-bucket"],
+        preparationGuide: "/learn/cpp-data-structure-performance"
+      }
+    ]
+  },
     // ── 2. PASTE THE NEW EXTENDED TCS TRACK HERE ──
     {
       id: "tcs-digital-ninja",
