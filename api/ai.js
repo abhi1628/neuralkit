@@ -23,8 +23,6 @@ const ALLOWED_ORIGINS = [
 function initGlobals() {
   if (!global.rateMap)        global.rateMap   = new Map();
   if (!global.heavyMap)       global.heavyMap  = new Map();
-  // Initialize analytics matrix storage mapping states in node runtime memory
-  if (!global.analyticsMap)   global.analyticsMap = { views: {}, runs: {} };
   if (!global.cleanupStarted) {
     global.cleanupStarted = true;
     setInterval(() => {
@@ -129,27 +127,26 @@ export default async function handler(req, res) {
     }
   }
 
-try {
+  try {
     const { res: groqRes, data } = await callGroq(safeModel, messages, safeMaxTokens, temperature);
     
-    // ✅ NEW UPDATED REDIS TELEMETRY INJECTION
+    // ✅ FIXED: Using native dynamic ESM import instead of require()
     if (groqRes.ok) {
       try {
-        const { Redis } = require('@upstash/redis');
+        const { Redis } = await import('@upstash/redis');
         const redis = new Redis({
           url: process.env.UPSTASH_REDIS_REST_URL,
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
         });
         
         const currentLabelId = model || "default-model";
-        // Atomically increment the runs counter inside your permanent cloud hash map
+        // Atomically increment the model usage counters directly in your cloud hash map
         await redis.hincrby("zeroapi:analytics", `runs:${currentLabelId}`, 1);
       } catch (redisErr) {
         console.error("Telemetry write skip:", redisErr.message);
       }
     }
 
-    // FIXED: Ensure you keep 'res.status' matching the original response handler
     return res.status(groqRes.status).json(data);
   } catch {
     return res.status(500).json({ error: "AI service unavailable. Please try again." });
