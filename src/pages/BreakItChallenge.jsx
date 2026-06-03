@@ -1388,7 +1388,7 @@ def is_rate_limited(client_ip):
           level: "beginner",
           time: "3 min",
           solves: 4120,
-          description: "[Cisco Ninja Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations.",
+          description: "[Cisco Ideathon Track] Base-16 hexadecimal frame verification returns false due to un-trimmed string allocations.",
           setup: "Your frame parser reads validation strings from an incoming network log. Even when the payload values are correct, the conditional check fails because of trailing carriage returns embedded inside the stream parsing layer.",
           brokenCode: `function verifyFrameChecksum(logLine, expectedChecksum) {\n  const extractedChecksum = logLine.split('|')[3];\n  if (extractedChecksum === expectedChecksum) {\n    return \"FRAME_VALID\";\n  }\n  return \"FRAME_CORRUPTED\";\n}`,
           language: "javascript",
