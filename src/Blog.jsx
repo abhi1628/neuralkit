@@ -24,6 +24,16 @@ import dataSanitizationTechniques from "./posts/data-sanitization-techniques";
 import threadSafetyInPython from "./posts/thread-safety-in-python";
 import advancedPythonMultiprocessing from "./posts/advanced-python-multiprocessing";
 import cppDataStructurePerformance from "./posts/cpp-data-structure-performance";
+import iamSecurityBestPractices from "./posts/iam-security-best-practices";
+import masteringCorsArchitectures from "./posts/mastering-cors-architectures";
+import preventingSsrfVulnerabilities from "./posts/preventing-ssrf-vulnerabilities";
+import hardeningDockerContainers from "./posts/hardening-docker-containers";
+import containerProcessLifecycles from "./posts/container-process-lifecycles";
+import kubernetesProbeOrchestration from "./posts/kubernetes-probe-orchestration";
+import cachingStrategiesAtScale from "./posts/caching-strategies-at-scale";
+import resilientMicroserviceArchitectures from "./posts/resilient-microservice-architectures";
+import scalingStatelessGateways from "./posts/scaling-stateless-gateways";
+import asynchronousResourceManagement from "./posts/asynchronous-resource-management";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
@@ -32,6 +42,10 @@ export const BLOG_POSTS = [
   defensiveCppMemoryManagement, lowLevelBitwiseNetworking, handlingHardwareNetworkTimeouts,
   concurrencyDeadlockPrevention, resilientSocketProgramming, dataSanitizationTechniques,
   threadSafetyInPython, advancedPythonMultiprocessing, cppDataStructurePerformance,
+  iamSecurityBestPractices, masteringCorsArchitectures, preventingSsrfVulnerabilities,
+  hardeningDockerContainers, containerProcessLifecycles, kubernetesProbeOrchestration,
+  cachingStrategiesAtScale, resilientMicroserviceArchitectures, scalingStatelessGateways,
+  asynchronousResourceManagement
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
