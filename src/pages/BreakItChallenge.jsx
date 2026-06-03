@@ -1691,6 +1691,7 @@ def is_rate_limited(client_ip):
         time: "5 min",
         solves: 1420,
         description: "[AWS Cloud Track] A misconfigured resource policy exposes proprietary system assets to anonymous external domains.",
+        theorySlug: "iam-security-best-practices",
         setup: "You are setting up an AWS S3 bucket access policy to share pre-trained ML model weights with a trusted third-party data analytics cluster. The configuration passes validation checks, but security auditing metrics immediately flag the deployment for violating global compliance parameters.",
         brokenCode: `{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Sid": "CrossAccountModelSharing",\n      "Effect": "Allow",\n      "Principal": "*",\n      "Action": "s3:GetObject",\n      "Resource": "arn:aws:s3:::zeroapi-model-weights/*"\n    }\n  ]\n}`,
         language: "json",
@@ -1712,6 +1713,7 @@ def is_rate_limited(client_ip):
         time: "4 min",
         solves: 1980,
         description: "[Production Gateway] Combining global origin wildcards with active credential configurations triggers browser blocks.",
+        theorySlug: "mastering-cors-architectures",
         setup: "An engineer configures a production backend middleware layout to handle cross-origin traffic easily. However, frontend web users report that user dashboard requests fail with critical browser console authorization blocks.",
         brokenCode: `const express = require('express');\nconst cors = require('cors');\nconst app = express();\n\n// TRAP: Combining wildcard origin rules with credentials allowed flags\n// forces security rejections inside modern browser runtimes!\napp.use(cors({\n  origin: '*',\n  credentials: true\n}));`,
         language: "javascript",
@@ -1733,6 +1735,7 @@ def is_rate_limited(client_ip):
         time: "7 min",
         solves: 890,
         description: "[Systems Security] Un-sanitized proxy parameters allow attackers to extract internal server credentials.",
+        theorySlug: "preventing-ssrf-vulnerabilities",
         setup: "You implement an optimization service that pulls user-submitted image links to generate thumbnail assets. A security review flags that malicious actors can pass specific local parameters to scrape your internal cloud environment credentials.",
         brokenCode: `const express = require('express');\nconst axios = require('axios');\nconst app = express();\n\napp.get('/api/proxy/thumbnail', async (req, res) => {\n  // TRAP: Accepting raw, un-sanitized user inputs directly into your system's \n  // internal HTTP client opens the door to Server-Side Request Forgery (SSRF)!\n  const targetUrl = req.query.url;\n  const response = await axios.get(targetUrl);\n  res.send(response.data);\n});`,
         language: "javascript",
@@ -1754,6 +1757,7 @@ def is_rate_limited(client_ip):
         time: "3 min",
         solves: 3410,
         description: "[Dockerfile Optimization] Building container runtime environments without restricted service users violates least-privilege standards.",
+        theorySlug: "hardening-docker-containers",
         setup: "An automation engine compiles a microservice into a Docker container. Staging security checkers block the final deployment artifact because application dependencies run with dangerously high permission privileges inside the host node.",
         brokenCode: `FROM node:18-alpine\nWORKDIR /usr/src/app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nEXPOSE 5000\n# TRAP: Omitting a dedicated user allocation forces the engine\n# to run your code with full root permissions by default!\nCMD ["node", "index.js"]`,
         language: "dockerfile",
@@ -1775,6 +1779,7 @@ def is_rate_limited(client_ip):
         time: "7 min",
         solves: 645,
         description: "[Container Engineering] Running standalone scripts under PID 1 leaks dead child threads inside host runtimes.",
+        theorySlug: "container-process-lifecycles",
         setup: "You deploy a high-frequency automation worker that executes thousands of short-lived shell sub-processes. After a few hours of operation, your container instances freeze up entirely due to a massive buildup of uncollected zombie processes.",
         brokenCode: `FROM python:3.10-slim\nWORKDIR /workspace\nCOPY . .\nRUN pip install -r requirements.txt\n\n// TRAP: Standalone application layers evaluated under PID 1\n// do not automatically pick up and reap dead child processes!\nCMD ["python", "process_scheduler.py"]`,
         language: "dockerfile",
@@ -1796,6 +1801,7 @@ def is_rate_limited(client_ip):
         time: "8 min",
         solves: 720,
         description: "[Kubernetes Architecture] Pointing automated node health monitoring to heavy processing lanes triggers false restart loops.",
+        theorySlug: "kubernetes-probe-orchestration",
         setup: "You configure a Kubernetes deployment structure with automated health validation monitors. During a sudden surge in user traffic, instead of scaling up gracefully, your pods are repeatedly terminated and restarted by the cluster scheduler.",
         brokenCode: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: core-api-service\nspec:\n  template:\n    spec:\n      containers:\n      - name: web-node\n        image: zeroapi/core:v1\n        livenessProbe:\n          httpGet:\n            # TRAP: Pointing health probes to heavy computational operations\n            # triggers false timeouts and restart loops under load conditions!\n            path: /api/v1/analytics/db-sync-check\n            port: 8080\n          initialDelaySeconds: 15\n          periodSeconds: 10`,
         language: "yaml",
@@ -1817,6 +1823,7 @@ def is_rate_limited(client_ip):
         time: "6 min",
         solves: 1130,
         description: "[Cache Strategy] Simultaneous global key expirations trigger overwhelming traffic floods on downstream backends.",
+        theorySlug: "caching-strategies-at-scale",
         setup: "Your system speeds up API response times by caching high-traffic dashboard feeds. However, exactly every hour on the dot, your primary database CPU utilization spikes to 100%, causing transient database connection drops.",
         brokenCode: `async function fetchGlobalMetrics() {\n  const cacheKey = "dashboard:global:stats";\n  let data = await redis.get(cacheKey);\n  \n  // TRAP: When the cache expires, thousands of concurrent requests hit this block\n  // simultaneously, causing a massive traffic flood on your downstream database!\n  if (!data) {\n    data = await database.executeHeavyReportingQuery();\n    await redis.set(cacheKey, JSON.stringify(data), "EX", 3600);\n  }\n  return JSON.parse(data);\n}`,
         language: "javascript",
@@ -1838,6 +1845,7 @@ def is_rate_limited(client_ip):
         time: "5 min",
         solves: 2240,
         description: "[Microservice Dynamics] Blind immediate network retry loops multiply a minor timeout glitch into a system-wide outage.",
+        theorySlug: "resilient-microservice-architectures",
         setup: "A brief network hiccup introduces high latency into an internal payment confirmation system. Instead of recovering smoothly, the platform's client applications launch continuous, immediate retry requests, causing a complete system outage.",
         brokenCode: `const axios = require('axios');\n\nasync function dispatchPaymentVerification(payload) {\n  // TRAP: Spamming a struggling server with rapid, immediate retries\n  // prevents it from recovering and amplifies minor hiccups into total outages!\n  for (let attempt = 1; attempt <= 5; attempt++) {\n    try {\n      return await axios.post('https://pay.internal/verify', payload);\n    } catch (error) {\n      console.log(\`Connection failure. Launching immediate retry attempt \${attempt}\`);\n    }\n  }\n  throw new Error("Payment Gateway Exhausted");\n}`,
         language: "javascript",
@@ -1859,6 +1867,7 @@ def is_rate_limited(client_ip):
         time: "5 min",
         solves: 1670,
         description: "[Distributed Systems] Tracking high-volume rate limits inside local memory blocks lets traffic escape protection layers.",
+        theorySlug: "scaling-stateless-gateways",
         setup: "You implement a middleware rate limiter designed to drop abusive traffic exceeding 60 requests per minute per user. The system passes tests locally, but malicious scraping tools bypass it completely in production.",
         brokenCode: `const localRateLimitMap = new Map();\n\nfunction verifyTrafficLimits(clientIp) {\n  // TRAP: Storing tracking data inside local in-memory states \n  // breaks completely when your app is deployed behind a load balancer!\n  const totalHits = localRateLimitMap.get(clientIp) || 0;\n  if (totalHits >= 60) {\n    return false; // Drop request\n  }\n  localRateLimitMap.set(clientIp, totalHits + 1);\n  return true; // Accept request\n}`,
         language: "javascript",
@@ -1880,6 +1889,7 @@ def is_rate_limited(client_ip):
         time: "6 min",
         solves: 910,
         description: "[Runtime Optimization] Firing un-timed background workers without exception catch blocks continuously siphons RAM channels.",
+        theorySlug: "asynchronous-resource-management",
         setup: "You add an asynchronous logging module to process user click telemetry data in the background. While initially fast, your production server container consistently runs out of RAM and crashes every 4 hours under heavy user traffic.",
         brokenCode: `const express = require('express');\nconst app = express();\n\napp.post('/api/v1/event/click', (req, res) => {\n  // TRAP: Spawning background promises without timeouts or catch handlers\n  // siphons server memory whenever downstream targets run slowly!\n  dispatchTelemetryToAnalyticsCluster(req.body);\n  \n  res.status(202).send({ processing: true });\n});`,
         language: "javascript",
@@ -2105,12 +2115,26 @@ export default function BreakItChallenge({ theme }) {
 
         <div style={{ marginBottom: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: `1px solid ${ac}22`, borderRadius: "14px", padding: "24px 28px", textAlign: "center" }}>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>
-            ◆ The Lesson
-          </div>
-          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5 }}>
-            "{challenge.lesson}"
-          </div>
-        </div>
+            <div style={{ marginBottom: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: `1px solid ${ac}22`, borderRadius: "14px", padding: "24px 28px", textAlign: "center" }}>
+  <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>
+    ◆ The Lesson
+  </div>
+  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.1rem", color: isDark ? "#fff" : "#1a1a1a", lineHeight: 1.5, marginBottom: challenge.theorySlug ? "14px" : "0px" }}>
+    "{challenge.lesson}"
+  </div>
+
+  {/* NEW: Dynamic theory bridge block link */}
+  {challenge.theorySlug && (
+    <button 
+      onClick={() => navigate(`/learn/${challenge.theorySlug}`)}
+      style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${ac}44`, borderRadius: "8px", padding: "6px 16px", color: ac, fontFamily: "'Space Mono',monospace", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+      onMouseEnter={e => { e.currentTarget.style.background = `${ac}15`; }}
+      onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"; }}
+    >
+      📖 Read Complete Preparation & Theory Guide →
+    </button>
+  )}
+</div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", paddingTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
