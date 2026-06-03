@@ -118,7 +118,25 @@ const CHALLENGE_CATEGORIES = [
         { slug: "tcs-graph-cycle", title: "The Infinite Dependency Loop", level: "advanced", time: "8 min", solves: 945, description: "[TCS Digital 2024] Route analytical loops hang indefinitely when mapping components containing cyclic nodes." },
         { slug: "tcs-type-evaluation", title: "The Loose Type Validation Slip", level: "beginner", time: "3 min", solves: 4890, description: "[TCS Ninja 2024] Dynamic input comparisons evaluate invalid user data models safely instead of throwing errors." }
       ]
-    }
+    },
+  {
+    id: "cloud-architecture",
+    name: "Cloud & Architecture",
+    icon: "🏗️",
+    color: "#ec4899",
+    challenges: [
+      { slug: "cloud-iam-exposure", title: "The Over-Privileged S3 Bucket", level: "intermediate", time: "5 min", solves: 1420, description: "[AWS Cloud Track] A misconfigured resource policy exposes proprietary system assets to anonymous external domains." },
+      { slug: "cloud-cors-wildcard", title: "The Open Vault Gateway", level: "intermediate", time: "4 min", solves: 1980, description: "[Production Gateway] Combining global origin wildcards with active credential configurations triggers browser blocks." },
+      { slug: "cloud-ssrf-metadata", title: "The Metadata Siphon", level: "advanced", time: "7 min", solves: 890, description: "[Systems Security] Un-sanitized proxy parameters allow attackers to extract internal server credentials." },
+      { slug: "cloud-docker-root", title: "The Root Privilege Breach", level: "beginner", time: "3 min", solves: 3410, description: "[Dockerfile Optimization] Building container runtime environments without restricted service users violates least-privilege standards." },
+      { slug: "cloud-zombie-pid", title: "The Zombie Process Apocalypse", level: "advanced", time: "7 min", solves: 645, description: "[Container Engineering] Running standalone scripts under PID 1 leaks dead child threads inside host runtimes." },
+      { slug: "cloud-k8s-spiral", title: "The Liveness Probe Death Spiral", level: "advanced", time: "8 min", solves: 720, description: "[Kubernetes Architecture] Pointing automated node health monitoring to heavy processing lanes triggers false restart loops." },
+      { slug: "cloud-thundering-herd", title: "The Thundering Herd Avalanche", level: "advanced", time: "6 min", solves: 1130, description: "[Cache Strategy] Simultaneous global key expirations trigger overwhelming traffic floods on downstream backends." },
+      { slug: "cloud-retry-storm", title: "The Cascading Retry Storm", level: "intermediate", time: "5 min", solves: 2240, description: "[Microservice Dynamics] Blind immediate network retry loops multiply a minor timeout glitch into a system-wide outage." },
+      { slug: "cloud-stateless-bypass", title: "The Stateless Gateway Bypass", level: "intermediate", time: "5 min", solves: 1670, description: "[Distributed Systems] Tracking high-volume rate limits inside local memory blocks lets traffic escape protection layers." },
+      { slug: "cloud-promise-leak", title: "The Dangling Background Leak", level: "advanced", time: "6 min", solves: 910, description: "[Runtime Optimization] Firing un-timed background workers without exception catch blocks continuously siphons RAM channels." }
+    ]
+  }
 ];
 
 const LEVEL_COLORS = {
