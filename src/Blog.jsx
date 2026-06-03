@@ -14,11 +14,24 @@ import fullstackRoadmap from "./posts/fullstack-roadmap-2026";
 import agenticaiWorking from "./posts/how-agentic-ai-actually-works-simple-python";
 import agenticaiRoadmap from "./posts/agentic-ai-roadmap-from-zero-to-production";
 import datascienceInterview from "./posts/30-data-science-interview-questions-2026-faang";
+import pythonNetworkConcurrency from "./posts/python-network-concurrency";
+import defensiveCppMemoryManagement from "./posts/defensive-cpp-memory-management";
+import lowLevelBitwiseNetworking from "./posts/low-level-bitwise-networking";
+import handlingHardwareNetworkTimeouts from "./posts/handling-hardware-network-timeouts";
+import concurrencyDeadlockPrevention from "./posts/concurrency-deadlock-prevention";
+import resilientSocketProgramming from "./posts/resilient-socket-programming";
+import dataSanitizationTechniques from "./posts/data-sanitization-techniques";
+import threadSafetyInPython from "./posts/thread-safety-in-python";
+import advancedPythonMultiprocessing from "./posts/advanced-python-multiprocessing";
+import cppDataStructurePerformance from "./posts/cpp-data-structure-performance";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
   sqlWindow, ciscoIdeathon, modelSwapping, fullstackRoadmap,
-  agenticaiWorking, agenticaiRoadmap,datascienceInterview,
+  agenticaiWorking, agenticaiRoadmap,datascienceInterview, pythonNetworkConcurrency,
+  defensiveCppMemoryManagement, lowLevelBitwiseNetworking, handlingHardwareNetworkTimeouts,
+  concurrencyDeadlockPrevention, resilientSocketProgramming, dataSanitizationTechniques,
+  threadSafetyInPython, advancedPythonMultiprocessing, cppDataStructurePerformance,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
