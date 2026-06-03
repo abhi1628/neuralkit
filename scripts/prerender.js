@@ -84,6 +84,56 @@ const posts = [
   slug: "30-data-science-interview-questions-2026-faang",
   title: "30 Data Science Interview Questions That Actually You Should Know In 2026.",
   excerpt: "Forget generic prep lists. These are the exact questions Google, Meta, Amazon, Netflix, and Stripe asked candidates this year — with answers that separate the hire from the almost-hire."
+  },
+  {
+    slug: "python-network-concurrency",
+    title: "Mastering Python Network Concurrency: Diagnosing and Eliminating Thread Pool Leaks",
+    excerpt: "Concurrency speeds up telemetry dashboards, but blocking network sockets can trap background worker threads in memory loops forever. Learn how to implement strict socket timeouts and clean breakdown routines."
+  },
+  {
+    slug: "defensive-cpp-memory-management",
+    title: "Defensive C++ Memory Management: Safeguarding Packet Buffers Against Out-of-Bounds Faults",
+    excerpt: "High-throughput asynchronous routing pipelines process network frames completely out of sequence. Discover how un-guarded array indexing triggers segmentation faults, and how to build strict boundary walls."
+  },
+  {
+    slug: "low-level-bitwise-networking",
+    title: "Low-Level Bitwise Networking: Preventing Undefined Behavior and Integer Wrap-Around",
+    excerpt: "Bitwise shifts process network subnets at the hardware register level. Learn why shifting data past a 32-bit register width triggers undefined behavior, and how to write explicit guard clauses for boundary masks."
+  },
+  {
+    slug: "handling-hardware-network-timeouts",
+    title: "Handling Hardware Network Timeouts: Defending Python Scripts Against Indefinite Sockets Hangs",
+    excerpt: "Physical field switches drop offline or lose power without a clean TCP teardown. Discover why standard request managers freeze indefinitely when connections stall, and how to enforce absolute time limits."
+  },
+  {
+    slug: "concurrency-deadlock-prevention",
+    title: "Concurrency Deadlock Prevention: Eliminating Circular Wait Chains in Thread Operations",
+    excerpt: "Parallel telemetry logging engines accelerate processing speeds, but inverted lock acquisition paths can easily freeze multi-threaded runtimes. Learn how to identify and break circular wait deadlocks."
+  },
+  {
+    slug: "resilient-socket-programming",
+    title: "Resilient Socket Programming: Defending Network Gateways Against Socket Starvation Attacks",
+    excerpt: "Low-level C++ socket interfaces maximize throughput but leave systems exposed to connection exhaustion if clients go silent. Learn how to utilize setsockopt to enforce rigid kernel-level read windows."
+  },
+  {
+    slug: "data-sanitization-techniques",
+    title: "Data Sanitization Techniques: Eradicating Hidden Spacing Tokens in System Log Parsing",
+    excerpt: "Raw network log command pipelines frequently append invisible cross-platform line breaks like carriage returns (\\r). Discover how to implement strict string trimming and casing normalization."
+  },
+  {
+    slug: "thread-safety-in-python",
+    title: "Thread Safety in Python: Preventing High-Speed Race Conditions in Shared Memory States",
+    excerpt: "Multi-threaded token bucket limiters speed up gateway traffic management, but non-atomic read-modify-write sequences introduce bypass gaps. Learn how to enforce thread safety using mutual exclusion locks."
+  },
+  {
+    slug: "advanced-python-multiprocessing",
+    title: "Advanced Python Multiprocessing: Eliminating Zombie Sub-Processes and Resource Leaks",
+    excerpt: "Spawning independent sub-processes bypasses the GIL for heavy data inspection, but unmanaged tasks leak entries into the OS kernel table. Discover how to transition to managed process pools."
+  },
+  {
+    slug: "cpp-data-structure-performance",
+    title: "C++ Data Structure Performance: Eliminating Sequential Lookups in Data Gateways",
+    excerpt: "Searching through sequential array configurations drops high-throughput packet routing down to a slow linear O(N) complexity curve. Learn how to achieve lightning-fast O(1) speeds using unordered hash maps."
   }
 ];
 
