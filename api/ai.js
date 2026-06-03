@@ -131,7 +131,7 @@ export default async function handler(req, res) {
     const { res: groqRes, data } = await callGroq(safeModel, messages, safeMaxTokens, temperature);
     
     // ✅ FIXED: Using native dynamic ESM import instead of require()
-    if (groqRes.ok) {
+if (groqRes.ok) {
       try {
         const { Redis } = await import('@upstash/redis');
         const redis = new Redis({
@@ -139,9 +139,17 @@ export default async function handler(req, res) {
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
         });
         
+        // Read an explicit tracking identifier if provided by the frontend payload
+        const toolId = req.body.toolId; 
         const currentLabelId = model || "default-model";
-        // Atomically increment the model usage counters directly in your cloud hash map
-        await redis.hincrby("zeroapi:analytics", `runs:${currentLabelId}`, 1);
+        
+        if (toolId) {
+          // Increment under a combined string key so you see both! (e.g., "document-summarizer (llama-3.1-8b-instant)")
+          await redis.hincrby("zeroapi:analytics", `runs:${toolId} (${currentLabelId})`, 1);
+        } else {
+          // Fallback legacy behavior if no toolId parameter was sent
+          await redis.hincrby("zeroapi:analytics", `runs:${currentLabelId}`, 1);
+        }
       } catch (redisErr) {
         console.error("Telemetry write skip:", redisErr.message);
       }
