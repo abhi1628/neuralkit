@@ -299,12 +299,12 @@ export default function UploadTool({ prompt, filename, icon, label }) {
                 style={{ flex: 1, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#000', fontSize: '0.88rem', outline: 'none' }}
               />
               <button 
-                onClick={submitFollowUp}
-                disabled={qaLoading || !followUpQuestion.trim()}
-                style={{ background: 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                {qaLoading ? <><span className=\"spinner\" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
-              </button>
+  onClick={submitFollowUp}
+  disabled={qaLoading || !followUpQuestion.trim()}
+  style={{ background: (qaLoading || !followUpQuestion.trim()) ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
+>
+  {qaLoading ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
+</button>
             </div>
             {qaAnswer && (
               <div style={{ marginTop: '16px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
