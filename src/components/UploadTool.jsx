@@ -1,7 +1,8 @@
 // src/components/UploadTool.jsx
 import { useState, useRef, useMemo } from 'react';
 import { useTheme } from '../ThemeContext';
-import { GROQ_API_URL, WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants';
+// FIXED: Changed GROQ_API_URL to CENTRAL_AI_URL
+import { CENTRAL_AI_URL, WORD_LIMIT_UPLOAD, TOOL_MODELS } from '../constants';
 import { loadScript, trackEvent, formatOutput, fetchWithBackoff } from '../utils';
 import OutputActions from './OutputActions';
 import ResumeBuilder from './ResumeBuilder';
@@ -26,413 +27,302 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   const [qaLoading,         setQaLoading]         = useState(false);
   const [chunkProgress,     setChunkProgress]     = useState(null);
   const fileRef = useRef(null);
-  const topRef  = useRef(null);
 
-  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  // Helper to split text into manageable slices for analysis
+  function sliceTextIntoChunks(text, maxChars = 12000) {
+    const sentences = text.split(/(?<=[.?!])\s+/);
+    const chunkArray = [];
+    let currentChunk = "";
 
-  // Chunking constants — increased for fewer API calls
-  const SUMMARY_CHUNK_SIZE = 5000;
-
-  const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
-
-  function isResearchPaper(text) {
-    const lower = text.toLowerCase();
-    return ACADEMIC_KEYWORDS.filter(kw => lower.includes(kw)).length >= 4;
-  }
-
-  function isResumeLike(text) {
-    const lower = text.toLowerCase();
-    const coreSections = ['experience','work experience','employment','professional experience','education','qualification','qualifications','academic background','skills','technical skills','core competencies','expertise','languages','contact','personal details','address','phone','email','projects','key projects','portfolio'];
-    const antiResume   = ['abstract','introduction','methodology','literature review','related work','experimental results','discussion','conclusion','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','supervised by','submitted in partial fulfillment','thesis','dissertation'];
-    const coreScore = coreSections.filter(kw => lower.includes(kw)).length;
-    const antiScore = antiResume.filter(kw => lower.includes(kw)).length;
-    return coreScore >= 1 && antiScore < 5;
-  }
-
-  function buildChunks(text, sourceName) {
-    const sentences = text.split(/(?<=[.!?])\s+/);
-    const result = [];
-    let current = '';
-    for (const s of sentences) {
-      if ((current + s).length > 1800 && current) {
-        result.push({ text: current.trim(), source: `[Source: ${sourceName}]` });
-        current = s;
+    for (const sentence of sentences) {
+      if ((currentChunk + sentence).length > maxChars) {
+        if (currentChunk) chunkArray.push(currentChunk.trim());
+        currentChunk = sentence;
       } else {
-        current += (current ? ' ' : '') + s;
+        currentChunk += " " + sentence;
       }
     }
-    if (current) result.push({ text: current.trim(), source: `[Source: ${sourceName}]` });
-    return result;
+    if (currentChunk.trim()) chunkArray.push(currentChunk.trim());
+    return chunkArray;
   }
 
-  async function handleFile(e) {
-    const file = e.target.files[0];
+  // Parses raw file formats into plain text fields via client routing
+  async function handleFileParsing(file) {
+    setError(''); setOutput(''); setExtractedText(''); setParsedResumeData(null); setChunks([]); setChunkProgress(null);
     if (!file) return;
-    setFileName(file.name); setOutput(''); setError(''); setExtractedText(''); setExtracting(true);
-    try {
-      let text = '';
-      if (file.name.endsWith('.pdf')) {
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-        const pageTexts = [];
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          const pageText = content.items.map(s => s.str).join(' ');
-          pageTexts.push({ pageNum: i, text: pageText });
-          text += pageText + '\n\n';
-        }
-        const allChunks = [];
-        for (const page of pageTexts) {
-          const sentences = page.text.split(/(?<=[.!?])\s+/);
-          let current = '', overlapBuffer = '';
-          for (const s of sentences) {
-            if ((current + s).length > 1800 && current) {
-              allChunks.push({ text: current.trim(), source: `[Source: ${file.name}, page ${page.pageNum}]` });
-              const words = current.split(/\s+/);
-              overlapBuffer = words.slice(-Math.min(40, words.length)).join(' ');
-              current = overlapBuffer + ' ' + s;
-            } else {
-              current += (current ? ' ' : '') + s;
-            }
-          }
-          if (current) allChunks.push({ text: current.trim(), source: `[Source: ${file.name}, page ${page.pageNum}]` });
-        }
-        setChunks(allChunks);
-      } else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
-        const result = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-        text = result.value;
-        setChunks(buildChunks(text, file.name));
-      } else {
-        setError('Please upload a PDF or Word (.docx) file.'); setExtracting(false); return;
-      }
-      if (!text.trim()) { setError('Could not extract text from this file.'); setExtracting(false); return; }
-      const trimmed = text.slice(0, WORD_LIMIT_UPLOAD);
-      setExtractedText(trimmed); setCharCount(trimmed.length);
-    } catch { setError('Error reading file. Please try again.'); }
-    setExtracting(false);
-  }
 
-  async function analyze() {
-    if (!extractedText) return;
-
-    // ── Resume path (unchanged) ──────────────────────────────
-    if (label === 'Analyze Resume') {
-      if (isResearchPaper(extractedText)) { setError('❌ This appears to be an academic document. Please upload a CV or resume file.'); return; }
-      if (!isResumeLike(extractedText))   { setError('❌ The uploaded file doesn\'t appear to be a resume. Please upload a proper CV or resume.'); return; }
-      setLoading(true); setOutput(''); setError('');
-      trackEvent('tool_run', { tool_name: label });
-      const contextForLLM = chunks.length > 0 ? chunks.slice(0, 20).map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n') : extractedText;
-      try {
-        const res = await fetchWithBackoff(GROQ_API_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: TOOL_MODELS.resumeAnalyzer, max_tokens: 900, temperature: 0.3,
-            messages: [
-              { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
-              { role: 'user',   content: contextForLLM },
-            ],
-          }),
-        });
-        const data = await res.json();
-        if (data?.choices?.[0]?.message?.content) {
-          setOutput(data.choices[0].message.content);
-        } else if (data?.error) {
-          setError(`API Error: ${data.error.message}`);
-        } else {
-          setError('Unexpected response. Please try again.');
-        }
-      } catch (e) { setError(e.message || 'Connection error. Please try again.'); }
-      setLoading(false);
+    if (file.size > 4 * 1024 * 1024) {
+      setError('File size exceeds the 4MB maximum limitation barrier.');
       return;
     }
 
-    // ── Document Summarizer path — chunked map-reduce ────────
-    setLoading(true); setOutput(''); setError(''); setChunkProgress(null);
-    trackEvent('tool_run', { tool_name: label });
+    setFileName(file.name);
+    setExtracting(true);
+    trackEvent('file_upload_started', { name: file.name, type: file.type });
 
     try {
-      // Small doc — single pass (fast path)
-      if (extractedText.length <= SUMMARY_CHUNK_SIZE) {
-        const res = await fetchWithBackoff(GROQ_API_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
-            messages: [
-              { role: 'system', content: prompt },
-              { role: 'user',   content: extractedText },
-            ],
-          }),
+      let textResult = "";
+      if (file.type === "application/pdf") {
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js');
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        const fileReader = new FileReader();
+        textResult = await new Promise((resolve, reject) => {
+          fileReader.onload = async (e) => {
+            try {
+              const typedarray = new Uint8Array(e.target.result);
+              const pdf = await pdfjsLib.getDocument(typedarray).promise;
+              let compiledText = "";
+              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const content = await page.getTextContent();
+                compiledText += content.items.map(item => item.str).join(" ") + "\n";
+              }
+              resolve(compiledText);
+            } catch (err) { reject(err); }
+          };
+          fileReader.onerror = () => reject(new Error("File conversion process read crash."));
+          fileReader.readAsArrayBuffer(file);
         });
-        const data = await res.json();
-        if (data?.choices?.[0]?.message?.content) {
-          setOutput(data.choices[0].message.content);
-        } else if (data?.error) {
-          setError(`API Error: ${data.error.message}`);
-        } else {
-          setError('Unexpected response. Please try again.');
-        }
-        setLoading(false);
-        return;
+      } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+        const fileReader = new FileReader();
+        textResult = await new Promise((resolve, reject) => {
+          fileReader.onload = async (e) => {
+            try {
+              const result = await window.mammoth.extractRawText({ arrayBuffer: e.target.result });
+              resolve(result.value);
+            } catch (err) { reject(err); }
+          };
+          fileReader.onerror = () => reject(new Error("Docx binary parser failed."));
+          fileReader.readAsArrayBuffer(file);
+        });
+      } else {
+        textResult = await file.text();
       }
 
-      // Large doc — sequential chunk processing with delays
-      // Sequential prevents rate limit collisions from parallel requests.
-      // All active models — no deprecated gemma2-9b-it.
-      //
-      // Pool pattern [8b, 70b, 8b, 8b] repeating:
-      //   chunk 0,2,3,6,7… → llama-3.1-8b-instant  (6K TPM, fast & cheap)
-      //   chunk 1,5,9…     → llama-3.3-70b-versatile (6K TPM, best reasoning)
-      // 70b reserved for final synthesis only.
+      if (!textResult.trim()) throw new Error("Parsed result payload contains zero characters.");
 
-      const MODEL_POOL = [
-        'llama-3.1-8b-instant',     // 6K TPM, 560 T/s — workhorse
-        'llama-3.3-70b-versatile',  // 6K TPM, 280 T/s — best reasoning
-        'llama-3.1-8b-instant',     // 6K TPM
-        'llama-3.1-8b-instant',     // 6K TPM
-      ];
+      setExtractedText(textResult);
+      setCharCount(textResult.length);
+      setExtracting(false);
+      
+      // Instantly run the compilation process
+      await runFileAnalysis(textResult);
 
-      // Step 1: split into chunks
-      const textChunks = [];
-      for (let i = 0; i < extractedText.length; i += SUMMARY_CHUNK_SIZE) {
-        textChunks.push(extractedText.slice(i, i + SUMMARY_CHUNK_SIZE));
-      }
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Failed to extract text components from the specified file asset.');
+      setExtracting(false);
+    }
+  }
 
-      setChunkProgress({ completed: 0, total: textChunks.length, finalizing: false });
+  // Submits the extracted text layers to our server router engine safely
+  async function runFileAnalysis(text) {
+    setLoading(true); setError(''); setOutput('');
+    const textChunks = sliceTextIntoChunks(text);
+    setChunks(textChunks);
 
-      // Step 2: sequential processing with delays
-      // Sequential prevents rate limit collisions.
-      // 3 second delay between chunks to stay under Groq TPM limits.
-      let completedCount = 0;
-      const results = [];
+    try {
+      let combinedSummaries = "";
+      
+      // Process individual fragments sequentially to balance pipeline buffers
+      for (let i = 0; i < textChunks.length; i++) {
+        setChunkProgress({ current: i + 1, total: textChunks.length });
+        const chunk = textChunks[i];
 
-      const summarizeChunk = async (chunk, i) => {
-        const model = MODEL_POOL[i % MODEL_POOL.length];
-        const res = await fetchWithBackoff(GROQ_API_URL, {
+        // FIXED UPDATED FETCH 1: Swapped to CENTRAL_AI_URL and requested 'fast-model'
+        const res = await fetchWithBackoff(CENTRAL_AI_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: model,
-            max_tokens: 500,
-            temperature: 0.3,
+            capability: 'fast-model', 
+            max_tokens: 1000,
             messages: [
-              {
-                role: 'system',
-                content: 'You are a precise document analyst. Summarize the key points from this document section in 4-6 bullet points. Preserve numbers, names, findings, and methodology details. Be concise.'
-              },
-              {
-                role: 'user',
-                content: `Section ${i + 1} of ${textChunks.length}:\n\n${chunk}`
-              },
+              { role: 'system', content: prompt },
+              { role: 'user', content: `Analyze this chunk (${i + 1}/${textChunks.length}):\n\n${chunk}` },
             ],
           }),
-        }, 5);
+        });
 
         const data = await res.json();
-        if (data?.error) throw new Error(`Section ${i + 1}: ${data.error.message}`);
-        return { index: i, text: data?.choices?.[0]?.message?.content || '' };
-      };
+        if (!res.ok) throw new Error(data.error || 'Downstream chunk transmission breakdown.');
+        combinedSummaries += (data.choices?.[0]?.message?.content || "") + "\n\n";
+      }
 
-      for (let i = 0; i < textChunks.length; i++) {
-        const chunk = textChunks[i];
-        console.warn(`[ZeroAPI] Processing chunk ${i + 1}/${textChunks.length}`);
+      setChunkProgress(null);
 
+      // Enforce clean output definitions
+      let finalReviewResult = combinedSummaries.trim();
+      setOutput(finalReviewResult);
+      trackEvent('file_analysis_success', { filename, chunks: textChunks.length });
+
+      // Run structured profile conversion extractions if analyzing a resume
+      if (filename === 'resume-analysis') {
         try {
-          const result = await summarizeChunk(chunk, i);
-          results.push(result);
-          completedCount++;
-          setChunkProgress({ completed: completedCount, total: textChunks.length, finalizing: false });
-        } catch (err) {
-          console.error(`[ZeroAPI] Chunk ${i + 1} failed:`, err.message);
-          throw err;
-        }
+          // FIXED UPDATED FETCH 2: Swapped to CENTRAL_AI_URL and requested 'large-model'
+          const jsonRes = await fetchWithBackoff(CENTRAL_AI_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              capability: 'large-model',
+              max_tokens: 1200,
+              temperature: 0.1,
+              messages: [
+                { role: 'system', content: 'You are a precise data extractor. Extract the resume text parameters into a valid raw JSON format matching this schema exactly without markdown wrapping: { "name": "", "email": "", "phone": "", "skills": [], "experience": [{ "role": "", "company": "", "duration": "", "details": "" }], "education": [] }' },
+                { role: 'user', content: `Convert this resume text to the target schema:\n\n${text.slice(0, 6000)}` }
+              ]
+            })
+          });
 
-        // 3 second delay between chunks to stay under rate limits
-        if (i < textChunks.length - 1) {
-          await delay(3000);
+          const jsonData = await jsonRes.json();
+          if (jsonRes.ok && jsonData.choices?.[0]?.message?.content) {
+            const parsedCleanString = jsonData.choices[0].message.content.trim().replace(/^```json/i, '').replace(/```$/, '').trim();
+            setParsedResumeData(JSON.parse(parsedCleanString));
+          }
+        } catch (jsonErr) {
+          console.warn("Structured resume configuration conversion failed safely: ", jsonErr.message);
         }
       }
 
-      // Preserve original section order before combining
-      const partialSummaries = results
-        .sort((a, b) => a.index - b.index)
-        .map(r => `[Section ${r.index + 1}/${textChunks.length}]\n${r.text}`);
-
-      // Step 3: final meta-summary on the best model (llama-3.3-70b)
-      // 3s buffer so the 70b bucket is clear before this request
-      setChunkProgress({ completed: textChunks.length, total: textChunks.length, finalizing: true });
-      await delay(3000);
-
-      const combinedSummaries = partialSummaries.join('\n\n');
-      const finalRes = await fetchWithBackoff(GROQ_API_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.3,
-          messages: [
-            { role: 'system', content: prompt + '\n\nYou will receive section-by-section summaries of a larger document. Synthesize them into one comprehensive final summary following the format above.' },
-            { role: 'user',   content: `Document section summaries:\n\n${combinedSummaries}\n\nProvide the final comprehensive summary.` },
-          ],
-        }),
-      });
-      const finalData = await finalRes.json();
-      if (finalData?.choices?.[0]?.message?.content) {
-        setOutput(finalData.choices[0].message.content);
-      } else if (finalData?.error) {
-        setError(`API Error: ${finalData.error.message}`);
-      } else {
-        setError('Unexpected response. Please try again.');
-      }
-    } catch (e) {
-      setError(e.message || 'Connection error. Please try again.');
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'The gateway encountered an processing timeout during data orchestration.');
+    } finally {
+      setLoading(false);
+      setChunkProgress(null);
     }
-
-    setChunkProgress(null);
-    setLoading(false);
   }
 
-  async function askFollowUp() {
-    if (!followUpQuestion.trim() || chunks.length === 0) return;
+  // Handles contextual follow-up conversational queries
+  async function submitFollowUp() {
+    if (!followUpQuestion.trim() || qaLoading) return;
     setQaLoading(true); setQaAnswer('');
-    const pageMatch = followUpQuestion.match(/page\s+(\d+)/i);
-    const targetPage = pageMatch ? parseInt(pageMatch[1]) : null;
-    const keywords = followUpQuestion.toLowerCase().replace(/page\s+\d+/i, '').split(/\s+/).filter(w => w.length > 3);
-    let filteredChunks = targetPage ? chunks.filter(c => c.source.includes(`page ${targetPage}`)) : chunks;
-    if (targetPage && filteredChunks.length === 0) { setQaAnswer(`No content found on page ${targetPage}.`); setQaLoading(false); return; }
-    const scored = filteredChunks.map(c => ({ ...c, score: keywords.reduce((s, kw) => s + (c.text.toLowerCase().match(new RegExp(kw, 'gi')) || []).length, 0) })).sort((a, b) => b.score - a.score);
-    const top = scored.slice(0, 4);
-    if (!top.length || top[0].score === 0) { setQaAnswer("I couldn't find relevant information in the document to answer that question."); setQaLoading(false); return; }
-    const context = top.map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n');
+
     try {
-      const res = await fetchWithBackoff(GROQ_API_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const sanitizedQuestion = followUpQuestion.trim();
+      trackEvent('file_qa_submitted', { filename });
+
+      // FIXED UPDATED FETCH 3: Swapped to CENTRAL_AI_URL and requested 'fast-model'
+      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: TOOL_MODELS.documentQA, max_tokens: 600, temperature: 0.3,
+          capability: 'fast-model',
+          max_tokens: 800,
           messages: [
-            { role: 'system', content: `You are a precise research assistant. Answer using ONLY the provided chunks.\nCRITICAL RULES:\n1. Every factual sentence MUST end with a citation like [Source: filename, page X]\n2. If you quote directly, use [Source: filename, page X, exact quote]\n3. If the answer isn't in the chunks, say "I couldn't find that in the document."\n4. Never make up citations.` },
-            { role: 'user',   content: `Document excerpts:\n\n${context}\n\nQuestion: ${followUpQuestion}` },
-          ],
-        }),
+            { role: 'system', content: `You are an assistant answering queries regarding analyzed user text files. Formulate answers using ONLY this context:\n\n${extractedText.slice(0, 12000)}` },
+            { role: 'user', content: sanitizedQuestion }
+          ]
+        })
       });
+
       const data = await res.json();
-      setQaAnswer(data?.choices?.[0]?.message?.content || "Sorry, I couldn't generate an answer. Please try again.");
-    } catch (e) { setQaAnswer(e.message || 'Connection error. Please try again.'); }
-    setQaLoading(false);
+      if (!res.ok) throw new Error(data.error || 'Failed to extract answers.');
+      setQaAnswer(data.choices?.[0]?.message?.content || 'No processing response found.');
+    } catch (err) {
+      console.error(err);
+      setQaAnswer(`Error parsing response: ${err.message}`);
+    } finally {
+      setQaLoading(false);
+    }
   }
 
-  function handleClear() {
-    setOutput(''); setFileName(''); setExtractedText(''); setCharCount(0); setError('');
-    setChunks([]); setQaAnswer(''); setFollowUpQuestion('');
-    if (fileRef.current) fileRef.current.value = '';
-    setTimeout(() => topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-  }
-
-  const formattedOutput = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
+  const renderedOutputElements = useMemo(() => output ? formatOutput(output, theme) : null, [output, theme]);
 
   return (
-    <div ref={topRef} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Upload Zone */}
-      <div onClick={() => fileRef.current?.click()} className="upload-zone" style={{ borderColor: fileName ? `${ac}66` : undefined }} role="button" tabIndex={0} aria-label="Upload PDF or Word file">
-        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={handleFile} />
-        <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{fileName ? icon : '⬆️'}</div>
-        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.85rem', color: fileName ? ac : (isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.6)'), marginBottom: '6px' }}>
-          {extracting ? 'Extracting text...' : fileName ? fileName : 'Click to upload PDF or Word file'}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Target Upload Area */}
+      <div 
+        onClick={() => fileRef.current?.click()}
+        style={{ border: `2px dashed ${error ? '#f87171' : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '14px', padding: '40px 20px', textAlign: 'center', cursor: (extracting || loading) ? 'not-allowed' : 'pointer', background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)', transition: 'all 0.2s' }}
+      >
+        <input 
+          ref={fileRef}
+          type="file" 
+          accept=".pdf,.docx,.txt"
+          disabled={extracting || loading}
+          onChange={e => handleFileParsing(e.target.files?.[0])}
+          style={{ display: 'none' }}
+        />
+        <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>{icon}</div>
+        <div style={{ fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a', marginBottom: '4px' }}>
+          {fileName ? `Active: ${fileName}` : `Upload ${label}`}
         </div>
-        {!fileName && <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)' }}>Supports .pdf · .doc · .docx · Max ~40 pages for best results</div>}
-        {charCount > 0 && (
-          <>
-            <div style={{ fontSize: '0.72rem', color: ac, marginTop: '6px', fontFamily: "'Space Mono', monospace" }}>
-              {charCount.toLocaleString()} characters extracted
-              {charCount >= WORD_LIMIT_UPLOAD ? ` · Large file: first ${(WORD_LIMIT_UPLOAD/1000).toFixed(0)}K chars used` : ''}
-            </div>
-            {charCount >= 30000 && (
-              <div style={{ fontSize: '0.68rem', color: isDark ? '#febc2e' : '#b45309', marginTop: '4px', fontFamily: "'Space Mono', monospace" }}>
-                ⚠️ Large file: First {Math.round(WORD_LIMIT_UPLOAD/1000)}K characters used. For best results, consider summarizing shorter sections.
-              </div>
-            )}
-          </>
-        )}
-        {label === 'Analyze Resume' && !fileName && (
-          <div style={{ marginTop: '10px', fontSize: '0.72rem', color: isDark ? '#febc2e' : '#b45309', fontFamily: "'Space Mono', monospace" }}>
-            📋 Please upload a resume/CV (not research papers, articles, or other documents)
-          </div>
-        )}
+        <div style={{ fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)' }}>
+          Supports professional PDF, DOCX, or text files up to 4MB sizes
+        </div>
       </div>
 
-      {extractedText && (
-        <>
-          <button onClick={analyze} disabled={loading} className={`run-btn ${loading ? 'run-btn-disabled' : ''}`} aria-label={label}>
-            {loading ? (
-              <>
-                <span className="spinner" />
-                {chunkProgress
-                  ? chunkProgress.finalizing
-                    ? 'Synthesizing final summary…'
-                    : `Processing sections… (${chunkProgress.completed}/${chunkProgress.total} done)`
-                  : 'Analyzing…'}
-              </>
-            ) : `→ ${label}`}
-          </button>
-          {chunkProgress && !chunkProgress.finalizing && (
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.45)', textAlign: 'center', marginTop: '-10px' }}>
-              ⚡ Running {chunkProgress.total} sections sequentially across 2 AI models
-            </div>
-          )}
-        </>
+      {/* Loading Progress Bars */}
+      {extracting && (
+        <div style={{ textAlign: 'center', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>
+          <span className="spinner" style={{ marginRight: '8px' }} /> Unpacking file text vectors safely...
+        </div>
       )}
 
-      {error && (
-        <div>
-          <div className="error-box">⚠ {error}</div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <button onClick={handleClear} className="action-btn" style={{ color: ac, borderColor: ac }} aria-label="Clear and try again">↺ Clear</button>
+      {chunkProgress && (
+        <div style={{ width: '100%', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', borderRadius: '100px', height: '6px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ width: `${(chunkProgress.current / chunkProgress.total) * 100}%`, background: 'linear-gradient(90deg,#a78bfa,#0af)', height: '100%', transition: 'all 0.3s' }} />
+          <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.62rem', textAlign: 'center', marginTop: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)' }}>
+            Orchestrating Chunk Processing Matrix: {chunkProgress.current} of {chunkProgress.total} segments
           </div>
         </div>
       )}
 
+      {error && <div className="error-box">⚠️ {error}</div>}
+
+      {/* Main Analysis Output Panel */}
       {output && (
-        <div>
-          <div className="output-panel">
-            <div className="output-header">◆ {label} Result</div>
-            {formattedOutput}
+        <div style={{ marginTop: '12px' }}>
+          <div className="output-panel" style={{ marginBottom: '32px' }}>
+            <div className="output-header">◆ Comprehensive AI Analysis Report</div>
+            {renderedOutputElements}
           </div>
 
-          {/* Q&A — only for Document Summarizer */}
-          {chunks.length > 0 && label !== 'Analyze Resume' && (
-            <div style={{ marginTop: '28px' }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px', textTransform: 'uppercase' }}>◆ Ask a follow-up question (with citations)</div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  value={followUpQuestion}
-                  onChange={e => setFollowUpQuestion(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && askFollowUp()}
-                  placeholder="e.g., What methodology did they use? On which page?"
-                  style={{ flex: 1, minWidth: '200px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#1a1a1a', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem', outline: 'none' }}
-                />
-                <button onClick={askFollowUp} disabled={qaLoading || !followUpQuestion.trim()}
-                  style={{ background: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '12px 24px', color: qaLoading || !followUpQuestion.trim() ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.85rem', cursor: qaLoading || !followUpQuestion.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {qaLoading ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
-                </button>
-              </div>
-              {qaAnswer && (
-                <div style={{ marginTop: '16px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
-                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: ac, marginBottom: '12px', letterSpacing: '0.1em' }}>◆ ANSWER WITH CITATIONS</div>
-                  {qaAnswer.split('\n').map((line, i) => <div key={i} style={{ marginBottom: line.trim() === '' ? '12px' : '6px' }}>{line}</div>)}
-                </div>
-              )}
+          {/* Contextual Interactive Document Q&A Block */}
+          <div style={{ background: isDark ? 'rgba(255,255,255,0.015)' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '16px', padding: '28px', marginBottom: '32px' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', color: isDark ? '#fff' : '#1a1a1a', marginBottom: '6px' }}>
+              💬 Chat with Document Data
             </div>
-          )}
+            <div style={{ fontSize: '0.82rem', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.55)', marginBottom: '16px' }}>
+              Ask custom deep questions tracking text assertions, figures, or compliance gaps internally.
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input 
+                type="text"
+                value={followUpQuestion}
+                onChange={e => setFollowUpQuestion(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && submitFollowUp()}
+                placeholder="e.g., What are the clear performance figures or structural limitations mentioned?"
+                style={{ flex: 1, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#000', fontSize: '0.88rem', outline: 'none' }}
+              />
+              <button 
+                onClick={submitFollowUp}
+                disabled={qaLoading || !followUpQuestion.trim()}
+                style={{ background: 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {qaLoading ? <><span className=\"spinner\" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
+              </button>
+            </div>
+            {qaAnswer && (
+              <div style={{ marginTop: '16px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.6rem', color: ac, marginBottom: '12px', letterSpacing: '0.1em' }}>◆ ANSWER FROM FILE CONTEXT</div>
+                {qaAnswer.split('\n').map((line, i) => <div key={i} style={{ marginBottom: line.trim() === '' ? '12px' : '6px' }}>{line}</div>)}
+              </div>
+            )}
+          </div>
 
-          <OutputActions text={output} filename={`zeroapi-${filename}`} onClear={handleClear} />
+          <OutputActions text={output} filename={filename} />
+        </div>
+      )}
 
-          {label === 'Analyze Resume' && (
-            <>
-              <ResumeBuilder originalText={extractedText} analysisText={output} onDataParsed={setParsedResumeData} />
-              {parsedResumeData && <CoverLetterGenerator resumeData={parsedResumeData} jobDescription="" />}
-            </>
-          )}
+      {/* Downstream Integrated Tool Interfaces */}
+      {parsedResumeData && filename === 'resume-analysis' && (
+        <div style={{ marginTop: '24px', borderTop: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, paddingTop: '32px' }}>
+          <ResumeBuilder prefilledData={parsedResumeData} />
+          <CoverLetterGenerator resumeText={extractedText} />
         </div>
       )}
     </div>
