@@ -661,6 +661,21 @@ export function BlogPost({ theme }) {
   const ac         = isDark ? "#a78bfa" : "#7c3aed";
   const post       = BLOG_POSTS.find(p => p.slug === slug);
 
+  // ── ✅ NEW CORE TELEMETRY TRACKING LINK LAYER ──
+  useEffect(() => {
+    if (!post || !slug) return;
+
+    // Dispatches clean article analytics indicators straight to Upstash Redis Matrix
+    fetch('/api/track-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        type: 'view', 
+        targetId: `article:${slug}` // Prefixes it so it displays beautifully on your charts
+      })
+    }).catch((err) => console.error("Telemetry article view skip:", err.message));
+  }, [slug, post]);
+
   useEffect(() => { window.scrollTo(0, 0); }, [slug]);
 
   if (!post) {
