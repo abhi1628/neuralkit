@@ -29,8 +29,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   const topRef  = useRef(null);
 
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-  // Chunking constants — increased for fewer API calls
   const SUMMARY_CHUNK_SIZE = 5000;
 
   const ACADEMIC_KEYWORDS = useMemo(() => ['abstract','introduction','methodology','related work','literature review','experimental results','discussion','conclusion','references','bibliography','figure','table','equation','theorem','proof','hypothesis','dataset','et al','doi:','thesis','dissertation'], []);
@@ -118,12 +116,21 @@ export default function UploadTool({ prompt, filename, icon, label }) {
   async function analyze() {
     if (!extractedText) return;
 
-    // ── Resume path (unchanged) ──────────────────────────────
+    // Dispatch invocation event directly to tracking data models
+    const dispatchTelemetry = (toolId) => {
+      fetch('/api/track-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'run', targetId: toolId })
+      }).catch(() => {});
+    };
+
     if (label === 'Analyze Resume') {
       if (isResearchPaper(extractedText)) { setError('❌ This appears to be an academic document. Please upload a CV or resume file.'); return; }
       if (!isResumeLike(extractedText))   { setError('❌ The uploaded file doesn\'t appear to be a resume. Please upload a proper CV or resume.'); return; }
       setLoading(true); setOutput(''); setError('');
       trackEvent('tool_run', { tool_name: label });
+      dispatchTelemetry('resume-analyzer');
       const contextForLLM = chunks.length > 0 ? chunks.slice(0, 20).map(c => `--- ${c.source} ---\n${c.text}`).join('\n\n') : extractedText;
       try {
         const res = await fetchWithBackoff(GROQ_API_URL, {
@@ -149,12 +156,11 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       return;
     }
 
-    // ── Document Summarizer path — chunked map-reduce ────────
     setLoading(true); setOutput(''); setError(''); setChunkProgress(null);
     trackEvent('tool_run', { tool_name: label });
+    dispatchTelemetry('document-summarizer');
 
     try {
-      // Small doc — single pass (fast path)
       if (extractedText.length <= SUMMARY_CHUNK_SIZE) {
         const res = await fetchWithBackoff(GROQ_API_URL, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -178,23 +184,13 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         return;
       }
 
-      // Large doc — sequential chunk processing with delays
-      // Sequential prevents rate limit collisions from parallel requests.
-      // All active models — no deprecated gemma2-9b-it.
-      //
-      // Pool pattern [8b, 70b, 8b, 8b] repeating:
-      //   chunk 0,2,3,6,7… → llama-3.1-8b-instant  (6K TPM, fast & cheap)
-      //   chunk 1,5,9…     → llama-3.3-70b-versatile (6K TPM, best reasoning)
-      // 70b reserved for final synthesis only.
-
       const MODEL_POOL = [
-        'llama-3.1-8b-instant',     // 6K TPM, 560 T/s — workhorse
-        'llama-3.3-70b-versatile',  // 6K TPM, 280 T/s — best reasoning
-        'llama-3.1-8b-instant',     // 6K TPM
-        'llama-3.1-8b-instant',     // 6K TPM
+        'llama-3.1-8b-instant',
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant',
+        'llama-3.1-8b-instant',
       ];
 
-      // Step 1: split into chunks
       const textChunks = [];
       for (let i = 0; i < extractedText.length; i += SUMMARY_CHUNK_SIZE) {
         textChunks.push(extractedText.slice(i, i + SUMMARY_CHUNK_SIZE));
@@ -202,9 +198,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       setChunkProgress({ completed: 0, total: textChunks.length, finalizing: false });
 
-      // Step 2: sequential processing with delays
-      // Sequential prevents rate limit collisions.
-      // 3 second delay between chunks to stay under Groq TPM limits.
       let completedCount = 0;
       const results = [];
 
@@ -237,31 +230,24 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
       for (let i = 0; i < textChunks.length; i++) {
         const chunk = textChunks[i];
-        console.warn(`[ZeroAPI] Processing chunk ${i + 1}/${textChunks.length}`);
-
         try {
           const result = await summarizeChunk(chunk, i);
           results.push(result);
           completedCount++;
           setChunkProgress({ completed: completedCount, total: textChunks.length, finalizing: false });
         } catch (err) {
-          console.error(`[ZeroAPI] Chunk ${i + 1} failed:`, err.message);
           throw err;
         }
 
-        // 3 second delay between chunks to stay under rate limits
         if (i < textChunks.length - 1) {
           await delay(3000);
         }
       }
 
-      // Preserve original section order before combining
       const partialSummaries = results
         .sort((a, b) => a.index - b.index)
         .map(r => `[Section ${r.index + 1}/${textChunks.length}]\n${r.text}`);
 
-      // Step 3: final meta-summary on the best model (llama-3.3-70b)
-      // 3s buffer so the 70b bucket is clear before this request
       setChunkProgress({ completed: textChunks.length, total: textChunks.length, finalizing: true });
       await delay(3000);
 
@@ -332,7 +318,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
   return (
     <div ref={topRef} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Upload Zone */}
       <div onClick={() => fileRef.current?.click()} className="upload-zone" style={{ borderColor: fileName ? `${ac}66` : undefined }} role="button" tabIndex={0} aria-label="Upload PDF or Word file">
         <input ref={fileRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={handleFile} />
         <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{fileName ? icon : '⬆️'}</div>
@@ -398,7 +383,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
             {formattedOutput}
           </div>
 
-          {/* Q&A — only for Document Summarizer */}
           {chunks.length > 0 && label !== 'Analyze Resume' && (
             <div style={{ marginTop: '28px' }}>
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px', textTransform: 'uppercase' }}>◆ Ask a follow-up question (with citations)</div>
