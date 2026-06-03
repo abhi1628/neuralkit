@@ -56,7 +56,7 @@
   <url><loc>https://zeroapi.in/breakit/retry-storm-cascade</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/read-your-own-writes-gap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/rate-limit-stateless-bypass</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <!-- ── Cisco Ideathon Sprint Challenges ────────────────── -->
+
   <url><loc>https://zeroapi.in/breakit/cisco-async-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-packet-race</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-subnet-overflow</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -68,81 +68,25 @@
   <url><loc>https://zeroapi.in/breakit/cisco-dangling-pool</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-dns-cache-poison</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
-  <!-- ── TCS Digital / Ninja Sprints ──────────────────────── -->
   <url><loc>https://zeroapi.in/breakit/tcs-time-complexity</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-integer-overflow</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-string-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-matrix-boundary</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-float-precision</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-hash-collision</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url>    <loc>https://zeroapi.in/breakit/tcs-binary-search-edge</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/tcs-recursion-stack</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/tcs-graph-cycle</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/tcs-type-evaluation</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-<!-- ── Cloud & Architecture Global Challenges ────────── -->
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-iam-exposure</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-cors-wildcard</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-ssrf-metadata</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-docker-root</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-zombie-pid</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-k8s-spiral</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-thundering-herd</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-retry-storm</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-stateless-bypass</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://zeroapi.in/breakit/cloud-promise-leak</loc>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
-  </url>
+  <url><loc>https://zeroapi.in/breakit/tcs-binary-search-edge</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/tcs-recursion-stack</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/tcs-graph-cycle</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/tcs-type-evaluation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+
+  <url><loc>https://zeroapi.in/breakit/cloud-iam-exposure</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-cors-wildcard</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-ssrf-metadata</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-docker-root</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-zombie-pid</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-k8s-spiral</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-thundering-herd</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-retry-storm</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-stateless-bypass</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/cloud-promise-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>
