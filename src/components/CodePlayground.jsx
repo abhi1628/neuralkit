@@ -74,7 +74,7 @@ export default function CodePlayground() {
     setExplaining(true); setExplanation('');
     trackEvent('playground_explain', { language: lang.label });
     try {
-      const res = await fetchWithBackoff(GROQ_API_URL, {
+      const res = await fetchWithBackoff(CENTRAL_AI_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           capability: 'coding-model',
