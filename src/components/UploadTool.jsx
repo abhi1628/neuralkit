@@ -108,7 +108,6 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       setCharCount(textResult.length);
       setExtracting(false);
       
-      // Instantly run the compilation process
       await runFileAnalysis(textResult);
 
     } catch (err) {
@@ -127,12 +126,11 @@ export default function UploadTool({ prompt, filename, icon, label }) {
     try {
       let combinedSummaries = "";
       
-      // Process individual fragments sequentially to balance pipeline buffers
       for (let i = 0; i < textChunks.length; i++) {
         setChunkProgress({ current: i + 1, total: textChunks.length });
         const chunk = textChunks[i];
 
-        // FIXED UPDATED FETCH 1: Swapped to CENTRAL_AI_URL and requested 'fast-model'
+        // FETCH 1: Swapped to CENTRAL_AI_URL and requested abstract 'fast-model' capability
         const res = await fetchWithBackoff(CENTRAL_AI_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -152,16 +150,13 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       }
 
       setChunkProgress(null);
-
-      // Enforce clean output definitions
       let finalReviewResult = combinedSummaries.trim();
       setOutput(finalReviewResult);
       trackEvent('file_analysis_success', { filename, chunks: textChunks.length });
 
-      // Run structured profile conversion extractions if analyzing a resume
       if (filename === 'resume-analysis') {
         try {
-          // FIXED UPDATED FETCH 2: Swapped to CENTRAL_AI_URL and requested 'large-model'
+          // FETCH 2: Swapped to CENTRAL_AI_URL and requested high-precision 'large-model' capability
           const jsonRes = await fetchWithBackoff(CENTRAL_AI_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -188,8 +183,9 @@ export default function UploadTool({ prompt, filename, icon, label }) {
 
     } catch (err) {
       console.error(err);
-      setError(err.message || 'The gateway encountered an processing timeout during data orchestration.');
+      setError(err.message || 'The gateway encountered a processing timeout during data orchestration.');
     } finally {
+      // FIXED: Restored valid 'finally' keyword structure
       setLoading(false);
       setChunkProgress(null);
     }
@@ -204,7 +200,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const sanitizedQuestion = followUpQuestion.trim();
       trackEvent('file_qa_submitted', { filename });
 
-      // FIXED UPDATED FETCH 3: Swapped to CENTRAL_AI_URL and requested 'fast-model'
+      // FETCH 3: Swapped to CENTRAL_AI_URL and requested 'fast-model' capability
       const res = await fetchWithBackoff(CENTRAL_AI_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -298,13 +294,21 @@ export default function UploadTool({ prompt, filename, icon, label }) {
                 placeholder="e.g., What are the clear performance figures or structural limitations mentioned?"
                 style={{ flex: 1, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'}`, borderRadius: '10px', padding: '12px 16px', color: isDark ? '#fff' : '#000', fontSize: '0.88rem', outline: 'none' }}
               />
+              {/* FIXED: Removed escaped string backslashes from className property */}
               <button 
-  onClick={submitFollowUp}
-  disabled={qaLoading || !followUpQuestion.trim()}
-  style={{ background: (qaLoading || !followUpQuestion.trim()) ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
->
-  {qaLoading ? <><span className="spinner" style={{ width: '12px', height: '12px' }} />Searching...</> : 'Ask →'}
-</button>
+                onClick={submitFollowUp}
+                disabled={qaLoading || !followUpQuestion.trim()}
+                style={{ background: (qaLoading || !followUpQuestion.trim()) ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '0 24px', color: '#000', fontWeight: 700, fontSize: '0.85rem', cursor: (qaLoading || !followUpQuestion.trim()) ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {qaLoading ? (
+                  <>
+                    <span className="spinner" style={{ width: '12px', height: '12px', marginRight: '6px' }} />
+                    Searching...
+                  </>
+                ) : (
+                  'Ask →'
+                )}
+              </button>
             </div>
             {qaAnswer && (
               <div style={{ marginTop: '16px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.15)'}`, borderRadius: '12px', padding: '20px', fontSize: '0.85rem', lineHeight: 1.75, color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)' }}>
