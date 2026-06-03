@@ -146,6 +146,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         const res = await fetchWithBackoff('/api/ai', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            toolId: 'resume-analyzer',
             model: TOOL_MODELS.resumeAnalyzer, max_tokens: 900, temperature: 0.3,
             messages: [
               { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
@@ -175,6 +176,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
         const res = await fetchWithBackoff('/api/ai', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            toolId: 'document-summarizer',
             model: TOOL_MODELS.documentSummarizer, max_tokens: 900, temperature: 0.3,
             messages: [
               { role: 'system', content: prompt },
@@ -218,6 +220,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            toolId: 'document-summarizer-chunk',
             model: model,
             max_tokens: 500,
             temperature: 0.3,
@@ -266,6 +269,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const finalRes = await fetchWithBackoff('/api/ai', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          toolId: 'document-summarizer-final',
           model: 'llama-3.3-70b-versatile', max_tokens: 900, temperature: 0.3,
           messages: [
             { role: 'system', content: prompt + '\n\nYou will receive section-by-section summaries of a larger document. Synthesize them into one comprehensive final summary following the format above.' },
@@ -306,6 +310,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
       const res = await fetchWithBackoff('/api/ai', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          toolId: 'document-qa',
           model: TOOL_MODELS.documentQA, max_tokens: 600, temperature: 0.3,
           messages: [
             { role: 'system', content: `You are a precise research assistant. Answer using ONLY the provided chunks.\nCRITICAL RULES:\n1. Every factual sentence MUST end with a citation like [Source: filename, page X]\n2. If you quote directly, use [Source: filename, page X, exact quote]\n3. If the answer isn't in the chunks, say "I couldn't find that in the document."\n4. Never make up citations.` },
