@@ -1,4 +1,4 @@
-// api/analytics-stats.js
+// api/analytics-stats.js with zeroapi admin key
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
