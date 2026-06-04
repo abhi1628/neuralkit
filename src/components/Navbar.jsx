@@ -38,6 +38,7 @@ export default function Navbar({ setActiveSection }) {
     { label: 'AI Tools',    action: () => { setActiveSection?.('ai');  scrollTo('tools'); trackSectionView('ai-tools'); } },
     { label: 'Dev Tools',   action: () => { setActiveSection?.('dev'); scrollTo('devtools'); trackSectionView('dev-tools'); } },
     { label: 'Learn',       action: () => { navigate('/learn'); trackSectionView('blog-list'); } },
+    { label: 'Roadmaps',    action: () => { navigate('/roadmaps'); trackSectionView('roadmaps'); } },
     { label: 'BreakIt',     action: () => { navigate('/breakit'); trackSectionView('breakit-dashboard'); } },
     { label: 'Playground',  action: () => { scrollTo('playground'); trackSectionView('playground'); } },
     { label: 'About',       action: () => { scrollTo('about'); trackSectionView('about'); } },
