@@ -17,7 +17,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Canvas dimensions - taller to fit all phases
+  // Canvas dimensions
   const SVG_WIDTH = 1100;
   const SVG_HEIGHT = 750;
   const NODE_RADIUS = 22;
@@ -36,7 +36,6 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
     const topicsCount = phase.topics.length;
     const y = TOP_MARGIN + phaseIndex * PHASE_HEIGHT;
     
-    // Spread topics across usable width
     const gap = topicsCount > 1 ? usableWidth / (topicsCount - 1) : 0;
     const startX = topicsCount === 1 ? SVG_WIDTH / 2 : LEFT_MARGIN;
     
@@ -171,8 +170,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         height: '580px', 
         overflow: 'hidden', 
         borderRadius: '16px', 
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`,
-        background: isDark ? '#0f0f14' : '#fafafa'
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`,
+        background: isDark ? '#0f0f14' : '#f5f5f8'
       }}
     >
       {/* Top Bar - Controls & Progress */}
@@ -186,9 +185,9 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '10px 16px',
-        background: isDark ? 'rgba(15,15,20,0.9)' : 'rgba(250,250,250,0.95)',
+        background: isDark ? 'rgba(15,15,20,0.95)' : 'rgba(245,245,248,0.98)',
         backdropFilter: 'blur(10px)',
-        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ 
@@ -202,7 +201,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
           <div style={{ 
             width: '100px', 
             height: '4px', 
-            background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', 
+            background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)', 
             borderRadius: '2px', 
             overflow: 'hidden' 
           }}>
@@ -219,7 +218,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           <span style={{ 
             fontSize: '0.6rem', 
-            color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)', 
+            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', 
             fontFamily: "'Space Mono',monospace", 
             marginRight: '4px' 
           }}>
@@ -229,8 +228,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             width: '26px', 
             height: '26px', 
             borderRadius: '6px', 
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`, 
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)', 
             color: isDark ? '#fff' : '#1a1a1a', 
             cursor: 'pointer', 
             fontSize: '0.85rem',
@@ -242,8 +241,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             width: '26px', 
             height: '26px', 
             borderRadius: '6px', 
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`, 
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)', 
             color: isDark ? '#fff' : '#1a1a1a', 
             cursor: 'pointer', 
             fontSize: '0.85rem',
@@ -255,8 +254,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             width: '26px', 
             height: '26px', 
             borderRadius: '6px', 
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`, 
-            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)', 
             color: isDark ? '#fff' : '#1a1a1a', 
             cursor: 'pointer', 
             fontSize: '0.7rem',
@@ -307,7 +306,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             orient="auto"
             markerUnits="strokeWidth"
           >
-            <path d="M0,0 L0,8 L7,4 z" fill={isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'} />
+            <path d="M0,0 L0,8 L7,4 z" fill={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'} />
           </marker>
         </defs>
 
@@ -318,7 +317,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
               <text
                 x="15"
                 y={TOP_MARGIN + i * PHASE_HEIGHT + 5}
-                fill={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)'}
+                fill={isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.55)'}
                 fontSize="11"
                 fontFamily="'Space Mono', monospace"
                 fontWeight="600"
@@ -329,7 +328,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
               <text
                 x="35"
                 y={TOP_MARGIN + i * PHASE_HEIGHT + 5}
-                fill={isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'}
+                fill={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'}
                 fontSize="10"
                 fontFamily="'Space Mono', monospace"
                 fontWeight="500"
@@ -344,7 +343,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                   y1={TOP_MARGIN + i * PHASE_HEIGHT + PHASE_HEIGHT / 2}
                   x2={SVG_WIDTH - 10}
                   y2={TOP_MARGIN + i * PHASE_HEIGHT + PHASE_HEIGHT / 2}
-                  stroke={isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'}
+                  stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'}
                   strokeWidth="1"
                   strokeDasharray="4,4"
                 />
@@ -367,11 +366,11 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                   y1={points.startY}
                   x2={points.endX}
                   y2={points.endY}
-                  stroke={isActive ? ac : isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}
-                  strokeWidth={isActive ? 2 : 1.5}
+                  stroke={isActive ? ac : isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}
+                  strokeWidth={isActive ? 2.5 : 1.5}
                   strokeDasharray={edge.label === 'helps with' ? '4,3' : 'none'}
                   markerEnd={isActive ? 'url(#arrow-active)' : 'url(#arrow-dim)'}
-                  opacity={isActive ? 0.8 : 0.5}
+                  opacity={isActive ? 1 : 0.6}
                 />
               </g>
             );
@@ -404,8 +403,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     r={NODE_RADIUS + 8}
                     fill="none"
                     stroke="#22c55e"
-                    strokeWidth="2"
-                    opacity="0.5"
+                    strokeWidth="2.5"
+                    opacity="0.6"
                   >
                     <animate 
                       attributeName="r" 
@@ -415,7 +414,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     />
                     <animate 
                       attributeName="opacity" 
-                      values="0.6;0.2;0.6" 
+                      values="0.7;0.2;0.7" 
                       dur="1.5s" 
                       repeatCount="indefinite" 
                     />
@@ -430,8 +429,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     r={NODE_RADIUS + 5}
                     fill="none"
                     stroke={ac}
-                    strokeWidth="1.5"
-                    opacity="0.4"
+                    strokeWidth="2"
+                    opacity={isDark ? 0.5 : 0.6}
                   />
                 )}
                 
@@ -441,18 +440,18 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                   cy={node.y}
                   r={NODE_RADIUS}
                   fill={completed 
-                    ? (isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.12)') 
+                    ? (isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.15)') 
                     : unlocked 
-                      ? (isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.06)')
-                      : (isDark ? 'rgba(40,40,50,0.9)' : 'rgba(245,245,250,0.95)')
+                      ? (isDark ? 'rgba(167,139,250,0.12)' : 'rgba(124,58,237,0.1)')
+                      : (isDark ? 'rgba(45,45,55,0.95)' : 'rgba(255,255,255,1)')
                   }
                   stroke={completed 
                     ? ac 
                     : unlocked 
-                      ? (isDark ? 'rgba(167,139,250,0.7)' : 'rgba(124,58,237,0.7)')
-                      : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')
+                      ? (isDark ? 'rgba(167,139,250,0.8)' : 'rgba(124,58,237,0.8)')
+                      : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)')
                   }
-                  strokeWidth={completed ? 2.5 : isHovered ? 2.5 : 2}
+                  strokeWidth={completed ? 3 : isHovered ? 2.5 : 2}
                 />
                 
                 {/* Inner status indicator */}
@@ -462,7 +461,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     cy={node.y}
                     r={NODE_RADIUS - 7}
                     fill={ac}
-                    opacity="0.6"
+                    opacity="0.7"
                   />
                 )}
                 
@@ -474,8 +473,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                   fill={completed 
                     ? '#fff' 
                     : locked 
-                      ? (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)')
-                      : (isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)')
+                      ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)')
+                      : (isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)')
                   }
                   fontSize={completed ? '14' : locked ? '13' : '12'}
                   fontWeight={completed ? 'bold' : 'normal'}
@@ -488,8 +487,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                   x={node.x}
                   y={node.y + NODE_RADIUS + 16}
                   textAnchor="middle"
-                  fill={isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)'}
-                  fontSize="9.5"
+                  fill={isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)'}
+                  fontSize="10"
                   fontFamily="'DM Sans', sans-serif"
                   fontWeight="500"
                 >
@@ -511,17 +510,17 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '8px 14px',
-        background: isDark ? 'rgba(15,15,20,0.9)' : 'rgba(250,250,250,0.95)',
+        padding: '10px 14px',
+        background: isDark ? 'rgba(15,15,20,0.95)' : 'rgba(245,245,248,0.98)',
         backdropFilter: 'blur(10px)',
-        borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+        borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`
       }}>
         {/* Legend */}
         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
           <span style={{ 
             fontSize: '0.6rem', 
             fontFamily: "'Space Mono',monospace", 
-            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', 
+            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.55)', 
             textTransform: 'uppercase', 
             letterSpacing: '0.08em' 
           }}>
@@ -529,49 +528,52 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ 
-              width: '8px', 
-              height: '8px', 
+              width: '10px', 
+              height: '10px', 
               borderRadius: '50%', 
               background: ac,
               display: 'inline-block' 
             }}></span>
             <span style={{ 
-              fontSize: '0.68rem', 
-              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)' 
+              fontSize: '0.72rem', 
+              color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+              fontWeight: 500
             }}>Done</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ 
-              width: '8px', 
-              height: '8px', 
+              width: '10px', 
+              height: '10px', 
               borderRadius: '50%', 
-              background: isDark ? 'rgba(167,139,250,0.6)' : 'rgba(124,58,237,0.6)',
+              background: isDark ? 'rgba(167,139,250,0.7)' : 'rgba(124,58,237,0.7)',
               display: 'inline-block' 
             }}></span>
             <span style={{ 
-              fontSize: '0.68rem', 
-              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)' 
+              fontSize: '0.72rem', 
+              color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+              fontWeight: 500
             }}>Ready</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ 
-              width: '8px', 
-              height: '8px', 
+              width: '10px', 
+              height: '10px', 
               borderRadius: '50%', 
-              background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+              background: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)',
               display: 'inline-block' 
             }}></span>
             <span style={{ 
-              fontSize: '0.68rem', 
-              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)' 
+              fontSize: '0.72rem', 
+              color: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+              fontWeight: 500
             }}>Locked</span>
           </div>
         </div>
 
         {/* Hint */}
         <span style={{ 
-          fontSize: '0.6rem', 
-          color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)', 
+          fontSize: '0.62rem', 
+          color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)', 
           fontFamily: "'Space Mono',monospace" 
         }}>
           Scroll to zoom · Drag to pan · Click nodes
@@ -587,7 +589,6 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         let left = tooltipPos.x + 16;
         let top = tooltipPos.y - 10;
         
-        // Prevent tooltip from going off right edge
         if (containerRef.current && left + tooltipWidth > containerRef.current.offsetWidth) {
           left = tooltipPos.x - tooltipWidth - 16;
         }
@@ -597,12 +598,12 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             position: 'absolute',
             left: Math.max(10, left),
             top: Math.max(50, top),
-            background: isDark ? 'rgba(20,20,28,0.97)' : 'rgba(255,255,255,0.97)',
-            border: `1px solid ${isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.2)'}`,
+            background: isDark ? 'rgba(25,25,35,0.98)' : 'rgba(255,255,255,0.98)',
+            border: `1px solid ${isDark ? 'rgba(167,139,250,0.3)' : 'rgba(124,58,237,0.25)'}`,
             borderRadius: '12px',
             padding: '14px 16px',
             width: `${tooltipWidth}px`,
-            boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
+            boxShadow: isDark ? '0 12px 40px rgba(0,0,0,0.5)' : '0 12px 40px rgba(0,0,0,0.15)',
             backdropFilter: 'blur(12px)',
             zIndex: 30,
             pointerEvents: 'none'
@@ -610,7 +611,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             <div style={{ 
               fontFamily: "'Syne',sans-serif", 
               fontWeight: 700, 
-              fontSize: '0.85rem', 
+              fontSize: '0.88rem', 
               color: isDark ? '#fff' : '#1a1a1a', 
               marginBottom: '3px',
               lineHeight: 1.3
@@ -618,7 +619,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
               {content.title.split('—')[0]}
             </div>
             <div style={{ 
-              fontSize: '0.65rem', 
+              fontSize: '0.68rem', 
               color: ac, 
               fontFamily: "'Space Mono',monospace", 
               marginBottom: '10px' 
@@ -627,8 +628,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             </div>
             
             <div style={{ 
-              fontSize: '0.72rem', 
-              color: isCompleted(hoveredNode) ? '#22c55e' : isUnlocked(hoveredNode) ? ac : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', 
+              fontSize: '0.75rem', 
+              color: isCompleted(hoveredNode) ? '#22c55e' : isUnlocked(hoveredNode) ? ac : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', 
               marginBottom: '10px', 
               fontWeight: 600, 
               fontFamily: "'Space Mono',monospace" 
@@ -639,8 +640,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             {content.prereqs.length > 0 && content.prereqs[0].label !== 'None (foundation topic)' && (
               <div style={{ marginBottom: '6px' }}>
                 <div style={{ 
-                  fontSize: '0.6rem', 
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', 
+                  fontSize: '0.62rem', 
+                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', 
                   fontWeight: 600,
                   marginBottom: '3px',
                   textTransform: 'uppercase',
@@ -651,9 +652,9 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                   {content.prereqs.slice(0, 3).map((p, i) => (
                     <span key={i} style={{
-                      fontSize: '0.65rem',
-                      color: p.completed ? '#22c55e' : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      background: p.completed ? (isDark ? 'rgba(34,197,94,0.1)' : 'rgba(34,197,94,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                      fontSize: '0.68rem',
+                      color: p.completed ? '#22c55e' : isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                      background: p.completed ? (isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.1)') : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'),
                       padding: '2px 8px',
                       borderRadius: '4px',
                       fontFamily: "'Space Mono',monospace"
@@ -662,7 +663,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     </span>
                   ))}
                   {content.prereqs.length > 3 && (
-                    <span style={{ fontSize: '0.65rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
+                    <span style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                       +{content.prereqs.length - 3}
                     </span>
                   )}
@@ -673,8 +674,8 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             {content.unlocks.length > 0 && content.unlocks[0] !== 'End of path' && (
               <div>
                 <div style={{ 
-                  fontSize: '0.6rem', 
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', 
+                  fontSize: '0.62rem', 
+                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', 
                   fontWeight: 600,
                   marginBottom: '3px',
                   textTransform: 'uppercase',
@@ -685,9 +686,9 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                   {content.unlocks.slice(0, 3).map((u, i) => (
                     <span key={i} style={{
-                      fontSize: '0.65rem',
-                      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.06)',
+                      fontSize: '0.68rem',
+                      color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                      background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.08)',
                       padding: '2px 8px',
                       borderRadius: '4px',
                       fontFamily: "'Space Mono',monospace"
@@ -696,7 +697,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                     </span>
                   ))}
                   {content.unlocks.length > 3 && (
-                    <span style={{ fontSize: '0.65rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}>
+                    <span style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
                       +{content.unlocks.length - 3}
                     </span>
                   )}
@@ -706,7 +707,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             
             <div style={{ 
               marginTop: '10px', 
-              fontSize: '0.6rem', 
+              fontSize: '0.62rem', 
               color: ac, 
               fontFamily: "'Space Mono',monospace",
               opacity: 0.8
