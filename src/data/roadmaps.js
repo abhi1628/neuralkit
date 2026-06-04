@@ -222,6 +222,335 @@ export const ROADMAPS = [
       keywords: 'ml engineer roadmap 2026, machine learning engineer, mlops career, production ml',
       ogImage: '/images/roadmaps/ml-engineer-roadmap.png'
     }
+  },
+    {
+    slug: 'data-analyst',
+    title: 'Data Analyst Roadmap 2026',
+    description: 'Master data analysis from Excel to business intelligence. Learn to clean, analyze, visualize data, and communicate insights that drive decisions.',
+    shortDesc: 'Excel to BI to insights',
+    icon: '📈',
+    category: 'Career',
+    image: '/images/roadmaps/data-analyst-roadmap.png',
+    imageAlt: 'Comprehensive Data Analyst Roadmap from Foundations to Business Impact',
+    estimatedHours: 600,
+    difficulty: 'Beginner',
+    phases: [
+      {
+        title: 'Phase 1: Foundations',
+        icon: '📐',
+        topics: [
+          'Mathematics & Statistics — Basic Math, Descriptive Stats, Probability Basics',
+          'Excel Fundamentals — Formulas, Data Formatting, Charts, Pivot Tables',
+          'Excel Advanced — VLOOKUP/XLOOKUP, Power Query, What-If Analysis'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 2: Data & Tools',
+        icon: '🛠️',
+        topics: [
+          'SQL Fundamentals — SELECT, WHERE, JOIN, GROUP BY, Aggregations',
+          'SQL Advanced — Window Functions, CTEs, Subqueries, Performance Tips',
+          'Python for Analysts — Pandas, NumPy, Jupyter Notebook'
+        ],
+        resources: [
+          { name: 'ZeroAPI Code Playground', url: '/#playground' }
+        ]
+      },
+      {
+        title: 'Phase 3: Data Handling & Preparation',
+        icon: '🧹',
+        topics: [
+          'Data Collection — APIs, CSV, Web Scraping',
+          'Data Cleaning — Missing Values, Duplicates, Outliers',
+          'Data Transformation — Types, Formats, Merge & Append',
+          'Data Quality Checks'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 4: Exploratory Data Analysis (EDA)',
+        icon: '🔍',
+        topics: [
+          'Univariate Analysis — Distributions, Central Tendency',
+          'Bivariate Analysis — Correlation, Cross-tabs',
+          'Trend Analysis — Time Series Patterns',
+          'Outlier Detection — Statistical Methods'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 5: Data Visualization',
+        icon: '📊',
+        topics: [
+          'Visualization Principles — Choosing the Right Chart',
+          'Dashboards & Reports — Interactive Elements',
+          'Storytelling with Data — Narrative Structure',
+          'Tools: Excel, Power BI, Tableau'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 6: Business Analysis & Insights',
+        icon: '💼',
+        topics: [
+          'KPIs & Metrics — Defining Success',
+          'Business Intelligence Basics — OLAP, Data Warehousing',
+          'Problem Framing — Root Cause Analysis',
+          'A/B Testing Basics — Experiment Design',
+          'Data-Driven Decision Making'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 7: Advanced Topics',
+        icon: '🚀',
+        topics: [
+          'Data Modelling — Star Schema, Fact/Dimension Tables',
+          'Domain Knowledge — Finance, Sales, Marketing, Healthcare',
+          'Reporting & Dashboards — Professional Delivery',
+          'Communication — Stakeholder Management, Presenting Insights'
+        ],
+        resources: []
+      }
+    ],
+    softSkills: [
+      'Curiosity & Problem Solving',
+      'Attention to Detail',
+      'Business Acumen',
+      'Data Ethics',
+      'Growth Mindset',
+      'Ownership'
+    ],
+    relatedTools: ['codePlayground', 'documentSummarizer'],
+    meta: {
+      keywords: 'data analyst roadmap 2026, excel to power bi, learn data analysis, sql for analysts',
+      ogImage: '/images/roadmaps/data-analyst-roadmap.png'
+    }
+  },
+  {
+    slug: 'devops-engineer',
+    title: 'DevOps Engineer Roadmap 2026',
+    description: 'End-to-end path for DevOps: Linux, CI/CD, containers, Kubernetes, cloud, monitoring, and infrastructure automation.',
+    shortDesc: 'Code, build, deploy, automate',
+    icon: '⚙️',
+    category: 'Career',
+    image: '/images/roadmaps/devops-engineer-roadmap.png',
+    imageAlt: 'Comprehensive DevOps Engineer Roadmap from OS Basics to Cloud Architecture',
+    estimatedHours: 1000,
+    difficulty: 'Advanced',
+    phases: [
+      {
+        title: 'Phase 1: Foundations',
+        icon: '📐',
+        topics: [
+          'OS & Networking — Linux Fundamentals, Shell Scripting, TCP/IP, DNS, HTTP/HTTPS',
+          'Computer Science Basics — Data Structures, Algorithms, How the Internet Works'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 2: System Administration',
+        icon: '🖥️',
+        topics: [
+          'Linux Administration — User Management, Process Management, Logs',
+          'Package Management — apt, yum, brew',
+          'Monitoring Basics — top, htop, vmstat, iostat'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 3: Development & Scripting',
+        icon: '💻',
+        topics: [
+          'Python / Bash Scripting — Automation, Regex',
+          'Git Essentials — Branching, Merging, Pull Requests, Code Review'
+        ],
+        resources: [
+          { name: 'ZeroAPI Code Playground', url: '/#playground' }
+        ]
+      },
+      {
+        title: 'Phase 4: Version Control & CI Basics',
+        icon: '🔀',
+        topics: [
+          'Git Advanced — Rebase, Cherry-pick, Stash, Submodules',
+          'CI/CD Basics — Jenkins, GitHub Actions, GitLab CI'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 5: Infrastructure as Code',
+        icon: '🏗️',
+        topics: [
+          'IaC Tools — Terraform, Ansible, Packer',
+          'Key Concepts — Idempotency, State Management, Modules'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 6: Containers & Virtualization',
+        icon: '🐳',
+        topics: [
+          'Docker — Dockerfile, Compose, Multi-stage Builds',
+          'Container Concepts — Images, Volumes, Networks, Registry'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 7: Orchestration',
+        icon: '☸️',
+        topics: [
+          'Kubernetes — Architecture, Pods, Deployments, Services',
+          'Helm — Charts, Package Management',
+          'Service Mesh — Istio Basics'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 8: Cloud Platforms',
+        icon: '☁️',
+        topics: [
+          'AWS Core — EC2, S3, IAM, VPC, RDS, Route53',
+          'Azure / GCP Basics — Core Services, IAM, Networking'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 9: Monitoring & Security',
+        icon: '🔒',
+        topics: [
+          'Monitoring — Prometheus, Grafana, Alertmanager',
+          'Logging — ELK Stack, Loki',
+          'Security — IAM Best Practices, Secrets Management, Container Security'
+        ],
+        resources: []
+      }
+    ],
+    softSkills: [
+      'Automate Everything',
+      'Collaborate & Communicate',
+      'Measure & Improve',
+      'Think Reliability & Security',
+      'Continuous Learning'
+    ],
+    relatedTools: ['codePlayground', 'codeExplainer'],
+    meta: {
+      keywords: 'devops engineer roadmap 2026, learn devops, kubernetes, docker, terraform, aws',
+      ogImage: '/images/roadmaps/devops-engineer-roadmap.png'
+    }
+  },
+  {
+    slug: 'python-developer',
+    title: 'Python Developer Roadmap 2026',
+    description: 'Complete Python journey from basics to professional development. Covers core Python, web frameworks, databases, deployment, and best practices.',
+    shortDesc: 'Code, build, deploy with Python',
+    icon: '🐍',
+    category: 'Career',
+    image: '/images/roadmaps/python-developer-roadmap.png',
+    imageAlt: 'Comprehensive Python Developer Roadmap from Basics to Professional Deployment',
+    estimatedHours: 700,
+    difficulty: 'Beginner',
+    phases: [
+      {
+        title: 'Phase 1: Foundations',
+        icon: '📚',
+        topics: [
+          'Python Basics — Syntax, Variables, Data Types, Operators',
+          'Control Flow — Conditionals, Loops, Functions',
+          'Input/Output, Type Conversion, Scope & Namespace'
+        ],
+        resources: [
+          { name: 'ZeroAPI Code Playground', url: '/#playground' }
+        ]
+      },
+      {
+        title: 'Phase 2: Core Python',
+        icon: '🎯',
+        topics: [
+          'Strings, Lists, Tuples, Sets, Dictionaries',
+          'List Comprehensions, Enumerate, Zip, Map, Filter, Lambda',
+          'Modules & Packages, Standard Library (os, sys, datetime, random, collections)'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 3: OOP in Python',
+        icon: '🏗️',
+        topics: [
+          'Classes & Objects, Constructor (__init__), Inheritance',
+          'Polymorphism, Encapsulation, Abstraction',
+          'Magic Methods, Properties & Decorators'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 4: Advanced Python',
+        icon: '⚡',
+        topics: [
+          'Decorators, Generators, Iterators, Context Managers',
+          'Exception Handling, File Handling, Regular Expressions',
+          'Typing (Type Hints), Advanced Modules & Packages'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 5: Data Structures & Algorithms',
+        icon: '🧮',
+        topics: [
+          'Arrays, Linked Lists, Stacks, Queues, Trees, Graphs',
+          'Searching & Sorting Algorithms, Time & Space Complexity',
+          'Practice: LeetCode, HackerRank, Codeforces'
+        ],
+        resources: [
+          { name: 'ZeroAPI MCQ Generator', url: '/#tools' }
+        ]
+      },
+      {
+        title: 'Phase 6: Web Development with Python',
+        icon: '🌐',
+        topics: [
+          'Web Fundamentals — HTTP, HTML, CSS, JavaScript Basics',
+          'Django Framework — MVC, ORM, REST API, Authentication',
+          'APIs Development — DRF, Serializers, ViewSets, Postman'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 7: Databases & Deployment',
+        icon: '🗄️',
+        topics: [
+          'SQL Basics — SQLite, PostgreSQL, MySQL',
+          'CRUD, Joins, Relationships, Migrations, Indexing',
+          'Deployment — Docker, Nginx, Gunicorn, AWS/Heroku/Render'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 8: Professional Development',
+        icon: '⭐',
+        topics: [
+          'Version Control — Git, GitHub, GitLab',
+          'Code Quality — PEP 8, Linters, Formatters, Type Hints',
+          'Testing — Unit Testing, pytest, Code Coverage',
+          'Soft Skills — Problem Solving, Communication, Team Collaboration'
+        ],
+        resources: []
+      }
+    ],
+    softSkills: [
+      'Problem Solving',
+      'Communication',
+      'Team Collaboration',
+      'Technical Writing',
+      'Time Management',
+      'Continuous Learning'
+    ],
+    relatedTools: ['codePlayground', 'mcqGenerator', 'codeExplainer'],
+    meta: {
+      keywords: 'python developer roadmap 2026, learn python, django, web development, python career',
+      ogImage: '/images/roadmaps/python-developer-roadmap.png'
+    }
   }
 ];
 
