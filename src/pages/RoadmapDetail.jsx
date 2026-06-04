@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { getRoadmapBySlug } from '../data/roadmaps';
-import { trackEvent, downloadAsPDF, copyToClipboard } from '../utils';
+import { trackEvent, copyToClipboard } from '../utils';
 import { useState } from 'react';
 
 export default function RoadmapDetail() {
@@ -27,10 +27,14 @@ export default function RoadmapDetail() {
     );
   }
 
-  const handleDownloadPDF = () => {
-    const text = generateRoadmapText(roadmap);
-    downloadAsPDF(text, 'zeroapi-' + roadmap.slug + '-roadmap');
-    trackEvent('roadmap_download', { roadmap: slug, format: 'pdf' });
+  const handleDownloadImage = () => {
+    const link = document.createElement('a');
+    link.href = roadmap.image;
+    link.download = `${roadmap.slug}-roadmap.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    trackEvent('roadmap_download', { roadmap: slug, format: 'image' });
   };
 
   const handleCopyMarkdown = () => {
@@ -250,7 +254,7 @@ export default function RoadmapDetail() {
           </div>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
-              onClick={handleDownloadPDF}
+              onClick={handleDownloadImage}
               style={{
                 background: `linear-gradient(135deg, ${ac}, ${isDark ? '#818cf8' : '#4f46e5'})`,
                 border: 'none',
@@ -260,10 +264,10 @@ export default function RoadmapDetail() {
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
-                fontFamily: "'Space Mono',monospace"
+                fontFamily: "'Space Mono',monospace'
               }}
             >
-              ⬇ Download as PDF
+              ⬇ Download Image
             </button>
             <button
               onClick={handleCopyMarkdown}
