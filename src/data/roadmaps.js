@@ -551,6 +551,302 @@ export const ROADMAPS = [
       keywords: 'python developer roadmap 2026, learn python, django, web development, python career',
       ogImage: '/images/roadmaps/python-developer-roadmap.png'
     }
+  },
+    {
+    slug: 'genai-developer',
+    title: 'Generative AI Engineer Roadmap 2026',
+    description: 'Master the Gen AI stack: LLMs, fine-tuning, RAG, agents, and production deployment. From transformer theory to building real-world AI applications.',
+    shortDesc: 'Build with LLMs, RAG, and agents',
+    icon: '✨',
+    category: 'Career',
+    image: '/images/roadmaps/genai-developer.png',
+    imageAlt: 'Comprehensive Generative AI Engineer Roadmap from Foundations to Production Deployment',
+    estimatedHours: 900,
+    difficulty: 'Advanced',
+    phases: [
+      {
+        title: 'Phase 1: Foundations',
+        icon: '📐',
+        topics: [
+          'Mathematics — Linear Algebra, Probability, Calculus, Information Theory',
+          'Programming — Python Fundamentals, Data Structures, Algorithms, Git & GitHub',
+          'Core CS — Operating Systems, Computer Networks'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 2: Python & Data Skills',
+        icon: '🐍',
+        topics: [
+          'Advanced Python — OOP, Decorators, Generators, Virtual Environments',
+          'Data Handling — NumPy, Pandas, Data Cleaning, EDA, SQL Basics',
+          'Useful Libraries — typing, dataclasses, pathlib'
+        ],
+        resources: [
+          { name: 'ZeroAPI Code Playground', url: '/#playground' }
+        ]
+      },
+      {
+        title: 'Phase 3: Machine Learning Foundation',
+        icon: '🤖',
+        topics: [
+          'Supervised & Unsupervised Learning',
+          'Feature Engineering, Model Evaluation, Cross Validation',
+          'Scikit-learn Workflow',
+          'Why: Strong ML basics help you understand LLMs and build better apps'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 4: Deep Learning Fundamentals',
+        icon: '🧠',
+        topics: [
+          'Neural Networks (DNN), CNNs, RNNs / LSTMs',
+          'Backpropagation, Optimization (Adam, SGD), Regularization',
+          'Frameworks: PyTorch / TensorFlow'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 5: LLM Fundamentals',
+        icon: '💬',
+        topics: [
+          'What is an LLM?, Tokenization, Embeddings',
+          'Attention Mechanism, Transformers Architecture',
+          'Positional Encoding, Pre-training vs Fine-tuning, Inference'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 6: Prompt Engineering',
+        icon: '🎯',
+        topics: [
+          'Prompting Basics, Zero-shot, One-shot, Few-shot',
+          'Chain-of-Thought (CoT), Role Prompting, Prompt Templates',
+          'Prompt Evaluation, Advanced Techniques (Self-consistency, ReAct)'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 7: RAG (Retrieval Augmented Generation)',
+        icon: '🔍',
+        topics: [
+          'Why RAG?, Embeddings & Vector Representations',
+          'Vector Databases (FAISS, Chroma, Pinecone, Weaviate)',
+          'Similarity Search, Building RAG Pipeline, Reranking',
+          'Evaluation (RAGAS, TruLens)'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 8: Fine-Tuning & Adaptation',
+        icon: '⚙️',
+        topics: [
+          'Full Fine-tuning, Parameter-Efficient Fine-tuning (PEFT) — LoRA, QLoRA',
+          'Adapters, Instruction Tuning, Domain Adaptation',
+          'Data Preparation, Evaluation'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 9: Agents & Tool Use',
+        icon: '🤖',
+        topics: [
+          'What are AI Agents?, ReAct Framework',
+          'Tool Use / Function Calling, Planning & Reasoning',
+          'Memory in Agents, Multi-step Workflows, AutoGPT / BabyAGI Concepts'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 10: Generative AI Applications',
+        icon: '🚀',
+        topics: [
+          'Text Generation, Summarization, Question Answering, Code Generation',
+          'Image Generation (Diffusion Models Basics)',
+          'Multimodal Models (Text + Image + Audio)'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 11: Deployment & MLOps for LLMs',
+        icon: '🏭',
+        topics: [
+          'Model Serving (APIs), FastAPI / Flask',
+          'vLLM / TGI / Hugging Face, LangChain Deploy',
+          'Monitoring & Logging, Tracing (LangSmith, OpenTelemetry)',
+          'Cost Optimization'
+        ],
+        resources: []
+      }
+    ],
+    softSkills: [
+      'Stay Curious',
+      'Experiment Consistently',
+      'Build in Public',
+      'Learn from Community',
+      'Focus on Real Problems',
+      'Iterate & Improve'
+    ],
+    relatedTools: ['codePlayground', 'codeExplainer', 'documentSummarizer', 'askAuthor'],
+    meta: {
+      keywords: 'generative ai engineer roadmap 2026, gen ai, llm engineer, rag, fine-tuning, ai applications',
+      ogImage: '/images/roadmaps/genai-developer.png'
+    }
+  },
+  {
+    slug: 'agenticai-developer',
+    title: 'Agentic AI Developer Roadmap 2026',
+    description: 'Build autonomous AI agents that plan, reason, and act. Covers agent architectures, memory, tool use, multi-agent systems, and production orchestration.',
+    shortDesc: 'Build autonomous AI agents',
+    icon: '🤖',
+    category: 'Career',
+    image: '/images/roadmaps/agenticai-developer.png',
+    imageAlt: 'Comprehensive Agentic AI Developer Roadmap from Foundations to Scaling Agents',
+    estimatedHours: 850,
+    difficulty: 'Advanced',
+    phases: [
+      {
+        title: 'Phase 1: Foundations',
+        icon: '📐',
+        topics: [
+          'Math & CS Basics — Linear Algebra, Probability, Discrete Math, Algorithms',
+          'Programming Essentials — Python Advanced, Data Structures, OOP, Async, Decorators',
+          'Typing, Pydantic, Git & GitHub'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 2: Python & Data Engineering Basics',
+        icon: '🐍',
+        topics: [
+          'Python for AI — NumPy, Pandas, Polars, APIs & JSON, AsyncIO',
+          'Data Engineering Basics — ETL, Data Cleaning, SQL Advanced, Vector Databases Intro'
+        ],
+        resources: [
+          { name: 'ZeroAPI Code Playground', url: '/#playground' }
+        ]
+      },
+      {
+        title: 'Phase 3: LLM & Gen AI Fundamentals',
+        icon: '💬',
+        topics: [
+          'How LLMs Work?, Tokenization, Embeddings, Attention (High-level)',
+          'Fine-tuning vs Prompting, Model Evaluation Basics',
+          'OpenAI / Claude / Gemini APIs'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 4: Prompt Engineering Mastery',
+        icon: '🎯',
+        topics: [
+          'Prompt Design Principles, Zero-shot, Few-shot, CoT, ReAct',
+          'Structured Output, Prompt Templates, Guardrails in Prompts',
+          'Prompt Evaluation & Optimization'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 5: Agentic AI Core Concepts',
+        icon: '🤖',
+        topics: [
+          'What is an AI Agent?, Agent Types & Architectures',
+          'Autonomy, Memory, Tools, Planning, Reasoning, Reflection',
+          'Multi-agent Systems, Human-in-the-Loop'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 6: Tools & Function Calling',
+        icon: '🔧',
+        topics: [
+          'Function Calling / Tool Calling, JSON Schema',
+          'API Integrations, Third-party Tools, Code Interpreter',
+          'Sandboxes & Safety'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 7: Memory Systems',
+        icon: '🧠',
+        topics: [
+          'Types of Memory — Short-term, Long-term, Episodic, Semantic',
+          'Conversation Memory, Vector Store Memory, RAG + Memory',
+          'Memory Management Strategies'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 8: Knowledge & RAG',
+        icon: '🔍',
+        topics: [
+          'RAG Architecture, Chunking Strategies, Embeddings Models',
+          'Vector DBs (Pinecone, Weaviate, Qdrant, Chroma), Hybrid Search, Re-ranking'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 9: Planning & Reasoning',
+        icon: '📋',
+        topics: [
+          'Task Decomposition, Planning Algorithms (ReAct, Plan-and-Execute)',
+          'Tree of Thoughts, Self-Reflection, Critic / Evaluator Models'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 10: Agent Frameworks',
+        icon: '🏗️',
+        topics: [
+          'LangChain, LlamaIndex, CrewAI, AutoGen, Semantic Kernel, LangGraph, Haystack Agents'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 11: Multi-Agent Systems',
+        icon: '👥',
+        topics: [
+          'Agent Communication Patterns, Supervisor / Worker',
+          'Debate / Collaboration, Swarm / Marketplace, Coordination & Orchestration'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 12: Evaluation & Guardrails',
+        icon: '🛡️',
+        topics: [
+          'Agent Evaluation Metrics, Hallucination Detection',
+          'Safety & Alignment, Content Moderation, PII Redaction',
+          'Guardrails with RAGs / Guardrails AI'
+        ],
+        resources: []
+      },
+      {
+        title: 'Phase 13: Build, Deploy & Operate',
+        icon: '🚀',
+        topics: [
+          'Building Agents — Create, Add Tools, Memory, RAG, Planning, Guardrails',
+          'Deployment — API with FastAPI, Dockerize, Cloud Deploy (AWS/GCP/Azure)',
+          'Monitoring & Observability, Security & Compliance, Scaling Agents'
+        ],
+        resources: []
+      }
+    ],
+    softSkills: [
+      'Stay Curious',
+      'Experiment Continuously',
+      'Think in Systems',
+      'Build in Public',
+      'Focus on Impact',
+      'Collaborate & Community',
+      'Ethical & Responsible AI'
+    ],
+    relatedTools: ['codePlayground', 'codeExplainer', 'documentSummarizer', 'askAuthor'],
+    meta: {
+      keywords: 'agentic ai developer roadmap 2026, ai agents, autonomous agents, langchain, crewai, multi-agent systems',
+      ogImage: '/images/roadmaps/agenticai-developer.png'
+    }
   }
 ];
 
