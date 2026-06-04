@@ -258,7 +258,7 @@ export default function RoadmapDetail() {
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
-                fontFamily: "'Space Mono',monospace'
+                fontFamily: "'Space Mono',monospace"
               }}
             >
               ⬇ Download as PDF
@@ -274,7 +274,7 @@ export default function RoadmapDetail() {
                 fontWeight: 600,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
-                fontFamily: "'Space Mono',monospace'
+                fontFamily: "'Space Mono',monospace"
               }}
             >
               {copied ? '✓ Copied!' : '📋 Copy Text'}
