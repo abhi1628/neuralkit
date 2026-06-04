@@ -93,4 +93,7 @@
   <url><loc>https://www.zeroapi.in/roadmaps</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.zeroapi.in/roadmaps/data-scientist</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.zeroapi.in/roadmaps/ml-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/roadmaps/data-analyst</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/roadmaps/devops-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/roadmaps/python-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>
