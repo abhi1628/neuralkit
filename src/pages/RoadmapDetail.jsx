@@ -71,11 +71,11 @@ export default function RoadmapDetail() {
           </h1>
         </div>
         
-        <p style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.65)', fontSize: '1rem', lineHeight: 1.8, maxWidth: '700px' }}>
+        <p style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.65)', fontSize: '1rem', lineHeight: 1.8, maxWidth: '700px',textAlign: 'center', margin: '0 auto'  }}>
           {roadmap.description}
         </p>
         
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <span style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '4px 12px', borderRadius: '6px' }}>
             ⏱ {roadmap.estimatedHours}+ hours
           </span>
