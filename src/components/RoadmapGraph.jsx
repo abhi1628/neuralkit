@@ -255,7 +255,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
             color: isDark ? '#fff' : '#1a1a1a', 
             cursor: 'pointer', 
             fontSize: '0.7rem',
-            fontFamily: "'Space Mono',monospace',
+            fontFamily: "'Space Mono',monospace",
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
