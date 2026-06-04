@@ -13,6 +13,8 @@ import Contact from './pages/Contact';
 import About from './pages/About';
 import BreakIt from './pages/BreakIt';
 import BreakItChallenge from './pages/BreakItChallenge';
+import RoadmapList from './pages/RoadmapList';
+import RoadmapDetail from './pages/RoadmapDetail';
 
 // ── Components ────────────────────────────────────────────────
 import ErrorBoundary from './components/ErrorBoundary';
@@ -242,6 +244,8 @@ function ContactPage()   { const { theme } = useTheme(); return <Contact   theme
 function AboutPage()     { const { theme } = useTheme(); return <About     theme={theme} />; }
 function BreakItPage()   { const { theme } = useTheme(); return <BreakIt theme={theme} />; }
 function BreakItChallengePage() { const { theme } = useTheme(); return <BreakItChallenge theme={theme} />; }
+function RoadmapListPage() { const { theme } = useTheme(); return <RoadmapList theme={theme} />; }
+function RoadmapDetailPage() { const { theme } = useTheme(); return <RoadmapDetail theme={theme} />; }
 
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
@@ -271,6 +275,8 @@ export default function App() {
         <Route path="*"            element={<AppInner />} />
         <Route path="/breakit" element={<BreakItPage />} />
         <Route path="/breakit/:slug" element={<BreakItChallengePage />} />
+        <Route path="/roadmaps" element={<RoadmapListPage />} />
+        <Route path="/roadmaps/:slug" element={<RoadmapDetailPage />} />
       </Routes>
     </ErrorBoundary>
   );
