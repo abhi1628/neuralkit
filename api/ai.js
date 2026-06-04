@@ -20,7 +20,6 @@ const ALLOWED_ORIGINS = [
   "https://www.zeroapi.in",
 ];
 
-// Inject dev origins via env for local testing
 if (process.env.NODE_ENV !== "production") {
   ALLOWED_ORIGINS.push("http://localhost:5173", "http://localhost:3000");
 }
@@ -95,8 +94,20 @@ async function callGroq(modelName, messages, maxTokens, temperature) {
   return { res: groqRes, data };
 }
 
+// ── Helper: Hash IP for live users (privacy-safe) ────────────
+function hashIp(ip) {
+  if (!ip) return 'unknown';
+  // Simple hash — sufficient for analytics, not cryptography
+  let hash = 0;
+  for (let i = 0; i < ip.length; i++) {
+    const char = ip.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return `u${Math.abs(hash)}`;
+}
+
 export default async function handler(req, res) {
-  // ── SIZE LIMIT ─────────────────────────────────────────────
   const contentLength = parseInt(req.headers["content-length"] || "0", 10);
   if (contentLength > MAX_BODY_SIZE) {
     return res.status(413).json({ error: "Payload too large. Max 2MB." });
@@ -117,7 +128,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing messages array" });
   }
 
-  // ── Messages structure validation ──────────────────────────
   if (messages.length === 0 || messages.length > 50) {
     return res.status(400).json({ error: "messages must be an array with 1-50 items" });
   }
@@ -135,7 +145,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid message format" });
   }
 
-  // ── Strict input validation ──────────────────────────────
   const safeModel = MODEL_WHITELIST.includes(model) ? model : DEFAULT_MODEL;
 
   const rawMaxTokens = Number(max_tokens);
@@ -154,11 +163,10 @@ export default async function handler(req, res) {
 
   initGlobals();
 
-  // ── Trust platform-specific forwarded headers ──────────────
   const clientIp = 
-    req.headers["x-vercel-forwarded-for"]?.split(",")[0]?.trim() ||  // Vercel
-    req.headers["cf-connecting-ip"] ||                                 // Cloudflare
-    req.headers["x-forwarded-for"]?.split(",").pop()?.trim() ||      // Last IP = closest proxy
+    req.headers["x-vercel-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.headers["cf-connecting-ip"] ||
+    req.headers["x-forwarded-for"]?.split(",").pop()?.trim() ||
     req.socket.remoteAddress;
 
   const now = Date.now();
@@ -199,7 +207,6 @@ export default async function handler(req, res) {
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
         });
         
-        // ── Sanitized telemetry ──────────────────────────────
         const rawToolId = req.body.toolId;
         const safeToolId = (
           typeof rawToolId === "string" && 
@@ -208,13 +215,26 @@ export default async function handler(req, res) {
         
         const currentLabelId = safeModel;
         
+        // ── Write to totals (existing) ─────────────────────────
         if (safeToolId) {
           const redisKey = `runs:${safeToolId} (${currentLabelId})`;
           await redis.hincrby("zeroapi:analytics", redisKey, 1);
         } else {
-          // Fallback legacy behavior if no valid toolId
           await redis.hincrby("zeroapi:analytics", `runs:${currentLabelId}`, 1);
         }
+
+        // ── Write to daily bucket (NEW) ────────────────────────
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const dailyKey = `zeroapi:analytics:daily:${today}`;
+        const dailyField = safeToolId ? `runs:${safeToolId}` : `runs:${currentLabelId}`;
+        await redis.hincrby(dailyKey, dailyField, 1);
+        // Auto-expire daily keys after 30 days to save memory
+        await redis.expire(dailyKey, 2592000);
+
+        // ── Track live user (NEW) ─────────────────────────────
+        const userHash = hashIp(clientIp);
+        await redis.set(`active:${userHash}`, "1", { ex: 300 }); // 5 min TTL
+
       } catch (redisErr) {
         console.error("Telemetry write skip:", redisErr.message);
       }
