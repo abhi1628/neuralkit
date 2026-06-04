@@ -264,7 +264,7 @@ export default function RoadmapDetail() {
                 fontWeight: 700,
                 fontSize: '0.85rem',
                 cursor: 'pointer',
-                fontFamily: "'Space Mono',monospace'
+                fontFamily: "'Space Mono',monospace"
               }}
             >
               ⬇ Download Image
