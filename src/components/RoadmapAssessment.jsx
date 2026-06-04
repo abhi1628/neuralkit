@@ -155,7 +155,7 @@ export default function RoadmapAssessment({ roadmap, onComplete }) {
               fontWeight: 600,
               fontSize: '0.85rem',
               cursor: 'pointer',
-              fontFamily: "'Space Mono',monospace'
+              fontFamily: "'Space Mono',monospace"
             }}
           >
             Retake Assessment
