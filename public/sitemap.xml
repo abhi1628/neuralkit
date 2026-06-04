@@ -89,4 +89,8 @@
   <url><loc>https://zeroapi.in/breakit/cloud-retry-storm</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cloud-stateless-bypass</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cloud-promise-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+
+  <url><loc>https://www.zeroapi.in/roadmaps</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/roadmaps/data-scientist</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/roadmaps/ml-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>
