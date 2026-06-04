@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { getRoadmapBySlug } from '../data/roadmaps';
 import { trackEvent, copyToClipboard } from '../utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function RoadmapDetail() {
   const { slug } = useParams();
@@ -12,9 +12,25 @@ export default function RoadmapDetail() {
   const isDark = theme === 'dark';
   const ac = isDark ? '#a78bfa' : '#7c3aed';
   const [copied, setCopied] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   
   const roadmap = getRoadmapBySlug(slug);
   
+  // Close lightbox on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+    };
+    if (lightboxOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxOpen]);
+
   if (!roadmap) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '120px 32px', textAlign: 'center' }}>
@@ -43,12 +59,21 @@ export default function RoadmapDetail() {
     trackEvent('roadmap_copy', { roadmap: slug, format: 'markdown' });
   };
 
+  const openLightbox = () => {
+    setLightboxOpen(true);
+    trackEvent('roadmap_lightbox_open', { roadmap: slug });
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif" }}>
       
       {/* Hero / Header */}
       <div style={{ padding: '100px 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
-                <button 
+        <button 
           onClick={() => navigate('/roadmaps')}
           style={{ 
             background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.07)', 
@@ -93,26 +118,124 @@ export default function RoadmapDetail() {
         </div>
       </div>
 
-      {/* Roadmap Image */}
+      {/* Roadmap Image with Lightbox */}
       <div style={{ padding: '0 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
         <div style={{
           background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
           border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`,
           borderRadius: '16px',
           padding: '16px',
-          overflow: 'hidden'
-        }}>
+          overflow: 'hidden',
+          cursor: 'pointer',
+          transition: 'border-color 0.2s ease'
+        }}
+        onClick={openLightbox}
+        onMouseEnter={e => {
+          e.currentTarget.style.borderColor = ac;
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)';
+        }}
+        >
           <img 
             src={roadmap.image} 
             alt={roadmap.imageAlt}
             loading="lazy"
-            style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block' }}
+            style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block', pointerEvents: 'none' }}
           />
           <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)', fontFamily: "'Space Mono',monospace" }}>
-            ◆ Visual Roadmap — Save or share
+            ◆ Click to enlarge — Save or share
           </div>
         </div>
       </div>
+
+      {/* Lightbox Overlay */}
+      {lightboxOpen && (
+        <div 
+          onClick={closeLightbox}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1000,
+            background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              right: '24px',
+              background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              color: '#fff',
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1001,
+              transition: 'background 0.2s ease'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)'}
+          >
+            ✕
+          </button>
+
+          {/* Image container */}
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              animation: 'scaleIn 0.25s ease'
+            }}
+          >
+            <img 
+              src={roadmap.image} 
+              alt={roadmap.imageAlt}
+              style={{ 
+                maxWidth: '100%', 
+                maxHeight: '90vh',
+                width: 'auto',
+                height: 'auto',
+                borderRadius: '12px',
+                boxShadow: '0 25px 80px rgba(0,0,0,0.5)',
+                display: 'block'
+              }}
+            />
+            {/* Caption */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-36px',
+              left: '0',
+              right: '0',
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '0.75rem',
+              fontFamily: "'Space Mono',monospace"
+            }}>
+              Click outside or press Escape to close
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Theory / Phases */}
       <div style={{ padding: '0 32px 60px', maxWidth: '800px', margin: '0 auto' }}>
@@ -217,7 +340,6 @@ export default function RoadmapDetail() {
                     trackEvent('roadmap_tool_click', { roadmap: slug, tool: toolId });
                     navigate(`/#tools`);
                     setTimeout(() => {
-                      // Scroll to tools section after navigation
                       document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' });
                     }, 100);
                   }}
@@ -288,6 +410,18 @@ export default function RoadmapDetail() {
           </div>
         </div>
       </div>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+          from { transform: scale(0.92); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
