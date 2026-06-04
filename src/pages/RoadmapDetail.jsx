@@ -44,18 +44,22 @@ export default function RoadmapDetail() {
       
       {/* Hero / Header */}
       <div style={{ padding: '100px 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
-        <button 
+                <button 
           onClick={() => navigate('/roadmaps')}
           style={{ 
-            background: 'transparent', 
-            border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.15)', 
+            background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.07)', 
+            border: isDark ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(124,58,237,0.2)', 
             borderRadius: '8px', 
-            padding: '6px 14px', 
-            color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', 
-            fontSize: '0.78rem', 
+            color: ac, 
+            fontSize: '0.82rem', 
             cursor: 'pointer', 
             fontFamily: "'Space Mono',monospace", 
-            marginBottom: '24px' 
+            marginBottom: '36px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px', 
+            padding: '8px 16px', 
+            fontWeight: 600 
           }}
         >
           ← All Roadmaps
