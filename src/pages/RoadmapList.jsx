@@ -13,7 +13,35 @@ export default function RoadmapList() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif", padding: '100px 32px 80px' }}>
       <div style={{ maxWidth: '960px', margin: '0 auto' }}>
-        
+       {/* Back to ZeroAPI */}
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            background: 'transparent',
+            border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.12)',
+            borderRadius: '8px',
+            padding: '6px 14px',
+            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+            fontSize: '0.78rem',
+            cursor: 'pointer',
+            fontFamily: "'Space Mono',monospace",
+            marginTop: '20px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = ac;
+            e.currentTarget.style.color = ac;
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)';
+            e.currentTarget.style.color = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+          }}
+        >
+          ← Back to ZeroAPI
+        </button> 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px' }}>
