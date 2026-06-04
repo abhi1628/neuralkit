@@ -46,11 +46,9 @@ export const TOOL_MODELS = {
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
-// Defense relies on:
-// 1. Strong system prompts with explicit role boundaries
-// 2. Input/output validation (message structure, length limits)
-// 3. Model-level safety (Groq's moderation on llama models)
-// 4. Future: Sandboxed tool execution with no system access
+// Kept as empty arrays for backward compatibility with existing imports.
+export const DANGEROUS_INPUT_PATTERNS = [];
+export const DANGEROUS_OUTPUT_PATTERNS = [];
 
 export const TOOLS = [
   {
