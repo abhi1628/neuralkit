@@ -13,6 +13,17 @@ export default function RoadmapDetail() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const ac = isDark ? '#a78bfa' : '#7c3aed';
+  
+  const bgPrimary = isDark ? '#0a0a0f' : '#ffffff';
+  const bgSecondary = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
+  const bgHover = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+  const textPrimary = isDark ? '#ffffff' : '#1a1a1a';
+  const textSecondary = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.65)';
+  const textMuted = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)';
+  const textFaint = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)';
+  const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+  const borderHover = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)';
+  
   const [copied, setCopied] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [completedTopics, setCompletedTopics] = useState([]);
@@ -24,7 +35,6 @@ export default function RoadmapDetail() {
   
   const roadmap = getRoadmapBySlug(slug);
   
-  // Load progress from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`roadmap-progress-${slug}`);
     if (saved) {
@@ -41,7 +51,6 @@ export default function RoadmapDetail() {
     }
   }, [slug]);
 
-  // Save progress
   const saveProgress = useCallback((updates) => {
     const data = {
       completed: updates.completedTopics ?? completedTopics,
@@ -52,7 +61,6 @@ export default function RoadmapDetail() {
     localStorage.setItem(`roadmap-progress-${slug}`, JSON.stringify(data));
   }, [slug, completedTopics, skippedTopics, hoursSaved, assessmentDone]);
 
-  // Close lightbox on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') setLightboxOpen(false);
@@ -69,10 +77,28 @@ export default function RoadmapDetail() {
 
   if (!roadmap) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '120px 32px', textAlign: 'center' }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: bgPrimary, 
+        padding: '120px 32px', 
+        textAlign: 'center',
+        color: textPrimary
+      }}>
         <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔍</div>
-        <h2 style={{ fontFamily: "'Syne',sans-serif", color: isDark ? '#fff' : '#1a1a1a' }}>Roadmap Not Found</h2>
-        <button onClick={() => navigate('/roadmaps')} style={{ marginTop: '20px', background: ac, border: 'none', borderRadius: '10px', padding: '10px 24px', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+        <h2 style={{ fontFamily: "'Syne',sans-serif", color: textPrimary }}>Roadmap Not Found</h2>
+        <button 
+          onClick={() => navigate('/roadmaps')} 
+          style={{ 
+            marginTop: '20px', 
+            background: ac, 
+            border: 'none', 
+            borderRadius: '10px', 
+            padding: '10px 24px', 
+            color: '#fff', 
+            fontWeight: 700, 
+            cursor: 'pointer' 
+          }}
+        >
           ← All Roadmaps
         </button>
       </div>
@@ -124,13 +150,11 @@ export default function RoadmapDetail() {
 
   const handleGraphTopicClick = (topicId, phaseId) => {
     setHighlightedTopic(topicId);
-    
-    // Scroll to the topic in the phase list
     const element = document.getElementById(`topic-${topicId}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       element.style.transition = 'background 0.5s ease';
-      element.style.background = isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.08)';
+      element.style.background = isDark ? 'rgba(167,139,250,0.12)' : 'rgba(124,58,237,0.08)';
       setTimeout(() => {
         element.style.background = 'transparent';
       }, 2000);
@@ -138,19 +162,23 @@ export default function RoadmapDetail() {
   };
 
   const isTopicSkipped = (topicId) => skippedTopics.includes(topicId);
-
   const adjustedHours = roadmap.estimatedHours - hoursSaved;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: bgPrimary, 
+      color: textPrimary, 
+      fontFamily: "'DM Sans', sans-serif" 
+    }}>
       
       {/* Hero / Header */}
       <div style={{ padding: '100px 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
         <button 
           onClick={() => navigate('/roadmaps')}
           style={{ 
-            background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.07)', 
-            border: isDark ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(124,58,237,0.2)', 
+            background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.07)', 
+            border: `1px solid ${isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.2)'}`, 
             borderRadius: '8px', 
             color: ac, 
             fontSize: '0.82rem', 
@@ -169,27 +197,69 @@ export default function RoadmapDetail() {
         
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <span style={{ fontSize: '3rem', display: 'block', marginBottom: '12px' }}>{roadmap.icon}</span>
-          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>
+          <div style={{ 
+            fontFamily: "'Space Mono',monospace", 
+            fontSize: '0.7rem', 
+            color: ac, 
+            letterSpacing: '0.15em', 
+            textTransform: 'uppercase', 
+            marginBottom: '8px' 
+          }}>
             {roadmap.category} Roadmap
           </div>
-          <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.02em', color: isDark ? '#fff' : '#1a1a1a', margin: '0' }}>
+          <h1 style={{ 
+            fontFamily: "'Syne',sans-serif", 
+            fontSize: 'clamp(1.8rem,4vw,2.8rem)', 
+            fontWeight: 800, 
+            letterSpacing: '-0.02em', 
+            color: textPrimary, 
+            margin: '0' 
+          }}>
             {roadmap.title}
           </h1>
         </div>
         
-        <p style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.65)', fontSize: '1rem', lineHeight: 1.8, maxWidth: '700px',textAlign: 'center', margin: '0 auto'  }}>
+        <p style={{ 
+          color: textSecondary, 
+          fontSize: '1rem', 
+          lineHeight: 1.8, 
+          maxWidth: '700px',
+          textAlign: 'center', 
+          margin: '0 auto'  
+        }}>
           {roadmap.description}
         </p>
         
         <div style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <span style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '4px 12px', borderRadius: '6px' }}>
+          <span style={{ 
+            fontFamily: "'Space Mono',monospace", 
+            fontSize: '0.72rem', 
+            color: textMuted, 
+            background: bgSecondary, 
+            padding: '4px 12px', 
+            borderRadius: '6px' 
+          }}>
             ⏱ {adjustedHours}+ hours{hoursSaved > 0 && <span style={{ color: '#22c55e' }}> (saved {hoursSaved}h)</span>}
           </span>
-          <span style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '4px 12px', borderRadius: '6px' }}>
+          <span style={{ 
+            fontFamily: "'Space Mono',monospace", 
+            fontSize: '0.72rem', 
+            color: textMuted, 
+            background: bgSecondary, 
+            padding: '4px 12px', 
+            borderRadius: '6px' 
+          }}>
             📊 {roadmap.difficulty}
           </span>
           {completedTopics.length > 0 && (
-            <span style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.72rem', color: ac, background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.08)', padding: '4px 12px', borderRadius: '6px' }}>
+            <span style={{ 
+              fontFamily: "'Space Mono',monospace", 
+              fontSize: '0.72rem', 
+              color: ac, 
+              background: isDark ? 'rgba(167,139,250,0.12)' : 'rgba(124,58,237,0.08)', 
+              padding: '4px 12px', 
+              borderRadius: '6px' 
+            }}>
               ✓ {completedTopics.length} completed
             </span>
           )}
@@ -213,10 +283,10 @@ export default function RoadmapDetail() {
             onClick={() => setShowAssessment(!showAssessment)}
             style={{
               background: 'transparent',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              border: `1px solid ${borderColor}`,
               borderRadius: '8px',
               padding: '8px 16px',
-              color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+              color: textMuted,
               fontSize: '0.75rem',
               cursor: 'pointer',
               fontFamily: "'Space Mono',monospace"
@@ -235,9 +305,24 @@ export default function RoadmapDetail() {
 
       {/* Interactive Knowledge Graph */}
       <div style={{ padding: '0 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ 
+          fontFamily: "'Space Mono',monospace", 
+          fontSize: '0.7rem', 
+          color: ac, 
+          letterSpacing: '0.2em', 
+          textTransform: 'uppercase', 
+          marginBottom: '16px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px' 
+        }}>
           ◆ Knowledge Graph
-          <span style={{ fontSize: '0.6rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', textTransform: 'none', letterSpacing: 'normal' }}>
+          <span style={{ 
+            fontSize: '0.6rem', 
+            color: textFaint, 
+            textTransform: 'none', 
+            letterSpacing: 'normal' 
+          }}>
             — Click nodes, zoom, pan
           </span>
         </div>
@@ -253,7 +338,7 @@ export default function RoadmapDetail() {
       <div style={{ padding: '0 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
         <div style={{
           background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`,
+          border: `1px solid ${borderColor}`,
           borderRadius: '16px',
           padding: '16px',
           overflow: 'hidden',
@@ -265,7 +350,7 @@ export default function RoadmapDetail() {
           e.currentTarget.style.borderColor = ac;
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)';
+          e.currentTarget.style.borderColor = borderColor;
         }}
         >
           <img 
@@ -274,7 +359,13 @@ export default function RoadmapDetail() {
             loading="lazy"
             style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block', pointerEvents: 'none' }}
           />
-          <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)', fontFamily: "'Space Mono',monospace" }}>
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '10px', 
+            fontSize: '0.7rem', 
+            color: textFaint, 
+            fontFamily: "'Space Mono',monospace" 
+          }}>
             ◆ Click to enlarge — Save or share
           </div>
         </div>
@@ -291,7 +382,7 @@ export default function RoadmapDetail() {
             right: 0,
             bottom: 0,
             zIndex: 1000,
-            background: isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.75)',
+            background: 'rgba(0,0,0,0.88)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             display: 'flex',
@@ -307,7 +398,7 @@ export default function RoadmapDetail() {
               position: 'absolute',
               top: '24px',
               right: '24px',
-              background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.15)',
               border: 'none',
               borderRadius: '50%',
               width: '44px',
@@ -322,7 +413,7 @@ export default function RoadmapDetail() {
               transition: 'background 0.2s ease'
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-            onMouseLeave={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
           >
             ✕
           </button>
@@ -367,12 +458,18 @@ export default function RoadmapDetail() {
 
       {/* Theory / Phases */}
       <div style={{ padding: '0 32px 60px', maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '28px' }}>
+        <div style={{ 
+          fontFamily: "'Space Mono',monospace", 
+          fontSize: '0.7rem', 
+          color: ac, 
+          letterSpacing: '0.2em', 
+          textTransform: 'uppercase', 
+          marginBottom: '28px' 
+        }}>
           ◆ Detailed Learning Path
         </div>
         
         {roadmap.phases.map((phase, index) => {
-          // Check if all topics in this phase are skipped
           const phaseSkipped = phase.topics.every(t => isTopicSkipped(t.id));
           const phaseCompleted = phase.topics.every(t => completedTopics.includes(t.id));
           
@@ -384,7 +481,13 @@ export default function RoadmapDetail() {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
                 <span style={{ fontSize: '1.4rem' }}>{phase.icon}</span>
-                <h2 style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: '1.15rem', color: isDark ? '#fff' : '#1a1a1a', margin: 0 }}>
+                <h2 style={{ 
+                  fontFamily: "'Syne',sans-serif", 
+                  fontWeight: 700, 
+                  fontSize: '1.15rem', 
+                  color: textPrimary, 
+                  margin: 0 
+                }}>
                   {phase.title}
                 </h2>
                 {phaseCompleted && (
@@ -393,13 +496,21 @@ export default function RoadmapDetail() {
                   </span>
                 )}
                 {phaseSkipped && !phaseCompleted && (
-                  <span style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', fontFamily: "'Space Mono',monospace" }}>
+                  <span style={{ 
+                    fontSize: '0.7rem', 
+                    color: textFaint, 
+                    fontFamily: "'Space Mono',monospace" 
+                  }}>
                     (Skipped based on assessment)
                   </span>
                 )}
               </div>
               
-              <div style={{ paddingLeft: '8px', borderLeft: `2px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.2)'}`, marginLeft: '18px' }}>
+              <div style={{ 
+                paddingLeft: '8px', 
+                borderLeft: `2px solid ${isDark ? 'rgba(167,139,250,0.25)' : 'rgba(124,58,237,0.2)'}`, 
+                marginLeft: '18px' 
+              }}>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px' }}>
                   {phase.topics.map((topic, i) => {
                     const completed = completedTopics.includes(topic.id);
@@ -411,7 +522,7 @@ export default function RoadmapDetail() {
                         id={`topic-${topic.id}`}
                         style={{ 
                           padding: '10px 0', 
-                          color: skipped ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : (isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)'),
+                          color: skipped ? textFaint : (isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)'),
                           fontSize: '0.9rem',
                           lineHeight: 1.6,
                           display: 'flex',
@@ -452,7 +563,7 @@ export default function RoadmapDetail() {
                           {skipped && (
                             <span style={{ 
                               fontSize: '0.65rem', 
-                              color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                              color: textFaint,
                               marginLeft: '8px',
                               fontFamily: "'Space Mono',monospace"
                             }}>
@@ -467,7 +578,12 @@ export default function RoadmapDetail() {
                 
                 {phase.resources.length > 0 && !phaseSkipped && (
                   <div style={{ marginTop: '8px' }}>
-                    <div style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', fontFamily: "'Space Mono',monospace", marginBottom: '8px' }}>
+                    <div style={{ 
+                      fontSize: '0.68rem', 
+                      color: textMuted, 
+                      fontFamily: "'Space Mono',monospace", 
+                      marginBottom: '8px' 
+                    }}>
                       RESOURCES
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -482,10 +598,10 @@ export default function RoadmapDetail() {
                             fontSize: '0.78rem',
                             color: ac,
                             textDecoration: 'none',
-                            background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.06)',
+                            background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.06)',
                             padding: '4px 12px',
                             borderRadius: '6px',
-                            border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.12)'}`
+                            border: `1px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.12)'}`
                           }}
                         >
                           {res.name} ↗
@@ -501,19 +617,30 @@ export default function RoadmapDetail() {
 
         {/* Soft Skills */}
         {roadmap.softSkills && roadmap.softSkills.length > 0 && (
-          <div style={{ marginTop: '40px', paddingTop: '32px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
-            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '20px' }}>
+          <div style={{ 
+            marginTop: '40px', 
+            paddingTop: '32px', 
+            borderTop: `1px solid ${borderColor}` 
+          }}>
+            <div style={{ 
+              fontFamily: "'Space Mono',monospace", 
+              fontSize: '0.7rem', 
+              color: ac, 
+              letterSpacing: '0.2em', 
+              textTransform: 'uppercase', 
+              marginBottom: '20px' 
+            }}>
               ◆ Continuous Skills
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {roadmap.softSkills.map((skill, i) => (
                 <span key={i} style={{
                   fontSize: '0.82rem',
-                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                  background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                  color: isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)',
+                  background: bgSecondary,
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+                  border: `1px solid ${borderColor}`
                 }}>
                   {skill}
                 </span>
@@ -524,8 +651,21 @@ export default function RoadmapDetail() {
 
         {/* Related Tools */}
         {roadmap.relatedTools && roadmap.relatedTools.length > 0 && (
-          <div style={{ marginTop: '40px', padding: '24px', background: isDark ? 'rgba(167,139,250,0.04)' : 'rgba(124,58,237,0.04)', borderRadius: '14px', border: `1px solid ${isDark ? 'rgba(167,139,250,0.12)' : 'rgba(124,58,237,0.1)'}` }}>
-            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '14px' }}>
+          <div style={{ 
+            marginTop: '40px', 
+            padding: '24px', 
+            background: isDark ? 'rgba(167,139,250,0.06)' : 'rgba(124,58,237,0.04)', 
+            borderRadius: '14px', 
+            border: `1px solid ${isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.1)'}` 
+          }}>
+            <div style={{ 
+              fontFamily: "'Space Mono',monospace", 
+              fontSize: '0.7rem', 
+              color: ac, 
+              letterSpacing: '0.15em', 
+              textTransform: 'uppercase', 
+              marginBottom: '14px' 
+            }}>
               ◆ Practice With ZeroAPI Tools
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
@@ -562,12 +702,19 @@ export default function RoadmapDetail() {
       <div style={{ padding: '0 32px 80px', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{
           background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`,
+          border: `1px solid ${borderColor}`,
           borderRadius: '16px',
           padding: '28px',
           textAlign: 'center'
         }}>
-          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '16px' }}>
+          <div style={{ 
+            fontFamily: "'Space Mono',monospace", 
+            fontSize: '0.7rem', 
+            color: ac, 
+            letterSpacing: '0.15em', 
+            textTransform: 'uppercase', 
+            marginBottom: '16px' 
+          }}>
             ◆ Save For Later
           </div>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
