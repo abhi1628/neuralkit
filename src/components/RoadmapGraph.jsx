@@ -17,19 +17,31 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  // SVG canvas dimensions
+  const SVG_WIDTH = 1000;
+  const SVG_HEIGHT = 600;
+  const NODE_RADIUS = 24;
+  const PHASE_HEIGHT = 110;
+  const TOP_MARGIN = 50;
+  
   // Build node positions based on phases
   const nodes = [];
   const nodeMap = {};
   
   roadmap.phases.forEach((phase, phaseIndex) => {
     const topicsCount = phase.topics.length;
-    const y = 80 + phaseIndex * 140; // Vertical spacing between phases
+    const y = TOP_MARGIN + phaseIndex * PHASE_HEIGHT;
+    
+    // Calculate spread based on topic count
+    const minSpread = 200;
+    const maxSpread = 900;
+    const spread = Math.min(Math.max(topicsCount * 140, minSpread), maxSpread);
+    const startX = (SVG_WIDTH - spread) / 2;
     
     phase.topics.forEach((topic, topicIndex) => {
-      // Spread topics horizontally within phase
-      const spread = Math.min(topicsCount * 120, 800);
-      const startX = 400 - spread / 2;
-      const x = startX + (topicIndex / Math.max(topicsCount - 1, 1)) * spread;
+      const x = topicsCount === 1 
+        ? SVG_WIDTH / 2 
+        : startX + (topicIndex / (topicsCount - 1)) * spread;
       
       const node = {
         id: topic.id,
@@ -39,6 +51,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         fullLabel: topic.name,
         phaseId: phase.phaseId,
         phaseIndex,
+        phaseTitle: phase.title,
         icon: phase.icon
       };
       nodes.push(node);
@@ -72,27 +85,27 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
   const isCompleted = (nodeId) => completedTopics.includes(nodeId);
 
   const getNodeColor = (nodeId) => {
-    if (highlightedTopic === nodeId) return '#22c55e'; // Green for highlighted
+    if (highlightedTopic === nodeId) return '#22c55e';
     if (isCompleted(nodeId)) return ac;
     if (isUnlocked(nodeId)) return isDark ? 'rgba(167,139,250,0.6)' : 'rgba(124,58,237,0.6)';
-    return isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
+    return isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)';
   };
 
-  const getNodeRadius = (nodeId) => {
-    if (hoveredNode === nodeId) return 28;
-    if (highlightedTopic === nodeId) return 26;
-    return 22;
+  const getNodeFill = (nodeId) => {
+    if (isCompleted(nodeId)) return isDark ? 'rgba(167,139,250,0.15)' : 'rgba(124,58,237,0.1)';
+    if (isUnlocked(nodeId)) return isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.05)';
+    return isDark ? 'rgba(30,30,35,0.9)' : 'rgba(255,255,255,0.95)';
   };
 
   // Handle mouse events for pan/zoom
   const handleWheel = useCallback((e) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(z => Math.max(0.3, Math.min(3, z * delta)));
+    setZoom(z => Math.max(0.4, Math.min(2.5, z * delta)));
   }, []);
 
   const handleMouseDown = useCallback((e) => {
-    if (e.target.tagName === 'circle') return;
+    if (e.target.tagName === 'circle' || e.target.closest('g')) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   }, [pan]);
@@ -135,73 +148,215 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
     
     return {
       title: topic?.name || node.fullLabel,
-      phase: topic?.phaseTitle || '',
+      phase: node.phaseTitle || '',
       status: isCompleted(nodeId) ? '✓ Completed' : isUnlocked(nodeId) ? '◉ Ready to learn' : '○ Locked',
       prereqs: prereqs.length > 0 ? prereqs : ['None (foundation topic)'],
       unlocks: unlocks.length > 0 ? unlocks : ['End of path']
     };
   };
 
+  // Calculate arrow path
+  const getArrowPath = (from, to) => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const offset = NODE_RADIUS + 6;
+    
+    const startX = from.x + (dx / dist) * offset;
+    const startY = from.y + (dy / dist) * offset;
+    const endX = to.x - (dx / dist) * offset;
+    const endY = to.y - (dy / dist) * offset;
+    
+    return { startX, startY, endX, endY };
+  };
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '500px', overflow: 'hidden', borderRadius: '16px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}` }}>
-      {/* Controls */}
-      <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10, display: 'flex', gap: '6px' }}>
-        <button onClick={() => setZoom(z => Math.min(3, z * 1.2))} style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.9)', color: isDark ? '#fff' : '#1a1a1a', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
-        <button onClick={() => setZoom(z => Math.max(0.3, z * 0.8))} style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.9)', color: isDark ? '#fff' : '#1a1a1a', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-        <button onClick={resetView} style={{ width: '32px', height: '32px', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.9)', color: isDark ? '#fff' : '#1a1a1a', cursor: 'pointer', fontSize: '0.7rem', fontFamily: "'Space Mono',monospace", display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⟲</button>
-      </div>
+    <div style={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '520px', 
+      overflow: 'hidden', 
+      borderRadius: '16px', 
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`,
+      background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)'
+    }}>
+      {/* Top Controls Bar */}
+      <div style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        zIndex: 10, 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px 14px',
+        background: isDark ? 'rgba(15,15,20,0.8)' : 'rgba(255,255,255,0.9)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
+      }}>
+        {/* Left: Progress */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {completedTopics.length > 0 && (
+            <>
+              <div style={{ fontSize: '0.65rem', fontFamily: "'Space Mono',monospace", color: ac }}>
+                {completedTopics.length} / {nodes.length} done
+              </div>
+              <div style={{ width: '80px', height: '4px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${(completedTopics.length / nodes.length) * 100}%`, 
+                  height: '100%', 
+                  background: ac, 
+                  borderRadius: '2px', 
+                  transition: 'width 0.3s ease' 
+                }}></div>
+              </div>
+            </>
+          )}
+        </div>
 
-      {/* Legend */}
-      <div style={{ position: 'absolute', bottom: '12px', left: '12px', zIndex: 10, background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)', padding: '10px 14px', borderRadius: '10px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, backdropFilter: 'blur(8px)' }}>
-        <div style={{ fontSize: '0.6rem', fontFamily: "'Space Mono',monospace", color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Legend</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: ac }}></span>
-            <span style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Completed</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: isDark ? 'rgba(167,139,250,0.6)' : 'rgba(124,58,237,0.6)' }}></span>
-            <span style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Ready to learn</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }}></span>
-            <span style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Locked (needs prerequisites)</span>
-          </div>
+        {/* Right: Zoom Controls */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.6rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', fontFamily: "'Space Mono',monospace", marginRight: '4px' }}>
+            {Math.round(zoom * 100)}%
+          </span>
+          <button onClick={() => setZoom(z => Math.min(2.5, z * 1.2))} style={{ 
+            width: '28px', 
+            height: '28px', 
+            borderRadius: '6px', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            color: isDark ? '#fff' : '#1a1a1a', 
+            cursor: 'pointer', 
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>+</button>
+          <button onClick={() => setZoom(z => Math.max(0.4, z * 0.8))} style={{ 
+            width: '28px', 
+            height: '28px', 
+            borderRadius: '6px', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            color: isDark ? '#fff' : '#1a1a1a', 
+            cursor: 'pointer', 
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>−</button>
+          <button onClick={resetView} style={{ 
+            width: '28px', 
+            height: '28px', 
+            borderRadius: '6px', 
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, 
+            background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', 
+            color: isDark ? '#fff' : '#1a1a1a', 
+            cursor: 'pointer', 
+            fontSize: '0.7rem',
+            fontFamily: "'Space Mono',monospace',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>⟲</button>
         </div>
       </div>
 
-      {/* Progress indicator */}
-      {completedTopics.length > 0 && (
-        <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)', padding: '8px 14px', borderRadius: '10px', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, backdropFilter: 'blur(8px)' }}>
-          <div style={{ fontSize: '0.7rem', fontFamily: "'Space Mono',monospace", color: ac }}>
-            {completedTopics.length} / {nodes.length} topics completed
-          </div>
-          <div style={{ width: '120px', height: '4px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${(completedTopics.length / nodes.length) * 100}%`, height: '100%', background: ac, borderRadius: '2px', transition: 'width 0.3s ease' }}></div>
-          </div>
+      {/* Bottom Legend */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '10px', 
+        left: '10px', 
+        zIndex: 10, 
+        background: isDark ? 'rgba(15,15,20,0.85)' : 'rgba(255,255,255,0.95)', 
+        padding: '8px 12px', 
+        borderRadius: '8px', 
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, 
+        backdropFilter: 'blur(8px)',
+        display: 'flex',
+        gap: '14px',
+        alignItems: 'center'
+      }}>
+        <div style={{ fontSize: '0.6rem', fontFamily: "'Space Mono',monospace", color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: '4px' }}>
+          Legend
         </div>
-      )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: ac, display: 'inline-block' }}></span>
+          <span style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Done</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: isDark ? 'rgba(167,139,250,0.6)' : 'rgba(124,58,237,0.6)', display: 'inline-block' }}></span>
+          <span style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Ready</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', display: 'inline-block' }}></span>
+          <span style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>Locked</span>
+        </div>
+      </div>
+
+      {/* Hint */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: '10px', 
+        right: '10px', 
+        zIndex: 10,
+        fontSize: '0.6rem', 
+        color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)', 
+        fontFamily: "'Space Mono',monospace"
+      }}>
+        Scroll to zoom · Drag to pan · Click nodes
+      </div>
 
       <svg
         ref={svgRef}
         width="100%"
         height="100%"
-        viewBox="0 0 800 500"
-        style={{ cursor: isDragging ? 'grabbing' : 'grab', background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)' }}
+        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ 
+          cursor: isDragging ? 'grabbing' : 'grab',
+          marginTop: '44px' // Space for top bar
+        }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill={acDim} />
+          </marker>
+          <marker id="arrowhead-dim" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} />
+          </marker>
+        </defs>
+
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
+          {/* Phase background bands */}
+          {roadmap.phases.map((phase, i) => (
+            <rect
+              key={`band-${i}`}
+              x="0"
+              y={TOP_MARGIN + i * PHASE_HEIGHT - 35}
+              width={SVG_WIDTH}
+              height={PHASE_HEIGHT}
+              fill={i % 2 === 0 
+                ? (isDark ? 'rgba(167,139,250,0.02)' : 'rgba(124,58,237,0.015)') 
+                : 'transparent'
+              }
+              rx="8"
+            />
+          ))}
+
           {/* Phase labels */}
           {roadmap.phases.map((phase, i) => (
             <text
-              key={phase.phaseId}
+              key={`phase-${i}`}
               x="20"
-              y={80 + i * 140 - 35}
-              fill={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)'}
+              y={TOP_MARGIN + i * PHASE_HEIGHT - 12}
+              fill={isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'}
               fontSize="11"
               fontFamily="'Space Mono', monospace"
               fontWeight="600"
@@ -213,25 +368,20 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
           {/* Edges */}
           {edges.map((edge, i) => {
             const isActive = isCompleted(edge.from.id) && (isCompleted(edge.to.id) || isUnlocked(edge.to.id));
+            const path = getArrowPath(edge.from, edge.to);
+            
             return (
               <g key={`edge-${i}`}>
                 <line
-                  x1={edge.from.x}
-                  y1={edge.from.y}
-                  x2={edge.to.x}
-                  y2={edge.to.y}
+                  x1={path.startX}
+                  y1={path.startY}
+                  x2={path.endX}
+                  y2={path.endY}
                   stroke={isActive ? acDim : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
                   strokeWidth={isActive ? 2 : 1}
-                  strokeDasharray={edge.label === 'helps with' ? '4,4' : 'none'}
+                  strokeDasharray={edge.label === 'helps with' ? '5,5' : 'none'}
+                  markerEnd={isActive ? 'url(#arrowhead)' : 'url(#arrowhead-dim)'}
                 />
-                {/* Arrowhead */}
-                {isActive && (
-                  <polygon
-                    points={`${edge.to.x - 6},${edge.to.y - 6} ${edge.to.x + 6},${edge.to.y - 6} ${edge.to.x},${edge.to.y + 4}`}
-                    fill={acDim}
-                    transform={`rotate(${Math.atan2(edge.to.y - edge.from.y, edge.to.x - edge.from.x) * 180 / Math.PI - 90}, ${edge.to.x}, ${edge.to.y})`}
-                  />
-                )}
               </g>
             );
           })}
@@ -239,8 +389,9 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
           {/* Nodes */}
           {nodes.map(node => {
             const color = getNodeColor(node.id);
-            const radius = getNodeRadius(node.id);
+            const fill = getNodeFill(node.id);
             const unlocked = isUnlocked(node.id);
+            const completed = isCompleted(node.id);
             
             return (
               <g
@@ -253,81 +404,65 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                 }}
                 style={{ cursor: 'pointer' }}
               >
-                {/* Glow effect for highlighted */}
+                {/* Glow for highlighted */}
                 {highlightedTopic === node.id && (
                   <circle
                     cx={node.x}
                     cy={node.y}
-                    r={radius + 8}
+                    r={NODE_RADIUS + 10}
                     fill="none"
                     stroke="#22c55e"
                     strokeWidth="2"
-                    opacity="0.4"
+                    opacity="0.3"
                   >
-                    <animate attributeName="r" values={`${radius + 4};${radius + 12};${radius + 4}`} dur="2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="r" values={`${NODE_RADIUS + 6};${NODE_RADIUS + 14};${NODE_RADIUS + 6}`} dur="2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.4;0.15;0.4" dur="2s" repeatCount="indefinite" />
                   </circle>
                 )}
                 
-                {/* Main circle */}
+                {/* Outer ring */}
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={radius}
-                  fill={isDark ? 'rgba(20,20,25,0.9)' : 'rgba(255,255,255,0.95)'}
+                  r={NODE_RADIUS}
+                  fill={fill}
                   stroke={color}
-                  strokeWidth={hoveredNode === node.id ? 3 : 2}
+                  strokeWidth={hoveredNode === node.id ? 3 : completed ? 2.5 : 2}
                 />
                 
-                {/* Inner fill for completed */}
-                {isCompleted(node.id) && (
+                {/* Inner dot for completed */}
+                {completed && (
                   <circle
                     cx={node.x}
                     cy={node.y}
-                    r={radius - 6}
+                    r={NODE_RADIUS - 8}
                     fill={ac}
-                    opacity="0.3"
+                    opacity="0.4"
                   />
                 )}
                 
-                {/* Checkmark for completed */}
-                {isCompleted(node.id) && (
-                  <text
-                    x={node.x}
-                    y={node.y + 4}
-                    textAnchor="middle"
-                    fill={ac}
-                    fontSize="14"
-                    fontWeight="bold"
-                  >
-                    ✓
-                  </text>
-                )}
-                
-                {/* Lock icon for locked */}
-                {!unlocked && !isCompleted(node.id) && (
-                  <text
-                    x={node.x}
-                    y={node.y + 4}
-                    textAnchor="middle"
-                    fill={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
-                    fontSize="12"
-                  >
-                    🔒
-                  </text>
-                )}
-                
-                {/* Label */}
+                {/* Icon inside */}
                 <text
                   x={node.x}
-                  y={node.y + radius + 14}
+                  y={node.y + 5}
                   textAnchor="middle"
-                  fill={isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'}
-                  fontSize="9"
+                  fill={completed ? ac : !unlocked ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : color}
+                  fontSize="16"
+                >
+                  {completed ? '✓' : !unlocked ? '🔒' : node.icon || '●'}
+                </text>
+                
+                {/* Label below */}
+                <text
+                  x={node.x}
+                  y={node.y + NODE_RADIUS + 16}
+                  textAnchor="middle"
+                  fill={isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.75)'}
+                  fontSize="10"
                   fontFamily="'DM Sans', sans-serif"
                   fontWeight="500"
                 >
-                  {node.label.length > 16 ? node.label.slice(0, 14) + '...' : node.label}
+                  {node.label.length > 18 ? node.label.slice(0, 16) + '..' : node.label}
                 </text>
               </g>
             );
@@ -343,35 +478,32 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
         return (
           <div style={{
             position: 'absolute',
-            left: Math.min(tooltipPos.x + 20, 600),
-            top: Math.max(tooltipPos.y - 10, 10),
-            background: isDark ? 'rgba(20,20,25,0.95)' : 'rgba(255,255,255,0.95)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            left: Math.min(tooltipPos.x + 16, 500),
+            top: Math.max(tooltipPos.y - 80, 50),
+            background: isDark ? 'rgba(20,20,25,0.95)' : 'rgba(255,255,255,0.97)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
             borderRadius: '12px',
             padding: '14px 16px',
-            maxWidth: '280px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+            maxWidth: '260px',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
             backdropFilter: 'blur(12px)',
-            zIndex: 20,
+            zIndex: 30,
             pointerEvents: 'none'
           }}>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: '0.85rem', color: isDark ? '#fff' : '#1a1a1a', marginBottom: '4px' }}>
+            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: '0.85rem', color: isDark ? '#fff' : '#1a1a1a', marginBottom: '3px' }}>
               {content.title.split('—')[0]}
             </div>
             <div style={{ fontSize: '0.65rem', color: ac, fontFamily: "'Space Mono',monospace", marginBottom: '8px' }}>
               {content.phase}
             </div>
-            <div style={{ fontSize: '0.72rem', color: isCompleted(hoveredNode) ? '#22c55e' : isUnlocked(hoveredNode) ? ac : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '8px', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.72rem', color: completedTopics.includes(hoveredNode) ? '#22c55e' : isUnlocked(hoveredNode) ? ac : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '8px', fontWeight: 600, fontFamily: "'Space Mono',monospace" }}>
               {content.status}
             </div>
-            <div style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginBottom: '4px' }}>
-              <span style={{ fontWeight: 600 }}>Prerequisites:</span> {content.prereqs.slice(0, 3).join(', ')}{content.prereqs.length > 3 ? ` +${content.prereqs.length - 3} more` : ''}
+            <div style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 600 }}>Needs:</span> {content.prereqs.slice(0, 2).join(', ')}{content.prereqs.length > 2 ? '...' : ''}
             </div>
-            <div style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-              <span style={{ fontWeight: 600 }}>Unlocks:</span> {content.unlocks.slice(0, 3).join(', ')}{content.unlocks.length > 3 ? ` +${content.unlocks.length - 3} more` : ''}
-            </div>
-            <div style={{ marginTop: '8px', fontSize: '0.6rem', color: ac, fontFamily: "'Space Mono',monospace" }}>
-              Click to jump to topic →
+            <div style={{ fontSize: '0.68rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 600 }}>Unlocks:</span> {content.unlocks.slice(0, 2).join(', ')}{content.unlocks.length > 2 ? '...' : ''}
             </div>
           </div>
         );
