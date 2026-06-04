@@ -45,16 +45,12 @@ export const TOOL_MODELS = {
   askAuthor:            MODELS.MEDIUM,     // upgraded: 8b more reliable than gemma
 };
 
-export const DANGEROUS_INPUT_PATTERNS = [
-  /ignore previous instructions/gi, /forget your role/gi, /act as if/gi,
-  /system prompt/gi, /you are now/gi, /pretend you are/gi, /from now on/gi,
-  /disregard previous/gi, /override your/gi, /new instruction:/gi,
-];
-export const DANGEROUS_OUTPUT_PATTERNS = [
-  /ignore previous instructions/gi,
-  /you are now a different/gi,
-  /system prompt override/gi,
-];
+// REMOVED: Regex-based prompt injection detection is ineffective.
+// Defense relies on:
+// 1. Strong system prompts with explicit role boundaries
+// 2. Input/output validation (message structure, length limits)
+// 3. Model-level safety (Groq's moderation on llama models)
+// 4. Future: Sandboxed tool execution with no system access
 
 export const TOOLS = [
   {
