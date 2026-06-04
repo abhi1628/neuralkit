@@ -61,16 +61,14 @@ export default function RoadmapDetail() {
           ← All Roadmaps
         </button>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <span style={{ fontSize: '3rem' }}>{roadmap.icon}</span>
-          <div>
-            <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-              {roadmap.category} Roadmap
-            </div>
-            <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.02em', color: isDark ? '#fff' : '#1a1a1a', margin: '4px 0 0' }}>
-              {roadmap.title}
-            </h1>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <span style={{ fontSize: '3rem', display: 'block', marginBottom: '12px' }}>{roadmap.icon}</span>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '8px' }}>
+            {roadmap.category} Roadmap
           </div>
+          <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.02em', color: isDark ? '#fff' : '#1a1a1a', margin: '0' }}>
+            {roadmap.title}
+          </h1>
         </div>
         
         <p style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.65)', fontSize: '1rem', lineHeight: 1.8, maxWidth: '700px' }}>
