@@ -58,13 +58,21 @@ export function AnalyticsDashboardSnippet() {
   const ac = isDark ? '#a78bfa' : '#7c3aed';
 
   useEffect(() => {
-    fetch('/api/analytics-stats')
-      .then(res => res.json())
+    fetch('/api/analytics-stats', {
+      headers: { 'X-Admin-Secret': 'zeroapi#2026_anika_avnika_x7' }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => { 
         setMetrics(data); 
         setLoading(false); 
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setMetrics({ views: {}, runs: {}, error: 'Access denied or server error' });
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
