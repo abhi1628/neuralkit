@@ -29,7 +29,7 @@ export default function RoadmapDetail() {
 
   const handleDownloadPDF = () => {
     const text = generateRoadmapText(roadmap);
-    downloadAsPDF(text, `zeroapi-${roadmap.slug}-roadmap`);
+    downloadAsPDF(text, 'zeroapi-' + roadmap.slug + '-roadmap');
     trackEvent('roadmap_download', { roadmap: slug, format: 'pdf' });
   };
 
@@ -45,7 +45,6 @@ export default function RoadmapDetail() {
       {/* Hero / Header */}
       <div style={{ padding: '100px 32px 40px', maxWidth: '900px', margin: '0 auto' }}>
         <button 
-          <button 
           onClick={() => navigate('/roadmaps')}
           style={{ 
             background: 'transparent', 
