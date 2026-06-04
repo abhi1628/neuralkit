@@ -690,7 +690,7 @@ export default function RoadmapGraph({ roadmap, completedTopics = [], onTopicCli
                       background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(124,58,237,0.06)',
                       padding: '2px 8px',
                       borderRadius: '4px',
-                      fontFamily: "'Space Mono',monospace'
+                      fontFamily: "'Space Mono',monospace"
                     }}>
                       {u}
                     </span>
