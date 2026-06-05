@@ -21,25 +21,25 @@
   <url><loc>https://zeroapi.in/learn/cuda-gpu-programming-deep-dive</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://www.zeroapi.in/learn/50-python-interview-questions-2026</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <<url><loc>https://zeroapi.in/learn/mastering-python-network-concurrency</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/defensive-cpp-memory-management</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/low-level-bitwise-networking</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/handling-hardware-network-timeouts</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/concurrency-deadlock-prevention</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/resilient-socket-programming</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/data-sanitization-techniques</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/thread-safety-python-race-conditions</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/advanced-python-multiprocessing</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/cpp-data-structure-performance</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/aws-iam-security-best-practices</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/mastering-cors-architectures</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/preventing-ssrf-vulnerabilities</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/hardening-docker-containers</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/container-process-lifecycles</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/kubernetes-probe-orchestration</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/caching-strategies-at-scale</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/resilient-microservice-architectures</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/scaling-stateless-gateways</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-<<url><loc>https://zeroapi.in/learn/asynchronous-resource-management</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/defensive-cpp-memory-management</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/low-level-bitwise-networking</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/handling-hardware-network-timeouts</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/concurrency-deadlock-prevention</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/resilient-socket-programming</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/data-sanitization-techniques</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/thread-safety-python-race-conditions</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/advanced-python-multiprocessing</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/cpp-data-structure-performance</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/aws-iam-security-best-practices</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/mastering-cors-architectures</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/preventing-ssrf-vulnerabilities</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/hardening-docker-containers</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/container-process-lifecycles</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/kubernetes-probe-orchestration</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/caching-strategies-at-scale</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/resilient-microservice-architectures</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/scaling-stateless-gateways</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/asynchronous-resource-management</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
   <url><loc>https://zeroapi.in/breakit</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/silent-data-killer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
