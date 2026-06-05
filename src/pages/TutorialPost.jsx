@@ -1,24 +1,19 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
+import part1Content from "../posts/ml-foundations-part-1";
 
-// STATIC IMPORT MAP — Add future parts here as you create them
-import part1LinearAlgebra from "../posts/ml-foundations-part-1";
-const PART_MODULES = {
+// STATIC CONTENT MAP — No dynamic imports, no Vite issues
+const CONTENT_MAP = {
   "ml-foundations": {
-    "part-1-linear-algebra": part1LinearAlgebra,
-    // "part-2-calculus-optimization": part2Calculus,
-    // "part-3-probability-information": part3Probability,
-    // "part-4-ml-pipeline": part4Pipeline,
+    "part-1-linear-algebra": part1Content
   }
 };
 
-// Import renderContent from Blog.js (we'll copy the function here for independence)
 function renderContent(block, i, theme) {
   const isDark = theme === "dark";
   const text = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
   const muted = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
-  const ac = isDark ? "#a78bfa" : "#7c3aed";
   const border = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   const seriesColor = "#10b981";
 
@@ -106,6 +101,14 @@ function renderContent(block, i, theme) {
         </div>
       );
 
+    case "cta":
+      return (
+        <div key={i} style={{ margin: "32px 0", textAlign: "center" }}>
+          <a href={block.href} style={{ display: "inline-block", background: "linear-gradient(135deg,#10b981,#059669)", color: "#fff", fontWeight: 700, fontSize: "0.95rem", padding: "14px 32px", borderRadius: "12px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>{block.text}</a>
+          {block.note && <div style={{ marginTop: "10px", fontSize: "0.75rem", color: muted, fontFamily: "'Space Mono',monospace" }}>{block.note}</div>}
+        </div>
+      );
+
     default:
       return null;
   }
@@ -115,51 +118,44 @@ export default function TutorialPost({ theme }) {
   const { seriesSlug, partSlug } = useParams();
   const navigate = useNavigate();
   const isDark = theme === "dark";
-  const ac = isDark ? "#a78bfa" : "#7c3aed";
   const seriesColor = "#10b981";
-
-  const series = seriesSlug === "ml-foundations" ? seriesData : null;
-  
-  if (!series) {
-    return (
-      <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
-        <div style={{ fontSize: "3rem" }}>📭</div>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>Series not found</div>
-        <button onClick={() => navigate("/tutorials")} style={{ background: "linear-gradient(135deg,#10b981,#059669)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>← All Tutorials</button>
-      </div>
-    );
-  }
-
-  const currentPartIndex = series.parts.findIndex(p => p.slug === partSlug);
-  const currentPart = currentPartIndex >= 0 ? series.parts[currentPartIndex] : null;
-
-  if (!currentPart) {
-    return (
-      <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
-        <div style={{ fontSize: "3rem" }}>📭</div>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>Part not found</div>
-        <button onClick={() => navigate(`/tutorials/${seriesSlug}`)} style={{ background: "linear-gradient(135deg,#10b981,#059669)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>← Series Overview</button>
-      </div>
-    );
-  }
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
-    const seriesParts = PART_MODULES[seriesSlug];
-    const postModule = seriesParts ? seriesParts[partSlug] : null;
-    
-    if (postModule) {
-      setPost(postModule);
+    setError(null);
+
+    try {
+      // Look up content in static map
+      const seriesContent = CONTENT_MAP[seriesSlug];
+      if (!seriesContent) {
+        setError("Series not found");
+        setLoading(false);
+        return;
+      }
+
+      const content = seriesContent[partSlug];
+      if (!content) {
+        setError("Part not found");
+        setLoading(false);
+        return;
+      }
+
+      setPost(content);
       setLoading(false);
-    } else {
+    } catch (err) {
+      console.error("TutorialPost error:", err);
+      setError("Failed to load content");
       setLoading(false);
     }
+
     window.scrollTo(0, 0);
   }, [seriesSlug, partSlug]);
 
+  // Loading state
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -168,15 +164,23 @@ export default function TutorialPost({ theme }) {
     );
   }
 
-  if (!post) {
+  // Error state
+  if (error) {
     return (
       <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
         <div style={{ fontSize: "3rem" }}>📭</div>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>Content not found</div>
+        <div style={{ fontFamily: "'Syne',sans-serif", fontSize: "1.5rem", fontWeight: 700, color: isDark ? "#fff" : "#1a1a1a" }}>{error}</div>
+        <button onClick={() => navigate("/tutorials")} style={{ background: "linear-gradient(135deg,#10b981,#059669)", border: "none", borderRadius: "10px", padding: "10px 24px", color: "#fff", fontWeight: 700, cursor: "pointer", fontFamily: "'Space Mono',monospace" }}>
+          ← All Tutorials
+        </button>
       </div>
     );
   }
 
+  // Get series data for navigation
+  const series = seriesSlug === "ml-foundations" ? seriesData : null;
+  const currentPartIndex = series ? series.parts.findIndex(p => p.slug === partSlug) : -1;
+  const currentPart = currentPartIndex >= 0 ? series.parts[currentPartIndex] : null;
   const prevPart = currentPartIndex > 0 ? series.parts[currentPartIndex - 1] : null;
   const nextPart = currentPartIndex < series.parts.length - 1 ? series.parts[currentPartIndex + 1] : null;
 
@@ -186,13 +190,17 @@ export default function TutorialPost({ theme }) {
       <div style={{ background: isDark ? "rgba(16,185,129,0.04)" : "rgba(16,185,129,0.03)", borderBottom: `1px solid ${isDark ? "rgba(16,185,129,0.1)" : "rgba(16,185,129,0.15)"}` }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "72px 24px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-            <button onClick={() => navigate(`/tutorials/${seriesSlug}`)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(16,185,129,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", color: seriesColor, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>← Series Overview</button>
-            <button onClick={() => navigate("/tutorials")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "8px", color: isDark ? "#a78bfa" : "#7c3aed", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>All Tutorials</button>
+            <button onClick={() => navigate(`/tutorials/${seriesSlug}`)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(16,185,129,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", color: seriesColor, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>
+              ← Series Overview
+            </button>
+            <button onClick={() => navigate("/tutorials")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "8px", color: isDark ? "#a78bfa" : "#7c3aed", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>
+              All Tutorials
+            </button>
           </div>
 
           {/* Part indicator */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-            {series.parts.map((p, i) => (
+            {series && series.parts.map((p, i) => (
               <div key={i} style={{
                 width: i === currentPartIndex ? "24px" : "8px",
                 height: "8px",
@@ -201,29 +209,45 @@ export default function TutorialPost({ theme }) {
                 transition: "all 0.3s"
               }} />
             ))}
-            <span style={{ fontSize: "0.65rem", color: seriesColor, fontFamily: "'Space Mono',monospace", marginLeft: "4px" }}>Part {currentPartIndex + 1} of {series.parts.length}</span>
+            <span style={{ fontSize: "0.65rem", color: seriesColor, fontFamily: "'Space Mono',monospace", marginLeft: "4px" }}>
+              Part {currentPartIndex + 1} of {series ? series.parts.length : 0}
+            </span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-            <span style={{ background: `${seriesColor}18`, border: `1px solid ${seriesColor}33`, borderRadius: "100px", padding: "4px 14px", fontSize: "0.68rem", fontFamily: "'Space Mono',monospace", color: seriesColor }}>{post.category}</span>
-            <span style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>{post.date} · {post.readTime}</span>
+            <span style={{ background: `${seriesColor}18`, border: `1px solid ${seriesColor}33`, borderRadius: "100px", padding: "4px 14px", fontSize: "0.68rem", fontFamily: "'Space Mono',monospace", color: seriesColor }}>
+              {post.category}
+            </span>
+            <span style={{ fontSize: "0.7rem", color: isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.4)", fontFamily: "'Space Mono',monospace" }}>
+              {post.date} · {post.readTime}
+            </span>
           </div>
 
-          <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.6rem,4vw,2.5rem)", fontWeight: 800, color: isDark ? "#fff" : "#1a1a1a", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: "16px", textAlign: "left" }}>{post.title}</h1>
-          <p style={{ fontSize: "1.05rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", lineHeight: 1.7, textAlign: "left", maxWidth: "680px" }}>{post.excerpt}</p>
+          <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(1.6rem,4vw,2.5rem)", fontWeight: 800, color: isDark ? "#fff" : "#1a1a1a", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: "16px", textAlign: "left" }}>
+            {post.title}
+          </h1>
+          <p style={{ fontSize: "1.05rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.6)", lineHeight: 1.7, textAlign: "left", maxWidth: "680px" }}>
+            {post.excerpt}
+          </p>
           <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
-            {post.tags.map(tag => <span key={tag} style={{ fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", fontFamily: "'Space Mono',monospace" }}>#{tag}</span>)}
+            {post.tags && post.tags.map(tag => (
+              <span key={tag} style={{ fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.35)", fontFamily: "'Space Mono',monospace" }}>
+                #{tag}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Article Body */}
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px", textAlign: "left" }}>
-        {post.content.map((block, i) => renderContent(block, i, theme))}
+        {post.content && post.content.map((block, i) => renderContent(block, i, theme))}
 
         {/* Part Navigation */}
         <div style={{ marginTop: "64px", paddingTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}` }}>
-          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: seriesColor, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "18px" }}>◆ Series Navigation</div>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: seriesColor, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "18px" }}>
+            ◆ Series Navigation
+          </div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
             {prevPart ? (
               <button onClick={() => navigate(`/tutorials/${seriesSlug}/${prevPart.slug}`)} style={{ flex: 1, minWidth: "200px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "16px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}>
