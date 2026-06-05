@@ -69,6 +69,20 @@ const post = {
       "code": "import numpy as np\n\n# === BAYES' THEOREM: P(H|E) = P(E|H) * P(H) / P(E) ===\n# H = hypothesis (e.g., 'email is spam')\n# E = evidence (e.g., 'email contains word FREE')\n# P(H) = prior probability (before seeing evidence)\n# P(E|H) = likelihood (probability of evidence if hypothesis is true)\n# P(H|E) = posterior probability (after seeing evidence)\n\n# Medical test example:\n# Disease prevalence: 1% of population has it\n# Test accuracy: 95% true positive, 5% false positive\n# You test positive. What is the probability you actually have the disease?\n\nP_disease = 0.01          # P(H) — prior\nP_positive_given_disease = 0.95   # P(E|H) — true positive rate\nP_positive_given_healthy = 0.05   # P(E|not H) — false positive rate\n\n# P(E) = P(E|H)*P(H) + P(E|not H)*P(not H)\nP_positive = (P_positive_given_disease * P_disease + \n              P_positive_given_healthy * (1 - P_disease))\n\n# Bayes' theorem\nP_disease_given_positive = (P_positive_given_disease * P_disease) / P_positive\n\nprint(f'Medical Test Example:')\nprint(f'  Prior P(disease) = {P_disease:.3f} (1%)')\nprint(f'  Test sensitivity = {P_positive_given_disease:.3f} (95%)')\nprint(f'  Test false positive = {P_positive_given_healthy:.3f} (5%)')\nprint(f'  P(positive) = {P_positive:.4f}')\nprint(f'  POSTERIOR P(disease|positive) = {P_disease_given_positive:.4f}')\nprint(f'  \\n  Even with a positive test, you only have a {P_disease_given_positive*100:.1f}% chance of having the disease!')\nprint(f'  This is the base rate fallacy. Prior probability matters enormously.')\n\n# === ML CONNECTION: Spam Filter (Naive Bayes) ===\n# P(spam | words) = P(words | spam) * P(spam) / P(words)\n# We estimate P(word | spam) from training data: count how often\n# each word appears in spam emails vs ham emails.\n\n# Simulate word frequencies\nspam_words = {'free': 0.3, 'win': 0.25, 'money': 0.2, 'click': 0.15, 'now': 0.1}\nham_words = {'free': 0.05, 'win': 0.02, 'money': 0.03, 'click': 0.04, 'now': 0.08}\nP_spam = 0.4  # 40% of emails are spam\n\n# Email contains: 'free', 'win', 'money'\n# Naive Bayes assumes words are independent (naive but effective)\nP_words_given_spam = spam_words['free'] * spam_words['win'] * spam_words['money']\nP_words_given_ham = ham_words['free'] * ham_words['win'] * ham_words['money']\n\n# Bayes' theorem\nP_spam_given_words = (P_words_given_spam * P_spam) / \n                     (P_words_given_spam * P_spam + P_words_given_ham * (1 - P_spam))\n\nprint(f'\\nSpam Filter Example:')\nprint(f'  Email contains: free, win, money')\nprint(f'  P(words|spam) = {P_words_given_spam:.6f}')\nprint(f'  P(words|ham) = {P_words_given_ham:.6f}')\nprint(f'  P(spam|words) = {P_spam_given_words:.4f}')\nprint(f'  \\n  This email is {P_spam_given_words*100:.1f}% likely to be spam.')\n\n# Key insight: Bayes' theorem inverts the conditional probability.\n# We learn P(word | spam) from data, then use it to compute P(spam | words).\n# This is the foundation of generative classifiers."
     },
     {
+  "type": "h2",
+  "text": "Naive Bayes: Bayes' Theorem in Action"
+},
+{
+  "type": "p",
+  "text": "Naive Bayes is the simplest yet surprisingly effective application of Bayes' theorem in machine learning. It assumes features are conditionally independent given the class — a 'naive' assumption that rarely holds in reality, yet the algorithm works remarkably well for text classification, spam detection, and sentiment analysis. The infographic below breaks down the complete Naive Bayes framework: from Bayes' theorem to the naive assumption to the pipeline to variants and applications."
+},
+{
+  "type": "image",
+  "src": "/images/roadmaps/naive-bayes.png",
+  "alt": "Complete Naive Bayes infographic showing Bayes theorem, naive assumption, model formula, types, pipeline, example, advantages, disadvantages, and applications",
+  "caption": "Naive Bayes: The complete reference — from P(C|X) = P(X|C)P(C)/P(X) to Gaussian, Multinomial, Bernoulli, and Complement variants. Save this."
+},
+    {
       "type": "h2",
       "text": "Maximum Likelihood Estimation: Finding the Best Parameters"
     },
