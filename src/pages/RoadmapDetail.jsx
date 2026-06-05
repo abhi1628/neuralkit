@@ -208,15 +208,17 @@ export default function RoadmapDetail() {
             {roadmap.category} Roadmap
           </div>
           <h1 style={{ 
-            fontFamily: "'Syne',sans-serif", 
-            fontSize: 'clamp(1.8rem,4vw,2.8rem)', 
-            fontWeight: 800, 
-            letterSpacing: '-0.02em', 
-            color: textPrimary, 
-            margin: '0' 
-          }}>
-            {roadmap.title}
-          </h1>
+  fontFamily: "'Syne',sans-serif", 
+  fontSize: roadmap.title.length > 35 ? 'clamp(1.4rem, 3.5vw, 2.2rem)' : 'clamp(1.8rem, 4vw, 2.8rem)', 
+  fontWeight: 800, 
+  letterSpacing: '-0.02em', 
+  color: textPrimary, 
+  margin: '0',
+  lineHeight: 1.15,
+  wordBreak: 'break-word'
+}}>
+  {roadmap.title}
+</h1>
         </div>
         
         <p style={{ 
