@@ -189,6 +189,11 @@ const posts = [
     "slug": "cuda-gpu-programming-deep-dive",
     "title": "CUDA: The Parallel Computing Engine That Built the AI Empire — And Why NVIDIA Rules It",
     "excerpt": "Why does NVIDIA own 90% of the AI accelerator market? The answer isn't just silicon — it's CUDA. Learn why this parallel computing platform became the most valuable software moat in tech history, and how to master it before abstraction layers make direct GPU programming a lost art."
+  },
+  {
+    "slug": "50-python-interview-questions-2026",
+    "title": "50 Python Interview Questions You Must Know in 2026 — From FAANG to Startups",
+    "excerpt": "The 50 most-asked Python interview questions in 2026, complete with clean code, real company names, and battle-tested explanations. Whether you're interviewing at Google, Meta, Amazon, or a fast-growing startup, this guide has you covered."
   }
 ];
 
