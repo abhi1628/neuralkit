@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
 import part1Content from "../posts/ml-foundations-part-1";
-
-// STATIC CONTENT MAP — No dynamic imports, no Vite issues
 const CONTENT_MAP = {
   "ml-foundations": {
     "part-1-linear-algebra": part1Content
