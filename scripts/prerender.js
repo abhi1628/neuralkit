@@ -184,6 +184,11 @@ const posts = [
     slug: "asynchronous-resource-management",
     title: "Asynchronous Resource Management: Eliminating Heap Leaks in Un-Timed Background Promises",
     excerpt: "Firing un-timed background workers without exception catch blocks causes memory leak build-ups when external endpoints drop connections. Learn how to wrap execution traces using strict timeout race conditions."
+  },
+  {
+    "slug": "cuda-gpu-programming-deep-dive",
+    "title": "CUDA: The Parallel Computing Engine That Built the AI Empire — And Why NVIDIA Rules It",
+    "excerpt": "Why does NVIDIA own 90% of the AI accelerator market? The answer isn't just silicon — it's CUDA. Learn why this parallel computing platform became the most valuable software moat in tech history, and how to master it before abstraction layers make direct GPU programming a lost art."
   }
 ];
 
