@@ -53,7 +53,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Derivatives from Scratch",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 import matplotlib.pyplot as plt
 
 # A simple quadratic: f(x) = x²
@@ -123,7 +123,7 @@ plt.show()
     {
       "type": "code-block",
       "label": "Partial Derivatives and the Gradient",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 
 # A 2D function: f(x, y) = x² + 2y²
 # This is like a loss function with two weights.
@@ -189,7 +189,7 @@ plt.show()
     {
       "type": "code-block",
       "label": "Chain Rule and Backpropagation",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 
 # A tiny neural network: 1 input → 1 hidden → 1 output
 # Forward pass: z = w1*x + b1, h = relu(z), y_pred = w2*h + b2, loss = (y_pred - y_true)²
@@ -287,7 +287,7 @@ print(f'  ∂loss/∂b2: analytical={db2:.6f}, numerical={db2_num:.6f}')
     {
       "type": "code-block",
       "label": "Gradient Descent from Scratch",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 import matplotlib.pyplot as plt
 
 # Generate synthetic data: y = 2x + 1 + noise
@@ -374,7 +374,7 @@ plt.show()
     {
       "type": "code-block",
       "label": "Mini-Batch Gradient Descent",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 
 # Larger dataset
 np.random.seed(42)
@@ -447,7 +447,7 @@ print(f'True: w=3.0, b=-2.0')
     {
       "type": "code-block",
       "label": "Learning Rate Effects",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 import matplotlib.pyplot as plt
 
 # Simple 1D optimization: minimize f(x) = x²
@@ -513,7 +513,7 @@ plt.show()
     {
       "type": "code-block",
       "label": "Momentum and Adam from Scratch",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 
 # Compare SGD, SGD with Momentum, and Adam on a 2D ravine function
 # f(x, y) = 0.1*x² + 2*y² (steeper in y, gentle in x)
@@ -619,7 +619,7 @@ plt.show()
     {
       "type": "code-block",
       "label": "Saddle Point Visualization",
-      "code": "import numpy as np
+      "code": "import numpy as np"
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
