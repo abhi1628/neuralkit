@@ -23,11 +23,36 @@ const post = {
     },
     {
       "type": "h2",
+      "text": "CPU vs GPU vs TPU vs CUDA: Clearing the Confusion"
+    },
+    {
+      "type": "p",
+      "text": "Before diving into CUDA, let's clear up the most common confusion. People throw around 'CPU,' 'GPU,' 'TPU,' and 'CUDA' as if they're interchangeable. They're not. Here's the simplest way to understand them:"
+    },
+    {
+      "type": "checklist",
+      "items": [
+        "CPU (Central Processing Unit): Think of it as a master chef. It can do one complex dish at a time, incredibly fast and precisely. Your laptop's Intel or AMD chip is a CPU. It has 8-32 cores. Perfect for running your browser, your OS, and sequential logic.",
+        "GPU (Graphics Processing Unit): Think of it as a factory assembly line with thousands of workers. Each worker is slow and simple, but together they can paint a million pixels, process a million data points, or train a neural network in parallel. NVIDIA's RTX 4090 or H100 are GPUs. They have 10,000+ cores.",
+        "TPU (Tensor Processing Unit): Think of it as a specialist robot built by Google specifically for one task — matrix multiplication, the core math behind AI. It's incredibly fast at that one thing but useless for general computing. You can't run Photoshop on a TPU.",
+        "CUDA: This is NOT hardware. CUDA is the language and toolkit that lets you PROGRAM the GPU. Without CUDA, a GPU is just a fancy graphics card. With CUDA, it becomes a supercomputer for AI, science, and finance."
+      ]
+    },
+    {
+      "type": "p",
+      "text": "The analogy that sticks: A CPU is a Ferrari on a highway — fast, versatile, but can only carry a few passengers. A GPU is a fleet of 10,000 bicycles on a grid — each bike is slow, but together they move a stadium's worth of people simultaneously. CUDA is the traffic system that coordinates those bicycles so they don't crash into each other. A TPU is a high-speed train that only runs on one specific track (matrix math)."
+    },
+    {
+      "type": "h2",
       "text": "What Is CUDA? The Parallel Computing Paradigm Shift"
     },
     {
       "type": "p",
-      "text": "CUDA stands for Compute Unified Device Architecture. At its core, it's a parallel computing platform and programming model that enables developers to use NVIDIA GPUs for general-purpose processing — not just graphics rendering. Traditional CPUs are designed for sequential execution: one instruction at a time, optimized for low latency. A modern CPU might have 16-32 cores. A single NVIDIA H100 GPU has 16,896 CUDA cores. The paradigm shift is staggering: instead of doing one thing very fast, CUDA teaches you to do thousands of things simultaneously."
+      "text": "CUDA stands for Compute Unified Device Architecture. But forget the acronym. Here's what CUDA actually does: it turns your gaming GPU into a general-purpose supercomputer. Before CUDA (pre-2007), GPUs could only render graphics. Programmers had to trick the GPU by disguising math problems as graphics operations. CUDA changed everything by letting developers write C-like code that runs directly on the GPU."
+    },
+    {
+      "type": "p",
+      "text": "The paradigm shift is staggering. A modern CPU has 16-32 powerful cores. A single NVIDIA H100 GPU has 16,896 CUDA cores. The CPU is designed for low latency — doing one thing incredibly fast. The GPU is designed for high throughput — doing thousands of simple things at once. CUDA teaches you to think differently: instead of 'how do I make this faster?' you ask 'how do I break this into 10,000 tiny pieces that can run simultaneously?'"
     },
     {
       "type": "p",
@@ -125,11 +150,17 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Most CUDA tutorials stop at syntax. Here are the battlefield insights you won't find in standard documentation. First, the 'occupancy paradox': higher occupancy (more active warps) doesn't always mean higher performance. Sometimes reducing occupancy improves cache hit rates and reduces register pressure, leading to better throughput. Second, CUDA Graphs — introduced in CUDA 10 — can reduce CPU launch overhead by 90% for inference pipelines, but they're underutilized because they require restructuring your code to separate definition from execution. Third, the new Blackwell architecture's Transformer Engine isn't just hardware — it requires explicit CUDA API calls to exploit mixed-precision training, creating a new skill gap even among experienced CUDA programmers."
+      "text": "Most CUDA tutorials stop at syntax. Here are the battlefield insights you won't find in standard documentation, broken down into clear, actionable points:"
     },
     {
-      "type": "p",
-      "text": "Fourth, memory pool management with cudaMallocAsync and memory pools (introduced in CUDA 11.2) can eliminate the notorious cudaMalloc overhead that plagues dynamic workloads. Fifth, and most critically: the future of CUDA isn't just about NVIDIA GPUs. CUDA-X libraries are being ported to run on ARM CPUs, Grace Hopper superchips, and even cloud-specific accelerators. Learning CUDA today is learning the lingua franca of heterogeneous computing tomorrow. The platform is expanding beyond the GPU, making your investment more durable than it appears."
+      "type": "checklist",
+      "items": [
+        "The Occupancy Paradox: Higher occupancy (more active warps) doesn't always mean higher performance. Sometimes reducing occupancy improves cache hit rates and reduces register pressure, leading to better throughput. It's counterintuitive but real — experiment with launch configurations rather than blindly maximizing occupancy.",
+        "CUDA Graphs Are Hidden Gold: Introduced in CUDA 10, they can reduce CPU launch overhead by 90% for inference pipelines. Yet they're underutilized because they require restructuring your code to separate definition from execution. If you're building production inference systems, this is your secret weapon.",
+        "Blackwell's Transformer Engine Needs Explicit API Calls: The new architecture's mixed-precision training isn't automatic. You must explicitly call CUDA APIs to exploit FP4 and the Transformer Engine. This creates a new skill gap even among experienced CUDA programmers who assume hardware features are plug-and-play.",
+        "cudaMallocAsync Eliminates the Memory Allocation Tax: Memory pool management (introduced in CUDA 11.2) can eliminate the notorious cudaMalloc overhead that plagues dynamic workloads. If your training pipeline has unpredictable memory patterns, this API change alone can improve throughput by 20-40%.",
+        "CUDA Is Escaping the GPU: CUDA-X libraries are being ported to run on ARM CPUs, Grace Hopper superchips, and even cloud-specific accelerators. Learning CUDA today is learning the lingua franca of heterogeneous computing tomorrow. The platform is expanding beyond the GPU, making your investment more durable than it appears."
+      ]
     },
     {
       "type": "h2",
