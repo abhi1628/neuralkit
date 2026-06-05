@@ -25,6 +25,11 @@ const post = {
       "text": "Every piece of data in machine learning is a vector. Every dataset is a matrix. Every prediction is a matrix multiplication. If you do not understand linear algebra, you are memorizing API calls without knowing why they work. This guide does not just teach you formulas — it shows you exactly how each concept appears in real ML algorithms: from linear regression to neural networks to PCA. By the end, you will not just 'know' linear algebra. You will see it everywhere."
     },
     {
+  "type": "callout",
+  "icon": "📌",
+  "text": "Quick context before we begin: Machine Learning is a subset of Artificial Intelligence. AI is the umbrella term for any system that mimics human intelligence. ML is the specific approach where computers learn patterns from data rather than following explicitly programmed rules. Deep Learning — which we will cover in a future series — is a subset of ML that uses multi-layer neural networks. This series covers the mathematical foundations that power all three."
+},
+    {
       "type": "h2",
       "text": "Why Linear Algebra Is the Language of ML"
     },
