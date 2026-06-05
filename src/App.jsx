@@ -15,6 +15,9 @@ import BreakIt from './pages/BreakIt';
 import BreakItChallenge from './pages/BreakItChallenge';
 import RoadmapList from './pages/RoadmapList';
 import RoadmapDetail from './pages/RoadmapDetail';
+import TutorialList from './pages/TutorialList';
+import TutorialSeries from './pages/TutorialSeries';
+import TutorialPost from './pages/TutorialPost';
 
 // ── Components ────────────────────────────────────────────────
 import ErrorBoundary from './components/ErrorBoundary';
@@ -246,6 +249,9 @@ function BreakItPage()   { const { theme } = useTheme(); return <BreakIt theme={
 function BreakItChallengePage() { const { theme } = useTheme(); return <BreakItChallenge theme={theme} />; }
 function RoadmapListPage() { const { theme } = useTheme(); return <RoadmapList theme={theme} />; }
 function RoadmapDetailPage() { const { theme } = useTheme(); return <RoadmapDetail theme={theme} />; }
+function TutorialListPage() { const { theme } = useTheme(); return <TutorialList theme={theme} />; }
+function TutorialSeriesPage() { const { theme } = useTheme(); return <TutorialSeries theme={theme} />; }
+function TutorialPostPage() { const { theme } = useTheme(); return <TutorialPost theme={theme} />; }
 
 // ── Root App ──────────────────────────────────────────────────
 export default function App() {
@@ -277,6 +283,9 @@ export default function App() {
         <Route path="/breakit/:slug" element={<BreakItChallengePage />} />
         <Route path="/roadmaps" element={<RoadmapListPage />} />
         <Route path="/roadmaps/:slug" element={<RoadmapDetailPage />} />
+        <Route path="/tutorials" element={<TutorialListPage />} />
+        <Route path="/tutorials/:seriesSlug" element={<TutorialSeriesPage />} />
+        <Route path="/tutorials/:seriesSlug/:partSlug" element={<TutorialPostPage />} />
       </Routes>
     </ErrorBoundary>
   );
