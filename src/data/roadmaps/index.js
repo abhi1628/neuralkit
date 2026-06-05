@@ -7,6 +7,7 @@ import { devopsEngineerRoadmap } from './devops-engineer';
 import { pythonDeveloperRoadmap } from './python-developer';
 import { genaiDeveloperRoadmap } from './genai-developer';
 import { agenticaiDeveloperRoadmap } from './agenticai-developer';
+import { sdeRoadmap } from './sde.js'; 
 
 export const ROADMAPS = [
   dataScientistRoadmap,
@@ -15,7 +16,7 @@ export const ROADMAPS = [
   devopsEngineerRoadmap,
   pythonDeveloperRoadmap,
   genaiDeveloperRoadmap,
-  agenticaiDeveloperRoadmap,
+  agenticaiDeveloperRoadmap, sdeRoadmap,
 ];
 
 export function getRoadmapBySlug(slug) {
