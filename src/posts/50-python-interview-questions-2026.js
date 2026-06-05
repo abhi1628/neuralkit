@@ -823,7 +823,7 @@ const post = {
       "type": "callout",
       "icon": "🎯",
       "text": "The Bottom Line: Python's int has no fixed range because it's arbitrary precision — a dynamic array of digits, not a fixed memory block. This is why `print(type(int))` returns `<class 'type'>`: int is a class, not a primitive, and classes are instances of `type`. But in production, you interface with C libraries, databases, and binary protocols that DO have fixed ranges. Know NumPy's dtype table by heart. Know that `struct.pack('i', x)` will raise `struct.error` on overflow. And know that pandas' default `int64` will silently wrap around or cast to float, corrupting your data. The engineer who knows when Python's 'infinite' int is a superpower — and when it's a trap — is the engineer who gets hired."
-    }
+    },
     {
       "type": "h2",
       "text": "Summary and Core Takeaway"
