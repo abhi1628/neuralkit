@@ -19,8 +19,8 @@
   <url><loc>https://zeroapi.in/learn/agentic-ai-roadmap-from-zero-to-production</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/30-data-science-interview-questions-2026-faang</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/cuda-gpu-programming-deep-dive</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/learn/50-python-interview-questions-2026</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <<url><loc>https://zeroapi.in/learn/mastering-python-network-concurrency</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/50-python-interview-questions-2026</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/mastering-python-network-concurrency</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/defensive-cpp-memory-management</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/low-level-bitwise-networking</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/handling-hardware-network-timeouts</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -54,7 +54,7 @@
   <url><loc>https://zeroapi.in/breakit/vanishing-gradient-activation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/optimized-query</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/null-in-subquery-trap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://zeroapi.in/breakit/count-falsy-%E9%99%B7%E9%98%B1</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/breakit/count-falsy-trap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/havings-vs-where-mixup</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/un-parameterized-injection</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/api-that-works</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -103,13 +103,13 @@
   <url><loc>https://zeroapi.in/breakit/cloud-stateless-bypass</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cloud-promise-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
-  <url><loc>https://www.zeroapi.in/roadmaps</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/data-scientist</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/ml-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/data-analyst</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/devops-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/python-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/agenticai-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/genai-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://www.zeroapi.in/roadmaps/sde</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/data-scientist</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/ml-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/data-analyst</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/devops-engineer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/python-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/agenticai-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/genai-developer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/roadmaps/sde</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>
