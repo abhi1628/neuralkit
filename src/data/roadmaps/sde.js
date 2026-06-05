@@ -25,7 +25,10 @@ export const sdeRoadmap = {
         { id: 'time-space-complexity', name: 'Time & Space Complexity' },
         { id: 'big-o', name: 'Big O Notation' }
       ],
-      resources: []
+      resources: [
+        { name: 'CS50 — Harvard Computer Science', url: 'https://www.youtube.com/@cs50' },
+        { name: 'Neso Academy — OS & Networks', url: 'https://www.youtube.com/@nesoacademy' }
+      ]
     },
     {
       title: 'Phase 2: Programming Fundamentals',
@@ -41,7 +44,10 @@ export const sdeRoadmap = {
         { id: 'io-operations', name: 'I/O Operations' },
         { id: 'debugging-basics', name: 'Debugging Basics' }
       ],
-      resources: []
+      resources: [
+        { name: 'ZeroAPI Code Playground', url: '/#playground' },
+        { name: 'Programming with Mosh — Python/Java/C++', url: 'https://www.youtube.com/@programmingwithmosh' }
+      ]
     },
     {
       title: 'Phase 3: Data Structures & Algorithms',
@@ -59,7 +65,10 @@ export const sdeRoadmap = {
         { id: 'backtracking', name: 'Backtracking' },
         { id: 'time-space-analysis', name: 'Time & Space Analysis' }
       ],
-      resources: []
+      resources: [
+        { name: 'Abdul Bari — Algorithms', url: 'https://www.youtube.com/@abdul_bari' },
+        { name: 'Take U Forward — DSA Sheet', url: 'https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2/' }
+      ]
     },
     {
       title: 'Phase 4: Problem Solving (Practice)',
@@ -74,7 +83,10 @@ export const sdeRoadmap = {
         { id: 'use-dsa-effectively', name: 'Use DSA Effectively' },
         { id: 'learn-from-editorials', name: 'Learn From Editorials' }
       ],
-      resources: []
+      resources: [
+        { name: 'LeetCode — Daily Challenge', url: 'https://leetcode.com/' },
+        { name: 'GeeksforGeeks — Practice', url: 'https://www.geeksforgeeks.org/explore?page=1&sortBy=submissions' }
+      ]
     },
     {
       title: 'Phase 5: OOP (Object Oriented Programming)',
@@ -90,7 +102,10 @@ export const sdeRoadmap = {
         { id: 'interfaces-abstract-classes', name: 'Interfaces / Abstract Classes' },
         { id: 'design-principles-solid', name: 'Design Principles (SOLID)' }
       ],
-      resources: []
+      resources: [
+        { name: 'Christopher Okhravi — OOP Design Patterns', url: 'https://www.youtube.com/playlist?list=PLrhzvIcii6GNjpARdnO4ueaeAVR2BEfKz' },
+        { name: 'ZeroAPI MCQ Generator', url: '/#tools' }
+      ]
     },
     {
       title: 'Phase 6: Basic Development Skills',
@@ -104,7 +119,10 @@ export const sdeRoadmap = {
         { id: 'documentation', name: 'Documentation' },
         { id: 'unit-testing-basics', name: 'Unit Testing Basics' }
       ],
-      resources: []
+      resources: [
+        { name: 'GitHub Git Cheat Sheet', url: 'https://education.github.com/git-cheat-sheet-education.pdf' },
+        { name: 'Fireship — Git in 100 Seconds', url: 'https://www.youtube.com/@Fireship' }
+      ]
     },
     {
       title: 'Phase 7: Advanced DSA',
@@ -121,7 +139,10 @@ export const sdeRoadmap = {
         { id: 'bit-manipulation', name: 'Bit Manipulation' },
         { id: 'advanced-graphs', name: 'Advanced Graphs' }
       ],
-      resources: []
+      resources: [
+        { name: 'Aditya Verma — DP Playlist', url: 'https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go' },
+        { name: 'Tushar Roy — Advanced Algorithms', url: 'https://www.youtube.com/@tusharroy2525' }
+      ]
     },
     {
       title: 'Phase 8: Databases & SQL',
@@ -136,7 +157,10 @@ export const sdeRoadmap = {
         { id: 'transactions-acid', name: 'Transactions (ACID)' },
         { id: 'nosql-basics', name: 'NoSQL Basics' }
       ],
-      resources: []
+      resources: [
+        { name: 'SQLBolt — Interactive SQL', url: 'https://sqlbolt.com/' },
+        { name: 'DBMS — Neso Academy', url: 'https://www.youtube.com/playlist?list=PLBlnK6fEyqRiyryWrwzpQNdqmJqMN1sUU' }
+      ]
     },
     {
       title: 'Phase 9: System Design Fundamentals',
@@ -154,7 +178,10 @@ export const sdeRoadmap = {
         { id: 'availability', name: 'Availability' },
         { id: 'consistency', name: 'Consistency' }
       ],
-      resources: []
+      resources: [
+        { name: 'ByteByteGo — System Design', url: 'https://www.youtube.com/@ByteByteGo' },
+        { name: 'Designing Data-Intensive Applications (Book)', url: 'https://dataintensive.net/' }
+      ]
     },
     {
       title: 'Phase 10: Core Development',
@@ -169,7 +196,10 @@ export const sdeRoadmap = {
         { id: 'memory-management', name: 'Memory Management' },
         { id: 'design-patterns-basics', name: 'Design Patterns (Gang of Four)' }
       ],
-      resources: []
+      resources: [
+        { name: 'Head First Design Patterns (Book)', url: 'https://www.oreilly.com/library/view/head-first-design/9781492077992/' },
+        { name: 'ZeroAPI Code Playground', url: '/#playground' }
+      ]
     },
     {
       title: 'Phase 11: Web Development (Basics)',
@@ -183,7 +213,10 @@ export const sdeRoadmap = {
         { id: 'json', name: 'JSON' },
         { id: 'authentication-basics', name: 'Authentication Basics' }
       ],
-      resources: []
+      resources: [
+        { name: 'freeCodeCamp — Full Stack Course', url: 'https://www.freecodecamp.org/' },
+        { name: 'MDN Web Docs', url: 'https://developer.mozilla.org/' }
+      ]
     },
     {
       title: 'Phase 12: Software Engineering Principles',
@@ -198,7 +231,10 @@ export const sdeRoadmap = {
         { id: 'testing-strategies', name: 'Testing Strategies' },
         { id: 'cicd-basics', name: 'CI/CD Basics' }
       ],
-      resources: []
+      resources: [
+        { name: 'Clean Code by Robert Martin (Book)', url: 'https://www.oreilly.com/library/view/clean-code-a/9780136083238/' },
+        { name: 'The Pragmatic Programmer (Book)', url: 'https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/' }
+      ]
     },
     {
       title: 'Phase 13: Advanced Topics',
@@ -210,7 +246,10 @@ export const sdeRoadmap = {
         { id: 'concurrency-multithreading', name: 'Concurrency & Multi-threading' },
         { id: 'low-level-design', name: 'Low Level Design (LLD)' }
       ],
-      resources: []
+      resources: [
+        { name: 'Refactoring Guru — Design Patterns', url: 'https://refactoring.guru/design-patterns' },
+        { name: 'ZeroAPI MCQ Generator', url: '/#tools' }
+      ]
     },
     {
       title: 'Phase 14: Backend Development (Choose a Stack)',
@@ -226,7 +265,11 @@ export const sdeRoadmap = {
         { id: 'error-handling', name: 'Error Handling' },
         { id: 'logging', name: 'Logging' }
       ],
-      resources: []
+      resources: [
+        { name: 'Spring Boot Official Docs', url: 'https://spring.io/projects/spring-boot' },
+        { name: 'FastAPI Documentation', url: 'https://fastapi.tiangolo.com/' },
+        { name: 'Node.js Best Practices', url: 'https://github.com/goldbergyoni/nodebestpractices' }
+      ]
     },
     {
       title: 'Phase 15: Frontend Development (Intermediate)',
@@ -240,7 +283,11 @@ export const sdeRoadmap = {
         { id: 'routing', name: 'Routing' },
         { id: 'api-integration', name: 'API Integration' }
       ],
-      resources: []
+      resources: [
+        { name: 'React Official Tutorial', url: 'https://react.dev/learn' },
+        { name: 'Vue.js Guide', url: 'https://vuejs.org/guide/introduction.html' },
+        { name: 'Angular.io', url: 'https://angular.io/docs' }
+      ]
     },
     {
       title: 'Phase 16: System Design (Advanced)',
@@ -256,7 +303,10 @@ export const sdeRoadmap = {
         { id: 'cdn', name: 'CDN' },
         { id: 'monitoring-logging', name: 'Monitoring & Logging' }
       ],
-      resources: []
+      resources: [
+        { name: 'System Design Primer (GitHub)', url: 'https://github.com/donnemartin/system-design-primer' },
+        { name: 'ByteByteGo — YouTube', url: 'https://www.youtube.com/@ByteByteGo' }
+      ]
     },
     {
       title: 'Phase 17: Testing',
@@ -269,7 +319,10 @@ export const sdeRoadmap = {
         { id: 'end-to-end-testing', name: 'End to End Testing' },
         { id: 'test-frameworks', name: 'Test Frameworks (Jest, JUnit, PyTest)' }
       ],
-      resources: []
+      resources: [
+        { name: 'Testing JavaScript with Kent C. Dodds', url: 'https://testingjavascript.com/' },
+        { name: 'JUnit 5 User Guide', url: 'https://junit.org/junit5/docs/current/user-guide/' }
+      ]
     },
     {
       title: 'Phase 18: DevOps Basics',
@@ -283,7 +336,11 @@ export const sdeRoadmap = {
         { id: 'jenkins-github-actions', name: 'Jenkins / GitHub Actions' },
         { id: 'monitoring-prometheus', name: 'Monitoring (Prometheus, Grafana)' }
       ],
-      resources: []
+      resources: [
+        { name: 'Docker Docs — Get Started', url: 'https://docs.docker.com/get-started/' },
+        { name: 'Kubernetes Basics', url: 'https://kubernetes.io/docs/tutorials/kubernetes-basics/' },
+        { name: 'GitHub Actions Docs', url: 'https://docs.github.com/en/actions' }
+      ]
     },
     {
       title: 'Phase 19: Cloud Basics',
@@ -297,7 +354,11 @@ export const sdeRoadmap = {
         { id: 'iam-basics', name: 'IAM Basics' },
         { id: 'deploy-applications', name: 'Deploy Applications' }
       ],
-      resources: []
+      resources: [
+        { name: 'AWS Free Tier Tutorials', url: 'https://aws.amazon.com/free/' },
+        { name: 'Google Cloud Skills Boost', url: 'https://www.cloudskillsboost.google/' },
+        { name: 'Azure Learn', url: 'https://learn.microsoft.com/en-us/azure/' }
+      ]
     },
     {
       title: 'Phase 20: Real World Projects',
@@ -312,7 +373,10 @@ export const sdeRoadmap = {
         { id: 'add-tests', name: 'Add Tests' },
         { id: 'document-project', name: 'Document Your Project' }
       ],
-      resources: []
+      resources: [
+        { name: 'Build Your Own X (GitHub)', url: 'https://github.com/codecrafters-io/build-your-own-x' },
+        { name: 'App Ideas Collection', url: 'https://github.com/florinpop17/app-ideas' }
+      ]
     },
     {
       title: 'Phase 21: Open Source Contribution',
@@ -324,7 +388,10 @@ export const sdeRoadmap = {
         { id: 'improve-github', name: 'Improve Your GitHub' },
         { id: 'build-in-public', name: 'Build in Public' }
       ],
-      resources: []
+      resources: [
+        { name: 'First Timers Only', url: 'https://www.firsttimersonly.com/' },
+        { name: 'GitHub Explore — Good First Issue', url: 'https://github.com/topics/good-first-issue' }
+      ]
     },
     {
       title: 'Phase 22: Coding Interview Prep',
@@ -337,7 +404,11 @@ export const sdeRoadmap = {
         { id: 'mock-interviews', name: 'Mock Interviews' },
         { id: 'analyse-improve', name: 'Analyse & Improve' }
       ],
-      resources: []
+      resources: [
+        { name: 'Blind 75 LeetCode', url: 'https://leetcode.com/discuss/general-discussion/460599/blind-75-leetcode-questions' },
+        { name: 'Pramp — Free Mock Interviews', url: 'https://www.pramp.com/' },
+        { name: 'Interviewing.io', url: 'https://interviewing.io/' }
+      ]
     },
     {
       title: 'Phase 23: Soft Skills',
@@ -350,7 +421,9 @@ export const sdeRoadmap = {
         { id: 'problem-solving-approach', name: 'Problem Solving Approach' },
         { id: 'leadership', name: 'Leadership' }
       ],
-      resources: []
+      resources: [
+        { name: 'ZeroAPI Ask Author — Prof. Abhishek Singh', url: '/#about' }
+      ]
     },
     {
       title: 'Phase 24: Career & Growth',
@@ -364,7 +437,10 @@ export const sdeRoadmap = {
         { id: 'keep-learning', name: 'Keep Learning' },
         { id: 'mentorship', name: 'Mentorship' }
       ],
-      resources: []
+      resources: [
+        { name: 'Tech Interview Handbook', url: 'https://www.techinterviewhandbook.org/' },
+        { name: 'ZeroAPI Document Summarizer', url: '/#tools' }
+      ]
     }
   ],
   dependencies: [
