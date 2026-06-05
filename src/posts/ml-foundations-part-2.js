@@ -508,6 +508,20 @@ plt.show()
 # Or use Adam optimizer which adapts lr per parameter automatically.`
     },
     {
+  "type": "h2",
+  "text": "Gradient Descent: The Complete Picture"
+},
+{
+  "type": "p",
+  "text": "Everything we have covered — derivatives, partial derivatives, the chain rule, learning rates, momentum, Adam — comes together in one algorithm: gradient descent. The infographic below summarizes the complete gradient descent framework: from mathematical formulation to algorithm steps to visualization to variants. Keep this as your reference cheat sheet."
+},
+{
+  "type": "image",
+  "src": "/images/roadmaps/gradient.png",
+  "alt": "Complete Gradient Descent infographic showing intuition, math, algorithm, visualization, learning rates, cost functions, properties, variants, pseudocode, summary, and applications",
+  "caption": "Gradient Descent: The complete reference — save this. It covers everything from the update rule θ^(t+1) = θ^(t) − α∇J(θ^(t)) to batch vs stochastic vs mini-batch to adaptive methods like Adam."
+},
+    {
       "type": "h2",
       "text": "Advanced Optimizers: Momentum, Adam, and Beyond"
     },
