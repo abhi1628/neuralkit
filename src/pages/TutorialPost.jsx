@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
 import part1Content from "../posts/ml-foundations-part-1";
+import part2Content from "../posts/ml-foundations-part-2";
 const CONTENT_MAP = {
   "ml-foundations": {
-    "part-1-linear-algebra": part1Content
+    "part-1-linear-algebra": part1Content,
+    "part-2-calculus-optimization": part2Content
   }
 };
 
