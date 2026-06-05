@@ -298,4 +298,94 @@ const learnHtml = `<!DOCTYPE html>
 fs.writeFileSync(path.join(learnDir, 'index.html'), learnHtml);
 console.log('✓ Generated /learn/index.html');
 
+
+// Generate tutorial pages
+const tutorialPosts = posts.filter(p => p.slug.includes('ml-foundations'));
+tutorialPosts.forEach(post => {
+  const postDir = path.join(distPath, 'tutorials', post.slug);
+  fs.mkdirSync(postDir, { recursive: true });
+
+  const postHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${post.title} | ZeroAPI Tutorials</title>
+  <meta name="description" content="${post.excerpt}">
+  <meta property="og:title" content="${post.title}">
+  <meta property="og:description" content="${post.excerpt}">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://zeroapi.in/tutorials/${post.slug}">
+  <link rel="canonical" href="https://zeroapi.in/tutorials/${post.slug}">
+  <link rel="stylesheet" href="/assets/${cssFile}">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #060a0f; color: #fff; margin: 0; padding: 40px 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-family: 'Syne', sans-serif; font-size: 2rem; margin-bottom: 16px; }
+    p { font-size: 1.1rem; line-height: 1.7; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+    .loading { text-align: center; padding: 60px 20px; color: #10b981; font-family: 'Space Mono', monospace; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="container">
+      <div style="margin-bottom: 32px;">
+        <a href="/tutorials" style="color: #10b981; text-decoration: none; font-family: 'Space Mono', monospace; font-size: 0.85rem;">← All Tutorials</a>
+      </div>
+      <h1>${post.title}</h1>
+      <p>${post.excerpt}</p>
+      <p style="color: #10b981; font-family: 'Space Mono', monospace; font-size: 0.85rem;">Loading tutorial...</p>
+      <noscript>
+        <p>This tutorial requires JavaScript. Please enable JavaScript or visit <a href="/" style="color: #10b981;">zeroapi.in</a>.</p>
+      </noscript>
+    </div>
+  </div>
+  <script type="module" src="/assets/${jsFile}"></script>
+</body>
+</html>`;
+
+  fs.writeFileSync(path.join(postDir, 'index.html'), postHtml);
+  console.log(`✓ Generated /tutorials/${post.slug}/index.html`);
+});
+
+// Generate /tutorials/index.html
+const tutorialsDir = path.join(distPath, 'tutorials');
+fs.mkdirSync(tutorialsDir, { recursive: true });
+
+const tutorialsHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutorials | ZeroAPI</title>
+  <meta name="description" content="Structured learning paths for developers. Multi-part series with code, quizzes, and real projects.">
+  <link rel="canonical" href="https://zeroapi.in/tutorials">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #060a0f; color: #fff; margin: 0; padding: 40px 20px; }
+    .container { max-width: 860px; margin: 0 auto; }
+    h1 { font-family: 'Syne', sans-serif; font-size: 2.5rem; margin-bottom: 16px; }
+    .series { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+    .series h2 { font-size: 1.25rem; margin: 0 0 8px 0; }
+    .series p { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin: 0; }
+    a { color: #10b981; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="container">
+      <h1>Structured Learning Paths</h1>
+      <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px;">Multi-part series with code, quizzes, and real projects. Master topics from zero to production.</p>
+      <div class="series">
+        <h2><a href="/tutorials/ml-foundations">ML Foundations: The Zero-Restart Series</a></h2>
+        <p>The complete prerequisite guide for machine learning. 4 parts: Linear Algebra, Calculus, Probability, and the ML Pipeline.</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/assets/${jsFile}"></script>
+</body>
+</html>`;
+
+fs.writeFileSync(path.join(tutorialsDir, 'index.html'), tutorialsHtml);
+console.log('✓ Generated /tutorials/index.html');
+
 console.log('\n✅ Prerender complete!');
