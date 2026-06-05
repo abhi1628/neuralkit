@@ -4,11 +4,14 @@ import seriesData from "../posts/ml-foundations-series";
 import part1Content from "../posts/ml-foundations-part-1";
 import part2Content from "../posts/ml-foundations-part-2";
 import part3Content from "../posts/ml-foundations-part-3";
+import part4Content from '../posts/ml-foundations-part-4';
+
 const CONTENT_MAP = {
   "ml-foundations": {
     "part-1-linear-algebra": part1Content,
     "part-2-calculus-optimization": part2Content,
-    "part-3-probability-information": part3Content
+    "part-3-probability-information": part3Content,
+    "part-4-ml-pipeline": part4Content
   }
 };
 
