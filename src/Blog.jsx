@@ -34,6 +34,7 @@ import cachingStrategiesAtScale from "./posts/caching-strategies-at-scale";
 import resilientMicroserviceArchitectures from "./posts/resilient-microservice-architectures";
 import scalingStatelessGateways from "./posts/scaling-stateless-gateways";
 import asynchronousResourceManagement from "./posts/asynchronous-resource-management";
+import cudaGpu from "./posts/cuda-gpu-programming-deep-dive";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
@@ -45,7 +46,7 @@ export const BLOG_POSTS = [
   iamSecurityBestPractices, masteringCorsArchitectures, preventingSsrfVulnerabilities,
   hardeningDockerContainers, containerProcessLifecycles, kubernetesProbeOrchestration,
   cachingStrategiesAtScale, resilientMicroserviceArchitectures, scalingStatelessGateways,
-  asynchronousResourceManagement
+  asynchronousResourceManagement, cudaGpu
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
