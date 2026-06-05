@@ -21,6 +21,42 @@ const post = {
       "text": "Every self-taught ML learner hits the same wall. You start a course, get halfway through, realize you missed a prerequisite, go back to learn it, forget the original material, and start over. This is the 'restart loop' — and it destroys motivation. This series is designed to break that loop forever. Every concept is taught with its ML application visible from day one. Every part builds on the previous with no gaps. Every quiz validates mastery before you advance. By the end, you will have the complete foundation that most courses assume you already know."
     },
     {
+  "type": "h2",
+  "text": "AI, ML, and Deep Learning: What's the Difference?"
+},
+{
+  "type": "p",
+  "text": "These three terms are used interchangeably in marketing, but they mean very different things technically. Understanding the hierarchy saves you from confusion when reading papers, job descriptions, and product claims."
+},
+{
+  "type": "sections-list",
+  "items": [
+    {
+      "title": "Artificial Intelligence (AI)",
+      "desc": "The broadest term. Any system that mimics human intelligence — from chess engines to chatbots to self-driving cars. Includes rule-based systems, search algorithms, logic, and machine learning. AI is the goal."
+    },
+    {
+      "title": "Machine Learning (ML)",
+      "desc": "A subset of AI. Systems that learn patterns from data instead of being explicitly programmed. If you write 'if temperature > 30°C, predict rain' — that is AI but not ML. If you feed 10 years of weather data and the system discovers the pattern itself — that is ML. ML is the approach."
+    },
+    {
+      "title": "Deep Learning (DL)",
+      "desc": "A subset of ML. Neural networks with many hidden layers that automatically learn hierarchical representations. A simple logistic regression is ML but not DL. GPT-4, Stable Diffusion, and AlphaFold are DL. DL is the technique."
+    }
+  ]
+},
+{
+  "type": "callout",
+  "icon": "🧠",
+  "text": "Memory trick: AI is the dream. ML is the method. DL is the tool. Every deep learning model is machine learning. Every machine learning model is artificial intelligence. But not every AI system uses ML, and not every ML model uses deep learning."
+},
+{
+  "type": "image",
+  "src": "/images/roadmaps/ml-lifecycle.png",
+  "alt": "ML Lifecycle diagram showing 9 stages from problem definition to feedback loop",
+  "caption": "The complete ML lifecycle — this series covers the core technical stages in depth"
+},
+    {
       "type": "h2",
       "text": "Who This Series Is For"
     },
@@ -59,6 +95,39 @@ const post = {
         }
       ]
     },
+    {
+  "type": "h2",
+  "text": "Core Concepts Every ML Engineer Must Know"
+},
+{
+  "type": "p",
+  "text": "Before diving into the math, here are the fundamental ideas that frame everything you will learn. These are not buzzwords — they are the mental models that separate engineers who 'use libraries' from engineers who 'understand systems.'"
+},
+{
+  "type": "sections-list",
+  "items": [
+    {
+      "title": "Supervised vs Unsupervised vs Reinforcement Learning",
+      "desc": "Supervised: You have labeled data (input → known output). Regression and classification. Unsupervised: No labels. Find hidden structure. Clustering and dimensionality reduction. Reinforcement: An agent learns by trial and error, receiving rewards or penalties. Games, robotics, trading."
+    },
+    {
+      "title": "The Bias-Variance Tradeoff",
+      "desc": "Bias = error from overly simple assumptions (underfitting). Variance = error from sensitivity to training data noise (overfitting). You cannot minimize both simultaneously. The art of ML is finding the sweet spot."
+    },
+    {
+      "title": "Overfitting vs Underfitting",
+      "desc": "Overfitting: The model memorizes training data including noise. Performs terribly on new data. Underfitting: The model is too simple to capture the pattern. Performs poorly everywhere. Visual test: plot training vs validation loss over epochs."
+    },
+    {
+      "title": "Bagging vs Boosting",
+      "desc": "Bagging (Bootstrap Aggregating): Train multiple models in parallel on random data subsets, average their predictions. Random Forest uses this. Reduces variance. Boosting: Train models sequentially, each focusing on errors the previous one made. XGBoost, LightGBM use this. Reduces bias."
+    },
+    {
+      "title": "Parametric vs Non-Parametric Models",
+      "desc": "Parametric: Fixed number of parameters regardless of data size. Linear regression, logistic regression, neural networks. Non-parametric: Complexity grows with data. Decision trees, k-NN, SVM with RBF kernel. Parametric models generalize better with less data. Non-parametric models adapt to complex patterns."
+    }
+  ]
+},
     {
       "type": "h2",
       "text": "The Four-Part Roadmap"
@@ -110,6 +179,41 @@ const post = {
       ]
     },
     {
+  "type": "h2",
+  "text": "ML Trivia: Facts That Surprise Even Experienced Engineers"
+},
+{
+  "type": "sections-list",
+  "items": [
+    {
+      "title": "Why Is It Called 'Machine' Learning?",
+      "desc": "Because the machine finds the rules. In traditional programming, humans write rules and machines follow them. In ML, humans provide data and outcomes — the machine discovers the rules itself. The 'learning' is just optimization: adjusting parameters to minimize error."
+    },
+    {
+      "title": "The Term 'AI' Is 70 Years Old",
+      "desc": "John McCarthy coined 'Artificial Intelligence' in 1956 at the Dartmouth Conference. ML became practical in the 1990s with SVMs and random forests. Deep Learning exploded in 2012 when AlexNet won ImageNet by a massive margin. Transformers changed everything in 2017."
+    },
+    {
+      "title": "The No Free Lunch Theorem",
+      "desc": "No single algorithm works best for every problem. A model that excels on image classification may fail on time series. A model perfect for tabular data may be useless for NLP. This is why understanding multiple algorithms — and when to use them — is essential."
+    },
+    {
+      "title": "More Data Beats Better Algorithms",
+      "desc": "Banko and Brill (2001) showed that a simple algorithm with massive data outperforms a sophisticated algorithm with limited data. This is why tech giants dominate AI — they have the data. But better features can beat more data. Feature engineering is the great equalizer."
+    },
+    {
+      "title": "Neural Networks Were Invented in 1943",
+      "desc": "McCulloch and Pitts created the first mathematical model of a neuron in 1943. The Perceptron arrived in 1958. Backpropagation was formalized in 1986. Yet deep learning only became practical after 2012 — thanks to GPUs, big data, and ReLU activations. The math was ready for 70 years. The hardware was not."
+    }
+  ]
+},
+{
+  "type": "image",
+  "src": "/images/roadmaps/ml-pipeline.png",
+  "alt": "End-to-End ML Pipeline showing 7 stages from problem definition to monitoring",
+  "caption": "The end-to-end ML pipeline — Part 4 of this series implements every stage from data collection to deployment"
+},
+          {
       "type": "h2",
       "text": "How to Use This Series"
     },
