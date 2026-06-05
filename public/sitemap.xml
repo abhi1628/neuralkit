@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://zeroapi.in</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
-  <url><loc>https://zeroapi.in/learn</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://zeroapi.in/about</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/contact</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/privacy</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-
+  
+  <url><loc>https://zeroapi.in/learn</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/ats-resume-2026</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/python-312-313-314-differences</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/git-github-first-job</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -18,45 +18,39 @@
   <url><loc>https://zeroapi.in/learn/how-agentic-ai-actually-works-simple-python</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/agentic-ai-roadmap-from-zero-to-production</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/learn/30-data-science-interview-questions-2026-faang</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://zeroapi.in/learn/cuda-gpu-programming-deep-dive</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 
   <url><loc>https://zeroapi.in/breakit</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/silent-data-killer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/type-conversion-trap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/merge-mayhem</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/mutable-default-disaster</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/floating-point-finance</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/accuracy-trap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/leaky-validation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/imbalanced-metrics-mirage</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/data-leakage-temporal</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/vanishing-gradient-activation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/optimized-query</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/null-in-subquery-trap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/count-falsy-%E9%99%B7%E9%98%B1</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/havings-vs-where-mixup</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/un-parameterized-injection</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/api-that-works</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/async-race-condition</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cors-wildcard-exposure</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/unhandled-promise-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/payload-limit-flood</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/secure-api-key</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/root-container-vulnerability</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/zombie-process-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cors-wildcard-ml-exposure</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/latest-tag-instability</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/cache-invalidation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/thundering-herd-crash</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/retry-storm-cascade</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/read-your-own-writes-gap</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/rate-limit-stateless-bypass</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/cisco-async-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-packet-race</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-subnet-overflow</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -67,7 +61,6 @@
   <url><loc>https://zeroapi.in/breakit/cisco-token-bucket</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-dangling-pool</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cisco-dns-cache-poison</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/tcs-time-complexity</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-integer-overflow</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-string-leak</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
@@ -78,7 +71,6 @@
   <url><loc>https://zeroapi.in/breakit/tcs-recursion-stack</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-graph-cycle</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/tcs-type-evaluation</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-
   <url><loc>https://zeroapi.in/breakit/cloud-iam-exposure</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cloud-cors-wildcard</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/breakit/cloud-ssrf-metadata</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
