@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
 
+// STATIC IMPORT MAP — Add future parts here as you create them
+import part1LinearAlgebra from "../posts/ml-foundations-part-1";
+const PART_MODULES = {
+  "ml-foundations": {
+    "part-1-linear-algebra": part1LinearAlgebra,
+    // "part-2-calculus-optimization": part2Calculus,
+    // "part-3-probability-information": part3Probability,
+    // "part-4-ml-pipeline": part4Pipeline,
+  }
+};
+
 // Import renderContent from Blog.js (we'll copy the function here for independence)
 function renderContent(block, i, theme) {
   const isDark = theme === "dark";
@@ -107,9 +118,8 @@ export default function TutorialPost({ theme }) {
   const ac = isDark ? "#a78bfa" : "#7c3aed";
   const seriesColor = "#10b981";
 
-  // Get series data
   const series = seriesSlug === "ml-foundations" ? seriesData : null;
-
+  
   if (!series) {
     return (
       <div style={{ minHeight: "100vh", background: isDark ? "#08070f" : "#faf8ff", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px" }}>
@@ -120,7 +130,6 @@ export default function TutorialPost({ theme }) {
     );
   }
 
-  // Find current part
   const currentPartIndex = series.parts.findIndex(p => p.slug === partSlug);
   const currentPart = currentPartIndex >= 0 ? series.parts[currentPartIndex] : null;
 
@@ -134,21 +143,20 @@ export default function TutorialPost({ theme }) {
     );
   }
 
-  // Load the part content
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    // Dynamic import of the part file
-    import(`../posts/${seriesSlug}-${partSlug}.js`)
-      .then(module => {
-        setPost(module.default);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    const seriesParts = PART_MODULES[seriesSlug];
+    const postModule = seriesParts ? seriesParts[partSlug] : null;
+    
+    if (postModule) {
+      setPost(postModule);
+      setLoading(false);
+    } else {
+      setLoading(false);
+    }
     window.scrollTo(0, 0);
   }, [seriesSlug, partSlug]);
 
@@ -178,12 +186,8 @@ export default function TutorialPost({ theme }) {
       <div style={{ background: isDark ? "rgba(16,185,129,0.04)" : "rgba(16,185,129,0.03)", borderBottom: `1px solid ${isDark ? "rgba(16,185,129,0.1)" : "rgba(16,185,129,0.15)"}` }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "72px 24px 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-            <button onClick={() => navigate(`/tutorials/${seriesSlug}`)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(16,185,129,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", color: seriesColor, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>
-              ← Series Overview
-            </button>
-            <button onClick={() => navigate("/tutorials")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "8px", color: isDark ? "#a78bfa" : "#7c3aed", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>
-              All Tutorials
-            </button>
+            <button onClick={() => navigate(`/tutorials/${seriesSlug}`)} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(16,185,129,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", color: seriesColor, fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>← Series Overview</button>
+            <button onClick={() => navigate("/tutorials")} style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(167,139,250,0.2)" : "rgba(124,58,237,0.2)"}`, borderRadius: "8px", color: isDark ? "#a78bfa" : "#7c3aed", fontSize: "0.78rem", cursor: "pointer", fontFamily: "'Space Mono',monospace", padding: "6px 14px", fontWeight: 600 }}>All Tutorials</button>
           </div>
 
           {/* Part indicator */}
@@ -222,8 +226,8 @@ export default function TutorialPost({ theme }) {
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: seriesColor, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "18px" }}>◆ Series Navigation</div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
             {prevPart ? (
-              <button onClick={() => navigate(`/tutorials/${seriesSlug}/${prevPart.slug}`)} style={{ flex: 1, minWidth: "200px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${border}`, borderRadius: "12px", padding: "16px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}>
-                <div style={{ fontSize: "0.65rem", color: muted, fontFamily: "'Space Mono',monospace", marginBottom: "6px" }}>← Previous</div>
+              <button onClick={() => navigate(`/tutorials/${seriesSlug}/${prevPart.slug}`)} style={{ flex: 1, minWidth: "200px", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`, borderRadius: "12px", padding: "16px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}>
+                <div style={{ fontSize: "0.65rem", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontFamily: "'Space Mono',monospace", marginBottom: "6px" }}>← Previous</div>
                 <div style={{ fontWeight: 700, fontSize: "0.9rem", color: isDark ? "#fff" : "#1a1a1a" }}>{prevPart.title}</div>
               </button>
             ) : <div style={{ flex: 1, minWidth: "200px" }} />}
