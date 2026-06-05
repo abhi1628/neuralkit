@@ -209,6 +209,11 @@ const posts = [
   slug: 'ml-foundations/part-2-calculus-optimization',
   title: 'Calculus & Optimization: How Gradient Descent Actually Works (Part 2)',
   excerpt: 'Derivatives, partial derivatives, the chain rule, and gradient descent — from first principles to training your first neural network. No black boxes. Every line of math connected to code.'
+},
+  {
+  slug: 'ml-foundations/part-3-probability-information',
+  title: 'Probability & Information Theory: The Math Behind Loss Functions (Part 3)',
+  excerpt: 'Bayes theorem, probability distributions, expectation, MLE, entropy, and cross-entropy — the statistical toolkit every ML engineer needs.'
 }
 ];
 
