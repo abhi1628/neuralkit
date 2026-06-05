@@ -114,6 +114,33 @@ function renderContent(block, i, theme) {
         </div>
       );
 
+      case "image":
+  return (
+    <div key={i} style={{ margin: "32px 0", textAlign: "center" }}>
+      <img 
+        src={block.src} 
+        alt={block.alt} 
+        style={{ 
+          maxWidth: "100%", 
+          borderRadius: "12px", 
+          border: `1px solid ${border}`,
+          boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.08)"
+        }} 
+      />
+      {block.caption && (
+        <div style={{ 
+          fontSize: "0.78rem", 
+          color: muted, 
+          marginTop: "12px", 
+          fontStyle: "italic",
+          fontFamily: "'Space Mono',monospace"
+        }}>
+          {block.caption}
+        </div>
+      )}
+    </div>
+  );
+
     default:
       return null;
   }
