@@ -194,7 +194,17 @@ const posts = [
     "slug": "50-python-interview-questions-2026",
     "title": "50 Python Interview Questions You Must Know in 2026 — From FAANG to Startups",
     "excerpt": "The 50 most-asked Python interview questions in 2026, complete with clean code, real company names, and battle-tested explanations. Whether you're interviewing at Google, Meta, Amazon, or a fast-growing startup, this guide has you covered."
-  }
+  },
+    {
+  slug: 'ml-foundations',
+  title: 'ML Foundations: The Zero-Restart Series',
+  excerpt: 'The complete prerequisite guide for machine learning. Master every fundamental theory in one structured path — so you never have to restart from scratch again.'
+},
+{
+  slug: 'ml-foundations/part-1-linear-algebra',
+  title: 'Linear Algebra for Machine Learning: The Language of Data (Part 1)',
+  excerpt: 'Vectors, matrices, dot products, eigenvalues, and SVD — explained with Python code and real ML connections. This is the foundation everything else builds on.'
+}
 ];
 
 // Generate static HTML for each blog post
