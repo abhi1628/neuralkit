@@ -29,6 +29,13 @@ const post = {
       "text": "Why the Pipeline Matters"
     },
     {
+  "type": "image",
+  "src": "/images/roadmaps/ml-pipeline.png",
+  "alt": "End-to-End ML Pipeline diagram showing 7 stages",
+  "caption": "The pipeline we will build in this guide — from raw data to deployed API"
+},
+    
+    {
       "type": "p",
       "text": "Kaggle competitions are won by feature engineering, not by using the latest architecture. Production models fail because of data drift, not because the algorithm is wrong. The pipeline is where theory meets reality. A model is only as good as the data that feeds it, the features that represent it, and the evaluation that validates it. Understanding the pipeline means you can debug failures, improve performance, and deploy with confidence."
     },
