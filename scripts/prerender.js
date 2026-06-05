@@ -214,6 +214,11 @@ const posts = [
   slug: 'ml-foundations/part-3-probability-information',
   title: 'Probability & Information Theory: The Math Behind Loss Functions (Part 3)',
   excerpt: 'Bayes theorem, probability distributions, expectation, MLE, entropy, and cross-entropy — the statistical toolkit every ML engineer needs.'
+},
+  {
+  slug: 'ml-foundations/part-4-ml-pipeline',
+  title: 'The ML Pipeline: From Raw Data to Trained Model (Part 4)',
+  excerpt: 'Complete pipeline: data loading, preprocessing, feature engineering, model selection, evaluation, and prediction API. Uses all four parts.'
 }
 ];
 
