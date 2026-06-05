@@ -204,6 +204,11 @@ const posts = [
   slug: 'ml-foundations/part-1-linear-algebra',
   title: 'Linear Algebra for Machine Learning: The Language of Data (Part 1)',
   excerpt: 'Vectors, matrices, dot products, eigenvalues, and SVD — explained with Python code and real ML connections. This is the foundation everything else builds on.'
+},
+  {
+  slug: 'ml-foundations/part-2-calculus-optimization',
+  title: 'Calculus & Optimization: How Gradient Descent Actually Works (Part 2)',
+  excerpt: 'Derivatives, partial derivatives, the chain rule, and gradient descent — from first principles to training your first neural network. No black boxes. Every line of math connected to code.'
 }
 ];
 
