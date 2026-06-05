@@ -11,13 +11,13 @@ import { BlogList, BlogPost } from './Blog';
 import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
 import About from './pages/About';
+import TutorialList from './pages/TutorialList';
+import TutorialSeries from './pages/TutorialSeries';
+import TutorialPost from './pages/TutorialPost';
 import BreakIt from './pages/BreakIt';
 import BreakItChallenge from './pages/BreakItChallenge';
 import RoadmapList from './pages/RoadmapList';
 import RoadmapDetail from './pages/RoadmapDetail';
-import TutorialList from './pages/TutorialList';
-import TutorialSeries from './pages/TutorialSeries';
-import TutorialPost from './pages/TutorialPost';
 
 // ── Components ────────────────────────────────────────────────
 import ErrorBoundary from './components/ErrorBoundary';
