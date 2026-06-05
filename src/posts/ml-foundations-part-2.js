@@ -53,7 +53,64 @@ const post = {
     {
       "type": "code-block",
       "label": "Derivatives from Scratch",
-      "code": "import numpy as np\nimport matplotlib.pyplot as plt\n\n# A simple quadratic: f(x) = x²\n# The derivative is f'(x) = 2x\n# At x = 3, the slope is 6. The function is increasing rapidly.\n# At x = -2, the slope is -4. The function is decreasing.\n# At x = 0, the slope is 0. This is the minimum.\n\ndef f(x):\n    return x ** 2\n\ndef df(x):\n    return 2 * x  # analytical derivative\n\ndef df_numerical(x, h=1e-5):\n    return (f(x + h) - f(x - h)) / (2 * h)  # central difference\n\n# Verify they match\nx_test = 3.0\nprint(f'Analytical derivative at x=3: {df(x_test):.6f}')      # 6.0\nprint(f'Numerical derivative at x=3: {df_numerical(x_test):.6f}')  # ~6.0\n\n# === ML CONNECTION: Loss Landscape ===\n# In ML, x is a weight parameter. f(x) is the loss.\n# The derivative tells us: if I increase this weight slightly, does loss go up or down?\n# We want to move in the direction that decreases loss.\n\n# Visualize the function and its derivative\nx = np.linspace(-4, 4, 400)\ny = f(x)\ndy = df(x)\n\nplt.figure(figsize=(10, 4))\nplt.subplot(1, 2, 1)\nplt.plot(x, y, 'b-', linewidth=2, label='f(x) = x²')\nplt.axhline(0, color='k', linewidth=0.5)\nplt.axvline(0, color='k', linewidth=0.5)\nplt.xlabel('x')\nplt.ylabel('f(x)')\nplt.title('Function')\nplt.legend()\nplt.grid(True, alpha=0.3)\n\nplt.subplot(1, 2, 2)\nplt.plot(x, dy, 'r-', linewidth=2, label="f'(x) = 2x")\nplt.axhline(0, color='k', linewidth=0.5)\nplt.axvline(0, color='k', linewidth=0.5)\nplt.xlabel('x')\nplt.ylabel("f'(x)")\nplt.title('Derivative')\nplt.legend()\nplt.grid(True, alpha=0.3)\nplt.tight_layout()\nplt.show()\n\n# Key insight: derivative = 0 at the minimum. This is why we 'set derivative to 0'\n# in linear regression's normal equation."
+      "code": `import numpy as np
+import matplotlib.pyplot as plt
+
+# A simple quadratic: f(x) = x²
+# The derivative is f'(x) = 2x
+# At x = 3, the slope is 6. The function is increasing rapidly.
+# At x = -2, the slope is -4. The function is decreasing.
+# At x = 0, the slope is 0. This is the minimum.
+
+def f(x):
+    return x ** 2
+
+def df(x):
+    return 2 * x  # analytical derivative
+
+def df_numerical(x, h=1e-5):
+    return (f(x + h) - f(x - h)) / (2 * h)  # central difference
+
+# Verify they match
+x_test = 3.0
+print(f'Analytical derivative at x=3: {df(x_test):.6f}')      # 6.0
+print(f'Numerical derivative at x=3: {df_numerical(x_test):.6f}')  # ~6.0
+
+# === ML CONNECTION: Loss Landscape ===
+# In ML, x is a weight parameter. f(x) is the loss.
+# The derivative tells us: if I increase this weight slightly, does loss go up or down?
+# We want to move in the direction that decreases loss.
+
+# Visualize the function and its derivative
+x = np.linspace(-4, 4, 400)
+y = f(x)
+dy = df(x)
+
+plt.figure(figsize=(10, 4))
+plt.subplot(1, 2, 1)
+plt.plot(x, y, 'b-', linewidth=2, label='f(x) = x²')
+plt.axhline(0, color='k', linewidth=0.5)
+plt.axvline(0, color='k', linewidth=0.5)
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.title('Function')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+plt.subplot(1, 2, 2)
+plt.plot(x, dy, 'r-', linewidth=2, label="f'(x) = 2x")
+plt.axhline(0, color='k', linewidth=0.5)
+plt.axvline(0, color='k', linewidth=0.5)
+plt.xlabel('x')
+plt.ylabel("f'(x)")
+plt.title('Derivative')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# Key insight: derivative = 0 at the minimum. This is why we 'set derivative to 0'
+# in linear regression's normal equation.`
     },
     {
       "type": "h2",
@@ -66,7 +123,61 @@ const post = {
     {
       "type": "code-block",
       "label": "Partial Derivatives and the Gradient",
-      "code": "import numpy as np\n\n# A 2D function: f(x, y) = x² + 2y²\n# This is like a loss function with two weights.\n# Partial derivative with respect to x: ∂f/∂x = 2x\n# Partial derivative with respect to y: ∂f/∂y = 4y\n# Gradient vector: ∇f = [2x, 4y]\n\ndef f_2d(x, y):\n    return x**2 + 2*y**2\n\ndef gradient_2d(x, y):\n    return np.array([2*x, 4*y])  # [∂f/∂x, ∂f/∂y]\n\n# At point (3, 2):\npoint = np.array([3.0, 2.0])\ngrad = gradient_2d(point[0], point[1])\nprint(f'At point {point}:')\nprint(f'  Gradient = {grad}')\nprint(f'  Function value = {f_2d(point[0], point[1]):.2f}')\n\n# The gradient points in the direction of steepest increase.\n# To decrease the function, move in the OPPOSITE direction: -grad\nnew_point = point - 0.1 * grad  # step size = 0.1\nprint(f'\nAfter one gradient descent step (lr=0.1):')\nprint(f'  New point = {new_point}')\nprint(f'  New function value = {f_2d(new_point[0], new_point[1]):.2f}')\n\n# === ML CONNECTION: Weight Updates ===\n# In a neural network with 1 million weights:\n# - Compute partial derivative of loss with respect to EACH weight\n# - Stack them into a gradient vector of length 1,000,000\n# - Update all weights simultaneously: w_new = w_old - lr * gradient\n# This is why GPUs are essential — they parallelize this computation.\n\n# Visualize the gradient field\nimport matplotlib.pyplot as plt\nx = np.linspace(-3, 3, 20)\ny = np.linspace(-3, 3, 20)\nX, Y = np.meshgrid(x, y)\nU = 2 * X  # ∂f/∂x\nV = 4 * Y  # ∂f/∂y\n\nplt.figure(figsize=(8, 6))\nplt.quiver(X, Y, U, V, color='red', alpha=0.6)\nplt.contour(X, Y, X**2 + 2*Y**2, levels=10, cmap='viridis')\nplt.xlabel('x')\nplt.ylabel('y')\nplt.title('Gradient Field (arrows) and Contours of f(x,y) = x² + 2y²')\nplt.colorbar(label='Function value')\nplt.grid(True, alpha=0.3)\nplt.show()\n\n# The arrows point uphill. To minimize, walk downhill (opposite to arrows)."
+      "code": `import numpy as np
+
+# A 2D function: f(x, y) = x² + 2y²
+# This is like a loss function with two weights.
+# Partial derivative with respect to x: ∂f/∂x = 2x
+# Partial derivative with respect to y: ∂f/∂y = 4y
+# Gradient vector: ∇f = [2x, 4y]
+
+def f_2d(x, y):
+    return x**2 + 2*y**2
+
+def gradient_2d(x, y):
+    return np.array([2*x, 4*y])  # [∂f/∂x, ∂f/∂y]
+
+# At point (3, 2):
+point = np.array([3.0, 2.0])
+grad = gradient_2d(point[0], point[1])
+print(f'At point {point}:')
+print(f'  Gradient = {grad}')
+print(f'  Function value = {f_2d(point[0], point[1]):.2f}')
+
+# The gradient points in the direction of steepest increase.
+# To decrease the function, move in the OPPOSITE direction: -grad
+new_point = point - 0.1 * grad  # step size = 0.1
+print(f'
+After one gradient descent step (lr=0.1):')
+print(f'  New point = {new_point}')
+print(f'  New function value = {f_2d(new_point[0], new_point[1]):.2f}')
+
+# === ML CONNECTION: Weight Updates ===
+# In a neural network with 1 million weights:
+# - Compute partial derivative of loss with respect to EACH weight
+# - Stack them into a gradient vector of length 1,000,000
+# - Update all weights simultaneously: w_new = w_old - lr * gradient
+# This is why GPUs are essential — they parallelize this computation.
+
+# Visualize the gradient field
+import matplotlib.pyplot as plt
+x = np.linspace(-3, 3, 20)
+y = np.linspace(-3, 3, 20)
+X, Y = np.meshgrid(x, y)
+U = 2 * X  # ∂f/∂x
+V = 4 * Y  # ∂f/∂y
+
+plt.figure(figsize=(8, 6))
+plt.quiver(X, Y, U, V, color='red', alpha=0.6)
+plt.contour(X, Y, X**2 + 2*Y**2, levels=10, cmap='viridis')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Gradient Field (arrows) and Contours of f(x,y) = x² + 2y²')
+plt.colorbar(label='Function value')
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# The arrows point uphill. To minimize, walk downhill (opposite to arrows).`
     },
     {
       "type": "h2",
@@ -79,7 +190,94 @@ const post = {
     {
       "type": "code-block",
       "label": "Chain Rule and Backpropagation",
-      "code": "import numpy as np\n\n# A tiny neural network: 1 input → 1 hidden → 1 output\n# Forward pass: z = w1*x + b1, h = relu(z), y_pred = w2*h + b2, loss = (y_pred - y_true)²\n# We need ∂loss/∂w1, ∂loss/∂b1, ∂loss/∂w2, ∂loss/∂b2\n\ndef relu(x):\n    return np.maximum(0, x)\n\ndef relu_derivative(x):\n    return (x > 0).astype(float)\n\n# Parameters (random init)\nw1, b1 = 0.5, 0.1\nw2, b2 = -0.3, 0.2\nx = 2.0        # input\ny_true = 1.0   # target\n\n# === FORWARD PASS ===\nz = w1 * x + b1\nh = relu(z)\ny_pred = w2 * h + b2\nloss = (y_pred - y_true) ** 2\n\nprint(f'Forward pass:')\nprint(f'  z = {z:.4f}, h = {h:.4f}, y_pred = {y_pred:.4f}')\nprint(f'  Loss = {loss:.4f}')\n\n# === BACKWARD PASS (Chain Rule) ===\n# ∂loss/∂y_pred = 2*(y_pred - y_true)\ndy_pred = 2 * (y_pred - y_true)\n\n# ∂loss/∂w2 = ∂loss/∂y_pred * ∂y_pred/∂w2 = dy_pred * h\ndw2 = dy_pred * h\n\n# ∂loss/∂b2 = ∂loss/∂y_pred * ∂y_pred/∂b2 = dy_pred * 1\ndb2 = dy_pred * 1\n\n# ∂loss/∂h = ∂loss/∂y_pred * ∂y_pred/∂h = dy_pred * w2\ndh = dy_pred * w2\n\n# ∂loss/∂z = ∂loss/∂h * ∂h/∂z = dh * relu'(z)\ndz = dh * relu_derivative(z)\n\n# ∂loss/∂w1 = ∂loss/∂z * ∂z/∂w1 = dz * x\ndw1 = dz * x\n\n# ∂loss/∂b1 = ∂loss/∂z * ∂z/∂b1 = dz * 1\ndb1 = dz * 1\n\nprint(f'\nGradients (backward pass):')\nprint(f'  ∂loss/∂w1 = {dw1:.4f}')\nprint(f'  ∂loss/∂b1 = {db1:.4f}')\nprint(f'  ∂loss/∂w2 = {dw2:.4f}')\nprint(f'  ∂loss/∂b2 = {db2:.4f}')\n\n# === VERIFY WITH NUMERICAL GRADIENTS ===\neps = 1e-5\n\ndef compute_loss(w1, b1, w2, b2):\n    z = w1 * x + b1\n    h = relu(z)\n    y_pred = w2 * h + b2\n    return (y_pred - y_true) ** 2\n\ndw1_num = (compute_loss(w1+eps, b1, w2, b2) - compute_loss(w1-eps, b1, w2, b2)) / (2*eps)\ndb1_num = (compute_loss(w1, b1+eps, w2, b2) - compute_loss(w1, b1-eps, w2, b2)) / (2*eps)\ndw2_num = (compute_loss(w1, b1, w2+eps, b2) - compute_loss(w1, b1, w2-eps, b2)) / (2*eps)\ndb2_num = (compute_loss(w1, b1, w2, b2+eps) - compute_loss(w1, b1, w2, b2-eps)) / (2*eps)\n\nprint(f'\nNumerical verification:')\nprint(f'  ∂loss/∂w1: analytical={dw1:.6f}, numerical={dw1_num:.6f}')\nprint(f'  ∂loss/∂b1: analytical={db1:.6f}, numerical={db1_num:.6f}')\nprint(f'  ∂loss/∂w2: analytical={dw2:.6f}, numerical={dw2_num:.6f}')\nprint(f'  ∂loss/∂b2: analytical={db2:.6f}, numerical={db2_num:.6f}')\n\n# === ML CONNECTION: Automatic Differentiation ===\n# PyTorch's .backward() does EXACTLY what we did above.\n# It builds a computation graph, then traverses it backward,\n# applying the chain rule at each node. The 'autograd' engine\n# is just an efficient implementation of this manual process.\n\n# Key insight: the chain rule is MULTIPLICATION of derivatives.\n# If you have 100 layers, you multiply 100 Jacobian matrices.\n# This is why vanishing gradients happen — small numbers multiplied\n# many times become extremely small."
+      "code": `import numpy as np
+
+# A tiny neural network: 1 input → 1 hidden → 1 output
+# Forward pass: z = w1*x + b1, h = relu(z), y_pred = w2*h + b2, loss = (y_pred - y_true)²
+# We need ∂loss/∂w1, ∂loss/∂b1, ∂loss/∂w2, ∂loss/∂b2
+
+def relu(x):
+    return np.maximum(0, x)
+
+def relu_derivative(x):
+    return (x > 0).astype(float)
+
+# Parameters (random init)
+w1, b1 = 0.5, 0.1
+w2, b2 = -0.3, 0.2
+x = 2.0        # input
+y_true = 1.0   # target
+
+# === FORWARD PASS ===
+z = w1 * x + b1
+h = relu(z)
+y_pred = w2 * h + b2
+loss = (y_pred - y_true) ** 2
+
+print(f'Forward pass:')
+print(f'  z = {z:.4f}, h = {h:.4f}, y_pred = {y_pred:.4f}')
+print(f'  Loss = {loss:.4f}')
+
+# === BACKWARD PASS (Chain Rule) ===
+# ∂loss/∂y_pred = 2*(y_pred - y_true)
+dy_pred = 2 * (y_pred - y_true)
+
+# ∂loss/∂w2 = ∂loss/∂y_pred * ∂y_pred/∂w2 = dy_pred * h
+dw2 = dy_pred * h
+
+# ∂loss/∂b2 = ∂loss/∂y_pred * ∂y_pred/∂b2 = dy_pred * 1
+db2 = dy_pred * 1
+
+# ∂loss/∂h = ∂loss/∂y_pred * ∂y_pred/∂h = dy_pred * w2
+dh = dy_pred * w2
+
+# ∂loss/∂z = ∂loss/∂h * ∂h/∂z = dh * relu'(z)
+dz = dh * relu_derivative(z)
+
+# ∂loss/∂w1 = ∂loss/∂z * ∂z/∂w1 = dz * x
+dw1 = dz * x
+
+# ∂loss/∂b1 = ∂loss/∂z * ∂z/∂b1 = dz * 1
+db1 = dz * 1
+
+print(f'
+Gradients (backward pass):')
+print(f'  ∂loss/∂w1 = {dw1:.4f}')
+print(f'  ∂loss/∂b1 = {db1:.4f}')
+print(f'  ∂loss/∂w2 = {dw2:.4f}')
+print(f'  ∂loss/∂b2 = {db2:.4f}')
+
+# === VERIFY WITH NUMERICAL GRADIENTS ===
+eps = 1e-5
+
+def compute_loss(w1, b1, w2, b2):
+    z = w1 * x + b1
+    h = relu(z)
+    y_pred = w2 * h + b2
+    return (y_pred - y_true) ** 2
+
+dw1_num = (compute_loss(w1+eps, b1, w2, b2) - compute_loss(w1-eps, b1, w2, b2)) / (2*eps)
+db1_num = (compute_loss(w1, b1+eps, w2, b2) - compute_loss(w1, b1-eps, w2, b2)) / (2*eps)
+dw2_num = (compute_loss(w1, b1, w2+eps, b2) - compute_loss(w1, b1, w2-eps, b2)) / (2*eps)
+db2_num = (compute_loss(w1, b1, w2, b2+eps) - compute_loss(w1, b1, w2, b2-eps)) / (2*eps)
+
+print(f'
+Numerical verification:')
+print(f'  ∂loss/∂w1: analytical={dw1:.6f}, numerical={dw1_num:.6f}')
+print(f'  ∂loss/∂b1: analytical={db1:.6f}, numerical={db1_num:.6f}')
+print(f'  ∂loss/∂w2: analytical={dw2:.6f}, numerical={dw2_num:.6f}')
+print(f'  ∂loss/∂b2: analytical={db2:.6f}, numerical={db2_num:.6f}')
+
+# === ML CONNECTION: Automatic Differentiation ===
+# PyTorch's .backward() does EXACTLY what we did above.
+# It builds a computation graph, then traverses it backward,
+# applying the chain rule at each node. The 'autograd' engine
+# is just an efficient implementation of this manual process.
+
+# Key insight: the chain rule is MULTIPLICATION of derivatives.
+# If you have 100 layers, you multiply 100 Jacobian matrices.
+# This is why vanishing gradients happen — small numbers multiplied
+# many times become extremely small.`
     },
     {
       "type": "h2",
@@ -92,7 +290,82 @@ const post = {
     {
       "type": "code-block",
       "label": "Gradient Descent from Scratch",
-      "code": "import numpy as np\nimport matplotlib.pyplot as plt\n\n# Generate synthetic data: y = 2x + 1 + noise\nnp.random.seed(42)\nX = np.random.randn(100, 1)\ny = 2 * X + 1 + 0.5 * np.random.randn(100, 1)\n\n# Initialize parameters\nw = np.random.randn(1)\nb = np.random.randn(1)\nlr = 0.1\nepochs = 50\n\nlosses = []\n\nfor epoch in range(epochs):\n    # Forward pass\n    y_pred = w * X + b\n    \n    # Compute loss (Mean Squared Error)\n    loss = np.mean((y_pred - y) ** 2)\n    losses.append(loss)\n    \n    # Backward pass (compute gradients)\n    # ∂loss/∂w = (2/n) * Σ(y_pred - y) * X\n    # ∂loss/∂b = (2/n) * Σ(y_pred - y)\n    n = len(X)\n    dw = (2/n) * np.sum((y_pred - y) * X)\n    db = (2/n) * np.sum(y_pred - y)\n    \n    # Update parameters\n    w -= lr * dw\n    b -= lr * db\n    \n    if epoch % 10 == 0:\n        print(f'Epoch {epoch:2d}: loss={loss:.4f}, w={w[0]:.4f}, b={b[0]:.4f}')\n\nprint(f'\nFinal: w={w[0]:.4f}, b={b[0]:.4f}')\nprint(f'True values: w=2.0, b=1.0')\n\n# Plot loss curve\nplt.figure(figsize=(12, 4))\nplt.subplot(1, 2, 1)\nplt.plot(losses, 'b-', linewidth=2)\nplt.xlabel('Epoch')\nplt.ylabel('Loss (MSE)')\nplt.title('Loss Curve')\nplt.grid(True, alpha=0.3)\n\n# Plot data and fitted line\nplt.subplot(1, 2, 2)\nplt.scatter(X, y, alpha=0.5, label='Data')\nx_line = np.linspace(X.min(), X.max(), 100)\nplt.plot(x_line, w[0]*x_line + b[0], 'r-', linewidth=2, label=f'Fit: y={w[0]:.2f}x+{b[0]:.2f}')\nplt.plot(x_line, 2*x_line + 1, 'g--', linewidth=2, alpha=0.7, label='True: y=2x+1')\nplt.xlabel('x')\nplt.ylabel('y')\nplt.title('Linear Regression Fit')\nplt.legend()\nplt.grid(True, alpha=0.3)\nplt.tight_layout()\nplt.show()\n\n# === ML CONNECTION: Batch vs Stochastic vs Mini-Batch ===\n# We used ALL 100 data points to compute gradients. This is BATCH gradient descent.\n# Stable but slow for large datasets.\n#\n# STOCHASTIC gradient descent: use ONE random point per step.\n# Noisy but fast per step. The noise can help escape local minima.\n#\n# MINI-BATCH gradient descent: use 32-512 random points per step.\n# The compromise everyone uses. GPU-friendly. Smooth but not too slow.\n#\n# Modern frameworks default to mini-batch. The batch size is a hyperparameter."
+      "code": `import numpy as np
+import matplotlib.pyplot as plt
+
+# Generate synthetic data: y = 2x + 1 + noise
+np.random.seed(42)
+X = np.random.randn(100, 1)
+y = 2 * X + 1 + 0.5 * np.random.randn(100, 1)
+
+# Initialize parameters
+w = np.random.randn(1)
+b = np.random.randn(1)
+lr = 0.1
+epochs = 50
+
+losses = []
+
+for epoch in range(epochs):
+    # Forward pass
+    y_pred = w * X + b
+    
+    # Compute loss (Mean Squared Error)
+    loss = np.mean((y_pred - y) ** 2)
+    losses.append(loss)
+    
+    # Backward pass (compute gradients)
+    # ∂loss/∂w = (2/n) * Σ(y_pred - y) * X
+    # ∂loss/∂b = (2/n) * Σ(y_pred - y)
+    n = len(X)
+    dw = (2/n) * np.sum((y_pred - y) * X)
+    db = (2/n) * np.sum(y_pred - y)
+    
+    # Update parameters
+    w -= lr * dw
+    b -= lr * db
+    
+    if epoch % 10 == 0:
+        print(f'Epoch {epoch:2d}: loss={loss:.4f}, w={w[0]:.4f}, b={b[0]:.4f}')
+
+print(f'
+Final: w={w[0]:.4f}, b={b[0]:.4f}')
+print(f'True values: w=2.0, b=1.0')
+
+# Plot loss curve
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(losses, 'b-', linewidth=2)
+plt.xlabel('Epoch')
+plt.ylabel('Loss (MSE)')
+plt.title('Loss Curve')
+plt.grid(True, alpha=0.3)
+
+# Plot data and fitted line
+plt.subplot(1, 2, 2)
+plt.scatter(X, y, alpha=0.5, label='Data')
+x_line = np.linspace(X.min(), X.max(), 100)
+plt.plot(x_line, w[0]*x_line + b[0], 'r-', linewidth=2, label=f'Fit: y={w[0]:.2f}x+{b[0]:.2f}')
+plt.plot(x_line, 2*x_line + 1, 'g--', linewidth=2, alpha=0.7, label='True: y=2x+1')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Linear Regression Fit')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+# === ML CONNECTION: Batch vs Stochastic vs Mini-Batch ===
+# We used ALL 100 data points to compute gradients. This is BATCH gradient descent.
+# Stable but slow for large datasets.
+#
+# STOCHASTIC gradient descent: use ONE random point per step.
+# Noisy but fast per step. The noise can help escape local minima.
+#
+# MINI-BATCH gradient descent: use 32-512 random points per step.
+# The compromise everyone uses. GPU-friendly. Smooth but not too slow.
+#
+# Modern frameworks default to mini-batch. The batch size is a hyperparameter.`
     },
     {
       "type": "h2",
@@ -105,7 +378,68 @@ const post = {
     {
       "type": "code-block",
       "label": "Mini-Batch Gradient Descent",
-      "code": "import numpy as np\n\n# Larger dataset\nnp.random.seed(42)\nn_samples = 10000\nX = np.random.randn(n_samples, 1)\ny = 3 * X - 2 + 0.5 * np.random.randn(n_samples, 1)\n\nw = np.random.randn(1)\nb = np.random.randn(1)\nlr = 0.01\nepochs = 20\nbatch_size = 64\n\nn_batches = n_samples // batch_size\n\nfor epoch in range(epochs):\n    # Shuffle data each epoch\n    indices = np.random.permutation(n_samples)\n    X_shuffled = X[indices]\n    y_shuffled = y[indices]\n    \n    epoch_loss = 0\n    \n    for batch_idx in range(n_batches):\n        # Get mini-batch\n        start = batch_idx * batch_size\n        end = start + batch_size\n        X_batch = X_shuffled[start:end]\n        y_batch = y_shuffled[start:end]\n        \n        # Forward\n        y_pred = w * X_batch + b\n        \n        # Loss for this batch\n        loss = np.mean((y_pred - y_batch) ** 2)\n        epoch_loss += loss\n        \n        # Gradients (on batch, not full dataset)\n        dw = (2/batch_size) * np.sum((y_pred - y_batch) * X_batch)\n        db = (2/batch_size) * np.sum(y_pred - y_batch)\n        \n        # Update\n        w -= lr * dw\n        b -= lr * db\n    \n    if epoch % 5 == 0:\n        print(f'Epoch {epoch:2d}: avg_loss={epoch_loss/n_batches:.4f}, w={w[0]:.4f}, b={b[0]:.4f}')\n\nprint(f'\nFinal: w={w[0]:.4f}, b={b[0]:.4f}')\nprint(f'True: w=3.0, b=-2.0')\n\n# === ML CONNECTION: Why Mini-Batch Works ===\n# 1. Speed: 10,000 samples / 64 per batch = 156 steps per epoch\n#    vs 1 step for full batch. More updates = faster convergence.\n# 2. Memory: GPU memory is limited. 64 samples fit easily.\n# 3. Noise: Each batch gives a slightly different gradient direction.\n#    This noise smooths the loss landscape and prevents getting stuck\n#    in sharp local minima. Generalizes better.\n# 4. Parallelism: GPUs process 64 samples simultaneously.\n#    The matrix multiplication X_batch @ W is highly optimized."
+      "code": `import numpy as np
+
+# Larger dataset
+np.random.seed(42)
+n_samples = 10000
+X = np.random.randn(n_samples, 1)
+y = 3 * X - 2 + 0.5 * np.random.randn(n_samples, 1)
+
+w = np.random.randn(1)
+b = np.random.randn(1)
+lr = 0.01
+epochs = 20
+batch_size = 64
+
+n_batches = n_samples // batch_size
+
+for epoch in range(epochs):
+    # Shuffle data each epoch
+    indices = np.random.permutation(n_samples)
+    X_shuffled = X[indices]
+    y_shuffled = y[indices]
+    
+    epoch_loss = 0
+    
+    for batch_idx in range(n_batches):
+        # Get mini-batch
+        start = batch_idx * batch_size
+        end = start + batch_size
+        X_batch = X_shuffled[start:end]
+        y_batch = y_shuffled[start:end]
+        
+        # Forward
+        y_pred = w * X_batch + b
+        
+        # Loss for this batch
+        loss = np.mean((y_pred - y_batch) ** 2)
+        epoch_loss += loss
+        
+        # Gradients (on batch, not full dataset)
+        dw = (2/batch_size) * np.sum((y_pred - y_batch) * X_batch)
+        db = (2/batch_size) * np.sum(y_pred - y_batch)
+        
+        # Update
+        w -= lr * dw
+        b -= lr * db
+    
+    if epoch % 5 == 0:
+        print(f'Epoch {epoch:2d}: avg_loss={epoch_loss/n_batches:.4f}, w={w[0]:.4f}, b={b[0]:.4f}')
+
+print(f'
+Final: w={w[0]:.4f}, b={b[0]:.4f}')
+print(f'True: w=3.0, b=-2.0')
+
+# === ML CONNECTION: Why Mini-Batch Works ===
+# 1. Speed: 10,000 samples / 64 per batch = 156 steps per epoch
+#    vs 1 step for full batch. More updates = faster convergence.
+# 2. Memory: GPU memory is limited. 64 samples fit easily.
+# 3. Noise: Each batch gives a slightly different gradient direction.
+#    This noise smooths the loss landscape and prevents getting stuck
+#    in sharp local minima. Generalizes better.
+# 4. Parallelism: GPUs process 64 samples simultaneously.
+#    The matrix multiplication X_batch @ W is highly optimized.`
     },
     {
       "type": "h2",
@@ -118,7 +452,60 @@ const post = {
     {
       "type": "code-block",
       "label": "Learning Rate Effects",
-      "code": "import numpy as np\nimport matplotlib.pyplot as plt\n\n# Simple 1D optimization: minimize f(x) = x²\n# True minimum at x = 0\n\ndef f(x):\n    return x ** 2\n\ndef df(x):\n    return 2 * x\n\nx0 = 5.0  # starting point\nlearning_rates = [0.01, 0.1, 0.5, 1.01]\ncolors = ['blue', 'green', 'orange', 'red']\n\nplt.figure(figsize=(12, 8))\n\nfor idx, lr in enumerate(learning_rates):\n    x = x0\n    trajectory = [x]\n    \n    for step in range(20):\n        x = x - lr * df(x)\n        trajectory.append(x)\n    \n    plt.subplot(2, 2, idx + 1)\n    t = np.arange(len(trajectory))\n    plt.plot(t, trajectory, 'o-', color=colors[idx], linewidth=2, markersize=6)\n    plt.axhline(0, color='black', linestyle='--', alpha=0.5, label='Minimum (x=0)')\n    plt.xlabel('Step')\n    plt.ylabel('x value')\n    plt.title(f'Learning Rate = {lr}')\n    plt.legend()\n    plt.grid(True, alpha=0.3)\n    \n    final_x = trajectory[-1]\n    status = 'CONVERGED' if abs(final_x) < 0.01 else 'DIVERGED' if abs(final_x) > 100 else 'OSCILLATING'\n    plt.text(0.5, 0.95, f'Final x: {final_x:.4f}\n{status}', \n             transform=plt.gca().transAxes, verticalalignment='top',\n             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))\n\nplt.tight_layout()\nplt.show()\n\n# === KEY OBSERVATIONS ===\n# lr = 0.01: Slow but steady convergence. Safe but takes many steps.\n# lr = 0.1: Fast convergence. Optimal for this simple problem.\n# lr = 0.5: Oscillates around minimum. Steps are too large.\n# lr = 1.01: DIVERGES! Each step overshoots and goes further away.\n#\n# Rule of thumb: lr between 1e-4 and 1e-2 for most neural networks.\n# Use learning rate scheduling: start at 1e-3, decay by 0.1 every 10 epochs.\n# Or use Adam optimizer which adapts lr per parameter automatically."
+      "code": `import numpy as np
+import matplotlib.pyplot as plt
+
+# Simple 1D optimization: minimize f(x) = x²
+# True minimum at x = 0
+
+def f(x):
+    return x ** 2
+
+def df(x):
+    return 2 * x
+
+x0 = 5.0  # starting point
+learning_rates = [0.01, 0.1, 0.5, 1.01]
+colors = ['blue', 'green', 'orange', 'red']
+
+plt.figure(figsize=(12, 8))
+
+for idx, lr in enumerate(learning_rates):
+    x = x0
+    trajectory = [x]
+    
+    for step in range(20):
+        x = x - lr * df(x)
+        trajectory.append(x)
+    
+    plt.subplot(2, 2, idx + 1)
+    t = np.arange(len(trajectory))
+    plt.plot(t, trajectory, 'o-', color=colors[idx], linewidth=2, markersize=6)
+    plt.axhline(0, color='black', linestyle='--', alpha=0.5, label='Minimum (x=0)')
+    plt.xlabel('Step')
+    plt.ylabel('x value')
+    plt.title(f'Learning Rate = {lr}')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    
+    final_x = trajectory[-1]
+    status = 'CONVERGED' if abs(final_x) < 0.01 else 'DIVERGED' if abs(final_x) > 100 else 'OSCILLATING'
+    plt.text(0.5, 0.95, f'Final x: {final_x:.4f}\\n{status}', 
+             transform=plt.gca().transAxes, verticalalignment='top',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+
+plt.tight_layout()
+plt.show()
+
+# === KEY OBSERVATIONS ===
+# lr = 0.01: Slow but steady convergence. Safe but takes many steps.
+# lr = 0.1: Fast convergence. Optimal for this simple problem.
+# lr = 0.5: Oscillates around minimum. Steps are too large.
+# lr = 1.01: DIVERGES! Each step overshoots and goes further away.
+#
+# Rule of thumb: lr between 1e-4 and 1e-2 for most neural networks.
+# Use learning rate scheduling: start at 1e-3, decay by 0.1 every 10 epochs.
+# Or use Adam optimizer which adapts lr per parameter automatically.`
     },
     {
       "type": "h2",
@@ -131,7 +518,100 @@ const post = {
     {
       "type": "code-block",
       "label": "Momentum and Adam from Scratch",
-      "code": "import numpy as np\n\n# Compare SGD, SGD with Momentum, and Adam on a 2D ravine function\n# f(x, y) = 0.1*x² + 2*y² (steeper in y, gentle in x)\n\ndef loss(w):\n    return 0.1 * w[0]**2 + 2 * w[1]**2\n\ndef gradient(w):\n    return np.array([0.2 * w[0], 4 * w[1]])\n\n# Starting point: deep in the ravine\nw0 = np.array([2.0, 2.0])\nepochs = 100\nlr = 0.1\n\n# === 1. Plain SGD ===\nw_sgd = w0.copy()\ntraj_sgd = [w_sgd.copy()]\nfor _ in range(epochs):\n    grad = gradient(w_sgd)\n    w_sgd -= lr * grad\n    traj_sgd.append(w_sgd.copy())\n\n# === 2. SGD with Momentum ===\n# v_t = β*v_{t-1} + grad\n# w_t = w_{t-1} - lr * v_t\nw_mom = w0.copy()\nv = np.zeros(2)\nbeta = 0.9\ntraj_mom = [w_mom.copy()]\nfor _ in range(epochs):\n    grad = gradient(w_mom)\n    v = beta * v + grad\n    w_mom -= lr * v\n    traj_mom.append(w_mom.copy())\n\n# === 3. Adam ===\n# m_t = β1*m_{t-1} + (1-β1)*grad      (first moment - momentum)\n# v_t = β2*v_{t-1} + (1-β2)*grad²     (second moment - adaptive lr)\n# m_hat = m_t / (1-β1^t)              (bias correction)\n# v_hat = v_t / (1-β2^t)\n# w_t = w_{t-1} - lr * m_hat / (sqrt(v_hat) + ε)\nw_adam = w0.copy()\nm = np.zeros(2)\nv = np.zeros(2)\nbeta1, beta2 = 0.9, 0.999\neps = 1e-8\ntraj_adam = [w_adam.copy()]\n\nfor t in range(1, epochs + 1):\n    grad = gradient(w_adam)\n    m = beta1 * m + (1 - beta1) * grad\n    v = beta2 * v + (1 - beta2) * (grad ** 2)\n    m_hat = m / (1 - beta1**t)\n    v_hat = v / (1 - beta2**t)\n    w_adam -= lr * m_hat / (np.sqrt(v_hat) + eps)\n    traj_adam.append(w_adam.copy())\n\n# Compare final losses\nprint(f'Final losses after {epochs} steps:')\nprint(f'  SGD:      {loss(traj_sgd[-1]):.6f}')\nprint(f'  Momentum: {loss(traj_mom[-1]):.6f}')\nprint(f'  Adam:     {loss(traj_adam[-1]):.6f}')\n\n# Visualize trajectories\nimport matplotlib.pyplot as plt\ntraj_sgd = np.array(traj_sgd)\ntraj_mom = np.array(traj_mom)\ntraj_adam = np.array(traj_adam)\n\nplt.figure(figsize=(10, 8))\nplt.plot(traj_sgd[:, 0], traj_sgd[:, 1], 'b.-', alpha=0.6, label='SGD', markersize=4)\nplt.plot(traj_mom[:, 0], traj_mom[:, 1], 'g.-', alpha=0.6, label='Momentum', markersize=4)\nplt.plot(traj_adam[:, 0], traj_adam[:, 1], 'r.-', alpha=0.6, label='Adam', markersize=4)\nplt.scatter([0], [0], color='black', marker='*', s=200, label='Minimum', zorder=5)\nplt.scatter([w0[0]], [w0[1]], color='purple', marker='o', s=100, label='Start', zorder=5)\nplt.xlabel('w[0] (gentle direction)')\nplt.ylabel('w[1] (steep direction)')\nplt.title('Optimizer Trajectories in a Ravine')\nplt.legend()\nplt.grid(True, alpha=0.3)\nplt.axis('equal')\nplt.show()\n\n# === ML CONNECTION: Which Optimizer to Use ===\n# SGD + Momentum: Best for large batch training, image classification.\n#   Requires more tuning but often reaches better final accuracy.\n# Adam: Default for everything else. NLP, transformers, small datasets.\n#   Converges fast, needs little tuning. May generalize slightly worse.\n# AdamW: Adam with proper weight decay. Often better than Adam.\n#   Use this if available (PyTorch default since 2019).\n# Lion: Newer optimizer (2023). Simpler than Adam, sometimes better.\n#   Worth trying on large vision/language models."
+      "code": `import numpy as np
+
+# Compare SGD, SGD with Momentum, and Adam on a 2D ravine function
+# f(x, y) = 0.1*x² + 2*y² (steeper in y, gentle in x)
+
+def loss(w):
+    return 0.1 * w[0]**2 + 2 * w[1]**2
+
+def gradient(w):
+    return np.array([0.2 * w[0], 4 * w[1]])
+
+# Starting point: deep in the ravine
+w0 = np.array([2.0, 2.0])
+epochs = 100
+lr = 0.1
+
+# === 1. Plain SGD ===
+w_sgd = w0.copy()
+traj_sgd = [w_sgd.copy()]
+for _ in range(epochs):
+    grad = gradient(w_sgd)
+    w_sgd -= lr * grad
+    traj_sgd.append(w_sgd.copy())
+
+# === 2. SGD with Momentum ===
+# v_t = β*v_{t-1} + grad
+# w_t = w_{t-1} - lr * v_t
+w_mom = w0.copy()
+v = np.zeros(2)
+beta = 0.9
+traj_mom = [w_mom.copy()]
+for _ in range(epochs):
+    grad = gradient(w_mom)
+    v = beta * v + grad
+    w_mom -= lr * v
+    traj_mom.append(w_mom.copy())
+
+# === 3. Adam ===
+# m_t = β1*m_{t-1} + (1-β1)*grad      (first moment - momentum)
+# v_t = β2*v_{t-1} + (1-β2)*grad²     (second moment - adaptive lr)
+# m_hat = m_t / (1-β1^t)              (bias correction)
+# v_hat = v_t / (1-β2^t)
+# w_t = w_{t-1} - lr * m_hat / (sqrt(v_hat) + ε)
+w_adam = w0.copy()
+m = np.zeros(2)
+v = np.zeros(2)
+beta1, beta2 = 0.9, 0.999
+eps = 1e-8
+traj_adam = [w_adam.copy()]
+
+for t in range(1, epochs + 1):
+    grad = gradient(w_adam)
+    m = beta1 * m + (1 - beta1) * grad
+    v = beta2 * v + (1 - beta2) * (grad ** 2)
+    m_hat = m / (1 - beta1**t)
+    v_hat = v / (1 - beta2**t)
+    w_adam -= lr * m_hat / (np.sqrt(v_hat) + eps)
+    traj_adam.append(w_adam.copy())
+
+# Compare final losses
+print(f'Final losses after {epochs} steps:')
+print(f'  SGD:      {loss(traj_sgd[-1]):.6f}')
+print(f'  Momentum: {loss(traj_mom[-1]):.6f}')
+print(f'  Adam:     {loss(traj_adam[-1]):.6f}')
+
+# Visualize trajectories
+import matplotlib.pyplot as plt
+traj_sgd = np.array(traj_sgd)
+traj_mom = np.array(traj_mom)
+traj_adam = np.array(traj_adam)
+
+plt.figure(figsize=(10, 8))
+plt.plot(traj_sgd[:, 0], traj_sgd[:, 1], 'b.-', alpha=0.6, label='SGD', markersize=4)
+plt.plot(traj_mom[:, 0], traj_mom[:, 1], 'g.-', alpha=0.6, label='Momentum', markersize=4)
+plt.plot(traj_adam[:, 0], traj_adam[:, 1], 'r.-', alpha=0.6, label='Adam', markersize=4)
+plt.scatter([0], [0], color='black', marker='*', s=200, label='Minimum', zorder=5)
+plt.scatter([w0[0]], [w0[1]], color='purple', marker='o', s=100, label='Start', zorder=5)
+plt.xlabel('w[0] (gentle direction)')
+plt.ylabel('w[1] (steep direction)')
+plt.title('Optimizer Trajectories in a Ravine')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.axis('equal')
+plt.show()
+
+# === ML CONNECTION: Which Optimizer to Use ===
+# SGD + Momentum: Best for large batch training, image classification.
+#   Requires more tuning but often reaches better final accuracy.
+# Adam: Default for everything else. NLP, transformers, small datasets.
+#   Converges fast, needs little tuning. May generalize slightly worse.
+# AdamW: Adam with proper weight decay. Often better than Adam.
+#   Use this if available (PyTorch default since 2019).
+# Lion: Newer optimizer (2023). Simpler than Adam, sometimes better.
+#   Worth trying on large vision/language models.`
     },
     {
       "type": "h2",
@@ -144,7 +624,67 @@ const post = {
     {
       "type": "code-block",
       "label": "Saddle Point Visualization",
-      "code": "import numpy as np\nimport matplotlib.pyplot as plt\nfrom mpl_toolkits.mplot3d import Axes3D\n\n# A classic saddle point: f(x, y) = x² - y²\n# At (0, 0): ∂f/∂x = 0, ∂f/∂y = 0. But it's a saddle, not a minimum.\n# In x-direction: curves up (minimum along x)\n# In y-direction: curves down (maximum along y)\n\ndef saddle(x, y):\n    return x**2 - y**2\n\nx = np.linspace(-2, 2, 100)\ny = np.linspace(-2, 2, 100)\nX, Y = np.meshgrid(x, y)\nZ = saddle(X, Y)\n\nfig = plt.figure(figsize=(12, 5))\n\n# 3D surface\nax1 = fig.add_subplot(121, projection='3d')\nax1.plot_surface(X, Y, Z, cmap='coolwarm', alpha=0.8)\nax1.scatter([0], [0], [0], color='black', s=100, label='Saddle Point')\nax1.set_xlabel('x')\nax1.set_ylabel('y')\nax1.set_zlabel('f(x,y)')\nax1.set_title('Saddle Point: f(x,y) = x² - y²')\nax1.legend()\n\n# Contour plot with gradient field\nax2 = fig.add_subplot(122)\ncontour = ax2.contour(X, Y, Z, levels=20, cmap='coolwarm')\nax2.clabel(contour, inline=True, fontsize=8)\n\n# Gradient field\nx_sparse = np.linspace(-2, 2, 15)\ny_sparse = np.linspace(-2, 2, 15)\nX_s, Y_s = np.meshgrid(x_sparse, y_sparse)\nU = 2 * X_s  # ∂f/∂x\nV = -2 * Y_s  # ∂f/∂y\nax2.quiver(X_s, Y_s, U, V, alpha=0.5)\nax2.scatter([0], [0], color='black', s=100, zorder=5, label='Saddle Point')\nax2.set_xlabel('x')\nax2.set_ylabel('y')\nax2.set_title('Contours and Gradient Field')\nax2.legend()\nax2.grid(True, alpha=0.3)\n\nplt.tight_layout()\nplt.show()\n\n# === ML CONNECTION: Why Saddle Points Matter ===\n# In high dimensions (1M+ weights), saddle points are EVERYWHERE.\n# Local minima are rare because ALL directions must curve up.\n# At a saddle point, gradient descent slows (gradient ≈ 0) but doesn't stop.\n# Noise from mini-batches and momentum help escape.\n#\n# Research insight: In very high dimensions, almost all critical points\n# (where gradient = 0) are saddle points, not local minima.\n# This is why deep learning works despite having millions of parameters.\n# The landscape is full of saddles, but gradient descent navigates them."
+      "code": `import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# A classic saddle point: f(x, y) = x² - y²
+# At (0, 0): ∂f/∂x = 0, ∂f/∂y = 0. But it's a saddle, not a minimum.
+# In x-direction: curves up (minimum along x)
+# In y-direction: curves down (maximum along y)
+
+def saddle(x, y):
+    return x**2 - y**2
+
+x = np.linspace(-2, 2, 100)
+y = np.linspace(-2, 2, 100)
+X, Y = np.meshgrid(x, y)
+Z = saddle(X, Y)
+
+fig = plt.figure(figsize=(12, 5))
+
+# 3D surface
+ax1 = fig.add_subplot(121, projection='3d')
+ax1.plot_surface(X, Y, Z, cmap='coolwarm', alpha=0.8)
+ax1.scatter([0], [0], [0], color='black', s=100, label='Saddle Point')
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('f(x,y)')
+ax1.set_title('Saddle Point: f(x,y) = x² - y²')
+ax1.legend()
+
+# Contour plot with gradient field
+ax2 = fig.add_subplot(122)
+contour = ax2.contour(X, Y, Z, levels=20, cmap='coolwarm')
+ax2.clabel(contour, inline=True, fontsize=8)
+
+# Gradient field
+x_sparse = np.linspace(-2, 2, 15)
+y_sparse = np.linspace(-2, 2, 15)
+X_s, Y_s = np.meshgrid(x_sparse, y_sparse)
+U = 2 * X_s  # ∂f/∂x
+V = -2 * Y_s  # ∂f/∂y
+ax2.quiver(X_s, Y_s, U, V, alpha=0.5)
+ax2.scatter([0], [0], color='black', s=100, zorder=5, label='Saddle Point')
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_title('Contours and Gradient Field')
+ax2.legend()
+ax2.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+# === ML CONNECTION: Why Saddle Points Matter ===
+# In high dimensions (1M+ weights), saddle points are EVERYWHERE.
+# Local minima are rare because ALL directions must curve up.
+# At a saddle point, gradient descent slows (gradient ≈ 0) but doesn't stop.
+# Noise from mini-batches and momentum help escape.
+#
+# Research insight: In very high dimensions, almost all critical points
+# (where gradient = 0) are saddle points, not local minima.
+# This is why deep learning works despite having millions of parameters.
+# The landscape is full of saddles, but gradient descent navigates them.`
     },
     {
       "type": "h2",
