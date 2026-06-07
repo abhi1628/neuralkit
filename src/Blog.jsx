@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import ArticleSubscribe from "./components/ArticleSubscribe";
+import AffiliateBanner from "./components/AffiliateBanner";
 
 import atsResume       from "./posts/ats-resume-2026";
 import python          from "./posts/python-312-313-314-differences";
@@ -757,6 +758,9 @@ export function BlogPost({ theme }) {
           </div>
         </div>
 
+        {/* ── Affiliate Recommendation ── */}
+        <AffiliateBanner slug={post.slug} theme={theme} />
+      
         {/* ── Subscribe ── */}
         <ArticleSubscribe theme={theme} postSlug={post.slug} />
 
