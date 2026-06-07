@@ -44,7 +44,7 @@ const post = {
     {
       type: "callout",
       icon: "🎯",
-      text: "Key eligibility facts for Ideathon 2026: (1) You must be from a Cisco Networking Academy (NetAcad) partner institution. (2) You must have completed at least one eligible course: CCNA, Networking Essentials, Cybersecurity Essentials, Python, or DevNet. (3) Minimum CGPA of 6.0 in your last degree. (4) No active backlogs at the time of participation. (5) You must be a final-year student available for a 6-month internship starting January 2027. (6) Register as an individual — not as a team. Always verify eligibility criteria on the official Cisco page for the current year."
+      text: "Key eligibility facts for Ideathon 2026: (1) You must be from a Cisco Networking Academy (NetAcad) partner institution. (2) You must have completed the eligible courses: CCNA, Networking Essentials, Cybersecurity Essentials, Python, and DevNet (Some sources says atleast one course must be completed. Since Ideathon preparation is done from the Cisco Netacad Courses, it is advised to follow the guidelines provided by the Instituion.). (3) Minimum CGPA of 6.0 in your last degree. (4) No active backlogs at the time of participation. (5) You must be a final-year student available for a 6-month internship starting January 2027. (6) Register as an individual — not as a team. Always verify eligibility criteria on the official Cisco page for the current year."
     },
     {
       type: "h2",
