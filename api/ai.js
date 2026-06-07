@@ -1,7 +1,5 @@
 // api/ai.js — Proxies all AI requests to Groq, keeps API key server-side
-// UPDATED: Uses security middleware + Redis-backed rate limiting
-
-import { withStrictCors, createRateLimiter, logSecurityEvent } from '../middleware/security.js';
+// FIXED: Inline security improvements without external imports to avoid path issues
 
 const MODEL_WHITELIST = [
   "llama-3.3-70b-versatile",
@@ -18,21 +16,93 @@ const MAX_TOKENS_CAP  = 2000;
 const FETCH_TIMEOUT   = 30000; // 30 seconds
 const MAX_BODY_SIZE   = 2 * 1024 * 1024; // 2MB
 
-// Create rate limiters with Redis cross-instance consistency
-const standardRateLimiter = createRateLimiter({
-  windowMs: 300000,    // 5 minutes
-  maxRequests: 20,     // 20 requests per 5 min
-  keyPrefix: 'ai:std'
-});
+const ALLOWED_ORIGINS = [
+  "https://zeroapi.in",
+  "https://www.zeroapi.in",
+];
 
-const heavyRateLimiter = createRateLimiter({
-  windowMs: 120000,    // 2 minutes
-  maxRequests: 10,     // 10 heavy requests per 2 min
-  keyPrefix: 'ai:heavy'
-});
+if (process.env.NODE_ENV !== "production") {
+  ALLOWED_ORIGINS.push("http://localhost:5173", "http://localhost:3000");
+}
 
+// ── Security Headers (inlined to avoid import issues) ─────────
+function applySecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=()');
+}
+
+// ── CORS (inlined, strict) ───────────────────────────────────
+function applyCors(res, origin) {
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+}
+
+// ── Rate Limiting (Redis + memory fallback) ──────────────────
+async function checkRateLimit(clientIp, options = {}) {
+  const { windowMs = 300000, maxRequests = 20, keyPrefix = 'ai:std' } = options;
+  const now = Date.now();
+  const windowStart = Math.floor(now / windowMs) * windowMs;
+  const key = `${keyPrefix}:${clientIp}:${windowStart}`;
+
+  // Try Redis first
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const { Redis } = await import('@upstash/redis');
+      const redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+
+      const current = await redis.incr(key);
+      if (current === 1) {
+        await redis.expire(key, Math.ceil(windowMs / 1000));
+      }
+
+      const remaining = Math.max(0, maxRequests - current);
+      const resetTime = windowStart + windowMs;
+
+      return {
+        allowed: current <= maxRequests,
+        remaining,
+        resetTime,
+        total: current
+      };
+    } catch (err) {
+      console.warn('[ZeroAPI] Redis rate limit failed, using memory:', err.message);
+    }
+  }
+
+  // Fallback to in-memory
+  if (!global._rateLimitStore) global._rateLimitStore = new Map();
+  const store = global._rateLimitStore;
+
+  const entry = store.get(key);
+  if (!entry || entry.windowStart !== windowStart) {
+    store.set(key, { windowStart, count: 1 });
+    return { allowed: true, remaining: maxRequests - 1, resetTime: windowStart + windowMs, total: 1 };
+  }
+
+  entry.count++;
+  const remaining = Math.max(0, maxRequests - entry.count);
+
+  return {
+    allowed: entry.count <= maxRequests,
+    remaining,
+    resetTime: windowStart + windowMs,
+    total: entry.count
+  };
+}
+
+// ── Legacy cleanup (kept for compatibility) ────────────────────
 function initGlobals() {
-  // Legacy cleanup — kept for backward compatibility but Redis is primary now
   if (!global.rateMap)        global.rateMap   = new Map();
   if (!global.heavyMap)       global.heavyMap  = new Map();
   if (!global.cleanupStarted) {
@@ -123,8 +193,34 @@ function getClientIp(req) {
          'unknown';
 }
 
-// ── Main handler (wrapped with strict CORS + security headers) ─
-async function aiHandler(req, res) {
+// ── Security audit logger ────────────────────────────────────
+function logSecurityEvent(req, type, details = {}) {
+  const timestamp = new Date().toISOString();
+  const clientIp = getClientIp(req);
+  const logEntry = {
+    timestamp,
+    type,
+    ip: clientIp,
+    path: req.url,
+    method: req.method,
+    userAgent: req.headers['user-agent']?.slice(0, 200),
+    origin: req.headers.origin,
+    ...details
+  };
+  console.log('[ZeroAPI Security]', JSON.stringify(logEntry));
+}
+
+// ── MAIN HANDLER (Vercel-compatible export) ───────────────────
+export default async function handler(req, res) {
+  // Apply security headers FIRST (before any early returns)
+  applySecurityHeaders(res);
+
+  // Apply CORS
+  const origin = req.headers.origin;
+  applyCors(res, origin);
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
   const contentLength = parseInt(req.headers["content-length"] || "0", 10);
   if (contentLength > MAX_BODY_SIZE) {
     logSecurityEvent(req, 'PAYLOAD_TOO_LARGE', { size: contentLength, max: MAX_BODY_SIZE });
@@ -181,7 +277,7 @@ async function aiHandler(req, res) {
   const now = Date.now();
 
   // ── Redis-backed rate limiting (cross-instance) ────────────
-  const stdCheck = await standardRateLimiter(clientIp);
+  const stdCheck = await checkRateLimit(clientIp, { windowMs: 300000, maxRequests: 20, keyPrefix: 'ai:std' });
   if (!stdCheck.allowed) {
     logSecurityEvent(req, 'RATE_LIMITED', { 
       type: 'standard', 
@@ -198,7 +294,7 @@ async function aiHandler(req, res) {
 
   const isHeavyRequest = messages.some(m => typeof m.content === "string" && m.content.length > 1500);
   if (isHeavyRequest) {
-    const heavyCheck = await heavyRateLimiter(clientIp);
+    const heavyCheck = await checkRateLimit(clientIp, { windowMs: 120000, maxRequests: 10, keyPrefix: 'ai:heavy' });
     if (!heavyCheck.allowed) {
       logSecurityEvent(req, 'RATE_LIMITED', { 
         type: 'heavy', 
@@ -266,6 +362,3 @@ async function aiHandler(req, res) {
     return res.status(500).json({ error: "AI service unavailable. Please try again." });
   }
 }
-
-// Export wrapped with strict CORS + security headers
-export default withStrictCors(aiHandler);
