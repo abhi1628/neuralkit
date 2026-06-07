@@ -1,17 +1,37 @@
 const post = {
   slug: "cisco-ideathon-2026",
   title: "Cisco Ideathon 2026: How to Build a Winning Project (Even If You're a Beginner)",
-  date: "May 21, 2026",
-  readTime: "14 min read",
+  date: "June 7, 2026",
+  readTime: "16 min read",
   category: "Hackathon",
   categoryColor: "#1d4ed8",
-  excerpt: "Cisco Ideathon 2026 registrations are opening soon. Here is the complete playbook — from cracking the online assessment to building an idea that impresses Cisco engineers — based on the structure of previous editions and what actually wins.",
+  excerpt: "Cisco Ideathon 2026 registrations are opening now. Here is the complete playbook — from cracking the online assessment to building an idea that impresses Cisco engineers — based on the confirmed 2026 structure, official dates, and what actually wins.",
   coverEmoji: "🏆",
   tags: ["Cisco", "Hackathon", "IoT", "Networking", "Career", "B.Tech"],
   content: [
     {
       type: "intro",
-      text: "Every year, thousands of B.Tech students from Cisco Networking Academy partner institutions register for the Cisco Ideathon. A few hundred make it past the online assessment. Even fewer build ideas that get them internships — and full-time offers — at one of the world's largest networking companies. This guide is not generic hackathon advice. It is built from the actual structure of Cisco Ideathon rounds, the skills that get tested, and the project patterns that have historically impressed judges. If you are from a NetAcad institution and graduating in 2026 or 2027, this is for you."
+      text: "Every year, thousands of B.Tech students from Cisco Networking Academy partner institutions register for the Cisco Ideathon. A few hundred make it past the online assessment. Even fewer build ideas that get them internships — and full-time offers — at one of the world's largest networking companies. This guide is not generic hackathon advice. It is built from the confirmed 2026 program structure, official Cisco dates, and the project patterns that have historically impressed judges. If you are from a NetAcad institution and graduating in 2026 or 2027, this is for you."
+    },
+    {
+      type: "h2",
+      text: "First: Ideathon vs Code with Cisco — Which One Are You Eligible For?"
+    },
+    {
+      type: "p",
+      text: "Cisco runs two separate programs in 2026 and students often confuse them. Before you do anything else, figure out which track applies to you."
+    },
+    {
+      type: "versions-table",
+      rows: [
+        { version: "Cisco Ideathon", released: "NetAcad students only", status: "Eligibility: Restricted", highlight: "For final-year students from Cisco Networking Academy affiliated institutions who have completed eligible courses (CCNA, Cybersecurity Essentials, DevNet, Python, etc.). CGPA 6.0+ required. No active backlogs. Registration through your college placement cell via e-poster links." },
+        { version: "Code with Cisco", released: "All branches, all degrees", status: "Eligibility: Open", highlight: "Open to all engineering students passing out in 2027, from any branch or specialization. No CGPA cutoff. No NetAcad prerequisite. In-person code-a-thon at Cisco Bengaluru Campus. Registration opened June 1, 2026 — connect with your placement cell now." },
+      ]
+    },
+    {
+      type: "callout",
+      icon: "⚡",
+      text: "Time-sensitive for 2026: Code with Cisco registration opened June 1, 2026. The online assessment kicks off June 25, 2026. Top 75 contestants are announced June 30, 2026. The in-person code-a-thon at Cisco Bengaluru is July 16–17, 2026. If you are not a NetAcad student, apply for Code with Cisco right now through your placement cell."
     },
     {
       type: "h2",
@@ -19,29 +39,32 @@ const post = {
     },
     {
       type: "p",
-      text: "Cisco Ideathon is Cisco India's flagship student innovation program. It is not a typical 24-hour coding sprint. It is a multi-round competition that tests your networking knowledge, coding ability, and — most importantly — your ability to propose real solutions using Cisco's technology stack. Winners receive internships at Cisco, with full-time conversion based on performance. For context, Cisco has over 74,000 employees globally and specializes in IoT, domain security, and enterprise networking. The Ideathon is a direct pipeline into that ecosystem."
+      text: "Cisco Ideathon is Cisco India's flagship student innovation program for NetAcad students. It is not a typical 24-hour coding sprint. It is a multi-round competition that tests your networking knowledge, coding ability, and — most importantly — your ability to propose real solutions using Cisco's technology stack. Winners receive internships at Cisco, with full-time conversion based on performance. Cisco is the worldwide technology leader in networking, IoT, cybersecurity, and AI-powered infrastructure, with a direct pipeline into its engineering teams through programs like Ideathon."
     },
     {
       type: "callout",
       icon: "🎯",
-      text: "Key fact: Ideathon is open only to students from Cisco Networking Academy (NetAcad) partner institutions. You must have completed eligible courses — CCNA, Networking Essentials, Cybersecurity Essentials, Python, and DevNet — to register. Also check eligibilty criteria per year."
+      text: "Key eligibility facts for Ideathon 2026: (1) You must be from a Cisco Networking Academy (NetAcad) partner institution. (2) You must have completed at least one eligible course: CCNA, Networking Essentials, Cybersecurity Essentials, Python, or DevNet. (3) Minimum CGPA of 6.0 in your last degree. (4) No active backlogs at the time of participation. (5) You must be a final-year student available for a 6-month internship starting January 2027. (6) Register as an individual — not as a team. Always verify eligibility criteria on the official Cisco page for the current year."
     },
     {
       type: "h2",
-      text: "The 2026 Timeline and Eligibility"
+      text: "The 2026 Timeline: What to Expect"
     },
     {
       type: "p",
-      text: "Based on the pattern from previous years, here is what to expect for Cisco Ideathon 2026."
+      text: "Cisco has not published a full official Ideathon 2026 calendar as of June 2026. Based on the confirmed 2025 pattern and the Code with Cisco 2026 dates already live on Cisco's careers page, here is the expected schedule. Treat the Ideathon months as estimates; the Code with Cisco dates are confirmed."
     },
     {
       type: "versions-table",
       rows: [
-        { version: "Registration", released: "June 2026", status: "Upcoming", highlight: "Individual registration via Unstop or Cisco portal. Team formation is done by Cisco, not self-selected." },
-        { version: "Online Assessment", released: "July 2026", status: "Filter", highlight: "90-minute test: aptitude, networking, basic coding, advanced coding. No negative marking." },
-        { version: "Idea Submission", released: "August 2026", status: "Creative", highlight: "3 problem statements given. Pick one. Build a PPT solution. No elimination in this round." },
-        { version: "Technical Interview", released: "September 2026", status: "Deep Dive", highlight: "Present your idea. Answer networking + DSA questions. Be ready to defend every design choice." },
-        { version: "Final Offers", released: "October 2026", status: "Outcome", highlight: "Internship offers for Jan–Jul 2027. Full-time conversion based on internship performance." },
+        { version: "Code with Cisco Registration", released: "June 1, 2026 (Confirmed)", status: "Live Now", highlight: "Connect with your placement cell. All branches eligible. No CGPA bar. Assessment link sent to registered candidates." },
+        { version: "Code with Cisco OA", released: "June 25, 2026 (Confirmed)", status: "Upcoming", highlight: "Cisco Common Entrance Test. Skills-based. All eligible registered students receive unique test links." },
+        { version: "Code with Cisco Finals", released: "July 16–17, 2026 (Confirmed)", status: "In-Person", highlight: "Top 75 contestants fly to Cisco Bengaluru Campus. Travel, stay, and food covered by Cisco. Two-day code-a-thon. Top 3 teams win prizes." },
+        { version: "Ideathon Registration", released: "~June 2026 (Expected)", status: "Watch Portal", highlight: "Individual registration via e-poster links sent through your NetAcad affiliated college. Check with your placement cell." },
+        { version: "Ideathon Online Assessment", released: "~July 2026 (Expected)", status: "Filter Round", highlight: "90-minute test: 10 aptitude + 10 networking + 1 basic coding + 1 advanced coding = 22 questions. This is the biggest elimination filter." },
+        { version: "Idea Submission (PPT)", released: "~August 2026 (Expected)", status: "Creative Round", highlight: "3 problem statements given. Pick one. Build a PPT solution. You get approximately 1 week — not 2-3 days. Not eliminatory, but shapes your interview depth." },
+        { version: "Technical + Managerial + HR Interview", released: "~September 2026 (Expected)", status: "Final Filter", highlight: "All three interviews typically happen on the same day. Technical (defend your PPT + networking + DSA), Managerial (situational + motivation), HR (background + relocation + goals)." },
+        { version: "Internship Offers", released: "~October 2026 (Expected)", status: "Outcome", highlight: "Internship for Jan–Jul 2027. Full-time conversion (PPO) based on internship performance." },
       ]
     },
     {
@@ -50,25 +73,25 @@ const post = {
     },
     {
       type: "p",
-      text: "The online assessment is 90 minutes with 22 questions across four sections. This is the biggest filter — most students get eliminated here."
+      text: "The online assessment is 90 minutes with 22 questions across four sections (10+10+1+1). This is the biggest filter — most students get eliminated here. The section breakdown is: 10 aptitude questions (15 minutes), 10 networking questions (scenario-based, CCNA 2-3 and CCNP level), 1 basic coding question (easy-medium DSA), and 1 advanced coding question (medium-level, chosen based on your track: Advanced Software or Advanced Networking)."
     },
     {
       type: "do-dont",
       items: [
-        { do: "Revise CCNA 1-3 level networking: subnetting, VLANs, routing protocols, ACLs", dont: "Ignore networking prep — 10 of 22 questions are pure networking, and they're scenario-based" },
-        { do: "Practice pattern recognition, blood relations, and logical arrangements for aptitude", dont: "Assume aptitude is easy — the 15-minute time limit for 10 questions is tight" },
-        { do: "Solve LeetCode easy/medium on arrays, strings, and hash maps for basic coding", dont: "Skip coding practice — even the 'basic' coding question trips up non-CS students" },
-        { do: "Study DSA + OOP for the advanced coding question: trees, graphs, dynamic programming", dont: "Go in without OOP knowledge — the advanced section tests object-oriented design" },
-        { do: "Take the test on a stable connection with webcam ready — AI proctoring is strict", dont: "Try to switch tabs or use external help — malpractice flags are automatic and final" },
+        { do: "Revise CCNA 2-3 level networking: subnetting, VLANs, routing protocols, ACLs — networking questions are scenario and topology-based, not definition recall", dont: "Ignore networking prep — 10 of 22 questions are pure networking, and they are scenario-based with two situations given per question" },
+        { do: "Practice pattern recognition, blood relations, and logical arrangements for aptitude — you have 15 minutes for 10 questions, which is tight", dont: "Assume aptitude is easy — the time limit is punishing if you are not practiced" },
+        { do: "Solve LeetCode easy/medium on arrays, strings, and hash maps for the basic coding question", dont: "Skip coding practice — even the basic coding question trips up non-CS students" },
+        { do: "Study DSA and OOP for the advanced coding question: trees, graphs, dynamic programming, optimization problems", dont: "Go in without OOP knowledge — the advanced section tests object-oriented design depending on your chosen track" },
+        { do: "Take the test on a stable connection with webcam ready — AI proctoring is active and strict", dont: "Try to switch tabs or use external help — malpractice flags are automatic and final" },
       ]
     },
     {
       type: "h2",
-      text: "Round 2: The Idea Submission — Where Winners Are Made"
+      text: "Round 2: The Idea Submission (PPT) — Where Winners Are Made"
     },
     {
       type: "p",
-      text: "After clearing the assessment, you receive three problem statements. You pick one and submit a PPT within 2-3 days. This round is not eliminatory, but it decides what you will defend in the technical interview. The quality of your idea determines the depth of questions you will face."
+      text: "After clearing the assessment, you receive three problem statements. You pick one and submit a PPT. You have approximately one week — use all of it. This round is not eliminatory, but it completely determines what you will be grilled on in the interviews. A shallow PPT means shallow questions. A deep, technically specific PPT signals competence and invites meaningful engineering discussion — which is where you can actually stand out."
     },
     {
       type: "h2",
@@ -99,12 +122,12 @@ const post = {
       type: "code-block",
       label: "Archetype 1: Smart Campus / College Network",
       code: `# Problem: College WiFi is unreliable, insecure, and impossible to manage at scale.
-# Solution: AI-driven network optimization with Cisco DNA Center.
+# Solution: AI-driven network optimization with Cisco DNA Center (now Cisco Catalyst Center).
 
 Cisco Stack:
 - Cisco Catalyst 9000 switches for wired access
 - Cisco Meraki MR access points for wireless
-- Cisco DNA Center for AI-powered assurance and analytics
+- Cisco Catalyst Center (formerly DNA Center) for AI-powered assurance and analytics
 - Cisco ISE (Identity Services Engine) for zero-trust access
 - ThousandEyes for end-to-end visibility
 
@@ -113,7 +136,7 @@ Architecture:
        ↓
   [Meraki APs + Catalyst Switches]  ← AI-driven RF optimization
        ↓
-  [Cisco DNA Center]  ← Proactive issue detection, automated remediation
+  [Cisco Catalyst Center]  ← Proactive issue detection, automated remediation
        ↓
   [ISE]  ← Role-based access: faculty vs students vs guests
        ↓
@@ -123,7 +146,8 @@ Impact Metric: Reduce network tickets by 60%, improve WiFi coverage to 99.5%.
 
 Why it wins: Every college has this problem. Cisco sells this exact solution 
 to universities globally. You are essentially pitching their own product back 
-to them — but with student-specific insights they might not have considered.`
+to them — but with student-specific insights they might not have considered.
+Note: Cisco rebranded DNA Center to Catalyst Center in 2023. Use the new name.`
     },
     {
       type: "code-block",
@@ -182,10 +206,9 @@ Architecture:
 Impact Metric: Reduce unplanned downtime by 40%, prevent 90% of OT 
 cyber incidents via early detection.
 
-Why it wins: Industry 4.0 is Cisco's biggest growth area. Their 2024 IoT 
-Breakthrough Award for manufacturing solutions shows they are investing 
-heavily here. A student project that speaks their language — TSN, OT 
-security, edge AI — signals you understand where the company is headed.`
+Why it wins: Industry 4.0 is Cisco's biggest growth area. A student project 
+that speaks their language — TSN, OT security, edge AI — signals you 
+understand where the company is headed.`
     },
     {
       type: "h2",
@@ -193,14 +216,14 @@ security, edge AI — signals you understand where the company is headed.`
     },
     {
       type: "p",
-      text: "You get 2-3 days to build your PPT. Do not waste time on animations. Judges care about clarity, feasibility, and depth. Here is the slide structure that works."
+      text: "You get approximately one week to build your PPT. Do not waste time on animations. Judges care about clarity, feasibility, and depth. Here is the slide structure that works."
     },
     {
       type: "steps",
       items: [
         { num: "1", title: "The Problem (1 slide)", text: "Use data, not emotion. '70% of rural schools in [state] have no broadband' beats 'education is important.' Include a real statistic or news source." },
         { num: "2", title: "Current State vs Desired State (1 slide)", text: "Show the gap visually. A before/after diagram works well. Make it obvious why existing solutions fail." },
-        { num: "3", title: "Your Solution — The Architecture (2-3 slides)", text: "This is the meat. Show the network topology, device placement, data flow, and security layers. Use Cisco product names correctly. A messy diagram here kills credibility." },
+        { num: "3", title: "Your Solution — The Architecture (2-3 slides)", text: "This is the meat. Show the network topology, device placement, data flow, and security layers. Use Cisco product names correctly (e.g., Catalyst Center, not DNA Center). A messy diagram here kills credibility." },
         { num: "4", title: "Why Cisco (1 slide)", text: "Explicitly map your solution to Cisco's portfolio. Do not just list products — explain why each one is the right tool for this specific job." },
         { num: "5", title: "Implementation Roadmap (1 slide)", text: "Phase 1: Pilot (3 months, 1 location). Phase 2: Scale (12 months, 10 locations). Phase 3: Optimize (AI tuning, security hardening). Judges want to see you understand real-world deployment, not just theory." },
         { num: "6", title: "Impact & Metrics (1 slide)", text: "Quantify everything. Number of users impacted, cost saved, uptime improved, carbon reduced. If you cannot measure it, it does not belong in a winning PPT." },
@@ -209,11 +232,15 @@ security, edge AI — signals you understand where the company is headed.`
     },
     {
       type: "h2",
-      text: "Round 3: The Technical Interview — Defending Your Idea"
+      text: "Round 3: The Interview Day — Three Rounds, One Day"
     },
     {
       type: "p",
-      text: "The technical interview is where most finalists stumble. You will present your PPT for 10-15 minutes, then face 20-30 minutes of questions. The questions fall into three buckets: your idea, networking fundamentals, and DSA."
+      text: "This is where most finalists stumble. All three interviews — Technical, Managerial, and HR — are typically conducted on the same day. The technical interview is 30-45 minutes where you present your PPT and face deep engineering questions. The managerial round assesses how you think under pressure and why Cisco. The HR round covers background, relocation, and aspirations. Prepare for all three, not just the technical one."
+    },
+    {
+      type: "h2",
+      text: "Technical Interview: Questions You Will Face"
     },
     {
       type: "checklist",
@@ -232,6 +259,22 @@ security, edge AI — signals you understand where the company is headed.`
     },
     {
       type: "h2",
+      text: "Managerial + HR Round: Questions You Should Prepare"
+    },
+    {
+      type: "checklist",
+      items: [
+        "Tell me about a time you solved a problem with limited resources.",
+        "Describe a situation where your team disagreed. How did you handle it?",
+        "Why Cisco specifically — and why Ideathon over a regular campus placement?",
+        "Where do you see yourself in 5 years in the networking and infrastructure space?",
+        "Are you open to relocation across India for the internship and full-time role?",
+        "What does innovation mean to you, and can you give an example from your own work?",
+        "How did you decide on the problem statement you chose for your PPT?",
+      ]
+    },
+    {
+      type: "h2",
       text: "The Golden Rules: What Separates Finalists From Winners"
     },
     {
@@ -242,6 +285,7 @@ security, edge AI — signals you understand where the company is headed.`
         { do: "Anticipate failure modes: power outage, fiber cut, DDoS attack", dont: "Present a perfect-world architecture — judges will break it intentionally" },
         { do: "Practice your pitch 10 times with a timer — 15 minutes means 15 minutes", dont: "Go over time or rush the ending — both signal poor preparation" },
         { do: "Answer 'I don't know' honestly, then explain how you would find out", dont: "Bluff on technical questions — Cisco engineers can spot it instantly" },
+        { do: "Prepare 3 STAR-format stories for the managerial round (Situation, Task, Action, Result)", dont: "Walk into the managerial round with only technical prep — it is a separate evaluation with its own weight" },
       ]
     },
     {
@@ -250,16 +294,21 @@ security, edge AI — signals you understand where the company is headed.`
     },
     {
       type: "p",
-      text: "If registrations open in June, you have time to prepare. Here is a focused 4-week plan that covers what actually matters."
+      text: "If Ideathon registrations follow the 2025 pattern and open in June, you have time to prepare right now alongside Code with Cisco. Here is a focused 4-week plan that covers what actually matters for both programs."
     },
     {
       type: "steps",
       items: [
-        { num: "1", title: "Week 1: Networking Deep Dive", text: "Complete CCNA 1-3 modules if you haven't already. Focus on: subnetting, VLANs, inter-VLAN routing, OSPF, NAT, ACLs, and wireless fundamentals. Use Packet Tracer to build and troubleshoot topologies." },
-        { num: "2", title: "Week 2: Coding + DSA", text: "Solve 30 LeetCode easy/medium problems. Focus on arrays, hash maps, strings, trees, and graph BFS/DFS. Practice writing clean, commented code under time pressure." },
-        { num: "3", title: "Week 3: Cisco Stack Familiarity", text: "Browse Cisco's product catalog: DNA Center, Meraki, ISE, ThousandEyes, Cyber Vision, Edge Intelligence. Read 2-3 case studies per product. Understand what problem each solves, not just features." },
-        { num: "4", title: "Week 4: Mock Pitch + Interview Prep", text: "Build a sample PPT on any problem statement. Present to friends or mentors. Have them ask hard questions. Record yourself and review — most students have never seen their own pitch on video." }
+        { num: "1", title: "Week 1: Networking Deep Dive", text: "Complete CCNA 1-3 modules if you haven't already. Focus on: subnetting, VLANs, inter-VLAN routing, OSPF, NAT, ACLs, and wireless fundamentals. Use Packet Tracer to build and troubleshoot topologies. For Ideathon: scenario-based questions from CCNA 2-3 and CCNP are fair game." },
+        { num: "2", title: "Week 2: Coding + DSA", text: "Solve 30 LeetCode easy/medium problems. Focus on arrays, hash maps, strings, trees, and graph BFS/DFS. Practice writing clean, commented code under time pressure. For Code with Cisco: also practice system design and optimization (dynamic programming, graph traversal)." },
+        { num: "3", title: "Week 3: Cisco Stack Familiarity", text: "Browse Cisco's product catalog: Catalyst Center (formerly DNA Center), Meraki, ISE, ThousandEyes, Cyber Vision, Edge Intelligence. Read 2-3 case studies per product. Understand what problem each solves, not just features. Note the Catalyst Center rebrand — using the old name in an interview is a flag." },
+        { num: "4", title: "Week 4: Mock Pitch + All Three Interview Types", text: "Build a sample PPT on any problem statement. Present to friends or mentors. Have them ask hard technical questions. Then separately rehearse 3 STAR stories for the managerial round and practice your 'Why Cisco?' answer for HR. Record yourself — most students have never seen their own pitch on video." }
       ]
+    },
+    {
+      type: "callout",
+      icon: "📌",
+      text: "Quick product name check for 2026: Cisco DNA Center was officially rebranded to Cisco Catalyst Center in 2023. If you write 'DNA Center' in your PPT or say it in the interview, it signals you have not kept up with Cisco's portfolio. Use 'Catalyst Center' consistently. All other product names in this guide (Meraki, ISE, ThousandEyes, Cyber Vision, Edge Intelligence, Webex) remain current."
     },
     {
       type: "h2",
@@ -267,11 +316,11 @@ security, edge AI — signals you understand where the company is headed.`
     },
     {
       type: "p",
-      text: "Cisco Ideathon is not a coding competition. It is a test of your ability to identify real problems, design network-centric solutions, and communicate them with clarity and confidence. The students who win are not necessarily the best coders — they are the ones who understand that technology is only valuable when it solves something that matters."
+      text: "Cisco Ideathon is not a coding competition. It is a test of your ability to identify real problems, design network-centric solutions, and communicate them with clarity and confidence across three rounds — technical, managerial, and HR. The students who win are not necessarily the best coders — they are the ones who understand that technology is only valuable when it solves something that matters."
     },
     {
       type: "p",
-      text: "The framework is simple: master your networking fundamentals, anchor your idea to a real problem, use Cisco's stack with specificity, and defend every design choice like your career depends on it — because it does. Build something you would be proud to see deployed. That is what Cisco engineers look for, and that is what gets you the offer."
+      text: "The framework is simple: confirm your eligibility and register immediately (Code with Cisco is open right now — June 2026), master your networking fundamentals, anchor your idea to a real problem, use Cisco's current stack with specificity, and defend every design choice like your career depends on it — because it does."
     },
     {
       type: "p",
