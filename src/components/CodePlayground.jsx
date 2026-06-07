@@ -1,19 +1,36 @@
 // src/components/CodePlayground.jsx
-import { useState, useRef, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, LANGUAGES, LANG_MAP, EXAMPLES, TOOL_MODELS } from '../constants';
 import { trackEvent, fetchWithBackoff } from '../utils';
 import LineNumbers from './LineNumbers';
 import OutputActions from './OutputActions';
 
+// ── Language to file extension mapping ───────────────────────
+const FILE_EXTENSIONS = {
+  python: 'py', c: 'c', cpp: 'cpp', java: 'java',
+  javascript: 'js', typescript: 'ts'
+};
+
+// ── Language to Replit template mapping ──────────────────────
+const REPLIT_TEMPLATES = {
+  python: 'python',
+  c: 'c',
+  cpp: 'cpp',
+  java: 'java',
+  javascript: 'nodejs',
+  typescript: 'nodejs'
+};
+
 export default function CodePlayground() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const ac = 'var(--accent)';
+  const navigate = useNavigate();
 
   // Read URL params FIRST (before any state that depends on them)
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const prefilledCode = searchParams.get('code');
   const prefilledLang = searchParams.get('lang');
 
@@ -38,7 +55,37 @@ export default function CodePlayground() {
   const [error,       setError]       = useState('');
   const [runError,    setRunError]    = useState(false);
   const [scrollTop,   setScrollTop]   = useState(0);
+  const [copiedUrl,   setCopiedUrl]   = useState(false);     // NEW: Share feedback
+  const [historyOpen, setHistoryOpen] = useState(false);     // NEW: History dropdown
   const codeAreaRef = useRef(null);
+
+  // ── NEW: Load recent runs from localStorage ────────────────
+  const [recentRuns, setRecentRuns] = useState(() => {
+    try {
+      const saved = localStorage.getItem('zeroapi:playground:history');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  // ── NEW: Save to history after successful run ──────────────
+  function saveToHistory(codeText, langValue, outputText, hasError) {
+    try {
+      const entry = {
+        id: Date.now().toString(36),
+        code: codeText.slice(0, 5000), // Limit size
+        language: langValue,
+        output: outputText.slice(0, 1000),
+        hasError,
+        timestamp: Date.now()
+      };
+      const saved = JSON.parse(localStorage.getItem('zeroapi:playground:history') || '[]');
+      const updated = [entry, ...saved].slice(0, 20); // Keep last 20
+      localStorage.setItem('zeroapi:playground:history', JSON.stringify(updated));
+      setRecentRuns(updated);
+    } catch (err) {
+      console.warn('[ZeroAPI] History save failed:', err.message);
+    }
+  }
 
   function switchLang(l) { setLang(l); setCode(l.starter); setOutput(''); setExplanation(''); setError(''); }
 
@@ -46,6 +93,60 @@ export default function CodePlayground() {
     const ex = EXAMPLES[lang.value] || EXAMPLES.python;
     setCode(ex); setOutput(''); setExplanation(''); setError('');
     trackEvent('playground_example', { language: lang.label });
+  }
+
+  // ── NEW: Download code as file ─────────────────────────────
+  function downloadCode() {
+    const ext = FILE_EXTENSIONS[lang.value] || 'txt';
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zeroapi-${lang.value}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    trackEvent('playground_download', { language: lang.label });
+  }
+
+  // ── NEW: Save & Share via URL ──────────────────────────────
+  function shareCode() {
+    const encoded = encodeURIComponent(code);
+    const url = `${window.location.origin}/playground?lang=${lang.value}&code=${encoded}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedUrl(true);
+      setTimeout(() => setCopiedUrl(false), 2000);
+      trackEvent('playground_share', { language: lang.label });
+    });
+  }
+
+  // ── NEW: Load from history ─────────────────────────────────
+  function loadFromHistory(entry) {
+    const foundLang = LANGUAGES.find(l => l.value === entry.language);
+    if (foundLang) setLang(foundLang);
+    setCode(entry.code);
+    setOutput(entry.output);
+    setRunError(entry.hasError);
+    setExplanation('');
+    setError('');
+    setHistoryOpen(false);
+    trackEvent('playground_history_load', { language: entry.language });
+  }
+
+  // ── NEW: Clear history ───────────────────────────────────────
+  function clearHistory() {
+    localStorage.removeItem('zeroapi:playground:history');
+    setRecentRuns([]);
+    setHistoryOpen(false);
+  }
+
+  // ── NEW: Open in Replit ────────────────────────────────────
+  function openInReplit() {
+    const template = REPLIT_TEMPLATES[lang.value] || 'python';
+    const replitUrl = `https://replit.com/new/${template}?name=ZeroAPI-Export`;
+    window.open(replitUrl, '_blank', 'noopener,noreferrer');
+    trackEvent('playground_replit', { language: lang.label });
   }
 
   async function runCode() {
@@ -65,7 +166,13 @@ export default function CodePlayground() {
       else if (err.trim())             { setOutput(err.trim()); setRunError(true);  }
       else if (data?.status === 'success') { setOutput('(No output)'); setRunError(false); }
       else                             { setOutput(`Error: ${data?.status || 'Unknown error'}`); setRunError(true); }
-    } catch (e) { setError(e.message || 'Connection error.'); }
+
+      // NEW: Save to history
+      saveToHistory(code, lang.value, out || err, !!err.trim() || data?.status !== 'success');
+    } catch (e) { 
+      setError(e.message || 'Connection error.'); 
+      saveToHistory(code, lang.value, e.message, true);
+    }
     setRunning(false);
   }
 
@@ -79,8 +186,15 @@ export default function CodePlayground() {
         body: JSON.stringify({
           model: TOOL_MODELS.codePlayground, max_tokens: 500,
           messages: [
-            { role: 'system', content: `You are an expert ${lang.label} educator. Explain the given code clearly:\n1. **What it does** — one sentence\n2. **Line by line** — explain each important line\n3. **Key concepts** — what programming concepts are used\n4. **Output** — what will it print/return\nKeep it beginner-friendly and concise.` },
-            { role: 'user',   content: `Explain this ${lang.label} code:\n\n${code}` },
+            { role: 'system', content: `You are an expert ${lang.label} educator. Explain the given code clearly:
+1. **What it does** — one sentence
+2. **Line by line** — explain each important line
+3. **Key concepts** — what programming concepts are used
+4. **Output** — what will it print/return
+Keep it beginner-friendly and concise.` },
+            { role: 'user',   content: `Explain this ${lang.label} code:
+
+${code}` },
           ],
         }),
       });
@@ -137,10 +251,64 @@ export default function CodePlayground() {
             {['#ff5f57','#febc2e','#28c840'].map(c => <div key={c} style={{ width: '12px', height: '12px', borderRadius: '50%', background: c }} />)}
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.5)', marginLeft: '8px' }}>{lang.icon} {lang.label} Editor</span>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {[{label:'Clear', action: () => { setCode(''); setOutput(''); setExplanation(''); }}, {label:'Reset', action: () => { setCode(lang.starter); setOutput(''); setExplanation(''); }}].map(b => (
-              <button key={b.label} onClick={b.action} style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '8px', padding: '6px 14px', color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer' }}>{b.label}</button>
-            ))}
+
+          {/* ── NEW: Action buttons row ─────────────────────────── */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {/* Download code */}
+            <button onClick={downloadCode} title="Download as file"
+              style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '8px', padding: '6px 14px', color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              💾 Download
+            </button>
+
+            {/* Share URL */}
+            <button onClick={shareCode} title="Copy shareable link"
+              style={{ background: copiedUrl ? 'rgba(52,211,153,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'), border: `1px solid ${copiedUrl ? 'rgba(52,211,153,0.3)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: copiedUrl ? '#34d399' : 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
+              {copiedUrl ? '✓ Copied!' : '🔗 Share'}
+            </button>
+
+            {/* Open in Replit */}
+            <button onClick={openInReplit} title="Open this code in Replit"
+              style={{ background: 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '6px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🚀 Replit
+            </button>
+
+            {/* Recent runs history dropdown */}
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setHistoryOpen(!historyOpen)} title="Recent runs"
+                style={{ background: recentRuns.length > 0 ? 'rgba(167,139,250,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'), border: `1px solid ${recentRuns.length > 0 ? ac + '33' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: recentRuns.length > 0 ? ac : 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: recentRuns.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                🕐 History {recentRuns.length > 0 && `(${recentRuns.length})`}
+              </button>
+
+              {/* History dropdown panel */}
+              {historyOpen && recentRuns.length > 0 && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '320px', maxHeight: '400px', overflowY: 'auto', background: isDark ? '#1a1a2e' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '12px', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}` }}>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: ac, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Recent Runs</span>
+                    <button onClick={clearHistory} style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '0.65rem', cursor: 'pointer', fontFamily: "'Space Mono', monospace" }}>Clear</button>
+                  </div>
+                  {recentRuns.map((entry, idx) => (
+                    <button key={entry.id} onClick={() => loadFromHistory(entry)}
+                      style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: idx < recentRuns.length - 1 ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}` : 'none', padding: '10px 8px', cursor: 'pointer', borderRadius: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}
+                      onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.8)' : '#1a1a1a', fontWeight: 600 }}>
+                          {LANGUAGES.find(l => l.value === entry.language)?.icon || '💻'} {LANGUAGES.find(l => l.value === entry.language)?.label || entry.language}
+                        </span>
+                        <span style={{ fontSize: '0.6rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)', fontFamily: "'Space Mono', monospace" }}>
+                          {new Date(entry.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {entry.code.split('\n')[0].slice(0, 40)}
+                      </div>
+                      {entry.hasError && <span style={{ fontSize: '0.6rem', color: '#ff6b6b' }}>⚠ Error</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button onClick={runCode} disabled={running}
               style={{ background: running ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '8px', padding: '6px 20px', color: running ? 'var(--text-muted)' : '#000', fontFamily: "'Space Mono', monospace", fontSize: '0.78rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               aria-label="Run code">
