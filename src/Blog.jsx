@@ -247,6 +247,144 @@ function renderContent(block, i, theme) {
   }
 }
 
+// ── ArticleToolCTA — dynamic per-article tool promotion ───────
+//
+// Mapping logic:
+//   Each slug is matched to the most relevant ZeroAPI tool.
+//   Falls back to the All Tools CTA if no specific match.
+//
+const TOOL_CTA_MAP = {
+  // ── Resume / Career ──────────────────────────────────────────
+  "ats-resume-2026":                      "resume",
+  "git-github-first-job":                 "resume",
+  "fullstack-roadmap-2026":               "resume",
+  "cisco-ideathon-2026":                  "resume",
+  "30-data-science-interview-questions-2026-faang": "mock",
+  "50-python-interview-questions-2026":   "mock",
+  "system-design-interview-patterns":     "mock",
+
+  // ── Python / Coding ──────────────────────────────────────────
+  "python-312-313-314-differences":       "code",
+  "ai-coding-assistants-2026":            "code",
+  "python-network-concurrency":           "code",
+  "thread-safety-in-python":              "code",
+  "advanced-python-multiprocessing":      "code",
+  "how-agentic-ai-actually-works-simple-python": "code",
+  "agentic-ai-roadmap-from-zero-to-production":  "code",
+  "model-swapping-ai-engineering-2026":   "code",
+  "cuda-gpu-programming-deep-dive":       "code",
+  "asynchronous-resource-management":     "code",
+
+  // ── Networking / Systems / C++ ───────────────────────────────
+  "defensive-cpp-memory-management":      "code",
+  "low-level-bitwise-networking":         "code",
+  "handling-hardware-network-timeouts":   "code",
+  "concurrency-deadlock-prevention":      "code",
+  "resilient-socket-programming":         "code",
+  "cpp-data-structure-performance":       "code",
+
+  // ── Security / DevOps / Cloud ────────────────────────────────
+  "data-sanitization-techniques":         "code",
+  "iam-security-best-practices":          "code",
+  "mastering-cors-architectures":         "code",
+  "preventing-ssrf-vulnerabilities":      "code",
+  "hardening-docker-containers":          "code",
+  "container-process-lifecycles":         "code",
+  "kubernetes-probe-orchestration":       "code",
+  "caching-strategies-at-scale":          "code",
+  "resilient-microservice-architectures": "code",
+  "scaling-stateless-gateways":           "code",
+
+  // ── SQL / Data ───────────────────────────────────────────────
+  "sql-window-functions-ctes-2026":       "research",
+};
+
+const CTA_CONFIGS = {
+  resume: {
+    emoji: "📋",
+    title: "Try Our Free Resume Tools",
+    desc: "Analyze your resume for ATS score, get expert feedback, and build a better version — free, no signup needed.",
+    buttons: [
+      { label: "Resume Analyzer →", href: "/#tools", primary: true },
+      { label: "Resume Builder →",  href: "/#tools", primary: false },
+    ],
+  },
+  mock: {
+    emoji: "🎤",
+    title: "Practice With a Free Mock Interview",
+    desc: "Simulate real technical and HR interviews with AI feedback. No signup. No API key. Unlimited practice.",
+    buttons: [
+      { label: "Mock Interview →",  href: "/#tools", primary: true },
+      { label: "Resume Analyzer →", href: "/#tools", primary: false },
+    ],
+  },
+  code: {
+    emoji: "⚡",
+    title: "Stuck on Code? Try the Free Code Explainer",
+    desc: "Paste any snippet — Python, C++, JavaScript, SQL — and get a plain-English explanation instantly. No signup.",
+    buttons: [
+      { label: "Code Explainer →",   href: "/#tools", primary: true },
+      { label: "Code Playground →",  href: "/#tools", primary: false },
+    ],
+  },
+  research: {
+    emoji: "🔬",
+    title: "Summarize Any Research Paper — Free",
+    desc: "Paste an abstract or full paper and get a structured summary with key findings, methodology, and gaps — instantly.",
+    buttons: [
+      { label: "Research Summarizer →", href: "/#tools", primary: true },
+      { label: "MCQ Generator →",       href: "/#tools", primary: false },
+    ],
+  },
+  all: {
+    emoji: "🛠️",
+    title: "All ZeroAPI Tools — Free, No Signup",
+    desc: "MCQ Generator, Code Explainer, Resume Analyzer, Mock Interview, Research Summarizer — everything free, zero API key.",
+    buttons: [
+      { label: "Explore All Tools →", href: "/#tools", primary: true },
+      { label: "Learn More →",        href: "/learn",  primary: false },
+    ],
+  },
+};
+
+function ArticleToolCTA({ slug, theme }) {
+  const isDark = theme === "dark";
+  const ac     = isDark ? "#a78bfa" : "#7c3aed";
+
+  const toolKey = TOOL_CTA_MAP[slug] || "all";
+  const cfg     = CTA_CONFIGS[toolKey];
+
+  return (
+    <div style={{ marginTop: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: "16px", padding: "28px 32px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+        <div style={{ fontSize: "1.8rem", lineHeight: 1, flexShrink: 0 }}>{cfg.emoji}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.05rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "6px", textAlign: "left" }}>{cfg.title}</div>
+          <p style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "16px", lineHeight: 1.6, textAlign: "left" }}>{cfg.desc}</p>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            {cfg.buttons.map((btn, i) => (
+              <a key={i} href={btn.href}
+                style={{
+                  background:    btn.primary ? "linear-gradient(135deg,#a78bfa,#0af)" : "transparent",
+                  border:        btn.primary ? "none" : "1px solid rgba(167,139,250,0.3)",
+                  color:         btn.primary ? "#000" : ac,
+                  fontWeight:    btn.primary ? 700 : 500,
+                  fontSize:      "0.82rem",
+                  padding:       "9px 20px",
+                  borderRadius:  "8px",
+                  textDecoration:"none",
+                  fontFamily:    "'Space Mono',monospace",
+                }}>
+                {btn.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── BlogComments component ────────────────────────────────────
 function BlogComments({ slug, theme }) {
   const isDark = theme === "dark";
@@ -743,20 +881,8 @@ export function BlogPost({ theme }) {
           </div>
         </div>
 
-        {/* Related tools CTA */}
-        <div style={{ marginTop: "40px", background: isDark ? "rgba(167,139,250,0.04)" : "rgba(124,58,237,0.05)", border: "1px solid rgba(167,139,250,0.15)", borderRadius: "16px", padding: "28px 32px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
-            <div style={{ fontSize: "1.8rem", lineHeight: 1, flexShrink: 0 }}>📋</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "1.05rem", color: isDark ? "#fff" : "#1a1a1a", marginBottom: "6px", textAlign: "left" }}>Try Our Free Resume Tools</div>
-              <p style={{ fontSize: "0.85rem", color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.6)", marginBottom: "16px", lineHeight: 1.6, textAlign: "left" }}>Analyze your resume for ATS score, get expert feedback, and build an improved version — free, no signup needed.</p>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <a href="/#tools" style={{ background: "linear-gradient(135deg,#a78bfa,#0af)", color: "#000", fontWeight: 700, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Analyzer →</a>
-                <a href="/#tools" style={{ background: "transparent", border: "1px solid rgba(167,139,250,0.3)", color: ac, fontWeight: 500, fontSize: "0.82rem", padding: "9px 20px", borderRadius: "8px", textDecoration: "none", fontFamily: "'Space Mono',monospace" }}>Resume Builder →</a>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Related tools CTA — dynamic per article */}
+        <ArticleToolCTA slug={post.slug} theme={theme} />
 
         {/* ── Affiliate Recommendation ── */}
         <AffiliateBanner slug={post.slug} theme={theme} />
