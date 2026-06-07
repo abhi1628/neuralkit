@@ -1,5 +1,5 @@
 // components/AffiliateBanner.jsx — Context-aware affiliate recommendations
-// Auto-matches the best affiliate to each blog post based on slug/topic
+// WITH per-link disclosure badge for compliance
 
 import { useTheme } from '../ThemeContext';
 
@@ -147,6 +147,34 @@ function matchAffiliate(slug) {
   return 'youtube'; // Default: promote your own channel
 }
 
+// ── Disclosure badge component ───────────────────────────────
+function DisclosureBadge({ isDark }) {
+  return (
+    <span 
+      title="We may earn a commission if you purchase through this link. This helps keep ZeroAPI free for students."
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '4px',
+        fontSize: '0.6rem',
+        fontFamily: "'Space Mono', monospace",
+        color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)',
+        letterSpacing: '0.05em',
+        cursor: 'help',
+        marginLeft: '8px',
+        padding: '2px 6px',
+        borderRadius: '4px',
+        background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+        textTransform: 'uppercase',
+        fontWeight: 500
+      }}
+    >
+      <span style={{ fontSize: '0.7rem' }}>🔗</span> Affiliate
+    </span>
+  );
+}
+
 export default function AffiliateBanner({ slug, theme }) {
   const isDark = theme === 'dark';
   const brand = matchAffiliate(slug);
@@ -212,8 +240,15 @@ export default function AffiliateBanner({ slug, theme }) {
               fontWeight: 700,
               fontSize: '1rem',
               color: isDark ? '#fff' : '#1a1a1a',
-              marginTop: '2px'
-            }}>{affiliate.name}</div>
+              marginTop: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              flexWrap: 'wrap'
+            }}>
+              {affiliate.name}
+              <DisclosureBadge isDark={isDark} />
+            </div>
           </div>
           <span style={{
             background: 'linear-gradient(135deg, ' + affiliate.color + ', ' + affiliate.color + '88)',
@@ -265,7 +300,9 @@ export function MultiAffiliateBanner({ slug, theme }) {
         letterSpacing: '0.15em',
         textTransform: 'uppercase',
         marginBottom: '12px'
-      }}>◆ Continue Learning</div>
+      }}>
+        ◆ Continue Learning
+      </div>
       {brands.map((brand, i) => (
         <AffiliateBanner key={brand} slug={brand} theme={theme} />
       ))}
