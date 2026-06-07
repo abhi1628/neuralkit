@@ -15,7 +15,8 @@ export default function Privacy({ theme }) {
     { title: "4. Cookies", body: "We use minimal cookies for theme preference (dark/light mode) stored locally in your browser. No tracking cookies from third parties." },
     { title: "5. Data Retention", body: "ZeroAPI does not operate a backend database for user data. All tool outputs are generated in real-time and disappear when you close the browser tab. We do not retain copies." },
     { title: "6. Feedback & Comments", body: "If you submit feedback or blog comments, your message and display name are stored in our database (Supabase). Your name is partially masked for privacy. You may request deletion by emailing us." },
-    { title: "7. Contact", body: null, contact: "abhi16.2007@gmail.com" },
+    { title: "7. Affiliate Disclosure", body: "ZeroAPI participates in affiliate programs including Hostinger, Scaler Academy, Udemy, and Coursera. When you click affiliate links and make a purchase, we may earn a commission at no extra cost to you. This helps us keep ZeroAPI free for students. We only recommend services we genuinely believe are valuable for our audience." },
+    { title: "8. Contact", body: null, contact: "abhi16.2007@gmail.com" },
   ];
 
   return (
@@ -28,7 +29,7 @@ export default function Privacy({ theme }) {
           </button>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.15em", marginBottom: "16px" }}>◆ LEGAL</div>
           <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: "clamp(2.2rem,5vw,3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: "14px", background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block" }}>Privacy Policy</h1>
-          <p style={{ fontSize: "0.82rem", color: isDark ? "rgba(241,245,249,0.45)" : "#6d6a8a", fontFamily: "'Space Mono',monospace", marginBottom: "32px", display: "block" }}>Last updated: May 20, 2026</p>
+          <p style={{ fontSize: "0.82rem", color: isDark ? "rgba(241,245,249,0.45)" : "#6d6a8a", fontFamily: "'Space Mono',monospace", marginBottom: "32px", display: "block" }}>Last updated: June 7, 2026</p>
         </div>
       </div>
 
@@ -36,7 +37,7 @@ export default function Privacy({ theme }) {
         <div style={{ background: isDark ? "rgba(167,139,250,0.07)" : "rgba(124,58,237,0.05)", border: `1px solid ${isDark ? "rgba(167,139,250,0.18)" : "rgba(124,58,237,0.15)"}`, borderRadius: "16px", padding: "24px 28px", marginBottom: "36px" }}>
           <div style={{ fontFamily: "'Space Mono',monospace", fontSize: "0.65rem", color: ac, letterSpacing: "0.12em", marginBottom: "14px" }}>◆ IN PLAIN ENGLISH</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {["No user accounts or logins required", "Your text inputs are not stored by ZeroAPI", "No tracking cookies — only theme preference locally", "Google Analytics for anonymous traffic stats only", "Feedback/comments stored with partially masked names"].map((item, i) => (
+            {["No user accounts or logins required", "Your text inputs are not stored by ZeroAPI", "No tracking cookies — only theme preference locally", "Google Analytics for anonymous traffic stats only", "Feedback/comments stored with partially masked names", "Affiliate links help keep ZeroAPI free — no extra cost to you"].map((item, i) => (
               <div key={i} style={{ display: "flex", gap: "10px", alignItems: "flex-start", fontSize: "0.88rem", color: isDark ? "rgba(241,245,249,0.8)" : "#3730a3" }}>
                 <span style={{ color: ac, flexShrink: 0, fontWeight: 700 }}>✓</span>{item}
               </div>
