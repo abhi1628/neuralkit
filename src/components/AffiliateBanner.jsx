@@ -31,7 +31,7 @@ const AFFILIATE_LINKS = {
   },
   udemy: {
     name: 'Udemy',
-    url: 'https://udemy.com/course/COURSE_SLUG/?referralCode=YOURCODE', // Replace per course
+    url: 'https://udemy.com?referralCode=YOURCODE', // Replace per course
     cta: 'Deep dive with video course →',
     icon: '📚',
     color: '#a435f0',
@@ -43,7 +43,7 @@ const AFFILIATE_LINKS = {
   },
   coursera: {
     name: 'Coursera',
-    url: 'https://coursera.org/learn/COURSE_SLUG', // Replace per course
+    url: 'https://coursera.org, // Replace per course
     cta: 'University certificate program →',
     icon: '🎓',
     color: '#0056d2',
