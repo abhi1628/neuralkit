@@ -279,6 +279,7 @@ export default function App() {
         <Route path="/contact"     element={<ContactPage />} />
         <Route path="/about"       element={<AboutPage />} />
         <Route path="*"            element={<AppInner />} />
+        <Route path="/playground" element={<CodePlayground />} />
         <Route path="/breakit" element={<BreakItPage />} />
         <Route path="/breakit/:slug" element={<BreakItChallengePage />} />
         <Route path="/roadmaps" element={<RoadmapListPage />} />
