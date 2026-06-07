@@ -43,7 +43,7 @@ const AFFILIATE_LINKS = {
   },
   coursera: {
     name: 'Coursera',
-    url: 'https://coursera.org, // Replace per course
+    url: 'https://coursera.org', // Replace per course
     cta: 'University certificate program →',
     icon: '🎓',
     color: '#0056d2',
