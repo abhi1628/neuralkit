@@ -24,7 +24,7 @@ const post = {
     {
       type: "callout",
       icon: "🎯",
-      text: "Key fact: Ideathon is open only to students from Cisco Networking Academy (NetAcad) partner institutions. You must have completed eligible courses — CCNA, Networking Essentials, Cybersecurity Essentials, Python, or DevNet — to register. Also check eligibilty criteria per year."
+      text: "Key fact: Ideathon is open only to students from Cisco Networking Academy (NetAcad) partner institutions. You must have completed eligible courses — CCNA, Networking Essentials, Cybersecurity Essentials, Python, and DevNet — to register. Also check eligibilty criteria per year."
     },
     {
       type: "h2",
