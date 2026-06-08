@@ -55,9 +55,8 @@ export default function CodePlayground() {
   const [error,       setError]       = useState('');
   const [runError,    setRunError]    = useState(false);
   const [scrollTop,   setScrollTop]   = useState(0);
-  const [copiedUrl,   setCopiedUrl]   = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [userInput,   setUserInput]   = useState(''); // ← NEW: User input state
+  const [copiedUrl,   setCopiedUrl]   = useState(false);     // NEW: Share feedback
+  const [historyOpen, setHistoryOpen] = useState(false);     // NEW: History dropdown
   const codeAreaRef = useRef(null);
 
   // ── NEW: Load recent runs from localStorage ────────────────
@@ -73,14 +72,14 @@ export default function CodePlayground() {
     try {
       const entry = {
         id: Date.now().toString(36),
-        code: codeText.slice(0, 5000),
+        code: codeText.slice(0, 5000), // Limit size
         language: langValue,
         output: outputText.slice(0, 1000),
         hasError,
         timestamp: Date.now()
       };
       const saved = JSON.parse(localStorage.getItem('zeroapi:playground:history') || '[]');
-      const updated = [entry, ...saved].slice(0, 20);
+      const updated = [entry, ...saved].slice(0, 20); // Keep last 20
       localStorage.setItem('zeroapi:playground:history', JSON.stringify(updated));
       setRecentRuns(updated);
     } catch (err) {
@@ -88,11 +87,11 @@ export default function CodePlayground() {
     }
   }
 
-  function switchLang(l) { setLang(l); setCode(l.starter); setOutput(''); setExplanation(''); setError(''); setUserInput(''); }
+  function switchLang(l) { setLang(l); setCode(l.starter); setOutput(''); setExplanation(''); setError(''); }
 
   function loadExample() {
     const ex = EXAMPLES[lang.value] || EXAMPLES.python;
-    setCode(ex); setOutput(''); setExplanation(''); setError(''); setUserInput('');
+    setCode(ex); setOutput(''); setExplanation(''); setError('');
     trackEvent('playground_example', { language: lang.label });
   }
 
@@ -129,7 +128,6 @@ export default function CodePlayground() {
     setCode(entry.code);
     setOutput(entry.output);
     setRunError(entry.hasError);
-    setUserInput('');
     setExplanation('');
     setError('');
     setHistoryOpen(false);
@@ -159,11 +157,7 @@ export default function CodePlayground() {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch('/api/run-code', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          compiler, 
-          code, 
-          input: userInput // ← FIXED: Now sends actual user input
-        }),
+        body: JSON.stringify({ compiler, code, input: '' }),
       });
       const data = await res.json();
       const out = data?.output || '';
@@ -173,6 +167,7 @@ export default function CodePlayground() {
       else if (data?.status === 'success') { setOutput('(No output)'); setRunError(false); }
       else                             { setOutput(`Error: ${data?.status || 'Unknown error'}`); setRunError(true); }
 
+      // NEW: Save to history
       saveToHistory(code, lang.value, out || err, !!err.trim() || data?.status !== 'success');
     } catch (e) { 
       setError(e.message || 'Connection error.'); 
@@ -228,27 +223,6 @@ ${code}` },
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCode(); }
   }, [code]);
 
-  // ── Detect if code needs user input ─────────────────────────
-  function codeNeedsInput(code) {
-    const inputPatterns = [
-      /\binput\s*\(/,           // Python input()
-      /\braw_input\s*\(/,      // Python 2 raw_input()
-      /\bscanf\s*\(/,           // C scanf()
-      /\bfgets\s*\(/,           // C fgets()
-      /\bgetchar\s*\(/,         // C getchar()
-      /\bgetch\s*\(/,           // C getch()
-      /\bcin\s*>>/,             // C++ cin
-      /\bgetline\s*\(/,         // C++ getline
-      /\bScanner\s*\(/,         // Java Scanner
-      /\bSystem\.in\b/,          // Java System.in
-      /\breadLine\s*\(/,        // Java readLine
-      /\bprompt\s*\(/,          // JS prompt()
-      /\bwindow\.prompt\b/,      // JS window.prompt
-      /\breadline\s*\(/,        // Node readline
-      /\bprocess\.stdin\b/,      // Node process.stdin
-    ];
-    return inputPatterns.some(p => p.test(code));
-  }
   return (
     <section id="playground" style={{ maxWidth: '960px', margin: '0 auto', padding: '80px 32px' }}>
       <div style={{ marginBottom: '40px', textAlign: 'center' }}>
@@ -278,29 +252,34 @@ ${code}` },
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.5)', marginLeft: '8px' }}>{lang.icon} {lang.label} Editor</span>
           </div>
 
-          {/* Action buttons row */}
+          {/* ── NEW: Action buttons row ─────────────────────────── */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {/* Download code */}
             <button onClick={downloadCode} title="Download as file"
               style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '8px', padding: '6px 14px', color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               💾 Download
             </button>
 
+            {/* Share URL */}
             <button onClick={shareCode} title="Copy shareable link"
               style={{ background: copiedUrl ? 'rgba(52,211,153,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'), border: `1px solid ${copiedUrl ? 'rgba(52,211,153,0.3)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: copiedUrl ? '#34d399' : 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
               {copiedUrl ? '✓ Copied!' : '🔗 Share'}
             </button>
 
+            {/* Open in Replit */}
             <button onClick={openInReplit} title="Open this code in Replit"
               style={{ background: 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '6px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               🚀 Replit
             </button>
 
+            {/* Recent runs history dropdown */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setHistoryOpen(!historyOpen)} title="Recent runs"
                 style={{ background: recentRuns.length > 0 ? 'rgba(167,139,250,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'), border: `1px solid ${recentRuns.length > 0 ? ac + '33' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: recentRuns.length > 0 ? ac : 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: recentRuns.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 🕐 History {recentRuns.length > 0 && `(${recentRuns.length})`}
               </button>
 
+              {/* History dropdown panel */}
               {historyOpen && recentRuns.length > 0 && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '320px', maxHeight: '400px', overflowY: 'auto', background: isDark ? '#1a1a2e' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '12px', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}` }}>
@@ -346,66 +325,13 @@ ${code}` },
             aria-label="Code editor" />
         </div>
 
-        {/* ── NEW: User Input Area ─────────────────────────────── */}
-        {codeNeedsInput(code) && (
-          <div style={{ 
-            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, 
-            background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.03)' 
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              padding: '8px 20px', 
-              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}` 
-            }}>
-              <span style={{ 
-                fontFamily: "'Space Mono', monospace", 
-                fontSize: '0.68rem', 
-                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', 
-                letterSpacing: '0.1em', 
-                textTransform: 'uppercase' 
-              }}>
-                ◆ Input (stdin)
-              </span>
-              <span style={{ 
-                fontSize: '0.6rem', 
-                color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)', 
-                fontFamily: "'Space Mono', monospace" 
-              }}>
-                Use for input(), scanf(), Scanner, etc.
-              </span>
-            </div>
-            <textarea
-              value={userInput}
-              onChange={e => setUserInput(e.target.value)}
-              placeholder={isDark ? 'Enter input values here (one per line)...' : 'Enter input values here (one per line)...'}
-              spellCheck={false}
-              style={{
-                width: '100%',
-                minHeight: '60px',
-                border: 'none',
-                padding: '12px 20px',
-                fontFamily: "'Space Mono', monospace",
-                fontSize: '0.82rem',
-                lineHeight: 1.6,
-                resize: 'vertical',
-                outline: 'none',
-                background: 'transparent',
-                color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-        )}
-
         {/* Output */}
         {(output || error) && (
           <div style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}` }}>
             <div style={{ padding: '10px 20px', background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: runError ? '#ff6b6b' : ac, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{runError ? '⚠ Error' : '◆ Output'}</span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); setUserInput(''); }} style={{ background: 'rgba(167,139,250,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
+                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); }} style={{ background: 'rgba(167,139,250,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
                 <button onClick={explainCode} disabled={explaining}
                   style={{ background: explaining ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: explaining ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: explaining ? 'not-allowed' : 'pointer' }}>
                   {explaining ? 'Explaining...' : '🧠 Ask AI to Explain'}
@@ -424,7 +350,7 @@ ${code}` },
         <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.03)', border: `1px solid ${ac}1F`, borderRadius: '16px', padding: '24px 28px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '20px', paddingBottom: '12px', borderBottom: `1px solid ${ac}1A` }}>🧠 AI Explanation</div>
           {formatExplanation(explanation)}
-          <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(''); setOutput(''); setRunError(false); setUserInput(''); }} />
+          <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(''); setOutput(''); setRunError(false); }} />
         </div>
       )}
 
