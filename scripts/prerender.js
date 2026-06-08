@@ -219,6 +219,11 @@ const posts = [
   slug: 'ml-foundations/part-4-ml-pipeline',
   title: 'The ML Pipeline: From Raw Data to Trained Model (Part 4)',
   excerpt: 'Complete pipeline: data loading, preprocessing, feature engineering, model selection, evaluation, and prediction API. Uses all four parts.'
+},
+  {
+  slug: "prompt-architecture-2026",
+  title: "Your Model Isn't Dumb — Your Prompt Is: The Hidden Architecture of AI Reasoning",
+  excerpt: "A 70 billion parameter model with a lazy prompt thinks like a confused intern. A 3 billion parameter model with a structured prompt thinks like a senior engineer. Here's the hidden architecture that makes the difference — no PhD required."
 }
 ];
 
