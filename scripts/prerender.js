@@ -224,7 +224,12 @@ const posts = [
   slug: "prompt-architecture-2026",
   title: "Your Model Isn't Dumb — Your Prompt Is: The Hidden Architecture of AI Reasoning",
   excerpt: "A 70 billion parameter model with a lazy prompt thinks like a confused intern. A 3 billion parameter model with a structured prompt thinks like a senior engineer. Here's the hidden architecture that makes the difference — no PhD required."
-}
+},
+  {
+  slug: "india-datacenters-tropical-computing-2026",
+  title: "Why India Builds Datacenters Differently: The Architecture of Tropical Computing",
+  excerpt: "A datacenter in Oregon and a datacenter in Mumbai face the same problem — keep servers cool and powered. But the solutions are radically different. Here's how tropical heat, monsoon humidity, and an unreliable grid force Indian engineers to rethink everything."
+  }
 ];
 
 // Generate static HTML for each blog post
