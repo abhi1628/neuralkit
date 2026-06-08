@@ -55,8 +55,9 @@ export default function CodePlayground() {
   const [error,       setError]       = useState('');
   const [runError,    setRunError]    = useState(false);
   const [scrollTop,   setScrollTop]   = useState(0);
-  const [copiedUrl,   setCopiedUrl]   = useState(false);     // NEW: Share feedback
-  const [historyOpen, setHistoryOpen] = useState(false);     // NEW: History dropdown
+  const [copiedUrl,   setCopiedUrl]   = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [userInput,   setUserInput]   = useState(''); // ← NEW: User input state
   const codeAreaRef = useRef(null);
 
   // ── NEW: Load recent runs from localStorage ────────────────
@@ -72,14 +73,14 @@ export default function CodePlayground() {
     try {
       const entry = {
         id: Date.now().toString(36),
-        code: codeText.slice(0, 5000), // Limit size
+        code: codeText.slice(0, 5000),
         language: langValue,
         output: outputText.slice(0, 1000),
         hasError,
         timestamp: Date.now()
       };
       const saved = JSON.parse(localStorage.getItem('zeroapi:playground:history') || '[]');
-      const updated = [entry, ...saved].slice(0, 20); // Keep last 20
+      const updated = [entry, ...saved].slice(0, 20);
       localStorage.setItem('zeroapi:playground:history', JSON.stringify(updated));
       setRecentRuns(updated);
     } catch (err) {
@@ -87,11 +88,11 @@ export default function CodePlayground() {
     }
   }
 
-  function switchLang(l) { setLang(l); setCode(l.starter); setOutput(''); setExplanation(''); setError(''); }
+  function switchLang(l) { setLang(l); setCode(l.starter); setOutput(''); setExplanation(''); setError(''); setUserInput(''); }
 
   function loadExample() {
     const ex = EXAMPLES[lang.value] || EXAMPLES.python;
-    setCode(ex); setOutput(''); setExplanation(''); setError('');
+    setCode(ex); setOutput(''); setExplanation(''); setError(''); setUserInput('');
     trackEvent('playground_example', { language: lang.label });
   }
 
@@ -128,6 +129,7 @@ export default function CodePlayground() {
     setCode(entry.code);
     setOutput(entry.output);
     setRunError(entry.hasError);
+    setUserInput('');
     setExplanation('');
     setError('');
     setHistoryOpen(false);
@@ -157,7 +159,11 @@ export default function CodePlayground() {
       const compiler = LANG_MAP[lang.value] || lang.value;
       const res = await fetch('/api/run-code', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ compiler, code, input: '' }),
+        body: JSON.stringify({ 
+          compiler, 
+          code, 
+          input: userInput // ← FIXED: Now sends actual user input
+        }),
       });
       const data = await res.json();
       const out = data?.output || '';
@@ -167,7 +173,6 @@ export default function CodePlayground() {
       else if (data?.status === 'success') { setOutput('(No output)'); setRunError(false); }
       else                             { setOutput(`Error: ${data?.status || 'Unknown error'}`); setRunError(true); }
 
-      // NEW: Save to history
       saveToHistory(code, lang.value, out || err, !!err.trim() || data?.status !== 'success');
     } catch (e) { 
       setError(e.message || 'Connection error.'); 
@@ -252,34 +257,29 @@ ${code}` },
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.5)', marginLeft: '8px' }}>{lang.icon} {lang.label} Editor</span>
           </div>
 
-          {/* ── NEW: Action buttons row ─────────────────────────── */}
+          {/* Action buttons row */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {/* Download code */}
             <button onClick={downloadCode} title="Download as file"
               style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '8px', padding: '6px 14px', color: 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               💾 Download
             </button>
 
-            {/* Share URL */}
             <button onClick={shareCode} title="Copy shareable link"
               style={{ background: copiedUrl ? 'rgba(52,211,153,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'), border: `1px solid ${copiedUrl ? 'rgba(52,211,153,0.3)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: copiedUrl ? '#34d399' : 'var(--text-secondary)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
               {copiedUrl ? '✓ Copied!' : '🔗 Share'}
             </button>
 
-            {/* Open in Replit */}
             <button onClick={openInReplit} title="Open this code in Replit"
               style={{ background: 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '6px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               🚀 Replit
             </button>
 
-            {/* Recent runs history dropdown */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setHistoryOpen(!historyOpen)} title="Recent runs"
                 style={{ background: recentRuns.length > 0 ? 'rgba(167,139,250,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'), border: `1px solid ${recentRuns.length > 0 ? ac + '33' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)')}`, borderRadius: '8px', padding: '6px 14px', color: recentRuns.length > 0 ? ac : 'var(--text-muted)', fontFamily: "'Space Mono', monospace", fontSize: '0.72rem', cursor: recentRuns.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 🕐 History {recentRuns.length > 0 && `(${recentRuns.length})`}
               </button>
 
-              {/* History dropdown panel */}
               {historyOpen && recentRuns.length > 0 && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '320px', maxHeight: '400px', overflowY: 'auto', background: isDark ? '#1a1a2e' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '12px', zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}` }}>
@@ -323,6 +323,57 @@ ${code}` },
           <textarea ref={codeAreaRef} value={code} onChange={e => setCode(e.target.value)} onKeyDown={handleCodeKeyDown} onScroll={e => setScrollTop(e.target.scrollTop)} spellCheck={false} className="code-editor"
             style={{ flex: 1, minHeight: '280px', border: 'none', padding: '20px 20px', fontFamily: "'Space Mono', monospace", fontSize: '0.85rem', lineHeight: 1.8, resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
             aria-label="Code editor" />
+        </div>
+
+        {/* ── NEW: User Input Area ─────────────────────────────── */}
+        <div style={{ 
+          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, 
+          background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.03)' 
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            padding: '8px 20px', 
+            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}` 
+          }}>
+            <span style={{ 
+              fontFamily: "'Space Mono', monospace", 
+              fontSize: '0.68rem', 
+              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', 
+              letterSpacing: '0.1em', 
+              textTransform: 'uppercase' 
+            }}>
+              ◆ Input (stdin)
+            </span>
+            <span style={{ 
+              fontSize: '0.6rem', 
+              color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)', 
+              fontFamily: "'Space Mono', monospace" 
+            }}>
+              Use for input(), scanf(), Scanner, etc.
+            </span>
+          </div>
+          <textarea
+            value={userInput}
+            onChange={e => setUserInput(e.target.value)}
+            placeholder={isDark ? 'Enter input values here (one per line)...' : 'Enter input values here (one per line)...'}
+            spellCheck={false}
+            style={{
+              width: '100%',
+              minHeight: '60px',
+              border: 'none',
+              padding: '12px 20px',
+              fontFamily: "'Space Mono', monospace",
+              fontSize: '0.82rem',
+              lineHeight: 1.6,
+              resize: 'vertical',
+              outline: 'none',
+              background: 'transparent',
+              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+              boxSizing: 'border-box'
+            }}
+          />
         </div>
 
         {/* Output */}
