@@ -1,4 +1,4 @@
-// src/data/posts/india-datacenters-tropical-computing-2026.js
+// src/posts/india-datacenters-tropical-computing-2026.js
 const post = {
   slug: "india-datacenters-tropical-computing-2026",
   title: "Why India Builds Datacenters Differently: The Architecture of Tropical Computing",
@@ -28,7 +28,7 @@ const post = {
         { version: "Oregon, USA", released: "Temperate maritime", status: "Ideal", highlight: "Average 10–20°C. Free cooling 8+ months/year. Grid reliability 99.97%. Water abundant. Land cheap. Standard designs work without modification." },
         { version: "Mumbai, India", released: "Tropical monsoon", status: "Hostile", highlight: "Average 25–35°C, peaks 45°C. Free cooling 0 months/year. Grid reliability 95–98% (frequent outages). Monsoon humidity 80–90%. Seawater corrosion risk. Land expensive near fiber landing points." },
         { version: "Chennai, India", released: "Tropical coastal", status: "Hostile", highlight: "Similar to Mumbai but with cyclone risk (2015 floods submerged multiple datacenters). Salt air corrodes equipment in 3–4 years vs. 10+ in dry climates. Groundwater intrusion into foundations." },
-        { version: "Noida/Delhi NCR, India", released: "Semi-arid continental", status: "Challenging", highlight: "Hotter summers (48°C peak) but lower humidity. Dust storms (aandhi) clog air filters in hours. Winter fog disrupts logistics. Air quality index regularly above 300 (hazardous), accelerates equipment corrosion." },
+        { version: "Noida/Delhi NCR, India", released: "Semi-arid continental", status: "Challenging", highlight: "Hotter summers (48°C peak) but lower humidity. Dust storms (aandhi) clog air filters in hours. Winter fog disrupts logistics. Air quality index regularly above 300 (hazardous), accelerates equipment corrosion." }
       ]
     },
     {
@@ -68,9 +68,9 @@ const post = {
       type: "do-dont",
       items: [
         { do: "Install dual substations from different grid feeders, with automatic transfer switches. If one feeder fails, the other picks up in <4 seconds.", dont: "Rely on a single grid connection — even in 'stable' areas like Mumbai, maintenance outages are scheduled monthly." },
-        { do: "Oversize diesel generator capacity. Indian facilities typically run at N+2 or N+3 redundancy (need 10, install 12–13) because generators fail more often in hot, dusty conditions.", dont: "Assume N+1 generator redundancy is sufficient — tropical heat degradates diesel engines, and dust clogs air filters faster than temperate climates." },
+        { do: "Oversize diesel generator capacity. Indian facilities typically run at N+2 or N+3 redundancy (need 10, install 12–13) because generators fail more often in hot, dusty conditions.", dont: "Assume N+1 generator redundancy is sufficient — tropical heat degrades diesel engines, and dust clogs air filters faster than temperate climates." },
         { do: "Use lithium-ion UPS batteries with active thermal management. Lead-acid batteries lose 50% capacity at 40°C. Lithium handles heat better but requires precise cooling and fire suppression (thermal runaway risk).", dont: "Install standard lead-acid batteries without temperature compensation — they will fail in 2–3 years instead of 5–7, and failure mode is catastrophic swelling." },
-        { do: "Plan for 24–48 hours of diesel autonomy. In Cyclone Amphan (2020), some Kolkata datacenters ran on generators for 36 hours when grid and fuel deliveries both failed.", dont: "Assume 8–12 hours of fuel is enough — tropical storms disrupt logistics longer than temperate weather events." },
+        { do: "Plan for 24–48 hours of diesel autonomy. In Cyclone Amphan (2020), some Kolkata datacenters ran on generators for 36 hours when grid and fuel deliveries both failed.", dont: "Assume 8–12 hours of fuel is enough — tropical storms disrupt logistics longer than temperate weather events." }
       ]
     },
     {
@@ -106,30 +106,7 @@ const post = {
     {
       type: "code-block",
       label: "Filtration hierarchy in a tropical Indian datacenter",
-      code: `# Outside air: PM2.5 = 300 μg/m³, PM10 = 500 μg/m³, SO2 = 40 μg/m³
-# Target inside server hall: ISO Class 8 (3.5M particles/m³ ≥ 0.5μm)
-
-Layer 1: Pre-filters (MERV 8) at air intake
-  → Removes large particles, pollen, insects
-  → Replacement: monthly during dust season
-
-Layer 2: Bag filters (MERV 13) at AHU inlet
-  → Removes PM10, most PM2.5
-  → Replacement: every 3 months
-
-Layer 3: HEPA filters (MERV 17) at server hall inlet
-  → Removes 99.97% of ≥0.3μm particles
-  → Replacement: every 6–12 months
-  → Pressure drop monitored: when ΔP > 250 Pa, replace
-
-Layer 4: Equipment-level filters on rack intakes
-  → Last line of defense for sensitive GPUs/storage
-  → Replaced during annual maintenance
-
-# Cost impact: Filter replacement costs 3–4x more than Oregon
-# Energy impact: Fan energy increases 15–20% due to filter pressure drop
-# Corrosion: Even with filtration, sulfur compounds require conformal
-# coating on PCBs in the most polluted locations (Delhi NCR)` }
+      code: "# Outside air: PM2.5 = 300 μg/m³, PM10 = 500 μg/m³, SO2 = 40 μg/m³\n# Target inside server hall: ISO Class 8 (3.5M particles/m³ ≥ 0.5μm)\n\nLayer 1: Pre-filters (MERV 8) at air intake\n  → Removes large particles, pollen, insects\n  → Replacement: monthly during dust season\n\nLayer 2: Bag filters (MERV 13) at AHU inlet\n  → Removes PM10, most PM2.5\n  → Replacement: every 3 months\n\nLayer 3: HEPA filters (MERV 17) at server hall inlet\n  → Removes 99.97% of ≥0.3μm particles\n  → Replacement: every 6–12 months\n  → Pressure drop monitored: when ΔP > 250 Pa, replace\n\nLayer 4: Equipment-level filters on rack intakes\n  → Last line of defense for sensitive GPUs/storage\n  → Replaced during annual maintenance\n\n# Cost impact: Filter replacement costs 3–4x more than Oregon\n# Energy impact: Fan energy increases 15–20% due to filter pressure drop\n# Corrosion: Even with filtration, sulfur compounds require conformal\n# coating on PCBs in the most polluted locations (Delhi NCR)"
     },
     {
       type: "h2",
@@ -146,7 +123,7 @@ Layer 4: Equipment-level filters on rack intakes
         { version: "Chennai", released: "Submarine cable hub", status: "Growing", highlight: "More cable landings than Mumbai (8+ international cables). Lower land costs. But cyclone risk is real — 2015 floods proved this. Corrosion from salt air. Primary market: cloud providers, content delivery, DR sites." },
         { version: "Hyderabad", released: "Government hub", status: "Emerging", highlight: "Stable power (Telangana grid better than average). Large land parcels available. Government push (TS-iPASS incentives). But less fiber diversity than coastal cities. Primary market: government, enterprise, captive centers." },
         { version: "Noida/Delhi NCR", released: "Capital region", status: "Mature", highlight: "Proximity to government, large enterprises, and cloud demand. But worst air quality, extreme temperatures, and water scarcity. Primary market: government, enterprise, media (proximity to production houses)." },
-        { version: "Pune", released: "IT hub", status: "Growing", highlight: "Moderate climate (higher elevation). Good fiber from Mumbai. Less expensive than Mumbai. But less international connectivity. Primary market: IT/ITES, manufacturing, education." },
+        { version: "Pune", released: "IT hub", status: "Growing", highlight: "Moderate climate (higher elevation). Good fiber from Mumbai. Less expensive than Mumbai. But less international connectivity. Primary market: IT/ITES, manufacturing, education." }
       ]
     },
     {
@@ -167,7 +144,7 @@ Layer 4: Equipment-level filters on rack intakes
       items: [
         { do: "Understand state-specific incentives: Maharashtra offers 100% stamp duty exemption, Telangana offers power tariff subsidies, Gujarat offers land at concessional rates. The right state choice saves 15–20% on total cost of ownership.", dont: "Assume central government policy is uniform — states compete aggressively and incentives change with elections." },
         { do: "Plan for data localization requirements: RBI mandates financial data in India, DPDP Act requires certain categories onshore. This is a market opportunity, not just a compliance burden — Indian enterprises prefer local providers for sovereignty.", dont: "Treat India as a 'cheap offshore location' — the regulatory complexity requires local expertise and long-term commitment." },
-        { do: "Account for longer construction timelines: 24–36 months from land acquisition to operation, vs. 12–18 months in the US. Environmental clearances, power connection approvals, and building permits each add months.", dont: "Promise go-live dates based on global construction timelines — Indian projects routinely slip by 6–12 months." },
+        { do: "Account for longer construction timelines: 24–36 months from land acquisition to operation, vs. 12–18 months in the US. Environmental clearances, power connection approvals, and building permits each add months.", dont: "Promise go-live dates based on global construction timelines — Indian projects routinely slip by 6–12 months." }
       ]
     },
     {
@@ -210,7 +187,7 @@ Layer 4: Equipment-level filters on rack intakes
     },
     {
       type: "p",
-      text: "For a global walkthrough of how datacenters work — from the power substation to the GPU rack — see the companion piece on dev.to: [How Datacenters Actually Work: A Walk Through the Building Nobody Sees](https://dev.to/abhi1628/how-datacenters-actually-work-a-walk-through-the-building-nobody-sees-1mhm). The physical fundamentals are universal. The tropical adaptations are uniquely Indian."
+      text: "For a global walkthrough of how datacenters work — from the power substation to the GPU rack — see the companion piece on dev.to: https://dev.to/abhi1628/how-datacenters-actually-work-a-walk-through-the-building-nobody-sees-1mhm. The physical fundamentals are universal. The tropical adaptations are uniquely Indian."
     }
   ]
 };
