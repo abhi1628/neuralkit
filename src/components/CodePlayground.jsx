@@ -228,6 +228,27 @@ ${code}` },
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCode(); }
   }, [code]);
 
+  // ── Detect if code needs user input ─────────────────────────
+  function codeNeedsInput(code) {
+    const inputPatterns = [
+      /\binput\s*\(/,           // Python input()
+      /\braw_input\s*\(/,      // Python 2 raw_input()
+      /\bscanf\s*\(/,           // C scanf()
+      /\bfgets\s*\(/,           // C fgets()
+      /\bgetchar\s*\(/,         // C getchar()
+      /\bgetch\s*\(/,           // C getch()
+      /\bcin\s*>>/,             // C++ cin
+      /\bgetline\s*\(/,         // C++ getline
+      /\bScanner\s*\(/,         // Java Scanner
+      /\bSystem\.in\b/,          // Java System.in
+      /\breadLine\s*\(/,        // Java readLine
+      /\bprompt\s*\(/,          // JS prompt()
+      /\bwindow\.prompt\b/,      // JS window.prompt
+      /\breadline\s*\(/,        // Node readline
+      /\bprocess\.stdin\b/,      // Node process.stdin
+    ];
+    return inputPatterns.some(p => p.test(code));
+  }
   return (
     <section id="playground" style={{ maxWidth: '960px', margin: '0 auto', padding: '80px 32px' }}>
       <div style={{ marginBottom: '40px', textAlign: 'center' }}>
@@ -326,55 +347,57 @@ ${code}` },
         </div>
 
         {/* ── NEW: User Input Area ─────────────────────────────── */}
-        <div style={{ 
-          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, 
-          background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.03)' 
-        }}>
+        {codeNeedsInput(code) && (
           <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            padding: '8px 20px', 
-            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}` 
+            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, 
+            background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.03)' 
           }}>
-            <span style={{ 
-              fontFamily: "'Space Mono', monospace", 
-              fontSize: '0.68rem', 
-              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', 
-              letterSpacing: '0.1em', 
-              textTransform: 'uppercase' 
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              padding: '8px 20px', 
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'}` 
             }}>
-              ◆ Input (stdin)
-            </span>
-            <span style={{ 
-              fontSize: '0.6rem', 
-              color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)', 
-              fontFamily: "'Space Mono', monospace" 
-            }}>
-              Use for input(), scanf(), Scanner, etc.
-            </span>
+              <span style={{ 
+                fontFamily: "'Space Mono', monospace", 
+                fontSize: '0.68rem', 
+                color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.5)', 
+                letterSpacing: '0.1em', 
+                textTransform: 'uppercase' 
+              }}>
+                ◆ Input (stdin)
+              </span>
+              <span style={{ 
+                fontSize: '0.6rem', 
+                color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)', 
+                fontFamily: "'Space Mono', monospace" 
+              }}>
+                Use for input(), scanf(), Scanner, etc.
+              </span>
+            </div>
+            <textarea
+              value={userInput}
+              onChange={e => setUserInput(e.target.value)}
+              placeholder={isDark ? 'Enter input values here (one per line)...' : 'Enter input values here (one per line)...'}
+              spellCheck={false}
+              style={{
+                width: '100%',
+                minHeight: '60px',
+                border: 'none',
+                padding: '12px 20px',
+                fontFamily: "'Space Mono', monospace",
+                fontSize: '0.82rem',
+                lineHeight: 1.6,
+                resize: 'vertical',
+                outline: 'none',
+                background: 'transparent',
+                color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                boxSizing: 'border-box'
+              }}
+            />
           </div>
-          <textarea
-            value={userInput}
-            onChange={e => setUserInput(e.target.value)}
-            placeholder={isDark ? 'Enter input values here (one per line)...' : 'Enter input values here (one per line)...'}
-            spellCheck={false}
-            style={{
-              width: '100%',
-              minHeight: '60px',
-              border: 'none',
-              padding: '12px 20px',
-              fontFamily: "'Space Mono', monospace",
-              fontSize: '0.82rem',
-              lineHeight: 1.6,
-              resize: 'vertical',
-              outline: 'none',
-              background: 'transparent',
-              color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-              boxSizing: 'border-box'
-            }}
-          />
-        </div>
+        )}
 
         {/* Output */}
         {(output || error) && (
@@ -382,7 +405,7 @@ ${code}` },
             <div style={{ padding: '10px 20px', background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: runError ? '#ff6b6b' : ac, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{runError ? '⚠ Error' : '◆ Output'}</span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); }} style={{ background: 'rgba(167,139,250,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
+                <button onClick={() => { setOutput(''); setExplanation(''); setError(''); setRunError(false); setUserInput(''); }} style={{ background: 'rgba(167,139,250,0.06)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: 'pointer' }}>↺ Clear Console</button>
                 <button onClick={explainCode} disabled={explaining}
                   style={{ background: explaining ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'rgba(167,139,250,0.08)', border: `1px solid ${ac}33`, borderRadius: '8px', padding: '5px 14px', color: explaining ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : ac, fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', cursor: explaining ? 'not-allowed' : 'pointer' }}>
                   {explaining ? 'Explaining...' : '🧠 Ask AI to Explain'}
@@ -401,7 +424,7 @@ ${code}` },
         <div style={{ marginTop: '20px', background: 'rgba(167,139,250,0.03)', border: `1px solid ${ac}1F`, borderRadius: '16px', padding: '24px 28px' }}>
           <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '20px', paddingBottom: '12px', borderBottom: `1px solid ${ac}1A` }}>🧠 AI Explanation</div>
           {formatExplanation(explanation)}
-          <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(''); setOutput(''); setRunError(false); }} />
+          <OutputActions text={explanation} filename="zeroapi-code-explanation" onClear={() => { setExplanation(''); setOutput(''); setRunError(false); setUserInput(''); }} />
         </div>
       )}
 
