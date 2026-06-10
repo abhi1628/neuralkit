@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "if Statement Fundamentals",
-      "code": "# === BASIC if STATEMENT ===
+      "code": `# === BASIC if STATEMENT ===
 # Executes block only if condition is truthy
 
 age = 20
@@ -145,7 +145,7 @@ if is_weekend or is_sunny:
 if True:
     pass  # TODO: implement this later
 
-print("\nif statement fundamentals complete!")"
+print("\nif statement fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -153,12 +153,12 @@ print("\nif statement fundamentals complete!")"
     },
     {
       "type": "p",
-      "text": "Python's conditional expression — often called the ternary operator — allows you to write simple if-else logic in a single line. It is not just concise; it is expressive when used correctly. The syntax is: value_if_true if condition else value_if_false. Read it aloud: "Give me X if condition, otherwise give me Y.""
+      "text": "Python's conditional expression — often called the ternary operator — allows you to write simple if-else logic in a single line. It is not just concise; it is expressive when used correctly. The syntax is: value_if_true if condition else value_if_false. Read it aloud: 'Give me X if condition, otherwise give me Y.'"
     },
     {
       "type": "code-block",
       "label": "Ternary Operator Mastery",
-      "code": "# === BASIC TERNARY ===
+      "code": `# === BASIC TERNARY ===
 # Syntax: value_if_true if condition else value_if_false
 
 age = 20
@@ -233,7 +233,7 @@ result = ("minor", "adult")[age >= 18]
 print(f"\nTuple trick: {result}")
 # Warning: This evaluates both branches! Not lazy.
 
-print("\nTernary operator mastery complete!")"
+print("\nTernary operator mastery complete!")`
     },
     {
       "type": "h2",
@@ -246,7 +246,7 @@ print("\nTernary operator mastery complete!")"
     {
       "type": "code-block",
       "label": "match-case Fundamentals",
-      "code": "# === BASIC match-case ===
+      "code": `# === BASIC match-case ===
 # Like a switch statement, but more powerful
 
 def http_status_message(status):
@@ -370,7 +370,7 @@ print(f"Point(5, 0) -> {describe_shape(p2)}")
 print(f"Point(0, 3) -> {describe_shape(p3)}")
 print(f"Point(2, 4) -> {describe_shape(p4)}")
 
-print("\nmatch-case fundamentals complete!")"
+print("\nmatch-case fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -378,12 +378,12 @@ print("\nmatch-case fundamentals complete!")"
     },
     {
       "type": "p",
-      "text": "Guard clauses are a defensive programming technique where you handle edge cases and error conditions at the beginning of a function, returning early. This keeps the main logic flat and readable, avoiding the dreaded "arrow code" of deeply nested if statements. The rule is simple: fail fast, fail flat."
+      "text": "Guard clauses are a defensive programming technique where you handle edge cases and error conditions at the beginning of a function, returning early. This keeps the main logic flat and readable, avoiding the dreaded 'arrow code' of deeply nested if statements. The rule is simple: fail fast, fail flat."
     },
     {
       "type": "code-block",
       "label": "Guard Clauses in Action",
-      "code": "# === THE PROBLEM: ARROW CODE ===
+      "code": `# === THE PROBLEM: ARROW CODE ===
 # Deeply nested conditionals are hard to read and maintain
 
 def process_order_bad(order):
@@ -467,7 +467,7 @@ def calculate_discount(price, discount_percent):
     discount_amount = price * (discount_percent / 100)
     return price - discount_amount
 
-print(f"\nDiscount: ${calculate_discount(100, 20):.2f}")
+print(f"\nDiscount: \${calculate_discount(100, 20):.2f}")
 
 # === GUARD CLAUSES IN LOOP PROCESSING ===
 # Skip invalid items early
@@ -530,7 +530,7 @@ print(f"'hello' -> {describe_value('hello')}")
 print(f"'a very long string' -> {describe_value('a very long string')}")
 print(f"3.14 -> {describe_value(3.14)}")
 
-print("\nGuard clauses mastery complete!")"
+print("\nGuard clauses mastery complete!")`
     },
     {
       "type": "h2",
@@ -543,7 +543,7 @@ print("\nGuard clauses mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Grade Calculator",
-      "code": """"
+      "code": `"""
 Program 1: Grade Calculator
 Calculates letter grades and GPA from scores.
 Demonstrates if-elif-else chains and guard clauses.
@@ -631,12 +631,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Leap Year Checker",
-      "code": """"
+      "code": `"""
 Program 2: Leap Year Checker
 Determines if a year is a leap year using conditional logic.
 Demonstrates complex boolean conditions and guard clauses.
@@ -730,12 +730,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Zodiac Sign Finder",
-      "code": """"
+      "code": `"""
 Program 3: Zodiac Sign Finder
 Determines zodiac sign from birth date.
 Demonstrates match-case with guard clauses and complex conditions.
@@ -853,12 +853,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Command Parser with match",
-      "code": """"
+      "code": `"""
 Program 4: Command Parser with match
 Parses and executes commands using structural pattern matching.
 Demonstrates match-case with dictionaries, sequences, and guards.
@@ -1034,7 +1034,7 @@ def main():
     print("\n" + "=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
