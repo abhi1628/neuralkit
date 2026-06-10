@@ -19,7 +19,7 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "In 1945, Konrad Zuse built the Z3, the world's first programmable computer. It had no for loop, no while loop, no break or continue. Programs were sequences of arithmetic operations, manually fed on punched film. Eighty-one years later, in 2026, Python loops are the heartbeat of every program. But here is what most tutorials miss: Python's loop system is not just for item in items. It is a rich control structure with an else clause that executes when the loop completes normally — a feature so subtle it has been called 'the hidden gem of Python.' The choice between for and while is not arbitrary. break and continue are not just escape hatches. Nested loops have complexity implications that can destroy performance. In this part, we will explore the full depth of Python's loop machinery. You will learn when to use for versus while, how the else clause eliminates flag variables, why break and continue have different psychological costs, and how to analyze nested loop complexity. By the end, loops will not be a mechanical repetition. They will be a precision instrument for controlling program flow."
+      "text": "In 1945, Konrad Zuse built the Z3, the world's first programmable computer. It had no for loop, no while loop, no break or continue. Programs were sequences of arithmetic operations, manually fed on punched film. Eighty-one years later, in 2026, Python loops are the heartbeat of every program. But here is what most tutorials miss: Python's loop system is not just for item in items. It is a rich control structure with an else clause that executes when the loop completes normally — a feature so subtle it has been called 'the hidden gem of Python.' The choice between for and while is not arbitrary. break and continue are not just escape hatches. Nested loops have complexity implications that can destroy performance. In this part, we will explore the full depth of Python's loop machinery. You will learn when to use for versus while, how the else clause eliminates flag variables, why break and continue have different psychological costs, and how to write structures cleanly without arrow code logic."
     },
     {
       "type": "h2",
@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "for vs while",
-      "code": "# === for LOOP ===
+      "code": `# === for LOOP ===
 # Use when iterating over a known sequence or countable range
 
 # Iterate over a list
@@ -128,7 +128,7 @@ while i < len(numbers):
         i += 1
 print(f"\nAfter removing evens: {numbers}")
 
-print("\nfor vs while mastery complete!")"
+print("\nfor vs while mastery complete!")`
     },
     {
       "type": "h2",
@@ -141,7 +141,7 @@ print("\nfor vs while mastery complete!")"
     {
       "type": "code-block",
       "label": "break & continue Mastery",
-      "code": "# === break ===
+      "code": `# === break ===
 # Exit the loop immediately
 
 # Find first match
@@ -233,7 +233,7 @@ def process_single(item):
 for item in items:
     process_single(item)
 
-print("\nbreak & continue mastery complete!")"
+print("\nbreak & continue mastery complete!")`
     },
     {
       "type": "h2",
@@ -246,7 +246,7 @@ print("\nbreak & continue mastery complete!")"
     {
       "type": "code-block",
       "label": "The else Clause Mastery",
-      "code": "# === THE else CLAUSE ===
+      "code": `# === THE else CLAUSE ===
 # Executes if the loop completed WITHOUT break
 
 # --- Search with else (the classic pattern) ---
@@ -357,7 +357,7 @@ def check_all_positive(numbers):
 print(f"\nEmpty list check:")
 check_all_positive([])  # 'All numbers are positive' (vacuous truth)
 
-print("\nelse clause mastery complete!")"
+print("\nelse clause mastery complete!")`
     },
     {
       "type": "h2",
@@ -370,7 +370,7 @@ print("\nelse clause mastery complete!")"
     {
       "type": "code-block",
       "label": "Nested Loops & Complexity",
-      "code": "# === NESTED LOOP COMPLEXITY ===
+      "code": `# === NESTED LOOP COMPLEXITY ===
 
 import time
 
@@ -504,10 +504,10 @@ print(f"\nLoop variable leak: i = {i}")  # i = 4 (last value)
 # i = 100
 # [i for i in range(5)]  # i is now 4, not 100!
 
-print("\nNested loops & complexity mastery complete!")"
+print("\nNested loops & complexity mastery complete!")`
     },
     {
-      "type": "h2",
+      "type": "programs",
       "text": "Programs: Logic in Action"
     },
     {
@@ -517,7 +517,7 @@ print("\nNested loops & complexity mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Fibonacci Sequence",
-      "code": """"
+      "code": `"""
 Program 1: Fibonacci Sequence
 Generates Fibonacci numbers using multiple approaches.
 Demonstrates for, while, and generator patterns.
@@ -625,12 +625,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Prime Number Sieve",
-      "code": """"
+      "code": `"""
 Program 2: Prime Number Sieve
 Sieve of Eratosthenes with optimizations.
 Demonstrates for loops, while loops, and break/continue.
@@ -803,12 +803,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Number Pyramid",
-      "code": """"
+      "code": `"""
 Program 3: Number Pyramid
 Generates number patterns and pyramids using nested loops.
 Demonstrates nested loops, formatting, and pattern generation.
@@ -944,12 +944,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Guessing Game with else",
-      "code": """"
+      "code": `"""
 Program 4: Guessing Game with else
 Interactive number guessing game demonstrating loop else clause.
 Demonstrates while, break, else, and state management.
@@ -1079,7 +1079,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
