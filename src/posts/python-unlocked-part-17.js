@@ -18,15 +18,15 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "In 1905, the mathematician Giuseppe Peano defined the natural numbers using recursion: zero is a number, and the successor of any number is a number. This self-referential definition — where a concept is defined in terms of itself — became the foundation of modern mathematics. One hundred twenty-one years later, in 2026, Python recursion embodies that same principle. A function that calls itself, breaking problems into smaller versions of themselves, until reaching a base case so simple it needs no further recursion. But recursion in Python has limits. The call stack has a maximum depth. Repeated calculations waste time. And tail recursion — the elegant optimization where the recursive call is the last operation — is not optimized by Python. In this part, we will explore the full depth of advanced functions and recursion. You will learn how to write recursive functions with confidence, how memoization transforms exponential time into linear time, how to work around Python's tail recursion limitation, and how type hints make your functions self-documenting and error-resistant. By the end, recursion will not be a mystery. It will be a precision instrument for problem-solving.`
+      "text": "In 1905, the mathematician Giuseppe Peano defined the natural numbers using recursion: zero is a number, and the successor of any number is a number. This self-referential definition — where a concept is defined in terms of itself — became the foundation of modern mathematics. One hundred twenty-one years later, in 2026, Python recursion embodies that same principle. A function that calls itself, breaking problems into smaller versions of themselves, until reaching a base case so simple it needs no further recursion. But recursion in Python has limits. The call stack has a maximum depth. Repeated calculations waste time. And tail recursion — the elegant optimization where the recursive call is the last operation — is not optimized by Python. In this part, we will explore the full depth of advanced functions and recursion. You will learn how to write recursive functions with confidence, how memoization transforms exponential time into linear time, how to work around Python's tail recursion limitation, and how type hints make your functions self-documenting and error-resistant. By the end, recursion will not be a mystery. It will be a precision instrument for problem-solving."
     },
     {
       "type": "h2",
-      "text": "Recursion Fundamentals: Base Case and Recursive Case`
+      "text": "Recursion Fundamentals: Base Case and Recursive Case"
     },
     {
       "type": "p",
-      "text": "Every recursive function has two parts: the base case, which stops the recursion, and the recursive case, which breaks the problem into smaller pieces and calls itself. Without a base case, recursion is infinite. Without a recursive case, it is just a regular function. The art of recursion is identifying these two cases for any problem.`
+      "text": "Every recursive function has two parts: the base case, which stops the recursion, and the recursive case, which breaks the problem into smaller pieces and calls itself. Without a base case, recursion is infinite. Without a recursive case, it is just a regular function. The art of recursion is identifying these two cases for any problem."
     },
     {
       "type": "code-block",
@@ -117,11 +117,11 @@ print("\nRecursion fundamentals complete!")`
     },
     {
       "type": "h2",
-      "text": "Stack Depth and Recursion Limits`
+      "text": "Stack Depth and Recursion Limits"
     },
     {
       "type": "p",
-      "text": "Python has a recursion limit — default 1000 frames. Exceeding it raises RecursionError. This is not a bug; it is a safety feature. Python's call stack is not optimized for deep recursion like some functional languages. Understanding this limit means knowing when to use recursion, when to use iteration, and how to increase the limit when truly necessary.`
+      "text": "Python has a recursion limit — default 1000 frames. Exceeding it raises RecursionError. This is not a bug; it is a safety feature. Python's call stack is not optimized for deep recursion like some functional languages. Understanding this limit means knowing when to use recursion, when to use iteration, and how to increase the limit when truly necessary."
     },
     {
       "type": "code-block",
@@ -209,11 +209,11 @@ print("\nStack depth & limits mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "Memoization: From Exponential to Linear`
+      "text": "Memoization: From Exponential to Linear"
     },
     {
       "type": "p",
-      "text": "Memoization is the technique of caching function results to avoid redundant calculations. It transforms exponential-time recursive algorithms into linear-time powerhouses. Python offers two approaches: manual memoization with dictionaries, and automatic memoization with functools.lru_cache. Both are essential tools for any serious programmer.`
+      "text": "Memoization is the technique of caching function results to avoid redundant calculations. It transforms exponential-time recursive algorithms into linear-time powerhouses. Python offers two approaches: manual memoization with dictionaries, and automatic memoization with functools.lru_cache. Both are essential tools for any serious programmer."
     },
     {
       "type": "code-block",
@@ -332,11 +332,11 @@ print("\nMemoization mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "Tail Recursion: Python's Limitation and Workarounds`
+      "text": "Tail Recursion: Python's Limitation and Workarounds"
     },
     {
       "type": "p",
-      "text": "Tail recursion is when the recursive call is the very last operation in the function. In functional languages like Haskell or Scheme, this is optimized into iteration — no new stack frame is created. Python does not optimize tail recursion. Every recursive call adds a stack frame, regardless of position. This means deep tail recursion will hit the recursion limit. The workaround is explicit iteration or using a trampoline pattern.`
+      "text": "Tail recursion is when the recursive call is the very last operation in the function. In functional languages like Haskell or Scheme, this is optimized into iteration — no new stack frame is created. Python does not optimize tail recursion. Every recursive call adds a stack frame, regardless of position. This means deep tail recursion will hit the recursion limit. The workaround is explicit iteration or using a trampoline pattern."
     },
     {
       "type": "code-block",
@@ -444,11 +444,11 @@ print("\nTail recursion workarounds complete!")`
     },
     {
       "type": "h2",
-      "text": "Type Hints: Self-Documenting Functions`
+      "text": "Type Hints: Self-Documenting Functions"
     },
     {
       "type": "p",
-      "text": "Type hints, introduced in Python 3.5, allow you to annotate function parameters and return types. They are not enforced at runtime — Python remains dynamically typed. But they enable static analysis tools like mypy to catch type errors before runtime. They also serve as documentation, making your code self-explanatory.`
+      "text": "Type hints, introduced in Python 3.5, allow you to annotate function parameters and return types. They are not enforced at runtime — Python remains dynamically typed. But they enable static analysis tools like mypy to catch type errors before runtime. They also serve as documentation, making your code self-explanatory."
     },
     {
       "type": "code-block",
@@ -565,11 +565,11 @@ print("\nType hints mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "Programs: Logic in Action`
+      "text": "Programs: Logic in Action"
     },
     {
       "type": "p",
-      "text": "Theory without practice is philosophy. Let us build programs that use recursion, memoization, tail recursion workarounds, and type hints to solve real problems.`
+      "text": "Theory without practice is philosophy. Let us build programs that use recursion, memoization, tail recursion workarounds, and type hints to solve real problems."
     },
     {
       "type": "code-block",
@@ -1242,11 +1242,11 @@ if __name__ == "__main__":
     },
     {
       "type": "h2",
-      "text": "Quiz: Test Your Understanding`
+      "text": "Quiz: Test Your Understanding"
     },
     {
       "type": "p",
-      "text": "Answer these before moving to Part 18. 4/5 correct means you have mastered advanced functions and recursion.`
+      "text": "Answer these before moving to Part 18. 4/5 correct means you have mastered advanced functions and recursion."
     },
     {
       "type": "checklist",
@@ -1260,30 +1260,30 @@ if __name__ == "__main__":
     },
     {
       "type": "h2",
-      "text": "Answers & Explanations`
+      "text": "Answers & Explanations"
     },
     {
       "type": "p",
-      "text": "A1: Base case: the simplest instance that can be solved directly. Recursive case: breaks the problem into smaller pieces and calls itself. def sum_digits(n): if n < 10: return n; return n % 10 + sum_digits(n // 10). Forgetting the base case causes infinite recursion → RecursionError. A2: Memoization caches function results to avoid redundant calculations. Naive Fibonacci: O(2^n) time because each call branches into two. Memoized Fibonacci: O(n) time because each value is computed once. Benchmark: n=35, naive takes ~2s, memoized takes ~0.0001s — 20000x speedup. A3: Python does not optimize tail recursion because the CPython interpreter does not implement tail call elimination. Each recursive call adds a stack frame regardless of position. Tail-recursive factorial: def fact(n, acc=1): if n <= 1: return acc; return fact(n-1, n*acc). Iterative conversion: def fact_iter(n): result = 1; for i in range(2, n+1): result *= i; return result. Trampoline pattern: wrap recursive calls in objects and iterate in a loop, avoiding stack growth. Use for very deep recursion where you cannot convert to iteration easily. A4: from typing import List, Dict, Optional; def analyze(numbers: List[int]) -> Optional[Dict[str, float]]: if not numbers: return None; sorted_nums = sorted(numbers); n = len(numbers); mean = sum(numbers)/n; median = sorted_nums[n//2] if n%2 else (sorted_nums[n//2-1] + sorted_nums[n//2])/2; variance = sum((x-mean)**2 for x in numbers)/n; return {'mean': mean, 'median': median, 'std_dev': variance**0.5}. A5: Tower of Hanoi: move n disks from source to target using auxiliary. Base case: move 1 disk. Recursive: move n-1 to auxiliary, move largest to target, move n-1 to target. Moves: T(n) = 2T(n-1) + 1 = 2^n - 1. For n=3: 7 moves. For n=64: 18,446,744,073,709,551,615 moves (legend says the world will end when monks finish this).`
+      "text": "A1: Base case: the simplest instance that can be solved directly. Recursive case: breaks the problem into smaller pieces and calls itself. def sum_digits(n): if n < 10: return n; return n % 10 + sum_digits(n // 10). Forgetting the base case causes infinite recursion → RecursionError. A2: Memoization caches function results to avoid redundant calculations. Naive Fibonacci: O(2^n) time because each call branches into two. Memoized Fibonacci: O(n) time because each value is computed once. Benchmark: n=35, naive takes ~2s, memoized takes ~0.0001s — 20000x speedup. A3: Python does not optimize tail recursion because the CPython interpreter does not implement tail call elimination. Each recursive call adds a stack frame regardless of position. Tail-recursive factorial: def fact(n, acc=1): if n <= 1: return acc; return fact(n-1, n*acc). Iterative conversion: def fact_iter(n): result = 1; for i in range(2, n+1): result *= i; return result. Trampoline pattern: wrap recursive calls in objects and iterate in a loop, avoiding stack growth. Use for very deep recursion where you cannot convert to iteration easily. A4: from typing import List, Dict, Optional; def analyze(numbers: List[int]) -> Optional[Dict[str, float]]: if not numbers: return None; sorted_nums = sorted(numbers); n = len(numbers); mean = sum(numbers)/n; median = sorted_nums[n//2] if n%2 else (sorted_nums[n//2-1] + sorted_nums[n//2])/2; variance = sum((x-mean)**2 for x in numbers)/n; return {'mean': mean, 'median': median, 'std_dev': variance**0.5}. A5: Tower of Hanoi: move n disks from source to target using auxiliary. Base case: move 1 disk. Recursive: move n-1 to auxiliary, move largest to target, move n-1 to target. Moves: T(n) = 2T(n-1) + 1 = 2^n - 1. For n=3: 7 moves. For n=64: 18,446,744,073,709,551,615 moves (legend says the world will end when monks finish this)."
     },
     {
       "type": "h2",
-      "text": "Summary and Core Takeaway`
+      "text": "Summary and Core Takeaway"
     },
     {
       "type": "p",
-      "text": "You have mastered advanced functions and recursion. You understand the anatomy of recursion — base case and recursive case — and write recursive functions with confidence. You know Python's recursion limit and how to work around it with iteration, explicit stacks, and generators. You transform exponential-time algorithms into linear-time powerhouses with memoization, both manual and automatic via lru_cache. You understand Python's tail recursion limitation and apply the trampoline pattern when needed. You write self-documenting, error-resistant code with type hints — using generics, protocols, type aliases, and literal types. You have built four complete programs: the Tower of Hanoi with ASCII visualization, Fibonacci with six implementations and performance comparison, a recursive directory tree walker with statistics, and a fully typed mathematical function library. Recursion is no longer a mystery. It is a precision instrument for breaking complex problems into elegant, self-referential solutions.`
+      "text": "You have mastered advanced functions and recursion. You understand the anatomy of recursion — base case and recursive case — and write recursive functions with confidence. You know Python's recursion limit and how to work around it with iteration, explicit stacks, and generators. You transform exponential-time algorithms into linear-time powerhouses with memoization, both manual and automatic via lru_cache. You understand Python's tail recursion limitation and apply the trampoline pattern when needed. You write self-documenting, error-resistant code with type hints — using generics, protocols, type aliases, and literal types. You have built four complete programs: the Tower of Hanoi with ASCII visualization, Fibonacci with six implementations and performance comparison, a recursive directory tree walker with statistics, and a fully typed mathematical function library. Recursion is no longer a mystery. It is a precision instrument for breaking complex problems into elegant, self-referential solutions."
     },
     {
       "type": "callout",
       "icon": "🎯",
-      "text": "The Bottom Line: Recursion breaks problems into smaller versions of themselves. Base cases stop the descent. Memoization eliminates redundant work. Python's stack has limits — know them. Type hints make functions self-documenting. Master these five truths, and you have mastered advanced functions and recursion. In Part 18, we will explore Lambda & Functional Programming — anonymous functions, map/filter/reduce, and the elegant world of function composition.`
+      "text": "The Bottom Line: Recursion breaks problems into smaller versions of themselves. Base cases stop the descent. Memoization eliminates redundant work. Python's stack has limits — know them. Type hints make functions self-documenting. Master these five truths, and you have mastered advanced functions and recursion. In Part 18, we will explore Lambda & Functional Programming — anonymous functions, map/filter/reduce, and the elegant world of function composition."
     },
     {
       "type": "cta",
       "text": "Start Part 18: Lambda & Functional Programming →",
       "href": "/tutorials/python-unlocked/part-18-lambda-functional",
-      "note": "22 min read · Lambda · map/filter/reduce · sorted with key · functools.partial`
+      "note": "22 min read · Lambda · map/filter/reduce · sorted with key · functools.partial"
     }
   ]
 };
