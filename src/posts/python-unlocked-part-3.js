@@ -56,8 +56,8 @@ print('Hello, World!')
     {
       "type": "code-block",
       "label": "print() Deep Dive",
-      "code": "# === THE FULL SIGNATURE ===
-# print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)
+      "code": `# === THE FULL SIGNATURE ===
+# print(*objects, sep=' ', end='\\n', file=sys.stdout, flush=False)
 
 # 1. *objects: print multiple items
 print('Hello', 'World', '!')  # Hello World !
@@ -83,7 +83,7 @@ print('Error: something went wrong', file=sys.stderr)
 # Normally, output is buffered. flush=True forces immediate output.
 import time
 for i in range(5):
-    print(f'Progress: {i+1}/5', end='\r', flush=True)
+    print(f'Progress: {i+1}/5', end='\\r', flush=True)
     time.sleep(0.5)
 print()  # Move to new line after progress
 
@@ -97,10 +97,10 @@ print(f'{name=}, {age=}')  # name='Alice', age=30
 headers = ['Name', 'Age', 'City']
 rows = [['Alice', 30, 'NYC'], ['Bob', 25, 'LA'], ['Charlie', 35, 'Chicago']]
 
-print(f'{'Name':<10} {'Age':<5} {'City':<10}')
+print(f"{'Name':<10} {'Age':<5} {'City':<10}")
 print('-' * 25)
 for row in rows:
-    print(f'{row[0]:<10} {row[1]:<5} {row[2]:<10}')
+    print(f"{row[0]:<10} {row[1]:<5} {row[2]:<10}")
 
 # Pattern 2: Print JSON nicely
 import json
@@ -108,11 +108,11 @@ data = {'name': 'Alice', 'skills': ['Python', 'Data Science']}
 print(json.dumps(data, indent=2))
 
 # Pattern 3: Print with colors (ANSI escape codes)
-RED = '\033[91m'
-GREEN = '\033[92m'
-RESET = '\033[0m'
+RED = '\\033[91m'
+GREEN = '\\033[92m'
+RESET = '\\033[0m'
 print(f'{GREEN}Success!{RESET} Operation completed.')
-print(f'{RED}Error!{RESET} File not found.')"
+print(f'{RED}Error!{RESET} File not found.')`
     },
     {
       "type": "h2",
@@ -125,7 +125,7 @@ print(f'{RED}Error!{RESET} File not found.')"
     {
       "type": "code-block",
       "label": "input() Mastery",
-      "code": "# === BASIC USAGE ===
+      "code": `# === BASIC USAGE ===
 name = input('What is your name? ')
 print(f'Hello, {name}!')
 
@@ -184,9 +184,9 @@ while True:
     if line.strip() == '':
         break
     lines.append(line)
-poem = '\n'.join(lines)
-print(f'\nYour poem ({len(lines)} lines):')
-print(poem)"
+poem = '\\n'.join(lines)
+print(f'\\nYour poem ({len(lines)} lines):')
+print(poem)`
     },
     {
       "type": "h2",
@@ -199,7 +199,7 @@ print(poem)"
     {
       "type": "code-block",
       "label": "Comment Craftsmanship",
-      "code": "# === BAD COMMENTS: WHAT THE CODE DOES ===
+      "code": `# === BAD COMMENTS: WHAT THE CODE DOES ===
 # Add 1 to x
 x = x + 1
 
@@ -217,7 +217,7 @@ result = base * (1 + rate)  # Compound interest formula
 # Tax is applied before discount to comply with local regulations.
 subtotal = price * quantity
 tax_amount = subtotal * tax_rate
- discount_amount = (subtotal + tax_amount) * discount_rate
+discount_amount = (subtotal + tax_amount) * discount_rate
 total = subtotal + tax_amount - discount_amount
 
 # 3. TODO comments: mark future work
@@ -231,7 +231,7 @@ total = subtotal + tax_amount - discount_amount
 # def greet(name)
 #     return f'Hello, {name}!'
 # SyntaxError: expected ':'
-#   Did you mean: def greet(name): ?"
+#   Did you mean: def greet(name): ?`
     },
     {
       "type": "h2",
@@ -244,7 +244,7 @@ total = subtotal + tax_amount - discount_amount
     {
       "type": "code-block",
       "label": "Docstring Mastery",
-      "code": "# === THE DOCSTRING CONVENTION ===
+      "code": `# === THE DOCSTRING CONVENTION ===
 # Use triple double-quotes. First line: one-line summary.
 # Blank line. Then detailed description. Then parameters, returns, raises.
 
@@ -332,7 +332,7 @@ class Rectangle:
 # python -m doctest your_file.py -v
 
 # This ensures your documentation never lies.
-# If you change the code but forget to update the docstring, doctest fails."
+# If you change the code but forget to update the docstring, doctest fails.`
     },
     {
       "type": "h2",
@@ -345,7 +345,7 @@ class Rectangle:
     {
       "type": "code-block",
       "label": "__name__ Demystified",
-      "code": "# === WHAT IS __name__? ===
+      "code": `# === WHAT IS __name__? ===
 # __name__ is a special variable that Python sets automatically.
 # When you RUN a file directly: __name__ = '__main__'
 # When you IMPORT a file as a module: __name__ = 'module_name'
@@ -396,7 +396,7 @@ if __name__ == '__main__':
     main()
 
 # This pattern is so common that it is essentially a Python convention.
-# Every script that can be both imported and executed should use it."
+# Every script that can be both imported and executed should use it.`
     },
     {
       "type": "h2",
@@ -409,7 +409,7 @@ if __name__ == '__main__':
     {
       "type": "code-block",
       "label": "Program 1: Personalized Greeting",
-      "code": """"
+      "code": `"""
 Program 1: Personalized Greeting
 A simple interactive program that greets the user.
 """
@@ -444,22 +444,22 @@ def main():
     name = get_user_name()
     greeting = create_greeting(name)
 
-    print(f'\n{greeting}')
+    print(f'\\n{greeting}')
     print(f'Your name has {len(name)} characters.')
     print(f'Uppercase: {name.upper()}')
     print(f'Lowercase: {name.lower()}')
 
-    print('\n' + '=' * 50)
+    print('\\n' + '=' * 50)
     print('Thank you for using this program!')
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Simple Calculator",
-      "code": """"
+      "code": `"""
 Program 2: Simple Calculator
 A calculator that performs basic arithmetic operations.
 """
@@ -496,14 +496,14 @@ def get_number(prompt):
 
 def main():
     """Main calculator program."""
-    print('\n' + '=' * 40)
+    print('\\n' + '=' * 40)
     print('Simple Calculator')
     print('=' * 40)
 
     num1 = get_number('Enter first number: ')
     num2 = get_number('Enter second number: ')
 
-    print('\nOperations:')
+    print('\\nOperations:')
     print(f'  {num1} + {num2} = {add(num1, num2)}')
     print(f'  {num1} - {num2} = {subtract(num1, num2)}')
     print(f'  {num1} * {num2} = {multiply(num1, num2)}')
@@ -517,12 +517,12 @@ def main():
     print('=' * 40)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: ASCII Art Generator",
-      "code": """"
+      "code": `"""
 Program 3: ASCII Art Generator
 Creates simple ASCII art patterns using loops and print().
 """
@@ -563,21 +563,21 @@ def main():
     """Main ASCII art program."""
     print_banner('ASCII ART GENERATOR')
 
-    print('\nRight Triangle (height 5):')
+    print('\\nRight Triangle (height 5):')
     print_triangle(5)
 
-    print('\nPyramid (height 5):')
+    print('\\nPyramid (height 5):')
     print_pyramid(5)
 
-    print('\nDiamond (height 5):')
+    print('\\nDiamond (height 5):')
     print_diamond(5)
 
-    print('\n' + '=' * 30)
+    print('\\n' + '=' * 30)
     print('Created with Python print() mastery!')
     print('=' * 30)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "h2",
@@ -603,12 +603,12 @@ if __name__ == '__main__':
     },
     {
       "type": "p",
-      "text": "A1: *objects (items to print), sep (separator between items, default space), end (what to print at end, default newline), file (where to print, default stdout), flush (force immediate output, default False). Use 'file' when logging to files or stderr: print('Error', file=sys.stderr). Use 'flush' for progress bars: print(f'{percent}%', end='\r', flush=True). A2: input() returns strings because all user input is text. int('abc') raises ValueError. Graceful handling: while True: try: return int(input('Enter number: ')) except ValueError: print('Invalid number, try again.'). A3: Comments are for developers reading the code, ignored by Python. Docstrings are for documentation tools and accessible at runtime via __doc__. Use comments for implementation details ('why'). Use docstrings for public API documentation ('what'). Access with function.__doc__ or help(function). A4: __name__ is '__main__' when a file is run directly, but 'module_name' when imported. Without the guard, top-level code (like print statements or file writes) executes during import. Scenario: a module that writes to a log file. If imported, it writes to the log unexpectedly. A5: See the example program below."
+      "text": "A1: *objects (items to print), sep (separator between items, default space), end (what to print at end, default newline), file (where to print, default stdout), flush (force immediate output, default False). Use 'file' when logging to files or stderr: print('Error', file=sys.stderr). Use 'flush' for progress bars: print(f'{percent}%', end='\\r', flush=True). A2: input() returns strings because all user input is text. int('abc') raises ValueError. Graceful handling: while True: try: return int(input('Enter number: ')) except ValueError: print('Invalid number, try again.'). A3: Comments are for developers reading the code, ignored by Python. Docstrings are for documentation tools and accessible at runtime via __doc__. Use comments for implementation details ('why'). Use docstrings for public API documentation ('what'). Access with function.__doc__ or help(function). A4: __name__ is '__main__' when a file is run directly, but 'module_name' when imported. Without the guard, top-level code (like print statements or file writes) executes during import. Scenario: a module that writes to a log file. If imported, it writes to the log unexpectedly. A5: See the example program below."
     },
     {
       "type": "code-block",
       "label": "Answer to Q5: Age Calculator",
-      "code": """"
+      "code": `"""
 Age Calculator Program
 Calculates age from birth year with input validation.
 """
@@ -678,7 +678,7 @@ def main():
     age = calculate_age(birth_year)
     generation = get_generation(age)
 
-    print(f'\nYou were born in {birth_year}.')
+    print(f'\\nYou were born in {birth_year}.')
     print(f'You are {age} years old.')
     print(f'You belong to {generation}!')
 
@@ -692,19 +692,15 @@ def main():
     else:
         print('With age comes wisdom. Share your knowledge!')
 
-    print('\n' + '=' * 50)
+    print('\\n' + '=' * 50)
     print('Thank you for using Age Calculator!')
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
-      "type": "h2",
-      "text": "Summary and Core Takeaway"
-    },
-    {
-      "type": "p",
+      "type": "summary and core takeaway",
       "text": "You have written your first Python programs. You understand that print() is a precision instrument, not just a debug tool. You know that input() requires validation and that getpass exists for sensitive data. You write comments that explain why, not what. You write docstrings that serve as living documentation. You use if __name__ == '__main__' to create reusable modules. You have built three complete programs: a greeting system, a calculator, and an ASCII art generator. This is not just syntax. This is the anatomy of craft."
     },
     {
