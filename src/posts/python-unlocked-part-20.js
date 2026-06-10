@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Decorator Fundamentals",
-      "code": "# === DECORATOR WITHOUT @SYNTAX ===
+      "code": `# === DECORATOR WITHOUT @SYNTAX ===
 # A decorator is just a function that takes a function
 
 def my_decorator(func):
@@ -144,7 +144,7 @@ def task():
 
 print(f"\nClosure decorator: {task()}")
 
-print("\nDecorator fundamentals complete!")"
+print("\nDecorator fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -157,7 +157,7 @@ print("\nDecorator fundamentals complete!")"
     {
       "type": "code-block",
       "label": "functools.wraps Mastery",
-      "code": "# === THE METADATA PROBLEM ===
+      "code": `# === THE METADATA PROBLEM ===
 # Without wraps, the wrapper hides the original function
 
 def bad_decorator(func):
@@ -260,7 +260,7 @@ say_hi()
 print(f"Name preserved: {say_hi.__name__}")
 print(f"Doc preserved: {say_hi.__doc__}")
 
-print("\nfunctools.wraps mastery complete!")"
+print("\nfunctools.wraps mastery complete!")`
     },
     {
       "type": "h2",
@@ -273,7 +273,7 @@ print("\nfunctools.wraps mastery complete!")"
     {
       "type": "code-block",
       "label": "Decorator Arguments Mastery",
-      "code": "# === DOUBLE-WRAP PATTERN ===
+      "code": `# === DOUBLE-WRAP PATTERN ===
 # @decorator(arg) -> decorator(arg)(function)
 
 def repeat(times):
@@ -372,7 +372,7 @@ say_hello()
 say_hello()
 print(f"Total calls: {say_hello.count}")
 
-print("\nDecorator arguments mastery complete!")"
+print("\nDecorator arguments mastery complete!")`
     },
     {
       "type": "h2",
@@ -385,7 +385,7 @@ print("\nDecorator arguments mastery complete!")"
     {
       "type": "code-block",
       "label": "Built-in Decorators Mastery",
-      "code": "# === @property ===
+      "code": `# === @property ===
 # Turns a method into an attribute-like access
 
 class Circle:
@@ -528,7 +528,7 @@ c = Shape.circle(5)
 r = Shape.rectangle(3, 4)
 print(f"\nFactory methods: {c}, {r}")
 
-print("\nBuilt-in decorators mastery complete!")"
+print("\nBuilt-in decorators mastery complete!")`
     },
     {
       "type": "h2",
@@ -541,7 +541,7 @@ print("\nBuilt-in decorators mastery complete!")"
     {
       "type": "code-block",
       "label": "Project: Timing Decorator",
-      "code": """"
+      "code": `"""
 Project: Timing Decorator
 Measures and reports function execution time.
 """
@@ -607,12 +607,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Project: Retry Decorator",
-      "code": """"
+      "code": `"""
 Project: Retry Decorator
 Automatically retries failed function calls with exponential backoff.
 """
@@ -710,12 +710,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Project: Authentication Decorator",
-      "code": """"
+      "code": `"""
 Project: Authentication Decorator
 Requires authentication before allowing function execution.
 """
@@ -841,12 +841,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Project: Caching Decorator",
-      "code": """"
+      "code": `"""
 Project: Caching Decorator
 Memoization decorator with TTL and size limits.
 """
@@ -992,7 +992,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
