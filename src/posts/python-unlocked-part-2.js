@@ -96,7 +96,7 @@ const post = {
     {
       "type": "code-block",
       "label": "VS Code settings.json for Python",
-      "code": "// Place this in your VS Code settings.json (Ctrl+Shift+P → 'Preferences: Open User Settings JSON')
+      "code": `// Place this in your VS Code settings.json (Ctrl+Shift+P → 'Preferences: Open User Settings JSON')
 {
     // === PYTHON CORE ===
     'python.defaultInterpreterPath': 'python3',
@@ -154,7 +154,7 @@ const post = {
     'gitlens.codeLens.enabled': false,  // Reduce visual clutter
     'errorLens.enabled': true,
     'errorLens.delay': 500,
-}"
+}`
     },
     {
       "type": "h2",
