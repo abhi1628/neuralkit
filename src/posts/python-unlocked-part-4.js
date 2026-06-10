@@ -57,7 +57,7 @@ print(f'Are they the same object? {sweetener is tea_additive}')
 # The 'tea_additive' note is still on the honey jar!
 
 sweetener = 'sugar'
-print(f'\nAfter reassignment:')
+print(f'\\nAfter reassignment:')
 print(f'sweetener = {sweetener}')
 print(f'tea_additive = {tea_additive}')
 print(f'id(sweetener)     = {id(sweetener)}')
@@ -71,13 +71,13 @@ print(f'id(tea_additive)  = {id(tea_additive)}')
 jar1 = ['honey']
 jar2 = jar1  # Both labels on the SAME list object
 
-print(f'\nBefore modification:')
+print(f'\\nBefore modification:')
 print(f'jar1 = {jar1}, id = {id(jar1)}')
 print(f'jar2 = {jar2}, id = {id(jar2)}')
 print(f'Same object? {jar1 is jar2}')
 
 jar1.append('sugar')  # We modify the object through one label...
-print(f'\nAfter jar1.append("sugar"):')
+print(f'\\nAfter jar1.append("sugar"):')
 print(f'jar1 = {jar1}')  # ['honey', 'sugar']
 print(f'jar2 = {jar2}')  # ['honey', 'sugar'] — SURPRISE!
 print(f'Both changed because they point to the SAME object!')
@@ -97,7 +97,7 @@ print(f'Both changed because they point to the SAME object!')
     {
       "type": "code-block",
       "label": "id() Deep Dive",
-      "code": "# === id() BASICS ===
+      "code": `# === id() BASICS ===
 # Every object has a unique id during its lifetime.
 
 x = 42
@@ -107,7 +107,7 @@ print(f'Value: {x}, id: {id(x)}, hex: {hex(id(x))}')
 # What happens when we reassign?
 
 a = 1000
-print(f'\na = 1000, id(a) = {id(a)}')
+print(f'\\na = 1000, id(a) = {id(a)}')
 
 a = 1001
 print(f'a = 1001, id(a) = {id(a)}')
@@ -123,7 +123,7 @@ print(f'a = 1001, id(a) = {id(a)}')
 # Numbers, strings, tuples, frozensets
 
 s = 'hello'
-print(f'\nString id before: {id(s)}')
+print(f'\\nString id before: {id(s)}')
 s = s + ' world'  # Creates a NEW string, rebinds 's'
 print(f'String id after:  {id(s)}')
 print(f'New string: {s}')
@@ -135,7 +135,7 @@ print(f'New string: {s}')
 # Lists, dictionaries, sets, most custom objects
 
 lst = [1, 2, 3]
-print(f'\nList id before: {id(lst)}')
+print(f'\\nList id before: {id(lst)}')
 lst.append(4)  # Modifies the EXISTING list object
 print(f'List id after:  {id(lst)}')
 print(f'Modified list:  {lst}')
@@ -147,7 +147,7 @@ print(f'Modified list:  {lst}')
 # Tuples are immutable... but they can contain mutable objects!
 
 t = (1, 2, [3, 4])
-print(f'\nTuple id: {id(t)}')
+print(f'\\nTuple id: {id(t)}')
 print(f'Tuple contents: {t}')
 
 # We cannot change the tuple structure...
@@ -160,7 +160,7 @@ print(f'Tuple id still: {id(t)}')
 
 # This is not a contradiction. The tuple is immutable — its structure
 # (which objects it contains) cannot change. But the objects inside it
-# can change if they are mutable. This is subtle but crucial."
+# can change if they are mutable. This is subtle but crucial.`
     },
     {
       "type": "h2",
@@ -173,7 +173,7 @@ print(f'Tuple id still: {id(t)}')
     {
       "type": "code-block",
       "label": "is vs == Mastery",
-      "code": "# === THE FUNDAMENTAL DIFFERENCE ===
+      "code": `# === THE FUNDAMENTAL DIFFERENCE ===
 # ==  : Do these objects have the same VALUE?
 # is  : Are these the SAME OBJECT in memory?
 
@@ -183,14 +183,14 @@ b = [1, 2, 3]
 print(f'a == b : {a == b}')   # True — same values
 print(f'a is b : {a is b}')   # False — different objects!
 
-print(f'\nid(a) = {id(a)}')
+print(f'\\nid(a) = {id(a)}')
 print(f'id(b) = {id(b)}')
 
 # === WHEN TO USE is ===
 # Use 'is' for singletons: None, True, False
 
 x = None
-print(f'\nx is None: {x is None}')  # Correct
+print(f'\\nx is None: {x is None}')  # Correct
 print(f'x == None: {x == None}')    # Works but discouraged (PEP 8)
 
 # Use 'is' for identity checks, not value checks:
@@ -202,7 +202,7 @@ if x is None:
 
 x = 256
 y = 256
-print(f'\nSmall integers:')
+print(f'\\nSmall integers:')
 print(f'x = 256, y = 256')
 print(f'x == y: {x == y}')
 print(f'x is y: {x is y}')  # True! Python reuses small integers.
@@ -210,7 +210,7 @@ print(f'x is y: {x is y}')  # True! Python reuses small integers.
 # But larger integers are NOT interned:
 x = 1000
 y = 1000
-print(f'\nLarge integers:')
+print(f'\\nLarge integers:')
 print(f'x = 1000, y = 1000')
 print(f'x == y: {x == y}')
 print(f'x is y: {x is y}')  # False! Different objects.
@@ -223,7 +223,7 @@ print(f'x is y: {x is y}')  # False! Different objects.
 
 a = 'hello'
 b = 'hello'
-print(f'\nShort strings:')
+print(f'\\nShort strings:')
 print(f'a is b: {a is b}')  # True — interned!
 
 # But strings with spaces or special characters are not:
@@ -246,7 +246,7 @@ def add_item_bad(item, item_list=[]):
     item_list.append(item)
     return item_list
 
-print(f'\nMutable default argument trap:')
+print(f'\\nMutable default argument trap:')
 print(add_item_bad(1))  # [1]
 print(add_item_bad(2))  # [1, 2] — SURPRISE! The list persisted!
 print(add_item_bad(3))  # [1, 2, 3] — The default list is a SINGLE object!
@@ -263,12 +263,12 @@ def add_item_good(item, item_list=None):
     item_list.append(item)
     return item_list
 
-print(f'\nCorrect version:')
+print(f'\\nCorrect version:')
 print(add_item_good(1))  # [1]
 print(add_item_good(2))  # [2] — Fresh list each time!
 
 # We use 'is None' because None is a singleton.
-# Using '== None' would work but is less precise and PEP 8 discouraged."
+# Using '== None' would work but is less precise and PEP 8 discouraged.`
     },
     {
       "type": "h2",
@@ -281,7 +281,7 @@ print(add_item_good(2))  # [2] — Fresh list each time!
     {
       "type": "code-block",
       "label": "Interning Explored",
-      "code": "# === INTEGER INTERNING ===
+      "code": `# === INTEGER INTERNING ===
 # CPython caches integers -5 to 256.
 
 import sys
@@ -297,7 +297,7 @@ for i in [-7, -5, -1, 0, 1, 256, 257, 1000]:
 # Strings that look like identifiers are interned automatically.
 # This is why 'hello' is 'hello' returns True.
 
-print(f'\nString interning:')
+print(f'\\nString interning:')
 print(f'  "hello" is "hello": {"hello" is "hello"}')
 print(f'  "hello_world" is "hello_world": {"hello_world" is "hello_world"}')
 print(f'  "hello world" is "hello world": {"hello world" is "hello world"}')
@@ -310,7 +310,7 @@ print(f'  "hello!" is "hello!": {"hello!" is "hello!"}')
 words = ['apple'] * 10000
 interned_words = [sys.intern(w) for w in words]
 
-print(f'\nMemory with 10,000 strings:')
+print(f'\\nMemory with 10,000 strings:')
 print(f'  Normal list: {sys.getsizeof(words):,} bytes')
 print(f'  Interned list: {sys.getsizeof(interned_words):,} bytes')
 print(f'  (Interned list is smaller because all entries point to same object)')
@@ -320,7 +320,7 @@ print(f'  (Interned list is smaller because all entries point to same object)')
 
 a = 'hello' + ' ' + 'world'
 b = 'hello world'
-print(f'\nCompile-time concatenation:')
+print(f'\\nCompile-time concatenation:')
 print(f'a = "hello" + " " + "world"')
 print(f'b = "hello world"')
 print(f'a is b: {a is b}')  # True! Python optimizes at compile time.
@@ -329,7 +329,7 @@ print(f'a is b: {a is b}')  # True! Python optimizes at compile time.
 c = 'hello'
 d = ' world'
 e = c + d
-print(f'\nRuntime concatenation:')
+print(f'\\nRuntime concatenation:')
 print(f'e = c + d (where c="hello", d=" world")')
 print(f'e is b: {e is b}')  # False! Different objects.
 
@@ -337,7 +337,7 @@ print(f'e is b: {e is b}')  # False! Different objects.
 # Interning is an optimization, not a language guarantee.
 # Never write code that depends on 'is' for value comparison.
 # Always use == for value comparison.
-# Use 'is' only for None, True, False, and explicit identity checks."
+# Use 'is' only for None, True, False, and explicit identity checks.`
     },
     {
       "type": "h2",
@@ -350,7 +350,7 @@ print(f'e is b: {e is b}')  # False! Different objects.
     {
       "type": "code-block",
       "label": "Mutable vs Immutable: Complete Guide",
-      "code": "# === IMMUTABLE OBJECTS ===
+      "code": `# === IMMUTABLE OBJECTS ===
 # Cannot be changed after creation. Operations create new objects.
 
 # Numbers
@@ -361,13 +361,13 @@ print(f'Integer {x}: id = {id(x)}')
 
 # Strings
 s = 'hello'
-print(f'\nString "{s}": id = {id(s)}')
+print(f'\\nString "{s}": id = {id(s)}')
 s = s.upper()  # New object!
 print(f'String "{s}": id = {id(s)}')
 
 # Tuples
 t = (1, 2, 3)
-print(f'\nTuple {t}: id = {id(t)}')
+print(f'\\nTuple {t}: id = {id(t)}')
 # t[0] = 99  # TypeError! Cannot modify.
 t = t + (4,)  # New tuple object!
 print(f'Tuple {t}: id = {id(t)}')
@@ -377,19 +377,19 @@ print(f'Tuple {t}: id = {id(t)}')
 
 # Lists
 lst = [1, 2, 3]
-print(f'\nList {lst}: id = {id(lst)}')
+print(f'\\nList {lst}: id = {id(lst)}')
 lst.append(4)  # Same object, modified!
 print(f'List {lst}: id = {id(lst)}')
 
 # Dictionaries
 d = {'a': 1}
-print(f'\nDict {d}: id = {id(d)}')
+print(f'\\nDict {d}: id = {id(d)}')
 d['b'] = 2  # Same object, modified!
 print(f'Dict {d}: id = {id(d)}')
 
 # Sets
 st = {1, 2}
-print(f'\nSet {st}: id = {id(st)}')
+print(f'\\nSet {st}: id = {id(st)}')
 st.add(3)  # Same object, modified!
 print(f'Set {st}: id = {id(st)}')
 
@@ -399,7 +399,7 @@ print(f'Set {st}: id = {id(st)}')
 
 # This works:
 my_dict = {('a', 'b'): 'value'}  # Tuple is immutable, can be a key
-print(f'\nTuple as dict key: {my_dict}')
+print(f'\\nTuple as dict key: {my_dict}')
 
 # This does NOT work:
 # my_dict = {['a', 'b']: 'value'}  # TypeError! List is mutable.
@@ -413,7 +413,7 @@ import copy
 original = [[1, 2], [3, 4]]
 shallow = copy.copy(original)  # or original[:], list(original)
 
-print(f'\nShallow copy:')
+print(f'\\nShallow copy:')
 print(f'original id: {id(original)}, shallow id: {id(shallow)}')
 print(f'original[0] id: {id(original[0])}, shallow[0] id: {id(shallow[0])}')
 print(f'Same inner object? {original[0] is shallow[0]}')
@@ -427,14 +427,14 @@ print(f'shallow = {shallow}')    # [[1, 2, 99], [3, 4]] — Same inner list!
 original2 = [[1, 2], [3, 4]]
 deep = copy.deepcopy(original2)
 
-print(f'\nDeep copy:')
+print(f'\\nDeep copy:')
 print(f'original2[0] id: {id(original2[0])}, deep[0] id: {id(deep[0])}')
 print(f'Same inner object? {original2[0] is deep[0]}')
 
 deep[0].append(99)
 print(f'After deep[0].append(99):')
 print(f'original2 = {original2}')  # [[1, 2], [3, 4]] — UNCHANGED!
-print(f'deep = {deep}')              # [[1, 2, 99], [3, 4]] — Independent!"
+print(f'deep = {deep}')              # [[1, 2, 99], [3, 4]] — Independent!`
     },
     {
       "type": "h2",
@@ -447,7 +447,7 @@ print(f'deep = {deep}')              # [[1, 2, 99], [3, 4]] — Independent!"
     {
       "type": "code-block",
       "label": "Garbage Collection in Action",
-      "code": "import gc
+      "code": `import gc
 import sys
 
 # === REFERENCE COUNTING ===
@@ -479,7 +479,7 @@ node_b = Node('B')
 node_a.next = node_b
 node_b.next = node_a
 
-print(f'\nCircular reference created: A <-> B')
+print(f'\\nCircular reference created: A <-> B')
 print(f'Refcount A: {sys.getrefcount(node_a) - 1}')
 print(f'Refcount B: {sys.getrefcount(node_b) - 1}')
 
@@ -492,12 +492,12 @@ del node_b
 
 # Force garbage collection
 gc.collect()
-print('\nGarbage collection completed')
+print('\\nGarbage collection completed')
 
 # === MEMORY PROFILING ===
 # See how much memory objects use
 
-print(f'\nMemory sizes:')
+print(f'\\nMemory sizes:')
 print(f'Empty list: {sys.getsizeof([])} bytes')
 print(f'List [1, 2, 3]: {sys.getsizeof([1, 2, 3])} bytes')
 print(f'Empty dict: {sys.getsizeof({})} bytes')
@@ -507,14 +507,8 @@ print(f'Integer 0: {sys.getsizeof(0)} bytes')
 print(f'Integer 1000000: {sys.getsizeof(1000000)} bytes')
 
 # === GC CONFIGURATION ===
-print(f'\nGC is enabled: {gc.isenabled()}')
-print(f'GC thresholds: {gc.get_threshold()}')
-# (700, 10, 10) — collect when generation 0 has 700 untracked objects
-
-# You can disable GC for performance-critical sections (rarely needed):
-# gc.disable()
-# ... do work ...
-# gc.enable()"
+print(f'\\nGC is enabled: {gc.isenabled()}')
+print(f'GC thresholds: {gc.get_threshold()}')`
     },
     {
       "type": "h2",
@@ -527,7 +521,7 @@ print(f'GC thresholds: {gc.get_threshold()}')
     {
       "type": "code-block",
       "label": "Program 1: Memory Explorer",
-      "code": """"
+      "code": `"""
 Program 1: Memory Explorer
 Visualizes Python's memory model with interactive demonstrations.
 """
@@ -535,7 +529,7 @@ import sys
 
 def explore_object(obj, name='object'):
     """Explore and report on an object's memory characteristics."""
-    print(f'\n=== Exploring: {name} ===')
+    print(f'\\n=== Exploring: {name} ===')
     print(f'  Value: {obj}')
     print(f'  Type: {type(obj).__name__}')
     print(f'  ID: {id(obj)} (hex: {hex(id(obj))})')
@@ -554,7 +548,7 @@ def is_mutable(obj):
 
 def demonstrate_rebinding():
     """Show how rebinding works with id()."""
-    print('\n=== REBINDING DEMONSTRATION ===')
+    print('\\n=== REBINDING DEMONSTRATION ===')
 
     x = 1000
     print(f'x = 1000, id = {id(x)}')
@@ -564,14 +558,14 @@ def demonstrate_rebinding():
     print(f'x is y: {x is y}')
 
     x = 1001
-    print(f'\nx = 1001, id = {id(x)}')
+    print(f'\\nx = 1001, id = {id(x)}')
     print(f'y still = 1000, id = {id(y)}')
     print(f'x is y: {x is y}')
     print('y was NOT changed! We moved the label x to a new object.')
 
 def demonstrate_mutable_alias():
     """Show the mutable alias trap."""
-    print('\n=== MUTABLE ALIAS TRAP ===')
+    print('\\n=== MUTABLE ALIAS TRAP ===')
 
     original = ['apple', 'banana']
     alias = original
@@ -581,7 +575,7 @@ def demonstrate_mutable_alias():
     print(f'Same object? {original is alias}')
 
     alias.append('cherry')
-    print(f'\nAfter alias.append("cherry"):')
+    print(f'\\nAfter alias.append("cherry"):')
     print(f'original = {original} — CHANGED!')
     print(f'alias = {alias}')
     print('Both changed because they point to the SAME list object.')
@@ -589,7 +583,7 @@ def demonstrate_mutable_alias():
     # Correct way to make a copy:
     copy_list = original[:]
     copy_list.append('date')
-    print(f'\nWith copy: original = {original}, copy = {copy_list}')
+    print(f'\\nWith copy: original = {original}, copy = {copy_list}')
     print(f'Original unchanged because copy is a different object!')
 
 def main():
@@ -611,7 +605,7 @@ def main():
     demonstrate_rebinding()
     demonstrate_mutable_alias()
 
-    print('\n' + '=' * 60)
+    print('\\n' + '=' * 60)
     print('Key Takeaways:')
     print('  • Variables are labels, not boxes')
     print('  • Immutable objects create new objects on "change"')
@@ -622,12 +616,12 @@ def main():
     print('=' * 60)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Identity Detective",
-      "code": """"
+      "code": `"""
 Program 2: Identity Detective
 Investigates object identity and interning patterns.
 """
@@ -635,7 +629,7 @@ import sys
 
 def compare_identity(a, b, name_a='a', name_b='b'):
     """Compare two objects for equality and identity."""
-    print(f'\nComparing {name_a} and {name_b}:')
+    print(f'\\nComparing {name_a} and {name_b}:')
     print(f'  {name_a} = {a!r}')
     print(f'  {name_b} = {b!r}')
     print(f'  {name_a} == {name_b}: {a == b}')
@@ -652,7 +646,7 @@ def compare_identity(a, b, name_a='a', name_b='b'):
 
 def investigate_interning():
     """Investigate Python's interning behavior."""
-    print('\n' + '=' * 60)
+    print('\\n' + '=' * 60)
     print('INTERNING INVESTIGATION')
     print('=' * 60)
 
@@ -680,7 +674,7 @@ def investigate_interning():
 
 def demonstrate_mutable_vs_immutable():
     """Demonstrate the mutable vs immutable distinction."""
-    print('\n' + '=' * 60)
+    print('\\n' + '=' * 60)
     print('MUTABLE vs IMMUTABLE DEMONSTRATION')
     print('=' * 60)
 
@@ -688,7 +682,7 @@ def demonstrate_mutable_vs_immutable():
     s = 'hello'
     original_id = id(s)
     s = s + ' world'
-    print(f'\nString: "{s}"')
+    print(f'\\nString: "{s}"')
     print(f'  Original id: {original_id}')
     print(f'  New id: {id(s)}')
     print(f'  → ID CHANGED (new object created)')
@@ -697,7 +691,7 @@ def demonstrate_mutable_vs_immutable():
     lst = [1, 2, 3]
     original_id = id(lst)
     lst.append(4)
-    print(f'\nList: {lst}')
+    print(f'\\nList: {lst}')
     print(f'  Original id: {original_id}')
     print(f'  New id: {id(lst)}')
     print(f'  → ID SAME (object modified in place)')
@@ -712,7 +706,7 @@ def main():
     investigate_interning()
     demonstrate_mutable_vs_immutable()
 
-    print('\n' + '=' * 60)
+    print('\\n' + '=' * 60)
     print('Investigation Complete!')
     print('Remember:')
     print('  • == checks VALUE (use this almost always)')
@@ -722,12 +716,12 @@ def main():
     print('=' * 60)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Safe Configuration Builder",
-      "code": """"
+      "code": `"""
 Program 3: Safe Configuration Builder
 Demonstrates proper handling of mutable default arguments.
 """
@@ -737,13 +731,7 @@ class Config:
     """A safe configuration class that avoids mutable default traps."""
 
     def __init__(self, settings=None, tags=None):
-        """Initialize configuration with safe defaults.
-
-        Args:
-            settings (dict, optional): Configuration settings. Defaults to empty dict.
-            tags (list, optional): Configuration tags. Defaults to empty list.
-        """
-        # SAFE: Use None as default, create new mutable objects inside
+        """Initialize configuration with safe defaults."""
         self.settings = settings if settings is not None else {}
         self.tags = tags if tags is not None else []
 
@@ -767,9 +755,8 @@ class Config:
 
 def demonstrate_safe_config():
     """Show why the safe pattern matters."""
-    print('\n=== SAFE CONFIGURATION PATTERN ===')
+    print('\\n=== SAFE CONFIGURATION PATTERN ===')
 
-    # Create two independent configs
     config1 = Config()
     config2 = Config()
 
@@ -777,26 +764,17 @@ def demonstrate_safe_config():
     print(f'Config 2: {config2}')
     print(f'Same settings object? {config1.settings is config2.settings}')
 
-    # Modify config1
     config1.add_setting('debug', True)
     config1.add_tag('production')
 
-    print(f'\nAfter modifying config1:')
+    print(f'\\nAfter modifying config1:')
     print(f'Config 1: {config1}')
     print(f'Config 2: {config2}')
     print(f'Config 2 unchanged? {config2.settings == {}}')
 
-    # Create a copy
-    config3 = config1.copy()
-    config3.add_setting('debug', False)
-
-    print(f'\nConfig 3 (copy of 1, modified): {config3}')
-    print(f'Config 1 still: {config1}')
-    print(f'Original preserved? {config1.settings["debug"] is True}')
-
 def demonstrate_bad_config():
     """Show the DANGEROUS mutable default pattern."""
-    print('\n=== DANGEROUS PATTERN (DON'T DO THIS) ===')
+    print('\\n=== DANGEROUS PATTERN (DON\\'T DO THIS) ===')
 
     class BadConfig:
         def __init__(self, settings={}, tags=[]):
@@ -811,30 +789,23 @@ def demonstrate_bad_config():
     print(f'Same settings object? {bad1.settings is bad2.settings}')
 
     bad1.settings['debug'] = True
-    print(f'\nAfter modifying bad1:')
+    print(f'\\nAfter modifying bad1:')
     print(f'BadConfig 1: {bad1.__dict__}')
-    print(f'BadConfig 2: {bad2.__dict__}')  # SURPRISE! Also changed!
+    print(f'BadConfig 2: {bad2.__dict__}')
     print('Both share the SAME default dict object!')
 
 def main():
     """Main configuration builder program."""
     print('=' * 60)
     print('SAFE CONFIGURATION BUILDER')
-    print('Learning from Python's most famous gotcha')
+    print('Learning from Python\\'s most famous gotcha')
     print('=' * 60)
 
     demonstrate_safe_config()
     demonstrate_bad_config()
 
-    print('\n' + '=' * 60)
-    print('The Golden Rule:')
-    print('  NEVER use mutable objects as default arguments!')
-    print('  Use None as default, create mutable objects inside.')
-    print('  Use copy.deepcopy() when you need true independence.')
-    print('=' * 60)
-
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "h2",
