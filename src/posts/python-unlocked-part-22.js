@@ -31,7 +31,7 @@ const post = {
     {
       "type": "code-block",
       "label": "open() and Context Managers Mastery",
-      "code": "# === open() AND CONTEXT MANAGERS ===
+      "code": `# === open() AND CONTEXT MANAGERS ===
 # The 'with' statement guarantees cleanup
 
 # --- Basic file opening ---
@@ -133,7 +133,7 @@ for fname in ['test.txt', 'write_test.txt', 'exclusive.txt']:
     if os.path.exists(fname):
         os.unlink(fname)
 
-print("\nopen() and context managers mastery complete!")"
+print("\nopen() and context managers mastery complete!")`
     },
     {
       "type": "h2",
@@ -146,7 +146,7 @@ print("\nopen() and context managers mastery complete!")"
     {
       "type": "code-block",
       "label": "Text vs Binary & Encoding Mastery",
-      "code": "# === TEXT VS BINARY & ENCODING ===
+      "code": `# === TEXT VS BINARY & ENCODING ===
 
 # --- Text mode (default) ---
 # Reads/writes str objects, handles encoding automatically
@@ -232,7 +232,7 @@ for fname in ['text_file.txt', 'binary_data.bin', 'newline_test.txt']:
     if os.path.exists(fname):
         os.unlink(fname)
 
-print("\nText vs binary & encoding mastery complete!")"
+print("\nText vs binary & encoding mastery complete!")`
     },
     {
       "type": "h2",
@@ -245,7 +245,7 @@ print("\nText vs binary & encoding mastery complete!")"
     {
       "type": "code-block",
       "label": "Reading Files Mastery",
-      "code": "# === READING FILES ===
+      "code": `# === READING FILES ===
 
 # Create test file
 with open('sample.txt', 'w') as f:
@@ -336,7 +336,7 @@ for fname in ['sample.txt', 'large.txt']:
     if os.path.exists(fname):
         os.unlink(fname)
 
-print("\nReading files mastery complete!")"
+print("\nReading files mastery complete!")`
     },
     {
       "type": "h2",
@@ -349,7 +349,7 @@ print("\nReading files mastery complete!")"
     {
       "type": "code-block",
       "label": "seek() and tell() Mastery",
-      "code": "# === FILE POINTERS: seek() AND tell() ===
+      "code": `# === FILE POINTERS: seek() AND tell() ===
 
 # Create test file
 with open('pointer_test.txt', 'w') as f:
@@ -432,7 +432,7 @@ for fname in ['pointer_test.txt', 'data_file.bin', 'indexed.txt']:
     if os.path.exists(fname):
         os.unlink(fname)
 
-print("\nseek() and tell() mastery complete!")"
+print("\nseek() and tell() mastery complete!")`
     },
     {
       "type": "h2",
@@ -445,7 +445,7 @@ print("\nseek() and tell() mastery complete!")"
     {
       "type": "code-block",
       "label": "pathlib Mastery",
-      "code": "# === pathlib: OBJECT-ORIENTED PATHS ===
+      "code": `# === pathlib: OBJECT-ORIENTED PATHS ===
 from pathlib import Path
 import os
 
@@ -538,7 +538,7 @@ for d in ['output', 'project']:
     if Path(d).exists():
         shutil.rmtree(d)
 
-print("\npathlib mastery complete!")"
+print("\npathlib mastery complete!")`
     },
     {
       "type": "h2",
@@ -551,7 +551,7 @@ print("\npathlib mastery complete!")"
     {
       "type": "code-block",
       "label": "JSON, CSV, and Pickle Mastery",
-      "code": "# === JSON, CSV, AND PICKLE ===
+      "code": `# === JSON, CSV, AND PICKLE ===
 
 # --- JSON (JavaScript Object Notation) ---
 import json
@@ -668,7 +668,7 @@ for fname in ['data.json', 'data.csv', 'output.csv', 'data.pkl']:
     if os.path.exists(fname):
         os.unlink(fname)
 
-print("\nJSON, CSV, and Pickle mastery complete!")"
+print("\nJSON, CSV, and Pickle mastery complete!")`
     },
     {
       "type": "h2",
@@ -681,7 +681,7 @@ print("\nJSON, CSV, and Pickle mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Config File Reader",
-      "code": """"
+      "code": `"""
 Program 1: Config File Reader
 Reads and validates configuration from JSON, INI, and environment variables.
 Demonstrates JSON parsing, file existence checks, and default value handling.
@@ -822,12 +822,12 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: CSV Analyzer",
-      "code": """"
+      "code": `"""
 Program 2: CSV Analyzer
 Analyzes CSV files: statistics, filtering, sorting, and export.
 Demonstrates csv module, generators, and data processing.
@@ -935,21 +935,21 @@ def main():
     analyzer = CSVAnalyzer('sales.csv').load()
     
     print(f'\nTotal Records: {len(analyzer.records)}')
-    print(f'Total Revenue: ${analyzer.total_revenue():,.2f}')
+    print(f'Total Revenue: \${analyzer.total_revenue():,.2f}')
     print(f'Average Units: {analyzer.average_units():.1f}')
     
     print(f'\nRevenue by Region:')
     for region, records in analyzer.by_region().items():
         revenue = sum(r.revenue for r in records)
-        print(f'  {region}: ${revenue:,.2f} ({len(records)} records)')
+        print(f'  {region}: \${revenue:,.2f} ({len(records)} records)')
     
     print(f'\nTop Products:')
     for product, revenue in analyzer.top_products(3):
-        print(f'  {product}: ${revenue:,.2f}')
+        print(f'  {product}: \${revenue:,.2f}')
     
     print(f'\nNorth Region Records:')
     for r in analyzer.filter_by_region('North'):
-        print(f'  {r.date}: {r.product} - ${r.revenue:.2f}')
+        print(f'  {r.date}: {r.product} - \${r.revenue:.2f}')
     
     # Export summary
     analyzer.export_summary('sales_summary.csv')
@@ -965,12 +965,12 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: JSON Pretty-Printer",
-      "code": """"
+      "code": `"""
 Program 3: JSON Pretty-Printer
 Validates, formats, and compares JSON files.
 Demonstrates json module, recursive traversal, and file operations.
@@ -1154,12 +1154,12 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Log File Parser",
-      "code": """"
+      "code": `"""
 Program 4: Log File Parser
 Parses, filters, and analyzes log files.
 Demonstrates line iteration, regex, generators, and file statistics.
@@ -1334,7 +1334,7 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "h2",
