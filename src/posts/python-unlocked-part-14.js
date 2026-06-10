@@ -550,7 +550,7 @@ import itertools
 print(f"\ntake(5, count()): {take(5, count())}")
 print(f"first_true([0, '', [], 42, 99]): {first_true([0, '', [], 42, 99])}")
 
-print("\nitertools preview complete!")"
+print("\nitertools preview complete!")`
     },
     {
       "type": "programs",
