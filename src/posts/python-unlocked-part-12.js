@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Hash Table Internals",
-      "code": "# === HASH TABLES EXPLAINED ===
+      "code": `# === HASH TABLES EXPLAINED ===
 # A hash table maps keys to values using a hash function.
 # The hash function converts any key into an integer index.
 
@@ -99,7 +99,7 @@ for size in [1000, 10000, 100000, 1000000]:
     t = benchmark_lookup(size)
     print(f"  Size {size:7d}: {t:.6f}s (O(1) confirmed!)")
 
-print("\nHash table internals complete!")"
+print("\nHash table internals complete!")`
     },
     {
       "type": "h2",
@@ -112,7 +112,7 @@ print("\nHash table internals complete!")"
     {
       "type": "code-block",
       "label": "Dictionary Methods Mastery",
-      "code": "# === DICTIONARY METHODS: THE COMPLETE SET ===
+      "code": `# === DICTIONARY METHODS: THE COMPLETE SET ===
 
 user = {'name': 'Alice', 'age': 30, 'city': 'NYC'}
 
@@ -197,7 +197,7 @@ print(f"'salary' in user: {'salary' in user}")
 
 print(f"len(user): {len(user)}")
 
-print("\nDictionary methods mastery complete!")"
+print("\nDictionary methods mastery complete!")`
     },
     {
       "type": "h2",
@@ -210,7 +210,7 @@ print("\nDictionary methods mastery complete!")"
     {
       "type": "code-block",
       "label": "Dictionary Comprehensions Mastery",
-      "code": "# === BASIC DICT COMPREHENSION ===
+      "code": `# === BASIC DICT COMPREHENSION ===
 # {key_expr: value_expr for item in iterable}
 
 # Squares mapping
@@ -294,7 +294,7 @@ from collections import Counter
 counts_comp = dict(Counter(['a', 'b', 'a', 'c', 'a', 'b']))
 print(f"Counts (Counter): {counts_comp}")
 
-print("\nDictionary comprehension mastery complete!")"
+print("\nDictionary comprehension mastery complete!")`
     },
     {
       "type": "h2",
@@ -307,7 +307,7 @@ print("\nDictionary comprehension mastery complete!")"
     {
       "type": "code-block",
       "label": "Specialized Dictionaries Mastery",
-      "code": "# === DEFAULTDICT ===
+      "code": `# === DEFAULTDICT ===
 # Automatically creates default values for missing keys
 
 from collections import defaultdict, Counter, OrderedDict
@@ -403,7 +403,7 @@ od1 = OrderedDict([('a', 1), ('b', 2)])
 od2 = OrderedDict([('b', 2), ('a', 1)])
 print(f"OrderedDict order matters: {od1 == od2}")  # False!
 
-print("\nSpecialized dictionaries mastery complete!")"
+print("\nSpecialized dictionaries mastery complete!")`
     },
     {
       "type": "h2",
@@ -416,7 +416,7 @@ print("\nSpecialized dictionaries mastery complete!")"
     {
       "type": "code-block",
       "label": "Merging Dictionaries Mastery",
-      "code": "# === THE | OPERATOR (Python 3.9+) ===
+      "code": `# === THE | OPERATOR (Python 3.9+) ===
 # Creates a new dictionary from two others
 
 defaults = {'theme': 'light', 'lang': 'en', 'notifications': True}
@@ -500,7 +500,7 @@ def deep_merge(d1, d2):
 deep = deep_merge(d1, d2)
 print(f"Deep merge: {deep}")
 
-print("\nMerging dictionaries mastery complete!")"
+print("\nMerging dictionaries mastery complete!")`
     },
     {
       "type": "h2",
@@ -513,7 +513,7 @@ print("\nMerging dictionaries mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Word Counter",
-      "code": """"
+      "code": `"""
 Program 1: Word Counter
 Counts word frequencies in text using Counter and dict comprehensions.
 Demonstrates Counter, defaultdict, and dictionary operations.
@@ -631,12 +631,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Phone Book",
-      "code": """"
+      "code": `"""
 Program 2: Phone Book
 Contact management with advanced lookup and grouping.
 Demonstrates dict methods, comprehensions, and defaultdict.
@@ -809,12 +809,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Inventory System",
-      "code": """"
+      "code": `"""
 Program 3: Inventory System
 Product inventory with categories, stock levels, and transactions.
 Demonstrates nested dicts, defaultdict, and dict comprehensions.
@@ -979,20 +979,20 @@ def main():
     summary = inv.category_summary()
     print(f"\nCategory summary:")
     for cat, data in summary.items():
-        print(f"  {cat}: {data['count']} items, ${data['total_value']:.2f} value")
+        print(f"  {cat}: {data['count']} items, \${data['total_value']:.2f} value")
 
     # Total value
-    print(f"\nTotal inventory value: ${inv.total_value():.2f}")
+    print(f"\nTotal inventory value: \${inv.total_value():.2f}")
 
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: JSON-like Config Parser",
-      "code": """"
+      "code": `"""
 Program 4: JSON-like Config Parser
 Parses and validates nested configuration dictionaries.
 Demonstrates nested dicts, merging, validation, and deep access.
@@ -1203,10 +1203,10 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
-      "type": "h2",
+      "type": "quiz",
       "text": "Quiz: Test Your Understanding"
     },
     {
