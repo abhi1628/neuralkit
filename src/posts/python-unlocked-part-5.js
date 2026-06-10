@@ -39,7 +39,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Integer Mastery",
-      "code": "# === ARBITRARY PRECISION ===
+      "code": `# === ARBITRARY PRECISION ===
 # Python integers grow as large as your memory allows.
 
 # Small integer
@@ -48,13 +48,13 @@ print(f'42 is just: {x}')
 
 # Large integer (bigger than 64-bit)
 big = 1234567890123456789012345678901234567890
-print(f'\\nBig integer: {big}')
+print(f'\nBig integer: {big}')
 print(f'Type: {type(big)}')
 print(f'Number of digits: {len(str(big))}')
 
 # REALLY big integer
 huge = 2 ** 10000
-print(f'\\n2^10000 has {len(str(huge))} digits')
+print(f'\n2^10000 has {len(str(huge))} digits')
 print(f'First 50 digits: {str(huge)[:50]}')
 print(f'Last 50 digits: {str(huge)[-50:]}')
 
@@ -64,13 +64,13 @@ print(f'Last 50 digits: {str(huge)[-50:]}')
 # because it matches the maximum pointer size on your system.
 
 import sys
-print(f'\\nsys.maxsize = {sys.maxsize}')
+print(f'\nsys.maxsize = {sys.maxsize}')
 print(f'This is NOT the integer limit!')
 print(f'It is the maximum container size (list, string, etc.)')
 
 # Proof: we can easily exceed sys.maxsize as an integer
 bigger_than_maxsize = sys.maxsize + 1
-print(f'\\nsys.maxsize + 1 = {bigger_than_maxsize}')
+print(f'\nsys.maxsize + 1 = {bigger_than_maxsize}')
 print(f'Type: {type(bigger_than_maxsize)}')
 print(f'No overflow! No error! Just a bigger integer.')
 
@@ -78,7 +78,7 @@ print(f'No overflow! No error! Just a bigger integer.')
 a = 17
 b = 5
 
-print(f'\\nInteger operations with a={a}, b={b}:')
+print(f'\nInteger operations with a={a}, b={b}:')
 print(f'Addition:       {a} + {b}  = {a + b}')
 print(f'Subtraction:    {a} - {b}  = {a - b}')
 print(f'Multiplication: {a} * {b}  = {a * b}')
@@ -91,14 +91,14 @@ print(f'Absolute:       abs(-{a})   = {abs(-a)}')
 # === DIVMOD: THE EFFICIENT COMBO ===
 # divmod(a, b) returns (a // b, a % b) in one operation
 quotient, remainder = divmod(17, 5)
-print(f'\\ndivmod(17, 5) = ({quotient}, {remainder})')
+print(f'\ndivmod(17, 5) = ({quotient}, {remainder})')
 
 # === BITWISE OPERATIONS ===
 # Integers can be manipulated at the bit level
 x = 0b1010  # 10 in decimal
 y = 0b1100  # 12 in decimal
 
-print(f'\\nBitwise operations:')
+print(f'\nBitwise operations:')
 print(f'x = {x} (binary: {bin(x)})')
 print(f'y = {y} (binary: {bin(y)})')
 print(f'x & y (AND):  {x & y} (binary: {bin(x & y)})')
@@ -110,15 +110,15 @@ print(f'x >> 1:       {x >> 1} (binary: {bin(x >> 1)})')
 
 # === BASE CONVERSIONS ===
 num = 255
-print(f'\\nBase conversions for {num}:')
+print(f'\nBase conversions for {num}:')
 print(f'Binary:      {bin(num)}')
 print(f'Octal:       {oct(num)}')
 print(f'Hexadecimal: {hex(num)}')
 
 # Convert back from string
-print(f'\\nFrom binary string: {int(\"11111111\", 2)}')
-print(f'From hex string:    {int(\"FF\", 16)}')
-print(f'From octal string:  {int(\"377\", 8)}')"
+print(f'\nFrom binary string: {int("11111111", 2)}')
+print(f'From hex string:    {int("FF", 16)}')
+print(f'From octal string:  {int("377", 8)}')`
     },
     {
       "type": "h2",
@@ -131,7 +131,7 @@ print(f'From octal string:  {int(\"377\", 8)}')"
     {
       "type": "code-block",
       "label": "Float Deep Dive",
-      "code": "# === THE FLOAT TRAP ===
+      "code": `# === THE FLOAT TRAP ===
 # The most famous example in all of programming:
 
 print('The float trap:')
@@ -143,21 +143,21 @@ print(f'0.1 + 0.2 == 0.3: {0.1 + 0.2 == 0.3}')
 # The computer stores an approximation, not the exact value.
 
 # See the actual stored value with high precision:
-print(f'\\nActual stored value of 0.1: {format(0.1, \".17f\")}')
-print(f'Actual stored value of 0.2: {format(0.2, \".17f\")}')
-print(f'Actual stored value of 0.3: {format(0.3, \".17f\")}')
+print(f'\nActual stored value of 0.1: {format(0.1, ".17f")}')
+print(f'Actual stored value of 0.2: {format(0.2, ".17f")}')
+print(f'Actual stored value of 0.3: {format(0.3, ".17f")}')
 
 # === FLOAT REPRESENTATION ===
 import struct
 
 # A float is 64 bits: 1 sign bit, 11 exponent bits, 52 mantissa bits
 def float_to_bits(f):
-    \"\"\"Show the raw IEEE 754 bits of a float.\"\"\"
+    """Show the raw IEEE 754 bits of a float."""
     packed = struct.pack('>d', f)
     bits = ''.join(f'{b:08b}' for b in packed)
     return bits
 
-print(f'\\nIEEE 754 representation of 0.5:')
+print(f'\nIEEE 754 representation of 0.5:')
 bits = float_to_bits(0.5)
 print(f'  Sign: {bits[0]}')
 print(f'  Exponent: {bits[1:12]}')
@@ -175,16 +175,16 @@ a = Decimal('0.1')  # Note: string argument, not float!
 b = Decimal('0.2')
 c = Decimal('0.3')
 
-print(f'\\nDecimal arithmetic:')
-print(f'Decimal(\"0.1\") + Decimal(\"0.2\") = {a + b}')
-print(f'Equals Decimal(\"0.3\")? {a + b == c}')
+print(f'\nDecimal arithmetic:')
+print(f'Decimal("0.1") + Decimal("0.2") = {a + b}')
+print(f'Equals Decimal("0.3")? {a + b == c}')
 
 # === COMPARING FLOATS SAFELY ===
 # Never use == for float comparison. Use math.isclose().
 
 import math
 
-print(f'\\nSafe float comparison:')
+print(f'\nSafe float comparison:')
 print(f'0.1 + 0.2 == 0.3: {0.1 + 0.2 == 0.3}')
 print(f'math.isclose(0.1 + 0.2, 0.3): {math.isclose(0.1 + 0.2, 0.3)}')
 
@@ -193,10 +193,10 @@ print(f'math.isclose(1.0, 1.0000001): {math.isclose(1.0, 1.0000001)}')
 print(f'math.isclose(1.0, 1.0001): {math.isclose(1.0, 1.0001)}')
 
 # === FLOAT SPECIAL VALUES ===
-print(f'\\nSpecial float values:')
-print(f'Infinity: {float(\"inf\")}')
-print(f'Negative infinity: {float(\"-inf\")}')
-print(f'Not a Number: {float(\"nan\")}')
+print(f'\nSpecial float values:')
+print(f'Infinity: {float("inf")}')
+print(f'Negative infinity: {float("-inf")}')
+print(f'Not a Number: {float("nan")}')
 
 inf = float('inf')
 print(f'inf + 1 = {inf + 1}')
@@ -206,7 +206,7 @@ print(f'inf / inf = {inf / inf}')  # nan
 # === FLOAT METHODS ===
 pi = 3.141592653589793
 
-print(f'\\nFloat methods for {pi}:')
+print(f'\nFloat methods for {pi}:')
 print(f'is_integer(): {pi.is_integer()}')
 print(f'hex(): {pi.hex()}')
 print(f'as_integer_ratio(): {pi.as_integer_ratio()}')
@@ -215,8 +215,8 @@ print(f'as_integer_ratio(): {pi.as_integer_ratio()}')
 print(f'From hex: {float.fromhex(pi.hex())}')
 
 # === ROUNDING ===
-# Python 3 uses \"banker\\'s rounding\" — round to nearest even number
-print(f'\\nBanker\\'s rounding (round to even):')
+# Python 3 uses \'banker\'s rounding\' — round to nearest even number
+print(f'\nBanker\'s rounding (round to even):')
 print(f'round(2.5) = {round(2.5)}')   # 2 (even)
 print(f'round(3.5) = {round(3.5)}')   # 4 (even)
 print(f'round(4.5) = {round(4.5)}')   # 4 (even)
@@ -224,9 +224,9 @@ print(f'round(4.5) = {round(4.5)}')   # 4 (even)
 # For financial rounding, use Decimal with specific rounding mode:
 from decimal import ROUND_HALF_UP
 getcontext().rounding = ROUND_HALF_UP
-print(f'\\nWith ROUND_HALF_UP:')
+print(f'\nWith ROUND_HALF_UP:')
 d = Decimal('2.5')
-print(f'Decimal(\"2.5\").quantize(Decimal(\"1\")) = {d.quantize(Decimal(\"1\"))}')"
+print(f'Decimal("2.5").quantize(Decimal("1")) = {d.quantize(Decimal("1"))}')`
     },
     {
       "type": "h2",
@@ -239,7 +239,7 @@ print(f'Decimal(\"2.5\").quantize(Decimal(\"1\")) = {d.quantize(Decimal(\"1\"))}
     {
       "type": "code-block",
       "label": "Complex Numbers in Action",
-      "code": "# === COMPLEX NUMBER BASICS ===
+      "code": `# === COMPLEX NUMBER BASICS ===
 # Python uses 'j' for the imaginary unit (engineering convention)
 # Mathematicians use 'i', but 'i' is too common as a loop variable.
 
@@ -251,13 +251,13 @@ print(f'z2 = {z2}')
 print(f'Type: {type(z1)}')
 
 # Components
-print(f'\\nComponents of z1 = {z1}:')
+print(f'\nComponents of z1 = {z1}:')
 print(f'  Real part: {z1.real}')
 print(f'  Imaginary part: {z1.imag}')
 print(f'  Conjugate: {z1.conjugate()}')
 
 # Operations
-print(f'\\nOperations:')
+print(f'\nOperations:')
 print(f'z1 + z2 = {z1 + z2}')
 print(f'z1 - z2 = {z1 - z2}')
 print(f'z1 * z2 = {z1 * z2}')
@@ -265,7 +265,7 @@ print(f'z1 / z2 = {z1 / z2}')
 print(f'z1 ** 2 = {z1 ** 2}')
 
 # Magnitude (absolute value)
-print(f'\\n|z1| = {abs(z1)}')  # sqrt(3² + 4²) = 5.0
+print(f'\n|z1| = {abs(z1)}')  # sqrt(3² + 4²) = 5.0
 
 # Phase angle (in radians)
 import cmath
@@ -274,7 +274,7 @@ print(f'Phase in degrees: {math.degrees(cmath.phase(z1))}')
 
 # Polar form
 r, theta = cmath.polar(z1)
-print(f'\\nPolar form of z1:')
+print(f'\nPolar form of z1:')
 print(f'  Magnitude: {r}')
 print(f'  Angle: {theta} radians')
 
@@ -282,10 +282,10 @@ print(f'  Angle: {theta} radians')
 z_back = cmath.rect(r, theta)
 print(f'  Back to rectangular: {z_back}')
 
-# === EULER\\'S IDENTITY ===
+# === EULER\'S IDENTITY ===
 # The most beautiful equation in mathematics: e^(iπ) + 1 = 0
 
-print(f'\\nEuler\\'s Identity: e^(iπ) + 1 = {cmath.exp(1j * math.pi) + 1}')
+print(f'\nEuler\'s Identity: e^(iπ) + 1 = {cmath.exp(1j * math.pi) + 1}')
 print(f'(Should be approximately 0, but float precision gives a tiny residual)')
 
 # === PRACTICAL APPLICATION: SIGNAL PROCESSING ===
@@ -298,7 +298,7 @@ amplitude = 5
 phase = math.pi / 4
 signal = amplitude * cmath.exp(1j * phase)
 
-print(f'\\nSignal: amplitude={amplitude}, phase={phase:.4f} rad')
+print(f'\nSignal: amplitude={amplitude}, phase={phase:.4f} rad')
 print(f'Complex representation: {signal}')
 print(f'Real component: {signal.real:.4f}')
 print(f'Imaginary component: {signal.imag:.4f}')
@@ -310,18 +310,18 @@ print(f'Imaginary component: {signal.imag:.4f}')
 alpha = complex(1/math.sqrt(2), 0)      # 1/√2 + 0i
 beta = complex(0, 1/math.sqrt(2))       # 0 + i/√2
 
-print(f'\\nQubit state:')
+print(f'\nQubit state:')
 print(f'  α = {alpha}')
 print(f'  β = {beta}')
 print(f'  |α|² + |β|² = {abs(alpha)**2 + abs(beta)**2}')
 print(f'  (Must equal 1 for valid quantum state)')
 
 # === cmath MODULE: COMPLEX MATH ===
-print(f'\\ncmath module functions:')
+print(f'\ncmath module functions:')
 print(f'sqrt(-1) = {cmath.sqrt(-1)}')
 print(f'log(1+1j) = {cmath.log(1 + 1j)}')
 print(f'sin(1+1j) = {cmath.sin(1 + 1j)}')
-print(f'exp(1j * π) = {cmath.exp(1j * math.pi)}')"
+print(f'exp(1j * π) = {cmath.exp(1j * math.pi)}')`
     },
     {
       "type": "h2",
@@ -334,7 +334,7 @@ print(f'exp(1j * π) = {cmath.exp(1j * math.pi)}')"
     {
       "type": "code-block",
       "label": "math Module Mastery",
-      "code": "import math
+      "code": `import math
 
 # === CONSTANTS ===
 print('Mathematical constants:')
@@ -347,31 +347,31 @@ print(f'nan:        {math.nan}')
 # === TRIGONOMETRY ===
 angle = math.pi / 4  # 45 degrees
 
-print(f'\\nTrigonometry (angle = π/4 = 45°):')
+print(f'\nTrigonometry (angle = π/4 = 45°):')
 print(f'sin(45°) = {math.sin(angle)}')
 print(f'cos(45°) = {math.cos(angle)}')
 print(f'tan(45°) = {math.tan(angle)}')
 
 # Inverse trigonometry
-print(f'\\nInverse trigonometry:')
+print(f'\nInverse trigonometry:')
 print(f'asin(0.7071) = {math.asin(0.7071067811865475)} radians')
 print(f'acos(0.7071) = {math.acos(0.7071067811865475)} radians')
 print(f'atan(1) = {math.atan(1)} radians')
 print(f'atan2(1, 1) = {math.atan2(1, 1)} radians')  # Handles quadrants correctly
 
 # Degrees ↔ radians
-print(f'\\nConversion:')
+print(f'\nConversion:')
 print(f'degrees(π/2) = {math.degrees(math.pi / 2)}')
 print(f'radians(90) = {math.radians(90)}')
 
 # === HYPERBOLIC FUNCTIONS ===
-print(f'\\nHyperbolic functions:')
+print(f'\nHyperbolic functions:')
 print(f'sinh(1) = {math.sinh(1)}')
 print(f'cosh(1) = {math.cosh(1)}')
 print(f'tanh(1) = {math.tanh(1)}')
 
 # === LOGARITHMS AND EXPONENTS ===
-print(f'\\nLogarithms and exponents:')
+print(f'\nLogarithms and exponents:')
 print(f'exp(1) = {math.exp(1)}')
 print(f'log(e) = {math.log(math.e)}')        # Natural log (base e)
 print(f'log(100, 10) = {math.log(100, 10)}')  # Log base 10
@@ -379,35 +379,35 @@ print(f'log10(100) = {math.log10(100)}')      # Same as above
 print(f'log2(1024) = {math.log2(1024)}')      # Log base 2
 
 # === POWER AND ROOTS ===
-print(f'\\nPower and roots:')
+print(f'\nPower and roots:')
 print(f'pow(2, 10) = {math.pow(2, 10)}')      # 2^10 = 1024.0 (returns float)
 print(f'sqrt(16) = {math.sqrt(16)}')
 print(f'cbrt(27) = {math.cbrt(27)}')          # Cube root, added in Python 3.11
 
 # === COMBINATORICS ===
-print(f'\\nCombinatorics:')
+print(f'\nCombinatorics:')
 print(f'factorial(5) = {math.factorial(5)}')  # 5! = 120
 print(f'comb(5, 2) = {math.comb(5, 2)}')      # C(5,2) = 10 (combinations)
 print(f'perm(5, 2) = {math.perm(5, 2)}')      # P(5,2) = 20 (permutations)
 
 # === GCD AND LCM ===
-print(f'\\nGCD and LCM:')
+print(f'\nGCD and LCM:')
 print(f'gcd(48, 18) = {math.gcd(48, 18)}')    # Greatest common divisor
 print(f'lcm(4, 6) = {math.lcm(4, 6)}')        # Least common multiple, Python 3.9+
 
 # === ROUNDING FUNCTIONS ===
-print(f'\\nRounding:')
+print(f'\nRounding:')
 print(f'ceil(3.2) = {math.ceil(3.2)}')        # Round up
 print(f'floor(3.8) = {math.floor(3.8)}')      # Round down
 print(f'trunc(3.8) = {math.trunc(3.8)}')      # Truncate toward zero
 print(f'fabs(-3.5) = {math.fabs(-3.5)}')      # Absolute value (float)
 
 # === MODF: SPLIT INTEGER AND FRACTIONAL PARTS ===
-print(f'\\nmodf(3.14159) = {math.modf(3.14159)}')  # (0.14159, 3.0)
+print(f'\nmodf(3.14159) = {math.modf(3.14159)}')  # (0.14159, 3.0)
 
 # === FMA: FUSED MULTIPLY-ADD ===
 # Computes a*b + c with a single rounding (more precise)
-print(f'\\nfma(2, 3, 4) = {math.fma(2, 3, 4)}')  # 2*3 + 4 = 10"
+print(f'\nfma(2, 3, 4) = {math.fma(2, 3, 4)}')  # 2*3 + 4 = 10`
     },
     {
       "type": "h2",
@@ -420,7 +420,7 @@ print(f'\\nfma(2, 3, 4) = {math.fma(2, 3, 4)}')  # 2*3 + 4 = 10"
     {
       "type": "code-block",
       "label": "statistics Module",
-      "code": "import statistics
+      "code": `import statistics
 
 # Sample data
 data = [2, 4, 4, 4, 5, 5, 7, 9, 9, 10, 12, 15]
@@ -429,51 +429,51 @@ print(f'Dataset: {data}')
 print(f'Count: {len(data)}')
 
 # Central tendency
-print(f'\\nCentral tendency:')
+print(f'\nCentral tendency:')
 print(f'mean:   {statistics.mean(data)}')       # Average
 print(f'median: {statistics.median(data)}')       # Middle value
 print(f'mode:   {statistics.mode(data)}')        # Most common
 
 # For multimodal data (multiple modes):
 multi = [1, 1, 2, 2, 3]
-print(f'\\nMultimodal data: {multi}')
+print(f'\nMultimodal data: {multi}')
 print(f'multimode: {statistics.multimode(multi)}')  # [1, 2]
 
 # Spread
-print(f'\\nSpread:')
+print(f'\nSpread:')
 print(f'stdev (sample):    {statistics.stdev(data)}')   # Sample standard deviation
 print(f'pstdev (population): {statistics.pstdev(data)}') # Population standard deviation
 print(f'variance (sample): {statistics.variance(data)}')
 print(f'pvariance:         {statistics.pvariance(data)}')
 
 # Quantiles
-print(f'\\nQuantiles:')
+print(f'\nQuantiles:')
 print(f'quantiles (quartiles): {statistics.quantiles(data, n=4)}')
 print(f'quantiles (deciles): {statistics.quantiles(data, n=10)}')
 
 # Geometric and harmonic mean
-print(f'\\nOther means:')
+print(f'\nOther means:')
 print(f'geometric_mean: {statistics.geometric_mean(data)}')
 print(f'harmonic_mean:  {statistics.harmonic_mean(data)}')
 
 # Correlation
 x = [1, 2, 3, 4, 5]
 y = [2, 4, 6, 8, 10]
-print(f'\\nCorrelation between {x} and {y}:')
+print(f'\nCorrelation between {x} and {y}:')
 print(f'correlation: {statistics.correlation(x, y)}')  # Perfect positive: 1.0
 
 # Linear regression
 slope, intercept = statistics.linear_regression(x, y)
-print(f'\\nLinear regression: y = {slope}x + {intercept}')
+print(f'\nLinear regression: y = {slope}x + {intercept}')
 
 # Normal distribution
 from statistics import NormalDist
 
 iq = NormalDist(mu=100, sigma=15)
-print(f'\\nIQ distribution (μ=100, σ=15):')
+print(f'\nIQ distribution (μ=100, σ=15):')
 print(f'P(IQ < 85):  {iq.cdf(85):.4f}')    # 15.87%
 print(f'P(IQ > 130): {1 - iq.cdf(130):.4f}')  # 2.28%
-print(f'P(85 < IQ < 115): {iq.cdf(115) - iq.cdf(85):.4f}')  # 68.27%'"
+print(f'P(85 < IQ < 115): {iq.cdf(115) - iq.cdf(85):.4f}')  # 68.27%`
     },
     {
       "type": "h2",
@@ -486,7 +486,7 @@ print(f'P(85 < IQ < 115): {iq.cdf(115) - iq.cdf(85):.4f}')  # 68.27%'"
     {
       "type": "code-block",
       "label": "random and secrets Mastery",
-      "code": "import random
+      "code": `import random
 import secrets
 import string
 
@@ -520,7 +520,7 @@ print(f'weighted:      {random.choices(fruits, weights=weights, k=1)[0]}')
 # === secrets MODULE: CRYPTOGRAPHICALLY SECURE ===
 # Uses OS entropy source. Slower but unpredictable.
 
-print(f'\\nsecrets module (cryptographically secure):')
+print(f'\nsecrets module (cryptographically secure):')
 print(f'randbelow(100): {secrets.randbelow(100)}')
 print(f'randbits(32):   {secrets.randbits(32)}')
 print(f'choice:         {secrets.choice(fruits)}')
@@ -528,18 +528,18 @@ print(f'choice:         {secrets.choice(fruits)}')
 # === TOKEN GENERATION ===
 # Generate secure tokens for URLs, passwords, etc.
 
-print(f'\\nToken generation:')
+print(f'\nToken generation:')
 print(f'url-safe token (16 bytes): {secrets.token_urlsafe(16)}')
 print(f'hex token (16 bytes):      {secrets.token_hex(16)}')
 print(f'bytes token (16 bytes):    {secrets.token_bytes(16)}')
 
 # === PASSWORD GENERATION ===
 def generate_password(length=16):
-    \"\"\"Generate a secure random password.\"\"\"
+    """Generate a secure random password."""
     alphabet = string.ascii_letters + string.digits + string.punctuation
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
-print(f'\\nSecure password: {generate_password(20)}')
+print(f'\nSecure password: {generate_password(20)}')
 
 # === THE SECURITY RULE ===
 # Use random for:
@@ -555,7 +555,7 @@ print(f'\\nSecure password: {generate_password(20)}')
 #   - Anywhere unpredictability is required
 
 # NEVER use random for security. It is predictable.
-# An attacker who knows the seed can predict all future \\'random\\' numbers."
+# An attacker who knows the seed can predict all future \'random\' numbers.`
     },
     {
       "type": "h2",
@@ -568,15 +568,15 @@ print(f'\\nSecure password: {generate_password(20)}')
     {
       "type": "code-block",
       "label": "Program 1: Smart Calculator",
-      "code": \"\"\"
+      "code": `"""
 Program 1: Smart Calculator
 A calculator with history, memory, and error handling.
-\"\"\"
+"""
 import math
 from decimal import Decimal, getcontext
 
 class SmartCalculator:
-    \"\"\"A calculator with memory and precision control.\"\"\"
+    """A calculator with memory and precision control."""
 
     def __init__(self, precision=28):
         self.history = []
@@ -584,25 +584,25 @@ class SmartCalculator:
         getcontext().prec = precision
 
     def add(self, a, b):
-        \"\"\"Add two numbers.\"\"\"
+        """Add two numbers."""
         result = a + b
         self._log(f'{a} + {b} = {result}')
         return result
 
     def subtract(self, a, b):
-        \"\"\"Subtract b from a.\"\"\"
+        """Subtract b from a."""
         result = a - b
         self._log(f'{a} - {b} = {result}')
         return result
 
     def multiply(self, a, b):
-        \"\"\"Multiply two numbers.\"\"\"
+        """Multiply two numbers."""
         result = a * b
         self._log(f'{a} * {b} = {result}')
         return result
 
     def divide(self, a, b):
-        \"\"\"Divide a by b.\"\"\"
+        """Divide a by b."""
         if b == 0:
             raise ValueError('Cannot divide by zero')
         result = a / b
@@ -610,13 +610,13 @@ class SmartCalculator:
         return result
 
     def power(self, a, b):
-        \"\"\"Calculate a to the power of b.\"\"\"
+        """Calculate a to the power of b."""
         result = a ** b
         self._log(f'{a} ^ {b} = {result}')
         return result
 
     def sqrt(self, a):
-        \"\"\"Calculate square root.\"\"\"
+        """Calculate square root."""
         if a < 0:
             return complex(0, math.sqrt(abs(a)))
         result = math.sqrt(a)
@@ -624,7 +624,7 @@ class SmartCalculator:
         return result
 
     def factorial(self, n):
-        \"\"\"Calculate factorial.\"\"\"
+        """Calculate factorial."""
         if n < 0 or not isinstance(n, int):
             raise ValueError('Factorial requires non-negative integer')
         result = math.factorial(n)
@@ -632,30 +632,30 @@ class SmartCalculator:
         return result
 
     def store_memory(self, value):
-        \"\"\"Store value in memory.\"\"\"
+        """Store value in memory."""
         self.memory = value
         print(f'Stored {value} in memory')
 
     def recall_memory(self):
-        \"\"\"Recall value from memory.\"\"\"
+        """Recall value from memory."""
         return self.memory
 
     def clear_history(self):
-        \"\"\"Clear calculation history.\"\"\"
+        """Clear calculation history."""
         self.history.clear()
 
     def show_history(self):
-        \"\"\"Display calculation history.\"\"\"
-        print('\\nCalculation History:')
+        """Display calculation history."""
+        print('\nCalculation History:')
         for i, entry in enumerate(self.history, 1):
             print(f'  {i}. {entry}')
 
     def _log(self, entry):
-        \"\"\"Log a calculation.\"\"\"
+        """Log a calculation."""
         self.history.append(entry)
 
 def main():
-    \"\"\"Main calculator program.\"\"\"
+    """Main calculator program."""
     calc = SmartCalculator()
 
     print('=' * 50)
@@ -663,7 +663,7 @@ def main():
     print('=' * 50)
 
     # Demonstrate operations
-    print(f'\\n2 + 3 = {calc.add(2, 3)}')
+    print(f'\n2 + 3 = {calc.add(2, 3)}')
     print(f'10 - 4 = {calc.subtract(10, 4)}')
     print(f'5 * 6 = {calc.multiply(5, 6)}')
     print(f'20 / 4 = {calc.divide(20, 4)}')
@@ -673,35 +673,35 @@ def main():
 
     # Memory operations
     calc.store_memory(42)
-    print(f'\\nMemory: {calc.recall_memory()}')
+    print(f'\nMemory: {calc.recall_memory()}')
 
     # Show history
     calc.show_history()
 
     # Decimal precision
-    print(f'\\nDecimal precision (50 digits):')
+    print(f'\nDecimal precision (50 digits):')
     getcontext().prec = 50
     d = Decimal(1) / Decimal(7)
     print(f'1/7 = {d}')
 
-    print('\\n' + '=' * 50)
+    print('\n' + '=' * 50)
 
 if __name__ == '__main__':
-    main()\"\""
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Compound Interest Calculator",
-      "code": \"\"\"
+      "code": `"""
 Program 2: Compound Interest Calculator
 Calculates compound interest with various compounding frequencies.
-\"\"\"
+"""
 from decimal import Decimal, getcontext
 
 getcontext().prec = 10  # High precision for money
 
 def compound_interest(principal, rate, time, frequency=12):
-    \"\"\"Calculate compound interest.
+    """Calculate compound interest.
 
     Args:
         principal (Decimal): Initial investment
@@ -711,31 +711,31 @@ def compound_interest(principal, rate, time, frequency=12):
 
     Returns:
         Decimal: Final amount
-    \"\"\"
+    """
     # A = P * (1 + r/n)^(nt)
     n = Decimal(frequency)
     amount = principal * (1 + rate / n) ** (n * time)
     return amount
 
 def compare_frequencies(principal, rate, time):
-    \"\"\"Compare different compounding frequencies.\"\"\"
+    """Compare different compounding frequencies."""
     frequencies = {
-        \"Annually\": 1,
-        \"Semi-annually\": 2,
-        \"Quarterly\": 4,
-        \"Monthly\": 12,
-        \"Bi-weekly\": 26,
-        \"Weekly\": 52,
-        \"Daily\": 365,
-        \"Continuous\": None  # Special case: A = P * e^(rt)
+        'Annually': 1,
+        'Semi-annually': 2,
+        'Quarterly': 4,
+        'Monthly': 12,
+        'Bi-weekly': 26,
+        'Weekly': 52,
+        'Daily': 365,
+        'Continuous': None  # Special case: A = P * e^(rt)
     }
 
     import math
 
-    print(f'\\nCompound Interest Comparison')
-    print(f'Principal: ${principal}, Rate: {rate*100}%, Time: {time} years')
+    print(f'\nCompound Interest Comparison')
+    print(f'Principal: \${principal}, Rate: {rate*100}%, Time: {time} years')
     print('-' * 60)
-    print(f'{\"Frequency\":<15} {\"Times/Year\":<12} {\"Final Amount\":<15} {\"Interest\":<15}')
+    print(f'{"Frequency":<15} {"Times/Year":<12} {"Final Amount":<15} {"Interest":<15}')
     print('-' * 60)
 
     for name, freq in frequencies.items():
@@ -746,10 +746,10 @@ def compare_frequencies(principal, rate, time):
             amount = compound_interest(principal, rate, time, freq)
 
         interest = amount - principal
-        print(f'{name:<15} {str(freq) if freq else \"N/A\":<12} ${amount:<14.2f} ${interest:<14.2f}')
+        print(f'{name:<15} {str(freq) if freq else "N/A":<12} \${amount:<14.2f} \${interest:<14.2f}')
 
 def retirement_projection(monthly_contribution, rate, years):
-    \"\"\"Project retirement savings with monthly contributions.\"\"\"
+    """Project retirement savings with monthly contributions."""
     monthly_rate = rate / 12
     months = years * 12
 
@@ -762,17 +762,17 @@ def retirement_projection(monthly_contribution, rate, years):
     total_contributed = monthly_contribution * months
     interest_earned = total - total_contributed
 
-    print(f'\\nRetirement Projection')
-    print(f'Monthly contribution: ${monthly_contribution}')
+    print(f'\nRetirement Projection')
+    print(f'Monthly contribution: \${monthly_contribution}')
     print(f'Annual return: {rate*100}%')
     print(f'Years: {years}')
-    print(f'\\nTotal contributed: ${total_contributed:.2f}')
-    print(f'Interest earned:   ${interest_earned:.2f}')
-    print(f'Final balance:     ${total:.2f}')
+    print(f'\nTotal contributed: \${total_contributed:.2f}')
+    print(f'Interest earned:   \${interest_earned:.2f}')
+    print(f'Final balance:     \${total:.2f}')
     print(f'Interest ratio:     {interest_earned/total_contributed*100:.1f}% of total from growth!')
 
 def main():
-    \"\"\"Main compound interest program.\"\"\"
+    """Main compound interest program."""
     print('=' * 60)
     print('COMPOUND INTEREST CALCULATOR')
     print('=' * 60)
@@ -785,32 +785,32 @@ def main():
     compare_frequencies(principal, rate, time)
 
     # Example 2: Retirement projection
-    print('\\n' + '=' * 60)
+    print('\n' + '=' * 60)
     retirement_projection(
         monthly_contribution=Decimal('500'),
         rate=Decimal('0.07'),
         years=35
     )
 
-    print('\\n' + '=' * 60)
+    print('\n' + '=' * 60)
 
 if __name__ == '__main__':
-    main()\"\""
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Monte Carlo π Estimation",
-      "code": \"\"\"
+      "code": `"""
 Program 3: Monte Carlo π Estimation
 Estimates π using random sampling. Demonstrates the power of
 statistical methods and Python's random module.
-\"\"\"
+"""
 import random
 import math
 import time
 
 def estimate_pi(samples):
-    \"\"\"Estimate π using Monte Carlo simulation.
+    """Estimate π using Monte Carlo simulation.
 
     Theory: If you randomly throw darts at a square that contains
     a quarter circle, the ratio of darts inside the circle to
@@ -821,7 +821,7 @@ def estimate_pi(samples):
 
     Returns:
         float: Estimated value of π
-    \"\"\"
+    """
     inside_circle = 0
 
     for _ in range(samples):
@@ -838,20 +838,20 @@ def estimate_pi(samples):
     return pi_estimate
 
 def estimate_pi_optimized(samples):
-    \"\"\"Optimized version using list comprehension.\"\"\"
+    """Optimized version using list comprehension."""
     inside = sum(1 for _ in range(samples) 
                  if random.random()**2 + random.random()**2 <= 1)
     return 4 * inside / samples
 
 def convergence_analysis(max_samples=1000000):
-    \"\"\"Show how estimate improves with more samples.\"\"\"
-    print('\\nConvergence Analysis')
-    print(f'{\"Samples\":<12} {\"π Estimate\":<15} {\"Error\":<15} {\"Time (ms)\":<12}')
+    """Show how estimate improves with more samples."""
+    print('\nConvergence Analysis')
+    print(f'{"Samples":<12} {"π Estimate":<15} {"Error":<15} {"Time (ms)":<12}')
     print('-' * 55)
 
     sample_sizes = [100, 1000, 10000, 100000, 1000000]
 
-    for n in sample_sizes):
+    for n in sample_sizes:
         if n > max_samples:
             break
 
@@ -865,7 +865,7 @@ def convergence_analysis(max_samples=1000000):
         print(f'{n:<12} {estimate:<15.10f} {error_pct:<14.6f}% {elapsed:<11.2f}')
 
 def visualize_points(samples=1000):
-    \"\"\"Generate data for visualization (can be plotted with matplotlib).\"\"\"
+    """Generate data for visualization (can be plotted with matplotlib)."""
     inside_x, inside_y = [], []
     outside_x, outside_y = [], []
 
@@ -880,7 +880,7 @@ def visualize_points(samples=1000):
             outside_x.append(x)
             outside_y.append(y)
 
-    print(f'\\nVisualization data ({samples} points):')
+    print(f'\nVisualization data ({samples} points):')
     print(f'  Inside circle:  {len(inside_x)} points')
     print(f'  Outside circle: {len(outside_x)} points')
     print(f'  Ratio: {len(inside_x)/samples:.4f} (π/4 ≈ {math.pi/4:.4f})')
@@ -893,15 +893,15 @@ def visualize_points(samples=1000):
     }
 
 def main():
-    \"\"\"Main Monte Carlo program.\"\"\"
+    """Main Monte Carlo program."""
     print('=' * 60)
     print('MONTE CARLO π ESTIMATION')
     print('=' * 60)
-    print(f'\\nActual π: {math.pi}')
+    print(f'\nActual π: {math.pi}')
     print(f'π to 50 digits: 3.14159265358979323846264338327950288419716939937510')
 
     # Quick estimate
-    print('\\nQuick estimates:')
+    print('\nQuick estimates:')
     for n in [1000, 10000, 100000]:
         estimate = estimate_pi(n)
         error = abs(estimate - math.pi)
@@ -913,34 +913,34 @@ def main():
     # Visualization data
     data = visualize_points(1000)
 
-    print('\\n' + '=' * 60)
+    print('\n' + '=' * 60)
     print('The Monte Carlo method demonstrates a profound truth:')
     print('Randomness, when applied systematically, can solve')
     print('deterministic problems with surprising accuracy.')
     print('=' * 60)
 
 if __name__ == '__main__':
-    main()\"\""
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Number Theory Toolkit",
-      "code": \"\"\"
+      "code": `"""
 Program 4: Number Theory Toolkit
 Classic algorithms: prime check, factorization, GCD, LCM,
 Armstrong numbers, perfect numbers, and more.
-\"\"\"
+"""
 import math
 
 def is_prime(n):
-    \"\"\"Check if a number is prime.
+    """Check if a number is prime.
 
     Args:
         n (int): Number to check
 
     Returns:
         bool: True if prime, False otherwise
-    \"\"\"
+    """
     if n < 2:
         return False
     if n == 2:
@@ -955,14 +955,14 @@ def is_prime(n):
     return True
 
 def prime_factors(n):
-    \"\"\"Find prime factorization of a number.
+    """Find prime factorization of a number.
 
     Args:
         n (int): Number to factorize
 
     Returns:
         list: Prime factors
-    \"\"\"
+    """
     factors = []
     d = 2
     while d * d <= n:
@@ -975,31 +975,31 @@ def prime_factors(n):
     return factors
 
 def gcd(a, b):
-    \"\"\"Calculate GCD using Euclidean algorithm.\"\"\"
+    """Calculate GCD using Euclidean algorithm."""
     while b:
         a, b = b, a % b
     return a
 
 def lcm(a, b):
-    \"\"\"Calculate LCM using GCD.\"\"\"
+    """Calculate LCM using GCD."""
     return abs(a * b) // gcd(a, b)
 
 def is_armstrong(n):
-    \"\"\"Check if a number is an Armstrong (narcissistic) number.
+    """Check if a number is an Armstrong (narcissistic) number.
 
     An Armstrong number equals the sum of its digits raised to
     the power of the number of digits.
     Example: 153 = 1³ + 5³ + 3³ = 153
-    \"\"\"
+    """
     digits = str(n)
     power = len(digits)
     return sum(int(d) ** power for d in digits) == n
 
 def is_perfect(n):
-    \"\"\"Check if a number is perfect (sum of proper divisors equals n).
+    """Check if a number is perfect (sum of proper divisors equals n).
 
     Example: 6 = 1 + 2 + 3 = 6
-    \"\"\"
+    """
     if n < 2:
         return False
     divisors = [1]
@@ -1011,7 +1011,7 @@ def is_perfect(n):
     return sum(divisors) == n
 
 def fibonacci(n):
-    \"\"\"Generate first n Fibonacci numbers.\"\"\"
+    """Generate first n Fibonacci numbers."""
     if n <= 0:
         return []
     elif n == 1:
@@ -1023,7 +1023,7 @@ def fibonacci(n):
     return fibs
 
 def factorial_manual(n):
-    \"\"\"Calculate factorial manually (not using math.factorial).\"\"\"
+    """Calculate factorial manually (not using math.factorial)."""
     if n < 0:
         raise ValueError('Factorial not defined for negative numbers')
     result = 1
@@ -1032,71 +1032,71 @@ def factorial_manual(n):
     return result
 
 def sum_of_digits(n):
-    \"\"\"Calculate sum of digits of a number.\"\"\"
+    """Calculate sum of digits of a number."""
     return sum(int(d) for d in str(abs(n)))
 
 def reverse_number(n):
-    \"\"\"Reverse the digits of a number.\"\"\"
+    """Reverse the digits of a number."""
     sign = -1 if n < 0 else 1
     return sign * int(str(abs(n))[::-1])
 
 def is_palindrome(n):
-    \"\"\"Check if a number is a palindrome.\"\"\"
+    """Check if a number is a palindrome."""
     return str(n) == str(n)[::-1]
 
 def main():
-    \"\"\"Main number theory program.\"\"\"
+    """Main number theory program."""
     print('=' * 60)
     print('NUMBER THEORY TOOLKIT')
     print('=' * 60)
 
     # Prime numbers
-    print('\\nPrime numbers up to 100:')
+    print('\nPrime numbers up to 100:')
     primes = [n for n in range(2, 101) if is_prime(n)]
     print(f'  {primes}')
     print(f'  Count: {len(primes)}')
 
     # Prime factorization
-    print(f'\\nPrime factorization:')
+    print(f'\nPrime factorization:')
     for num in [12, 100, 360, 97]:
         factors = prime_factors(num)
-        print(f'  {num} = {\" x \".join(map(str, factors))}')
+        print(f'  {num} = {" x ".join(map(str, factors))}')
 
     # GCD and LCM
-    print(f'\\nGCD and LCM:')
+    print(f'\nGCD and LCM:')
     print(f'  gcd(48, 18) = {gcd(48, 18)}')
     print(f'  lcm(4, 6) = {lcm(4, 6)}')
 
     # Armstrong numbers
-    print(f'\\nArmstrong numbers (3 digits):')
+    print(f'\nArmstrong numbers (3 digits):')
     armstrongs = [n for n in range(100, 1000) if is_armstrong(n)]
     print(f'  {armstrongs}')
 
     # Perfect numbers
-    print(f'\\nPerfect numbers up to 10000:')
+    print(f'\nPerfect numbers up to 10000:')
     perfects = [n for n in range(2, 10000) if is_perfect(n)]
     print(f'  {perfects}')
 
     # Fibonacci
-    print(f'\\nFibonacci (first 15):')
+    print(f'\nFibonacci (first 15):')
     print(f'  {fibonacci(15)}')
 
     # Factorial
-    print(f'\\nFactorials:')
+    print(f'\nFactorials:')
     for n in [5, 7, 10]:
         print(f'  {n}! = {factorial_manual(n)}')
 
     # Digit operations
-    print(f'\\nDigit operations for 12345:')
+    print(f'\nDigit operations for 12345:')
     print(f'  Sum of digits: {sum_of_digits(12345)}')
     print(f'  Reversed: {reverse_number(12345)}')
     print(f'  Is palindrome: {is_palindrome(12345)}')
     print(f'  Is palindrome: {is_palindrome(12321)}')
 
-    print('\\n' + '=' * 60)
+    print('\n' + '=' * 60)
 
 if __name__ == '__main__':
-    main()\"\""
+    main()`
     },
     {
       "type": "h2",
