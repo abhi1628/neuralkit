@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Dynamic Array Internals",
-      "code": "# === LIST INTERNALS ===
+      "code": `# === LIST INTERNALS ===
 # Python lists are dynamic arrays, not linked lists
 
 import sys
@@ -92,7 +92,7 @@ for size in [1000, 10000, 100000]:
     back = benchmark_delete(size, size - 1)
     print(f"  Size {size:6d}: front={front:.6f}, middle={middle:.6f}, back={back:.6f}")
 
-print("\nKey insight: Append to the back. Avoid inserting/deleting from the front.")"
+print("\nKey insight: Append to the back. Avoid inserting/deleting from the front.")`
     },
     {
       "type": "h2",
@@ -105,7 +105,7 @@ print("\nKey insight: Append to the back. Avoid inserting/deleting from the fron
     {
       "type": "code-block",
       "label": "List Methods Mastery",
-      "code": "# === LIST METHODS: THE COMPLETE SET ===
+      "code": `# === LIST METHODS: THE COMPLETE SET ===
 
 # 1. append(x) — O(1) amortized. Add to end.
 
@@ -203,7 +203,7 @@ b = a
 a = a + [4, 5]  # Creates new list
 print(f"a = a + [4,5]: a={a}, b={b} (b unchanged!)")
 
-print("\nList methods mastery complete!")"
+print("\nList methods mastery complete!")`
     },
     {
       "type": "h2",
@@ -216,7 +216,7 @@ print("\nList methods mastery complete!")"
     {
       "type": "code-block",
       "label": "Slicing Mastery",
-      "code": "# === SLICING FUNDAMENTALS ===
+      "code": `# === SLICING FUNDAMENTALS ===
 # Syntax: list[start:stop:step]
 # start: inclusive, default 0
 # stop: exclusive, default len(list)
@@ -285,7 +285,7 @@ print(f"\nletters[last_three]   = {letters[last_three]}")
 print(f"letters[first_five]   = {letters[first_five]}")
 print(f"letters[every_second] = {letters[every_second]}")
 
-print("\nSlicing mastery complete!")"
+print("\nSlicing mastery complete!")`
     },
     {
       "type": "h2",
@@ -298,7 +298,7 @@ print("\nSlicing mastery complete!")"
     {
       "type": "code-block",
       "label": "List Comprehensions Mastery",
-      "code": "# === BASIC COMPREHENSION ===
+      "code": `# === BASIC COMPREHENSION ===
 # [expression for item in iterable]
 
 squares = [x**2 for x in range(10)]
@@ -392,7 +392,7 @@ print(f"\nSum of even squares (lazy): {large_sum}")
 #     else:
 #         result.append(h(x))
 
-print("\nList comprehension mastery complete!")"
+print("\nList comprehension mastery complete!")`
     },
     {
       "type": "h2",
@@ -405,7 +405,7 @@ print("\nList comprehension mastery complete!")"
     {
       "type": "code-block",
       "label": "Shallow vs Deep Copy",
-      "code": "# === SHALLOW COPY ===
+      "code": `# === SHALLOW COPY ===
 # Creates new list, but elements are references to original objects
 
 import copy
@@ -508,7 +508,7 @@ alice_copy.friends.append("Diana")
 print(f"\nOriginal Alice: {alice}")
 print(f"Copied Alice:   {alice_copy}")
 
-print("\nShallow vs Deep copy mastery complete!")"
+print("\nShallow vs Deep copy mastery complete!")`
     },
     {
       "type": "h2",
@@ -521,7 +521,7 @@ print("\nShallow vs Deep copy mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: To-Do List Manager",
-      "code": """"
+      "code": `"""
 Program 1: To-Do List Manager
 A complete task management system using lists.
 Demonstrates list methods, slicing, and shallow vs deep copy.
@@ -663,12 +663,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Matrix Operations",
-      "code": """"
+      "code": `"""
 Program 2: Matrix Operations
 Complete matrix math using nested lists.
 Demonstrates nested comprehensions, slicing, and deep copy.
@@ -802,12 +802,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Sieve of Eratosthenes",
-      "code": """"
+      "code": `"""
 Program 3: Sieve of Eratosthenes
 Finds all prime numbers up to n using list manipulation.
 Demonstrates list initialization, slicing, and comprehensions.
@@ -941,12 +941,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: List Comprehension Challenges",
-      "code": """"
+      "code": `"""
 Program 4: List Comprehension Challenges
 Advanced list manipulation using comprehensions.
 Demonstrates nested comprehensions, filtering, and transformations.
@@ -1115,7 +1115,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
