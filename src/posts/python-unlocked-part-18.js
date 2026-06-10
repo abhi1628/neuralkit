@@ -18,15 +18,15 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where all computation is expressed through function abstraction and application. The lambda (λ) symbol became the emblem of anonymous functions, and Church's vision of computation as pure function composition became the foundation of functional programming. Ninety years later, in 2026, Python's lambda expressions carry that legacy forward. They are not just shorthand for small functions. They are the glue that binds map, filter, reduce, and sorted into elegant data pipelines. But lambda has limits — it cannot contain statements, assignments, or multiple expressions. Knowing when to use lambda and when to use a named function is the mark of a Python craftsman. In this part, we will explore the full depth of Python's functional programming toolkit. You will learn lambda syntax and limitations, why reduce was banished to functools, how sorted with key functions transforms sorting from primitive to powerful, and how functools.partial creates specialized functions from general ones. By the end, functional programming will not be a paradigm. It will be a style.`
+      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where all computation is expressed through function abstraction and application. The lambda (λ) symbol became the emblem of anonymous functions, and Church's vision of computation as pure function composition became the foundation of functional programming. Ninety years later, in 2026, Python's lambda expressions carry that legacy forward. They are not just shorthand for small functions. They are the glue that binds map, filter, reduce, and sorted into elegant data pipelines. But lambda has limits — it cannot contain statements, assignments, or multiple expressions. Knowing when to use lambda and when to use a named function is the mark of a Python craftsman. In this part, we will explore the full depth of Python's functional programming toolkit. You will learn lambda syntax and limitations, why reduce was banished to functools, how sorted with key functions transforms sorting from primitive to powerful, and how functools.partial creates specialized functions from general ones. By the end, functional programming will not be a paradigm. It will be a style."
     },
     {
       "type": "h2",
-      "text": "Lambda Expressions: Anonymous Functions`
+      "text": "Lambda Expressions: Anonymous Functions"
     },
     {
       "type": "p",
-      "text": "A lambda expression creates an anonymous function — a function without a name, defined in a single line. The syntax is lambda arguments: expression. Lambdas can have any number of arguments but only one expression. They are not statements; they are expressions. This means they can appear anywhere a function object is expected: inside map, filter, sorted, or even as a default argument. But they are limited: no statements, no assignments, no docstrings, and no type hints. The rule: use lambda for simple, throwaway functions. Use def for anything complex.`
+      "text": "A lambda expression creates an anonymous function — a function without a name, defined in a single line. The syntax is lambda arguments: expression. Lambdas can have any number of arguments but only one expression. They are not statements; they are expressions. This means they can appear anywhere a function object is expected: inside map, filter, sorted, or even as a default argument. But they are limited: no statements, no assignments, no docstrings, and no type hints. The rule: use lambda for simple, throwaway functions. Use def for anything complex."
     },
     {
       "type": "code-block",
@@ -118,11 +118,11 @@ print("\nLambda mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "map, filter, reduce: The Functional Trio`
+      "text": "map, filter, reduce: The Functional Trio"
     },
     {
       "type": "p",
-      "text": "map, filter, and reduce are the three pillars of functional iteration. map transforms every element. filter selects elements by predicate. reduce combines all elements into a single value. In Python 3, map and filter return iterators (lazy). reduce was moved to functools because Guido van Rossum believed it encouraged unreadable code. But used wisely, these functions create elegant, composable data pipelines.`
+      "text": "map, filter, and reduce are the three pillars of functional iteration. map transforms every element. filter selects elements by predicate. reduce combines all elements into a single value. In Python 3, map and filter return iterators (lazy). reduce was moved to functools because Guido van Rossum believed it encouraged unreadable code. But used wisely, these functions create elegant, composable data pipelines."
     },
     {
       "type": "code-block",
@@ -246,11 +246,11 @@ print("\nmap, filter, reduce mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "sorted with Key Functions: Custom Ordering`
+      "text": "sorted with Key Functions: Custom Ordering"
     },
     {
       "type": "p",
-      "text": "The sorted function and list.sort method accept a key parameter — a function that extracts a comparison key from each element. This transforms sorting from primitive value comparison to arbitrary, powerful ordering. The key function is called once per element, making it O(n) overhead for an O(n log n) sort. This is one of Python's most elegant features.`
+      "text": "The sorted function and list.sort method accept a key parameter — a function that extracts a comparison key from each element. This transforms sorting from primitive value comparison to arbitrary, powerful ordering. The key function is called once per element, making it O(n) overhead for an O(n log n) sort. This is one of Python's most elegant features."
     },
     {
       "type": "code-block",
@@ -359,11 +359,11 @@ print("\nsorted with key functions mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "functools.partial: Creating Specialized Functions`
+      "text": "functools.partial: Creating Specialized Functions"
     },
     {
       "type": "p",
-      "text": "functools.partial creates a new function with some arguments pre-filled. It is function specialization — taking a general function and fixing some parameters to create a more specific one. This is not just convenience; it is a fundamental technique in functional programming for creating reusable, composable function variants.`
+      "text": "functools.partial creates a new function with some arguments pre-filled. It is function specialization — taking a general function and fixing some parameters to create a more specific one. This is not just convenience; it is a fundamental technique in functional programming for creating reusable, composable function variants."
     },
     {
       "type": "code-block",
@@ -475,11 +475,11 @@ print("\nfunctools.partial mastery complete!")`
     },
     {
       "type": "h2",
-      "text": "Programs: Logic in Action`
+      "text": "Programs: Logic in Action"
     },
     {
       "type": "p",
-      "text": "Theory without practice is philosophy. Let us build programs that use lambda, map, filter, reduce, sorted with key functions, and partial to solve real problems.`
+      "text": "Theory without practice is philosophy. Let us build programs that use lambda, map, filter, reduce, sorted with key functions, and partial to solve real problems."
     },
     {
       "type": "code-block",
@@ -1048,11 +1048,11 @@ if __name__ == "__main__":
     },
     {
       "type": "h2",
-      "text": "Quiz: Test Your Understanding`
+      "text": "Quiz: Test Your Understanding"
     },
     {
       "type": "p",
-      "text": "Answer these before moving to Part 19. 4/5 correct means you have mastered lambda and functional programming.`
+      "text": "Answer these before moving to Part 19. 4/5 correct means you have mastered lambda and functional programming."
     },
     {
       "type": "checklist",
@@ -1066,30 +1066,30 @@ if __name__ == "__main__":
     },
     {
       "type": "h2",
-      "text": "Answers & Explanations`
+      "text": "Answers & Explanations"
     },
     {
       "type": "p",
-      "text": "A1: lambda creates anonymous functions: lambda args: expression. Limitations: single expression only (no statements, assignments, or multiple expressions), no docstrings, no type hints. Sort by second element: sorted(tuples, key=lambda x: x[1]). Named function: def by_second(x): return x[1]; sorted(tuples, key=by_second). Use lambda for simple, one-off functions. Use def for complex, reusable, documented functions. A2: map transforms every element. filter selects elements by predicate. reduce combines all elements into a single value. numbers = [1,2,3,4,5,6,7,8,9,10]; result = reduce(lambda a,b: a+b, map(lambda x: x**2, filter(lambda x: x%2==0, numbers))). List comprehension: sum(x**2 for x in numbers if x%2==0). Comprehension is more readable for simple cases; map/filter/reduce is better for existing functions or lazy pipelines. A3: key extracts a comparison value from each element. sorted is called once per element, then elements are sorted by these values. students = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]; sorted(students, key=lambda s: (s['age'], -ord(s['name'][0]))). For descending on name, use negative value or reverse individual sorts. A4: partial creates a new function with pre-filled arguments, preserving the original function's metadata. lambda creates a new anonymous function. from functools import partial; mul_by_5_partial = partial(operator.mul, 5); mul_by_5_lambda = lambda x: 5 * x. partial preserves __name__ and __doc__ (from the original function); lambda has generic __name__ '<lambda>' and no __doc__. A5: Composition chains functions: compose(f,g,h)(x) = f(g(h(x))) (right-to-left). Pipe chains left-to-right: pipe(f,g,h)(x) = h(g(f(x))). Both are fundamental in functional programming. compose is mathematical tradition (f ∘ g); pipe is more intuitive for data flow (Unix pipe style).`
+      "text": "A1: lambda creates anonymous functions: lambda args: expression. Limitations: single expression only (no statements, assignments, or multiple expressions), no docstrings, no type hints. Sort by second element: sorted(tuples, key=lambda x: x[1]). Named function: def by_second(x): return x[1]; sorted(tuples, key=by_second). Use lambda for simple, one-off functions. Use def for complex, reusable, documented functions. A2: map transforms every element. filter selects elements by predicate. reduce combines all elements into a single value. numbers = [1,2,3,4,5,6,7,8,9,10]; result = reduce(lambda a,b: a+b, map(lambda x: x**2, filter(lambda x: x%2==0, numbers))). List comprehension: sum(x**2 for x in numbers if x%2==0). Comprehension is more readable for simple cases; map/filter/reduce is better for existing functions or lazy pipelines. A3: key extracts a comparison value from each element. sorted is called once per element, then elements are sorted by these values. students = [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]; sorted(students, key=lambda s: (s['age'], -ord(s['name'][0]))). For descending on name, use negative value or reverse individual sorts. A4: partial creates a new function with pre-filled arguments, preserving the original function's metadata. lambda creates a new anonymous function. from functools import partial; mul_by_5_partial = partial(operator.mul, 5); mul_by_5_lambda = lambda x: 5 * x. partial preserves __name__ and __doc__ (from the original function); lambda has generic __name__ '<lambda>' and no __doc__. A5: Composition chains functions: compose(f,g,h)(x) = f(g(h(x))) (right-to-left). Pipe chains left-to-right: pipe(f,g,h)(x) = h(g(f(x))). Both are fundamental in functional programming. compose is mathematical tradition (f ∘ g); pipe is more intuitive for data flow (Unix pipe style)."
     },
     {
       "type": "h2",
-      "text": "Summary and Core Takeaway`
+      "text": "Summary and Core Takeaway"
     },
     {
       "type": "p",
-      "text": "You have mastered lambda and functional programming. You understand lambda syntax and limitations — single expressions, no statements, no docstrings. You use map, filter, and reduce to create elegant data pipelines, knowing when they outperform comprehensions and when comprehensions win. You wield sorted with key functions to create arbitrary, powerful ordering — by length, by attribute, by multiple criteria, by custom calculations. You create specialized functions with functools.partial, preserving metadata and enabling reusable function variants. You compose functions with compose and pipe, building data transformation pipelines that read like mathematics. You have built four complete programs: a name sorter with multiple criteria, an ETL data pipeline with map and filter, a student ranking system with composite scoring, and a currying demonstration with HTML builders. Functional programming is no longer a paradigm. It is a style — elegant, composable, and powerful.`
+      "text": "You have mastered lambda and functional programming. You understand lambda syntax and limitations — single expressions, no statements, no docstrings. You use map, filter, and reduce to create elegant data pipelines, knowing when they outperform comprehensions and when comprehensions win. You wield sorted with key functions to create arbitrary, powerful ordering — by length, by attribute, by multiple criteria, by custom calculations. You create specialized functions with functools.partial, preserving metadata and enabling reusable function variants. You compose functions with compose and pipe, building data transformation pipelines that read like mathematics. You have built four complete programs: a name sorter with multiple criteria, an ETL data pipeline with map and filter, a student ranking system with composite scoring, and a currying demonstration with HTML builders. Functional programming is no longer a paradigm. It is a style — elegant, composable, and powerful."
     },
     {
       "type": "callout",
       "icon": "🎯",
-      "text": "The Bottom Line: Lambda is for simple, throwaway functions. map transforms, filter selects, reduce combines. sorted with key functions creates arbitrary ordering. partial specializes functions. composition builds pipelines. Master these six truths, and you have mastered functional programming in Python. In Part 19, we will explore Closures & Lexical Scoping — the mechanism that makes factory functions, counters, and decorators possible.`
+      "text": "The Bottom Line: Lambda is for simple, throwaway functions. map transforms, filter selects, reduce combines. sorted with key functions creates arbitrary ordering. partial specializes functions. composition builds pipelines. Master these six truths, and you have mastered functional programming in Python. In Part 19, we will explore Closures & Lexical Scoping — the mechanism that makes factory functions, counters, and decorators possible."
     },
     {
       "type": "cta",
       "text": "Start Part 19: Closures & Lexical Scoping →",
       "href": "/tutorials/python-unlocked/part-19-closures",
-      "note": "24 min read · Closure definition · Factory functions · nonlocal · Late binding trap`
+      "note": "24 min read · Closure definition · Factory functions · nonlocal · Late binding trap"
     }
   ]
 };
