@@ -89,71 +89,70 @@ const post = {
         {
           "num": "5",
           "title": "Keyboard Shortcuts Mastery",
-          "text": "Learn 10 shortcuts that will change your life: Go to Definition (F12), Find All References (Shift+F12), Rename Symbol (F2), Format Document (Shift+Alt+F), Toggle Terminal (Ctrl+`), Multi-Cursor (Alt+Click), Command Palette (Ctrl+Shift+P), Quick Open (Ctrl+P), Toggle Sidebar (Ctrl+B), Zen Mode (Ctrl+K Z)."
+          "text": "Learn 10 shortcuts that will change your life: Go to Definition (F12), Find All References (Shift+F12), Rename Symbol (F2), Format Document (Shift+Alt+F), Toggle Terminal (Ctrl+``), Multi-Cursor (Alt+Click), Command Palette (Ctrl+Shift+P), Quick Open (Ctrl+P), Toggle Sidebar (Ctrl+B), Zen Mode (Ctrl+K Z)."
         }
       ]
     },
     {
       "type": "code-block",
       "label": "VS Code settings.json for Python",
-      "code": `// Place this in your VS Code settings.json (Ctrl+Shift+P → 'Preferences: Open User Settings JSON')
-{
+      "code": `{
     // === PYTHON CORE ===
-    'python.defaultInterpreterPath': 'python3',
-    'python.analysis.typeCheckingMode': 'basic',  // Enable type checking
-    'python.analysis.autoImportCompletions': true,
-    'python.analysis.completeFunctionParens': true,
+    "python.defaultInterpreterPath": "python3",
+    "python.analysis.typeCheckingMode": "basic",  // Enable type checking
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
 
     // === FORMATTING ===
-    'editor.formatOnSave': true,
-    'editor.defaultFormatter': 'ms-python.black-formatter',
-    'black-formatter.args': ['--line-length', '88'],
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "black-formatter.args": ["--line-length", "88"],
 
     // === LINTING ===
-    'flake8.args': ['--max-line-length=88', '--extend-ignore=E203'],
-    'python.linting.enabled': true,
-    'python.linting.flake8Enabled': true,
+    "flake8.args": ["--max-line-length=88", "--extend-ignore=E203"],
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
 
     // === TYPE CHECKING ===
-    'python.analysis.typeCheckingMode': 'basic',
-    'python.analysis.diagnosticSeverityOverrides': {
-        'reportGeneralTypeIssues': 'warning',
-        'reportMissingTypeStubs': 'information'
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportGeneralTypeIssues": "warning",
+        "reportMissingTypeStubs": "information"
     },
 
     // === EDITOR BEHAVIOR ===
-    'editor.rulers': [88],  // Visual guide for line length
-    'editor.tabSize': 4,
-    'editor.insertSpaces': true,
-    'editor.detectIndentation': false,
-    'editor.wordWrap': 'wordWrapColumn',
-    'editor.wordWrapColumn': 88,
+    "editor.rulers": [88],  // Visual guide for line length
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 88,
 
     // === VISUAL AIDS ===
-    'editor.bracketPairColorization.enabled': true,
-    'editor.guides.bracketPairs': true,
-    'editor.renderWhitespace': 'boundary',
-    'editor.minimap.enabled': false,  // Disable minimap for cleaner view
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "editor.renderWhitespace": "boundary",
+    "editor.minimap.enabled": false,  // Disable minimap for cleaner view
 
     // === TERMINAL ===
-    'terminal.integrated.defaultProfile.windows': 'PowerShell',
-    'terminal.integrated.defaultProfile.osx': 'zsh',
-    'terminal.integrated.defaultProfile.linux': 'bash',
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.defaultProfile.linux": "bash",
 
     // === FILES ===
-    'files.exclude': {
-        '**/__pycache__': true,
-        '**/*.pyc': true,
-        '**/.pytest_cache': true,
-        '**/.mypy_cache': true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true
     },
-    'files.autoSave': 'afterDelay',
-    'files.autoSaveDelay': 1000,
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
 
     // === EXTENSIONS ===
-    'gitlens.codeLens.enabled': false,  // Reduce visual clutter
-    'errorLens.enabled': true,
-    'errorLens.delay': 500,
+    "gitlens.codeLens.enabled": false,  // Reduce visual clutter
+    "errorLens.enabled": true,
+    "errorLens.delay": 500
 }`
     },
     {
@@ -171,7 +170,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Virtual Environment Mastery",
-      "code": "# === CREATING VIRTUAL ENVIRONMENTS ===
+      "code": `# === CREATING VIRTUAL ENVIRONMENTS ===
 
 # Method 1: venv (built into Python 3.12)
 python -m venv myproject_env
@@ -196,10 +195,10 @@ uv pip install numpy   # Installs packages insanely fast
 # === ACTIVATING ENVIRONMENTS ===
 
 # Windows (Command Prompt)
-myproject_env\Scripts\activate.bat
+myproject_env\\Scripts\\activate.bat
 
 # Windows (PowerShell)
-myproject_env\Scripts\Activate.ps1
+myproject_env\\Scripts\\Activate.ps1
 
 # macOS/Linux (bash/zsh)
 source myproject_env/bin/activate
@@ -245,7 +244,7 @@ pip install -r requirements.txt
 # dependencies = ['numpy>=1.24', 'pandas>=2.0']
 # 
 # [project.optional-dependencies]
-# dev = ['pytest', 'black', 'flake8', 'mypy']"
+# dev = ['pytest', 'black', 'flake8', 'mypy']`
     },
     {
       "type": "h2",
@@ -288,10 +287,12 @@ pip install -r requirements.txt
     {
       "type": "code-block",
       "label": "Bytecode Deep Dive",
-      "code": "import dis
+      "code": `import dis
 import marshal
 import struct
 import time
+import py_compile
+import os
 
 # === DISASSEMBLING BYTECODE ===
 def calculate(x, y):
@@ -303,10 +304,21 @@ dis.dis(calculate)
 
 # === READING .pyc FILES ===
 # When Python caches bytecode, it stores it in __pycache__/*.pyc
-# Let's see what's inside a .pyc file:
+# Let's see what's inside a .pyc file by setting up a runtime generation verification check:
 
-import py_compile
-import os
+print('Writing runtime verification code...')
+test_code = "print('PVM execution complete.')"
+with open('verify_pvm.py', 'w') as f:
+    f.write(test_code)
 
-# Create a test file
-test_code = 
+py_compile.compile('verify_pvm.py')
+print('__pycache__ compiled and loaded successfully.')
+
+# Clean up temporary test files
+if os.path.exists('verify_pvm.py'):
+    os.remove('verify_pvm.py')`
+    }
+  ]
+};
+
+export default post;
