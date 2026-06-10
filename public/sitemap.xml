@@ -121,4 +121,5 @@
   <url><loc>https://zeroapi.in/tutorials/ml-foundations/part-2-calculus-optimization</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/tutorials/ml-foundations/part-3-probability-information</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://zeroapi.in/tutorials/ml-foundations/part-4-ml-pipeline</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.zeroapi.in/tutorials/python-unlocked</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
 </urlset>
