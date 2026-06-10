@@ -6,27 +6,27 @@ import part2Content from "../posts/ml-foundations-part-2";
 import part3Content from "../posts/ml-foundations-part-3";
 import part4Content from '../posts/ml-foundations-part-4';
 import pythonSeriesData from "../posts/python-unlocked-series";
-import pythonSeriesData from "../posts/python-unlocked-part-1";
-import pythonSeriesData from "../posts/python-unlocked-part-2";
-import pythonSeriesData from "../posts/python-unlocked-part-3";
-import pythonSeriesData from "../posts/python-unlocked-part-4";
-import pythonSeriesData from "../posts/python-unlocked-part-5";
-import pythonSeriesData from "../posts/python-unlocked-part-6";
-import pythonSeriesData from "../posts/python-unlocked-part-7";
-import pythonSeriesData from "../posts/python-unlocked-part-8";
-import pythonSeriesData from "../posts/python-unlocked-part-9";
-import pythonSeriesData from "../posts/python-unlocked-part-10";
-import pythonSeriesData from "../posts/python-unlocked-part-11";
-import pythonSeriesData from "../posts/python-unlocked-part-12";
-import pythonSeriesData from "../posts/python-unlocked-part-13";
-import pythonSeriesData from "../posts/python-unlocked-part-14";
-import pythonSeriesData from "../posts/python-unlocked-part-15";
-import pythonSeriesData from "../posts/python-unlocked-part-16";
-import pythonSeriesData from "../posts/python-unlocked-part-17";
-import pythonSeriesData from "../posts/python-unlocked-part-18";
-import pythonSeriesData from "../posts/python-unlocked-part-19";
-import pythonSeriesData from "../posts/python-unlocked-part-20";
-import pythonSeriesData from "../posts/python-unlocked-part-21";
+import pythonPart1 from "../posts/python-unlocked-part-1";
+import pythonPart2 from "../posts/python-unlocked-part-2";
+import pythonPart3 from "../posts/python-unlocked-part-3";
+import pythonPart4 from "../posts/python-unlocked-part-4";
+import pythonPart5 from "../posts/python-unlocked-part-5";
+import pythonPart6 from "../posts/python-unlocked-part-6";
+import pythonPart7 from "../posts/python-unlocked-part-7";
+import pythonPart8 from "../posts/python-unlocked-part-8";
+import pythonPart9 from "../posts/python-unlocked-part-9";
+import pythonPart10 from "../posts/python-unlocked-part-10";
+import pythonPart11 from "../posts/python-unlocked-part-11";
+import pythonPart12 from "../posts/python-unlocked-part-12";
+import pythonPart13 from "../posts/python-unlocked-part-13";
+import pythonPart14 from "../posts/python-unlocked-part-14";
+import pythonPart15 from "../posts/python-unlocked-part-15";
+import pythonPart16 from "../posts/python-unlocked-part-16";
+import pythonPart17 from "../posts/python-unlocked-part-17";
+import pythonPart18 from "../posts/python-unlocked-part-18";
+import pythonPart19 from "../posts/python-unlocked-part-19";
+import pythonPart20 from "../posts/python-unlocked-part-20";
+import pythonPart21 from "../posts/python-unlocked-part-21";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -34,6 +34,29 @@ const CONTENT_MAP = {
     "part-2-calculus-optimization": part2Content,
     "part-3-probability-information": part3Content,
     "part-4-ml-pipeline": part4Content
+  },
+  "python-unlocked": {
+    "part-1-philosophy-origin": pythonPart1,
+    "part-2-environment-craft": pythonPart2,
+    "part-3-hello-world-anatomy": pythonPart3,
+    "part-4-variables-memory": pythonPart4,
+    "part-5-numbers-math": pythonPart5,
+    "part-6-strings-unicode": pythonPart6,
+    "part-7-string-formatting": pythonPart7,
+    "part-8-boolean-operators": pythonPart8,
+    "part-9-conditionals-match": pythonPart9,
+    "part-10-lists-workhorse": pythonPart10,
+    "part-11-tuples-immutability": pythonPart11,
+    "part-12-dictionaries-hash-tables": pythonPart12,
+    "part-13-sets-set-theory": pythonPart13,
+    "part-14-range-enumerate-zip": pythonPart14,
+    "part-15-for-while-loops": pythonPart15,
+    "part-16-functions-building-blocks": pythonPart16,
+    "part-17-recursion-advanced-functions": pythonPart17,
+    "part-18-lambda-functional": pythonPart18,
+    "part-19-closures-lexical": pythonPart19,
+    "part-20-decorators-superpower": pythonPart20,
+    "part-21-generators-iterators": pythonPart21
   }
 };
 
