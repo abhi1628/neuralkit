@@ -34,7 +34,7 @@ const post = {
       "label": "Iterator Protocol Mastery",
       "code": `# === THE ITERATOR PROTOCOL ===
 # __iter__() -> returns iterator object
-# __next__() -> returns next value or raises StopIteration`
+# __next__() -> returns next value or raises StopIteration
 
 class CountDown:
     """Custom iterator that counts down."""
@@ -66,7 +66,7 @@ print(f"CountDown(5): {list(countdown)}")
 numbers = [1, 2, 3]  # Iterable
 iterator = iter(numbers)  # Iterator
 
-print(f"\nList is iterable: {hasattr(numbers, '__iter__')}")
+print(f"\\nList is iterable: {hasattr(numbers, '__iter__')}")
 print(f"Iterator has __next__: {hasattr(iterator, '__next__')}")
 
 # Manual iteration
@@ -79,13 +79,13 @@ print(f"Manual next(): {next(iterator)}")
 # Iterators can only be consumed once
 
 iterator = iter([1, 2, 3])
-print(f"\nFirst pass: {list(iterator)}")
+print(f"\\nFirst pass: {list(iterator)}")
 print(f"Second pass: {list(iterator)}")  # Empty!
 
 # === BUILT-IN ITERATORS ===
 # iter(), next(), enumerate(), zip() all return iterators
 
-print(f"\niter('abc'): {list(iter('abc'))}")
+print(f"\\niter('abc'): {list(iter('abc'))}")
 print(f"iter({{'a': 1, 'b': 2}}): {list(iter({'a': 1, 'b': 2}))}")
 
 # === CUSTOM RANGE ITERATOR ===
@@ -102,14 +102,14 @@ class MyRange:
         return self
 
     def __next__(self):
-        if (self.step > 0 and self.current >= self.stop) or \
+        if (self.step > 0 and self.current >= self.stop) or \\
            (self.step < 0 and self.current <= self.stop):
             raise StopIteration
         value = self.current
         self.current += self.step
         return value
 
-print(f"\nMyRange(0, 10, 2): {list(MyRange(0, 10, 2))}")
+print(f"\\nMyRange(0, 10, 2): {list(MyRange(0, 10, 2))}")
 print(f"MyRange(10, 0, -2): {list(MyRange(10, 0, -2))}")
 
 # === INFINITE ITERATOR ===
@@ -128,10 +128,10 @@ class InfiniteCounter:
         return value
 
 counter = InfiniteCounter(100)
-print(f"\nInfinite counter (first 5): {[next(counter) for _ in range(5)]}")
+print(f"\\nInfinite counter (first 5): {[next(counter) for _ in range(5)]}")
 print(f"Next 5: {[next(counter) for _ in range(5)]}")
 
-print("\nIterator protocol mastery complete!")"
+print("\\nIterator protocol mastery complete!")`
     },
     {
       "type": "h2",
@@ -144,7 +144,7 @@ print("\nIterator protocol mastery complete!")"
     {
       "type": "code-block",
       "label": "Generator Functions Mastery",
-      "code": "# === GENERATOR FUNCTIONS ===
+      "code": `# === GENERATOR FUNCTIONS ===
 # Functions using yield instead of return
 
 def simple_generator():
@@ -158,14 +158,14 @@ print(f"Generator object: {gen}")
 print(f"Type: {type(gen).__name__}")
 
 # Manual iteration
-print(f"\nManual iteration:")
+print(f"\\nManual iteration:")
 print(f"  next(): {next(gen)}")
 print(f"  next(): {next(gen)}")
 print(f"  next(): {next(gen)}")
 # next(gen)  # StopIteration!
 
 # For loop iteration
-print(f"\nFor loop: {list(simple_generator())}")
+print(f"\\nFor loop: {list(simple_generator())}")
 
 # === STATE SUSPENSION ===
 # Generators remember their state between calls
@@ -177,7 +177,7 @@ def count_with_state(start, step):
         current += step
 
 counter = count_with_state(10, 5)
-print(f"\nState suspension:")
+print(f"\\nState suspension:")
 print(f"  {next(counter)}")
 print(f"  {next(counter)}")
 print(f"  {next(counter)}")
@@ -191,7 +191,7 @@ def fibonacci_generator(n):
         yield a
         a, b = b, a + b
 
-print(f"\nFibonacci(10): {list(fibonacci_generator(10))}")
+print(f"\\nFibonacci(10): {list(fibonacci_generator(10))}")
 
 # === GENERATOR WITH CONDITIONAL YIELD ===
 def even_numbers(max_val):
@@ -200,7 +200,7 @@ def even_numbers(max_val):
         if n % 2 == 0:
             yield n
 
-print(f"\nEven numbers to 10: {list(even_numbers(10))}")
+print(f"\\nEven numbers to 10: {list(even_numbers(10))}")
 
 # === GENERATOR WITH MULTIPLE YIELD POINTS ===
 def multi_stage_process():
@@ -216,35 +216,28 @@ def multi_stage_process():
     print("  Stage 3: Cleanup")
     yield "cleanup"
 
-print(f"\nMulti-stage process:")
+print(f"\\nMulti-stage process:")
 for stage in multi_stage_process():
     print(f"  Got: {stage}")
 
 # === GENERATOR EXPRESSIONS ===
-# (expression for item in iterable if condition)
-
 squares_gen = (x**2 for x in range(10))
-print(f"\nGenerator expression: {squares_gen}")
+print(f"\\nGenerator expression: {squares_gen}")
 print(f"First 5: {[next(squares_gen) for _ in range(5)]}")
 print(f"Remaining: {list(squares_gen)}")
 
 # === GENERATOR VS LIST COMPREHENSION ===
-# Generator: lazy, memory efficient
-# List comprehension: eager, memory intensive
-
 import sys
 
 list_comp = [x**2 for x in range(100000)]
 gen_exp = (x**2 for x in range(100000))
 
-print(f"\nMemory comparison (100,000 items):")
+print(f"\\nMemory comparison (100,000 items):")
 print(f"  List comprehension: {sys.getsizeof(list_comp):,} bytes")
 print(f"  Generator expression: {sys.getsizeof(gen_exp):,} bytes")
 print(f"  Ratio: {sys.getsizeof(list_comp) / sys.getsizeof(gen_exp):.0f}x")
 
 # === GENERATOR WITH SEND() ===
-# Two-way communication with generators
-
 def accumulator():
     """Generator that accumulates values sent to it."""
     total = 0
@@ -256,13 +249,13 @@ def accumulator():
 
 acc = accumulator()
 next(acc)  # Prime the generator
-print(f"\nAccumulator:")
+print(f"\\nAccumulator:")
 print(f"  Send 10: {acc.send(10)}")
 print(f"  Send 20: {acc.send(20)}")
 print(f"  Send 30: {acc.send(30)}")
 acc.close()
 
-print("\nGenerator functions mastery complete!")"
+print("\\nGenerator functions mastery complete!")`
     },
     {
       "type": "h2",
@@ -275,10 +268,9 @@ print("\nGenerator functions mastery complete!")"
     {
       "type": "code-block",
       "label": "yield from Mastery",
-      "code": "# === yield from ===
+      "code": `# === yield from ===
 # Delegate iteration to a sub-generator
 
-# --- Basic delegation ---
 def sub_generator():
     yield 1
     yield 2
@@ -295,13 +287,13 @@ print(f"yield from basic: {list(main_generator())}")
 def sub_with_return():
     yield 'a'
     yield 'b'
-    return 'done'  # Return value captured by yield from
+    return 'done'
 
 def main_with_return():
     result = yield from sub_with_return()
     yield f"sub returned: {result}"
 
-print(f"\nyield from with return: {list(main_with_return())}")
+print(f"\\nyield from with return: {list(main_with_return())}")
 
 # --- Chained generators ---
 def level_3():
@@ -315,20 +307,7 @@ def level_1():
     yield 'top'
     yield from level_2()
 
-print(f"\nChained: {list(level_1())}")
-
-# --- yield from with send() ---
-def echo():
-    """Echo back received values."""
-    while True:
-        received = yield
-        if received == 'quit':
-            break
-        yield f"echo: {received}"
-
-def wrapper():
-    """Wrapper that delegates to echo."""
-    yield from echo()
+print(f"\\nChained: {list(level_1())}")
 
 # --- Flattening nested structures ---
 def flatten(nested):
@@ -340,21 +319,10 @@ def flatten(nested):
             yield item
 
 nested = [1, [2, [3, 4], 5], 6, [7, 8]]
-print(f"\nFlattened: {list(flatten(nested))}")
-
-# --- yield from for file processing ---
-def read_chunks(file_path, chunk_size=1024):
-    """Read file in chunks using yield from."""
-    with open(file_path, 'r') as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-            yield from chunk  # Yield each character
+print(f"\\nFlattened: {list(flatten(nested))}")
 
 # --- yield from with exception handling ---
 def robust_sub():
-    """Sub-generator with exception handling."""
     try:
         yield 'before'
         yield 'after'
@@ -362,12 +330,9 @@ def robust_sub():
         yield 'caught in sub'
 
 def robust_main():
-    """Main generator that delegates exceptions."""
     yield from robust_sub()
 
-print(f"\nRobust: {list(robust_main())}")
-
-print("\nyield from mastery complete!")"
+print(f"\\nRobust: {list(robust_main())}")`
     },
     {
       "type": "h2",
@@ -380,56 +345,37 @@ print("\nyield from mastery complete!")"
     {
       "type": "code-block",
       "label": "Memory Profiling",
-      "code": "# === MEMORY PROFILING ===
-# Compare generators vs lists for large data
-
+      "code": `# === MEMORY PROFILING ===
 import sys
-
-# --- Size comparison ---
+import tempfile
+import time
+import os
 
 def get_size(obj):
-    """Get memory size of object in bytes."""
     return sys.getsizeof(obj)
 
-# Small data
-small_list = [x for x in range(1000)]
-small_gen = (x for x in range(1000))
-
-print(f"Small data (1,000 items):")
-print(f"  List: {get_size(small_list):,} bytes")
-print(f"  Generator: {get_size(small_gen):,} bytes")
-
-# Large data
 large_list = [x for x in range(1000000)]
 large_gen = (x for x in range(1000000))
 
-print(f"\nLarge data (1,000,000 items):")
+print(f"Large data (1,000,000 items):")
 print(f"  List: {get_size(large_list):,} bytes ({get_size(large_list)/1024/1024:.1f} MB)")
 print(f"  Generator: {get_size(large_gen):,} bytes")
 print(f"  Ratio: {get_size(large_list) / get_size(large_gen):.0f}x")
 
 # --- Processing large files ---
-# Generator can process files larger than RAM
-
 def process_with_list(file_path):
-    """Read all lines into list (memory intensive)."""
     with open(file_path, 'r') as f:
         lines = f.readlines()
     return sum(len(line) for line in lines)
 
 def process_with_generator(file_path):
-    """Process lines one at a time (memory efficient)."""
     with open(file_path, 'r') as f:
         return sum(len(line) for line in f)
 
-# Create test file
-import tempfile
 with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
     for i in range(100000):
-        f.write(f"Line {i}: This is a test line with some content.\n")
+        f.write(f"Line {i}: This is a test line with some content.\\n")
     test_file = f.name
-
-import time
 
 start = time.perf_counter()
 result_list = process_with_list(test_file)
@@ -439,55 +385,31 @@ start = time.perf_counter()
 result_gen = process_with_generator(test_file)
 t_gen = time.perf_counter() - start
 
-print(f"\nFile processing (100,000 lines):")
+print(f"\\nFile processing (100,000 lines):")
 print(f"  List approach: {t_list:.4f}s, result: {result_list}")
 print(f"  Generator approach: {t_gen:.4f}s, result: {result_gen}")
-
-import os
 os.unlink(test_file)
 
 # --- Generator pipeline memory ---
-# Chain multiple generators without intermediate lists
-
 def pipeline_list(data):
-    """Process with intermediate lists."""
     step1 = [x * 2 for x in data]
     step2 = [x for x in step1 if x > 100]
     step3 = [x ** 0.5 for x in step2]
     return step3
 
 def pipeline_generator(data):
-    """Process with generator pipeline."""
     step1 = (x * 2 for x in data)
     step2 = (x for x in step1 if x > 100)
     step3 = (x ** 0.5 for x in step2)
     return step3
 
 data = range(100000)
-
 list_result = pipeline_list(data)
 gen_result = pipeline_generator(data)
 
-print(f"\nPipeline memory:")
+print(f"\\nPipeline memory:")
 print(f"  List pipeline: {get_size(list_result):,} bytes")
-print(f"  Generator pipeline: {get_size(gen_result):,} bytes")
-print(f"  Results match: {list(list_result)[:5] == list(gen_result)[:5]}")
-
-# --- Infinite sequence memory ---
-# Infinite generators use constant memory
-
-def infinite_counter():
-    n = 0
-    while True:
-        yield n
-        n += 1
-
-counter = infinite_counter()
-print(f"\nInfinite generator size: {get_size(counter):,} bytes")
-print(f"First 5: {[next(counter) for _ in range(5)]}")
-print(f"Next 5: {[next(counter) for _ in range(5)]}")
-
-print("\nMemory profiling mastery complete!")"
+print(f"  Generator pipeline: {get_size(gen_result):,} bytes")`
     },
     {
       "type": "h2",
@@ -500,21 +422,17 @@ print("\nMemory profiling mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Fibonacci Generator",
-      "code": """"
+      "code": `"""
 Program 1: Fibonacci Generator
 Infinite Fibonacci generator with multiple implementations.
 Demonstrates generators, state suspension, and memory efficiency.
 """
-
 import sys
-from typing import Iterator, List
+from typing import Iterator
 
 class FibonacciGenerator:
-    """Multiple Fibonacci generator implementations."""
-
     @staticmethod
     def infinite() -> Iterator[int]:
-        """Infinite Fibonacci generator."""
         a, b = 0, 1
         while True:
             yield a
@@ -522,7 +440,6 @@ class FibonacciGenerator:
 
     @staticmethod
     def finite(n: int) -> Iterator[int]:
-        """Finite Fibonacci generator."""
         a, b = 0, 1
         for _ in range(n):
             yield a
@@ -530,7 +447,6 @@ class FibonacciGenerator:
 
     @staticmethod
     def every_nth(n: int) -> Iterator[int]:
-        """Yield every nth Fibonacci number."""
         gen = FibonacciGenerator.infinite()
         for i, val in enumerate(gen):
             if i % n == 0:
@@ -538,7 +454,6 @@ class FibonacciGenerator:
 
     @staticmethod
     def until_limit(limit: int) -> Iterator[int]:
-        """Generate Fibonacci numbers up to limit."""
         a, b = 0, 1
         while a <= limit:
             yield a
@@ -546,7 +461,6 @@ class FibonacciGenerator:
 
     @staticmethod
     def with_ratio() -> Iterator[tuple]:
-        """Yield (number, ratio to previous) pairs."""
         a, b = 0, 1
         yield (a, None)
         while True:
@@ -554,356 +468,132 @@ class FibonacciGenerator:
             ratio = a / b if b != 0 else None
             yield (a, ratio)
 
-    @staticmethod
-    def compare_memory(n: int = 100000):
-        """Compare memory usage of generator vs list."""
-        gen = FibonacciGenerator.finite(n)
-        gen_size = sys.getsizeof(gen)
-
-        # Can't actually make list of 100k Fibonacci numbers (too big)
-        # But we can compare the generator to a list of same count
-        list_size = sys.getsizeof(list(range(n)))
-
-        return {
-            'generator_size': gen_size,
-            'list_size': list_size,
-            'ratio': list_size / gen_size
-        }
-
 def main():
-    """Main Fibonacci generator program."""
     print("=" * 50)
     print("FIBONACCI GENERATOR")
     print("=" * 50)
 
-    # Finite generator
-    print(f"\nFirst 20 Fibonacci numbers:")
+    print(f"\\nFirst 20 Fibonacci numbers:")
     for i, val in enumerate(FibonacciGenerator.finite(20), 1):
         print(f"  F({i}) = {val}")
 
-    # Infinite generator (first 15)
-    gen = FibonacciGenerator.infinite()
-    print(f"\nInfinite (first 15):")
-    for _ in range(15):
-        print(f"  {next(gen)}")
-
-    # Every 5th
-    print(f"\nEvery 5th (first 10):")
-    gen = FibonacciGenerator.every_nth(5)
-    for _ in range(10):
-        print(f"  {next(gen)}")
-
-    # Until limit
-    print(f"\nFibonacci numbers <= 1000:")
+    print(f"\\nFibonacci numbers <= 1000:")
     print(f"  {list(FibonacciGenerator.until_limit(1000))}")
 
-    # With ratio
-    print(f"\nFibonacci with golden ratio approximation:")
-    gen = FibonacciGenerator.with_ratio()
-    for _ in range(10):
-        num, ratio = next(gen)
-        print(f"  {num}: ratio = {ratio:.10f}")
-
-    # Memory comparison
-    mem = FibonacciGenerator.compare_memory(100000)
-    print(f"\nMemory comparison:")
-    print(f"  Generator: {mem['generator_size']:,} bytes")
-    print(f"  List: {mem['list_size']:,} bytes")
-    print(f"  Ratio: {mem['ratio']:.0f}x")
-
-    print("=" * 50)
-
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: File Line Reader",
-      "code": """"
+      "code": `"""
 Program 2: File Line Reader
 Memory-efficient file reading with generators.
 Demonstrates line-by-line processing, chunk reading, and grep.
 """
-
 import os
-from typing import Iterator, Optional, List, Tuple
+import tempfile
+from typing import Iterator, Tuple
 
 class FileReader:
-    """Memory-efficient file reading utilities."""
-
     @staticmethod
     def read_lines(file_path: str) -> Iterator[str]:
-        """Yield lines one at a time (memory efficient)."""
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
-                yield line.rstrip('\n')
-
-    @staticmethod
-    def read_chunks(file_path: str, chunk_size: int = 4096) -> Iterator[str]:
-        """Read file in fixed-size chunks."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            while True:
-                chunk = f.read(chunk_size)
-                if not chunk:
-                    break
-                yield chunk
+                yield line.rstrip('\\n')
 
     @staticmethod
     def grep(file_path: str, pattern: str) -> Iterator[Tuple[int, str]]:
-        """Find lines matching pattern with line numbers."""
         for i, line in enumerate(FileReader.read_lines(file_path), 1):
             if pattern in line:
                 yield (i, line)
 
     @staticmethod
-    def tail(file_path: str, n: int = 10) -> Iterator[str]:
-        """Read last n lines (efficient for large files)."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            # Use deque for efficient tail
-            from collections import deque
-            return iter(deque(f, maxlen=n))
-
-    @staticmethod
     def head(file_path: str, n: int = 10) -> Iterator[str]:
-        """Read first n lines."""
         for i, line in enumerate(FileReader.read_lines(file_path), 1):
             if i > n:
                 break
             yield line
 
-    @staticmethod
-    def word_count(file_path: str) -> dict:
-        """Count words in file using generator pipeline."""
-        lines = FileReader.read_lines(file_path)
-        words = (word for line in lines for word in line.split())
-        from collections import Counter
-        return dict(Counter(words))
-
-    @staticmethod
-    def process_large_file(file_path: str, processor) -> Iterator:
-        """Process large file with custom processor function."""
-        for line in FileReader.read_lines(file_path):
-            result = processor(line)
-            if result is not None:
-                yield result
-
 def main():
-    """Main file reader program."""
     print("=" * 50)
     print("FILE LINE READER")
     print("=" * 50)
 
-    # Create test file
-    import tempfile
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
-        for i in range(1000):
-            f.write(f"Line {i}: {'even' if i % 2 == 0 else 'odd'} number\n")
+        for i in range(100):
+            f.write(f"Line {i}: {'even' if i % 2 == 0 else 'odd'} number\\n")
         test_file = f.name
 
     try:
-        # Head
-        print(f"\nFirst 5 lines:")
+        print(f"\\nFirst 5 lines:")
         for line in FileReader.head(test_file, 5):
             print(f"  {line}")
-
-        # Grep
-        print(f"\nLines containing 'even':")
-        for i, line in FileReader.grep(test_file, 'even'):
-            if i <= 10:
-                print(f"  Line {i}: {line}")
-
-        # Word count
-        counts = FileReader.word_count(test_file)
-        print(f"\nWord counts:")
-        for word, count in sorted(counts.items(), key=lambda x: x[1], reverse=True)[:5]:
-            print(f"  {word}: {count}")
-
-        # Custom processor
-        print(f"\nEven line numbers:")
-        def extract_number(line):
-            if 'even' in line:
-                return int(line.split(':')[0].split()[1])
-            return None
-
-        for num in FileReader.process_large_file(test_file, extract_number):
-            if num < 10:
-                print(f"  {num}")
-
-        # File size info
-        size = os.path.getsize(test_file)
-        print(f"\nFile size: {size:,} bytes")
-        print(f"Processed without loading entire file into memory!")
-
     finally:
         os.unlink(test_file)
 
-    print("=" * 50)
-
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Infinite Sequence",
-      "code": """"
+      "code": `"""
 Program 3: Infinite Sequence
 Various infinite sequence generators.
 Demonstrates infinite iteration, filtering, and combination.
 """
-
-import itertools
-from typing import Iterator, Callable, Optional
+from typing import Iterator, Callable
 
 class InfiniteSequences:
-    """Collection of infinite sequence generators."""
-
     @staticmethod
     def integers(start: int = 0, step: int = 1) -> Iterator[int]:
-        """Infinite integer sequence."""
         n = start
         while True:
             yield n
             n += step
 
     @staticmethod
-    def powers_of(base: int) -> Iterator[int]:
-        """Powers of a number."""
-        n = 1
-        while True:
-            yield n
-            n *= base
-
-    @staticmethod
     def primes() -> Iterator[int]:
-        """Infinite prime number generator."""
         def is_prime(n):
-            if n < 2:
-                return False
+            if n < 2: return False
             for i in range(2, int(n**0.5) + 1):
-                if n % i == 0:
-                    return False
+                if n % i == 0: return False
             return True
-
         n = 2
         while True:
-            if is_prime(n):
-                yield n
+            if is_prime(n): yield n
             n += 1
 
     @staticmethod
-    def collatz(start: int) -> Iterator[int]:
-        """Collatz sequence generator."""
-        n = start
-        while n != 1:
-            yield n
-            n = n // 2 if n % 2 == 0 else 3 * n + 1
-        yield 1
-
-    @staticmethod
-    def random_walk(start: float = 0.0, step: float = 1.0) -> Iterator[float]:
-        """Random walk generator."""
-        import random
-        current = start
-        while True:
-            yield current
-            current += random.uniform(-step, step)
-
-    @staticmethod
-    def merge_sorted(*sequences: Iterator) -> Iterator:
-        """Merge multiple sorted infinite sequences."""
-        # Use heapq.merge for efficient merging
-        import heapq
-        yield from heapq.merge(*sequences)
-
-    @staticmethod
     def take(n: int, sequence: Iterator):
-        """Take first n elements from infinite sequence."""
         for _ in range(n):
             yield next(sequence)
 
-    @staticmethod
-    def filter_sequence(predicate: Callable, sequence: Iterator) -> Iterator:
-        """Filter infinite sequence."""
-        for item in sequence:
-            if predicate(item):
-                yield item
-
-    @staticmethod
-    def map_sequence(func: Callable, sequence: Iterator) -> Iterator:
-        """Map over infinite sequence."""
-        for item in sequence:
-            yield func(item)
-
 def main():
-    """Main infinite sequence program."""
     print("=" * 50)
     print("INFINITE SEQUENCE")
     print("=" * 50)
 
-    # Integers
-    print(f"\nIntegers (first 10):")
     gen = InfiniteSequences.integers()
-    print(f"  {list(InfiniteSequences.take(10, gen))}")
-
-    # Powers of 2
-    print(f"\nPowers of 2 (first 10):")
-    gen = InfiniteSequences.powers_of(2)
-    print(f"  {list(InfiniteSequences.take(10, gen))}")
-
-    # Primes
-    print(f"\nPrimes (first 20):")
-    gen = InfiniteSequences.primes()
-    print(f"  {list(InfiniteSequences.take(20, gen))}")
-
-    # Collatz sequence
-    print(f"\nCollatz(27):")
-    gen = InfiniteSequences.collatz(27)
-    collatz_27 = list(gen)
-    print(f"  Length: {len(collatz_27)}")
-    print(f"  Sequence: {collatz_27[:10]}...{collatz_27[-5:]}")
-
-    # Random walk
-    print(f"\nRandom walk (first 10):")
-    gen = InfiniteSequences.random_walk(100.0, 5.0)
-    print(f"  {[round(next(gen), 2) for _ in range(10)]}")
-
-    # Filtered primes
-    print(f"\nPrimes > 100 (first 10):")
-    gen = InfiniteSequences.primes()
-    filtered = InfiniteSequences.filter_sequence(lambda p: p > 100, gen)
-    print(f"  {list(InfiniteSequences.take(10, filtered))}")
-
-    # Merged sequences
-    print(f"\nMerged squares and cubes (first 15):")
-    def squares():
-        n = 1
-        while True:
-            yield n * n
-            n += 1
-    def cubes():
-        n = 1
-        while True:
-            yield n * n * n
-            n += 1
-    merged = InfiniteSequences.merge_sorted(squares(), cubes())
-    print(f"  {list(InfiniteSequences.take(15, merged))}")
-
-    print("=" * 50)
+    print(f"\\nIntegers (first 10): {list(InfiniteSequences.take(10, gen))}")
+    
+    prime_gen = InfiniteSequences.primes()
+    print(f"Primes (first 10): {list(InfiniteSequences.take(10, prime_gen))}")
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Pipeline with Generators",
-      "code": """"
+      "code": `"""
 Program 4: Pipeline with Generators
 Data processing pipeline using chained generators.
 Demonstrates generator composition, lazy evaluation, and memory efficiency.
 """
-
 import sys
-from typing import Iterator, Callable, List, Dict, Any
+from typing import Iterator, Dict, Any
 from dataclasses import dataclass
 
 @dataclass
@@ -914,126 +604,39 @@ class Record:
     category: str
 
 class DataPipeline:
-    """Generator-based data processing pipeline."""
-
     @staticmethod
     def generate_records(n: int) -> Iterator[Record]:
-        """Generate sample records."""
         categories = ['A', 'B', 'C']
         for i in range(n):
-            yield Record(
-                id=i,
-                name=f"item_{i}",
-                value=float(i * 10 + 5),
-                category=categories[i % 3]
-            )
+            yield Record(id=i, name=f"item_{i}", value=float(i * 10 + 5), category=categories[i % 3])
 
     @staticmethod
     def filter_by_category(records: Iterator[Record], category: str) -> Iterator[Record]:
-        """Filter records by category."""
         for record in records:
-            if record.category == category:
-                yield record
-
-    @staticmethod
-    def filter_by_value(records: Iterator[Record], min_val: float, max_val: float) -> Iterator[Record]:
-        """Filter records by value range."""
-        for record in records:
-            if min_val <= record.value <= max_val:
-                yield record
-
-    @staticmethod
-    def transform_values(records: Iterator[Record], multiplier: float) -> Iterator[Record]:
-        """Transform record values."""
-        for record in records:
-            yield Record(
-                id=record.id,
-                name=record.name,
-                value=record.value * multiplier,
-                category=record.category
-            )
+            if record.category == category: yield record
 
     @staticmethod
     def aggregate_by_category(records: Iterator[Record]) -> Dict[str, Dict[str, Any]]:
-        """Aggregate statistics by category."""
         stats = {}
         for record in records:
             if record.category not in stats:
-                stats[record.category] = {'count': 0, 'total': 0.0, 'items': []}
+                stats[record.category] = {'count': 0, 'total': 0.0}
             stats[record.category]['count'] += 1
             stats[record.category]['total'] += record.value
-            stats[record.category]['items'].append(record.name)
         return stats
-
-    @staticmethod
-    def pipeline_example(n: int = 1000000):
-        """Demonstrate full pipeline with memory profiling."""
-        # Stage 1: Generate (lazy)
-        records = DataPipeline.generate_records(n)
-
-        # Stage 2: Filter category A (lazy)
-        cat_a = DataPipeline.filter_by_category(records, 'A')
-
-        # Stage 3: Filter by value (lazy)
-        filtered = DataPipeline.filter_by_value(cat_a, 100.0, 500000.0)
-
-        # Stage 4: Transform values (lazy)
-        transformed = DataPipeline.transform_values(filtered, 1.5)
-
-        # Stage 5: Aggregate (terminal operation)
-        stats = DataPipeline.aggregate_by_category(transformed)
-
-        return stats
-
-    @staticmethod
-    def compare_memory(n: int = 100000):
-        """Compare generator pipeline vs list pipeline memory."""
-        # Generator pipeline (lazy)
-        gen_records = DataPipeline.generate_records(n)
-        gen_size = sys.getsizeof(gen_records)
-
-        # List pipeline (eager)
-        list_records = list(DataPipeline.generate_records(n))
-        list_size = sys.getsizeof(list_records)
-
-        return {
-            'generator_size': gen_size,
-            'list_size': list_size,
-            'ratio': list_size / gen_size if gen_size > 0 else 0
-        }
 
 def main():
-    """Main pipeline program."""
     print("=" * 50)
     print("PIPELINE WITH GENERATORS")
     print("=" * 50)
 
-    # Small example
-    print(f"\nSmall pipeline (n=10):")
-    records = DataPipeline.generate_records(10)
-    cat_b = DataPipeline.filter_by_category(records, 'B')
-    for r in cat_b:
-        print(f"  {r}")
-
-    # Memory comparison
-    mem = DataPipeline.compare_memory(100000)
-    print(f"\nMemory comparison (100,000 records):")
-    print(f"  Generator pipeline: {mem['generator_size']:,} bytes")
-    print(f"  List pipeline: {mem['list_size']:,} bytes")
-    print(f"  Ratio: {mem['ratio']:.0f}x")
-
-    # Large pipeline
-    print(f"\nLarge pipeline (n=1,000,000):")
-    stats = DataPipeline.pipeline_example(1000000)
-    for cat, data in stats.items():
-        print(f"  Category {cat}: {data['count']} items, total={data['total']:,.0f}")
-
-    print(f"\nPipeline completed without loading all records into memory!")
-
-    print("=" * 50)
+    records = DataPipeline.generate_records(1000)
+    filtered = DataPipeline.filter_by_category(records, 'B')
+    stats = DataPipeline.aggregate_by_category(filtered)
+    print(f"Pipeline Stats: {stats}")
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
