@@ -11,8 +11,7 @@ export default function TutorialSeries({ theme }) {
   const ac = isDark ? "#a78bfa" : "#7c3aed";
   const seriesColor = "#10b981";
 
-  const series = seriesSlug === "ml-foundations" ? seriesData : null;
-  const pythonSeries = seriesSlug === "python-foundations" ? pythonSeriesData : null;
+  const series = seriesSlug === "ml-foundations" ? seriesData : seriesSlug === "python-unlocked" ? pythonSeriesData : null;
 
   if (!series) {
     return (
