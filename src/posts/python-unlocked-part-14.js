@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "range Mastery",
-      "code": "# === range IS NOT A LIST ===
+      "code": `# === range IS NOT A LIST ===
 # It is a lazy sequence object
 
 r = range(10)
@@ -113,7 +113,7 @@ print(f"\nPagination (23 items, size 5):")
 for i, page in enumerate(paginate(23, 5), 1):
     print(f"  Page {i}: {list(page)}")
 
-print("\nrange mastery complete!")"
+print("\nrange mastery complete!")`
     },
     {
       "type": "h2",
@@ -126,7 +126,7 @@ print("\nrange mastery complete!")"
     {
       "type": "code-block",
       "label": "enumerate Mastery",
-      "code": "# === enumerate FUNDAMENTALS ===
+      "code": `# === enumerate FUNDAMENTALS ===
 # enumerate(iterable, start=0) -> (index, value) pairs
 
 fruits = ['apple', 'banana', 'cherry', 'date']
@@ -214,7 +214,7 @@ print(f"\nChunks of [1..10] by 3:")
 for chunk in chunks(range(1, 11), 3):
     print(f"  {chunk}")
 
-print("\nenumerate mastery complete!")"
+print("\nenumerate mastery complete!")`
     },
     {
       "type": "h2",
@@ -227,7 +227,7 @@ print("\nenumerate mastery complete!")"
     {
       "type": "code-block",
       "label": "zip Mastery",
-      "code": "# === zip FUNDAMENTALS ===
+      "code": `# === zip FUNDAMENTALS ===
 # zip(*iterables) -> (item1, item2, ...) tuples
 
 names = ['Alice', 'Bob', 'Charlie']
@@ -312,7 +312,7 @@ quantities = [10, 20, 15]
 print(f"\nInvoice:")
 for i, (item, price, qty) in enumerate(zip(items, prices, quantities), 1):
     total = price * qty
-    print(f"  {i}. {item}: ${price} x {qty} = ${total:.2f}")
+    print(f"  {i}. {item}: \${price} x {qty} = \${total:.2f}")
 
 # --- zip for strict matching (Python 3.10+) ---
 # zip(..., strict=True) raises ValueError if lengths differ
@@ -322,7 +322,7 @@ try:
 except ValueError as e:
     print(f"\nzip strict=True: {e}")
 
-print("\nzip mastery complete!")"
+print("\nzip mastery complete!")`
     },
     {
       "type": "h2",
@@ -335,7 +335,7 @@ print("\nzip mastery complete!")"
     {
       "type": "code-block",
       "label": "map & filter Mastery",
-      "code": "# === map ===
+      "code": `# === map ===
 # map(function, iterable) -> iterator of results
 
 numbers = [1, 2, 3, 4, 5]
@@ -425,7 +425,7 @@ print(f"\nDiscounted prices: {list(discounted)}")
 active_items = filter(lambda item: item.price > 120, items)
 print(f"Expensive items: {[i.name for i in active_items]}")
 
-print("\nmap & filter mastery complete!")"
+print("\nmap & filter mastery complete!")`
     },
     {
       "type": "h2",
@@ -438,7 +438,7 @@ print("\nmap & filter mastery complete!")"
     {
       "type": "code-block",
       "label": "itertools Preview",
-      "code": "# === itertools: THE ITERATION POWERHOUSE ===
+      "code": `# === itertools: THE ITERATION POWERHOUSE ===
 from itertools import cycle, chain, product, permutations, combinations, count, repeat, islice
 
 # --- cycle: Infinite repetition ---
@@ -553,7 +553,7 @@ print(f"first_true([0, '', [], 42, 99]): {first_true([0, '', [], 42, 99])}")
 print("\nitertools preview complete!")"
     },
     {
-      "type": "h2",
+      "type": "programs",
       "text": "Programs: Logic in Action"
     },
     {
@@ -563,7 +563,7 @@ print("\nitertools preview complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Multiplication Table",
-      "code": """"
+      "code": `"""
 Program 1: Multiplication Table
 Generates formatted multiplication tables using range and zip.
 Demonstrates nested iteration, formatting, and lazy evaluation.
@@ -639,12 +639,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Parallel List Processing",
-      "code": """"
+      "code": `"""
 Program 2: Parallel List Processing
 Processes multiple lists in parallel using zip and enumerate.
 Demonstrates zip, zip_longest, and parallel computation.
@@ -780,12 +780,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Password Generator",
-      "code": """"
+      "code": `"""
 Program 3: Password Generator
 Generates secure passwords using itertools and random.
 Demonstrates product, permutations, and combinatorial generation.
@@ -938,12 +938,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Cartesian Product Explorer",
-      "code": """"
+      "code": `"""
 Program 4: Cartesian Product Explorer
 Explores combinatorial spaces using itertools.product.
 Demonstrates product, permutations, combinations, and probability.
@@ -1098,7 +1098,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
