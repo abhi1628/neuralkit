@@ -31,7 +31,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Closure Fundamentals",
-      "code": "# === CLOSURE DEFINITION ===
+      "code": `# === CLOSURE DEFINITION ===
 # A closure is a function + the environment it was defined in
 
 def make_multiplier(factor):
@@ -113,7 +113,7 @@ print(f"3^2 = {power_3_2()}")
 # Inspect multiple closures
 print(f"power_2_3 closures: {[cell.cell_contents for cell in power_2_3.__closure__]}")
 
-print("\nClosure fundamentals complete!")"
+print("\nClosure fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -126,7 +126,7 @@ print("\nClosure fundamentals complete!")"
     {
       "type": "code-block",
       "label": "Factory Functions Mastery",
-      "code": "# === FACTORY FUNCTIONS ===
+      "code": `# === FACTORY FUNCTIONS ===
 # Functions that create and return customized functions
 
 # --- Multiplier factory ---
@@ -156,7 +156,7 @@ def make_formatter(template):
         return template.format(value=value)
     return format_value
 
-currency_format = make_formatter("${value:.2f}")
+currency_format = make_formatter("\${value:.2f}")
 percent_format = make_formatter("{value:.1%}")
 
 print(f"\nCurrency: {currency_format(99.99)}")
@@ -218,7 +218,7 @@ bob = Person('Bob', 15)
 print(f"\nAlice is adult? {is_adult(alice)}")
 print(f"Bob is adult? {is_adult(bob)}")
 
-print("\nFactory functions mastery complete!")"
+print("\nFactory functions mastery complete!")`
     },
     {
       "type": "h2",
@@ -231,7 +231,7 @@ print("\nFactory functions mastery complete!")"
     {
       "type": "code-block",
       "label": "nonlocal Mastery",
-      "code": "# === nonlocal ===
+      "code": `# === nonlocal ===
 # Modify variables in enclosing (non-global) scope
 
 # --- Counter with nonlocal ---
@@ -330,13 +330,13 @@ def make_bank_account(balance):
 deposit, withdraw, get_balance, get_history = make_bank_account(1000)
 
 print(f"\nBank account:")
-print(f"  Initial: ${get_balance()}")
-print(f"  Deposit $500: ${deposit(500)}")
-print(f"  Withdraw $200: ${withdraw(200)}")
-print(f"  Balance: ${get_balance()}")
+print(f"  Initial: \${get_balance()}")
+print(f"  Deposit $500: \${deposit(500)}")
+print(f"  Withdraw $200: \${withdraw(200)}")
+print(f"  Balance: \${get_balance()}")
 print(f"  History: {get_history()}")
 
-print("\nnonlocal mastery complete!")"
+print("\nnonlocal mastery complete!")`
     },
     {
       "type": "h2",
@@ -349,7 +349,7 @@ print("\nnonlocal mastery complete!")"
     {
       "type": "code-block",
       "label": "Late Binding Trap",
-      "code": "# === THE LATE BINDING TRAP ===
+      "code": `# === THE LATE BINDING TRAP ===
 # Closures in a loop capture the VARIABLE, not its VALUE
 
 # --- THE BUG ---
@@ -454,7 +454,7 @@ print(f"\nFixed buttons:")
 for btn in buttons_fixed:
     btn.click()
 
-print("\nLate binding trap mastery complete!")"
+print("\nLate binding trap mastery complete!")`
     },
     {
       "type": "h2",
@@ -467,7 +467,7 @@ print("\nLate binding trap mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Counter Factory",
-      "code": """"
+      "code": `"""
 Program 1: Counter Factory
 Multiple counter implementations using closures.
 Demonstrates factory functions, nonlocal, and state management.
@@ -596,12 +596,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Multiplier Factory",
-      "code": """"
+      "code": `"""
 Program 2: Multiplier Factory
 Creates specialized multiplier functions with closures.
 Demonstrates factory functions and the late binding fix.
@@ -705,12 +705,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Configuration Builder",
-      "code": """"
+      "code": `"""
 Program 3: Configuration Builder
 Build configuration objects using closures and factory functions.
 Demonstrates stateful closures, nonlocal, and builder pattern.
@@ -862,12 +862,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Late Binding Fix Demonstration",
-      "code": """"
+      "code": `"""
 Program 4: Late Binding Fix Demonstration
 Comprehensive demonstration of the late binding trap and all fixes.
 Demonstrates closures, loops, and the environment capture mechanism.
@@ -1035,7 +1035,7 @@ def main():
     print("  5. Callable class: class with __call__")
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
