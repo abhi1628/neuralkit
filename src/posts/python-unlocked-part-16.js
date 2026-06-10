@@ -1044,13 +1044,13 @@ def file_handler(filename: str):
 def colored_handler(entry: dict):
     """Print with ANSI colors."""
     colors = {
-        'DEBUG': '\033[36m',   # Cyan
-        'INFO': '\033[32m',    # Green
-        'WARN': '\033[33m',    # Yellow
-        'ERROR': '\033[31m',   # Red
-        'FATAL': '\033[35m',   # Magenta
+        'DEBUG': '\\033[36m',   # Cyan
+        'INFO': '\\033[32m',    # Green
+        'WARN': '\\033[33m',    # Yellow
+        'ERROR': '\\033[31m',   # Red
+        'FATAL': '\\033[35m',   # Magenta
     }
-    reset = '\033[0m'
+    reset = '\\033[0m'
     color = colors.get(entry['level'], '')
     print(f"{color}{entry['formatted']}{reset}")
 
