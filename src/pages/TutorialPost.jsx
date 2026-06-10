@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import seriesData from "../posts/ml-foundations-series";
+import mlSeriesData from "../posts/ml-foundations-series";
 import part1Content from "../posts/ml-foundations-part-1";
 import part2Content from "../posts/ml-foundations-part-2";
 import part3Content from "../posts/ml-foundations-part-3";
-import part4Content from '../posts/ml-foundations-part-4';
+import part4Content from "../posts/ml-foundations-part-4";
 import pythonSeriesData from "../posts/python-unlocked-series";
-import pythonPart1 from "../posts/python-unlocked-part-1";
-import pythonPart2 from "../posts/python-unlocked-part-2";
-import pythonPart3 from "../posts/python-unlocked-part-3";
-import pythonPart4 from "../posts/python-unlocked-part-4";
-import pythonPart5 from "../posts/python-unlocked-part-5";
-import pythonPart6 from "../posts/python-unlocked-part-6";
-import pythonPart7 from "../posts/python-unlocked-part-7";
-import pythonPart8 from "../posts/python-unlocked-part-8";
-import pythonPart9 from "../posts/python-unlocked-part-9";
-import pythonPart10 from "../posts/python-unlocked-part-10";
-import pythonPart11 from "../posts/python-unlocked-part-11";
-import pythonPart12 from "../posts/python-unlocked-part-12";
-import pythonPart13 from "../posts/python-unlocked-part-13";
-import pythonPart14 from "../posts/python-unlocked-part-14";
-import pythonPart15 from "../posts/python-unlocked-part-15";
-import pythonPart16 from "../posts/python-unlocked-part-16";
-import pythonPart17 from "../posts/python-unlocked-part-17";
-import pythonPart18 from "../posts/python-unlocked-part-18";
-import pythonPart19 from "../posts/python-unlocked-part-19";
-import pythonPart20 from "../posts/python-unlocked-part-20";
-import pythonPart21 from "../posts/python-unlocked-part-21";
-import pythonPart22 from "../posts/python-unlocked-part-22";
-import pythonPart23 from "../posts/python-unlocked-part-23";
+import pyPart1 from "../posts/python-unlocked-part-1";
+import pyPart2 from "../posts/python-unlocked-part-2";
+import pyPart3 from "../posts/python-unlocked-part-3";
+import pyPart4 from "../posts/python-unlocked-part-4";
+import pyPart5 from "../posts/python-unlocked-part-5";
+import pyPart6 from "../posts/python-unlocked-part-6";
+import pyPart7 from "../posts/python-unlocked-part-7";
+import pyPart8 from "../posts/python-unlocked-part-8";
+import pyPart9 from "../posts/python-unlocked-part-9";
+import pyPart10 from "../posts/python-unlocked-part-10";
+import pyPart11 from "../posts/python-unlocked-part-11";
+import pyPart12 from "../posts/python-unlocked-part-12";
+import pyPart13 from "../posts/python-unlocked-part-13";
+import pyPart14 from "../posts/python-unlocked-part-14";
+import pyPart15 from "../posts/python-unlocked-part-15";
+import pyPart16 from "../posts/python-unlocked-part-16";
+import pyPart17 from "../posts/python-unlocked-part-17";
+import pyPart18 from "../posts/python-unlocked-part-18";
+import pyPart19 from "../posts/python-unlocked-part-19";
+import pyPart20 from "../posts/python-unlocked-part-20";
+import pyPart21 from "../posts/python-unlocked-part-21";
+import pyPart22 from "../posts/python-unlocked-part-22";
+import pyPart23 from "../posts/python-unlocked-part-23";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -38,30 +38,35 @@ const CONTENT_MAP = {
     "part-4-ml-pipeline": part4Content
   },
   "python-unlocked": {
-    "part-1-philosophy-origin": pythonPart1,
-    "part-2-environment-craft": pythonPart2,
-    "part-3-hello-world-anatomy": pythonPart3,
-    "part-4-variables-memory": pythonPart4,
-    "part-5-numbers-math": pythonPart5,
-    "part-6-strings-unicode": pythonPart6,
-    "part-7-string-formatting": pythonPart7,
-    "part-8-boolean-operators": pythonPart8,
-    "part-9-conditionals-match": pythonPart9,
-    "part-10-lists-workhorse": pythonPart10,
-    "part-11-tuples-immutability": pythonPart11,
-    "part-12-dictionaries-hash-tables": pythonPart12,
-    "part-13-sets-set-theory": pythonPart13,
-    "part-14-range-enumerate-zip": pythonPart14,
-    "part-15-for-while-loops": pythonPart15,
-    "part-16-functions-building-blocks": pythonPart16,
-    "part-17-recursion-advanced-functions": pythonPart17,
-    "part-18-lambda-functional": pythonPart18,
-    "part-19-closures-lexical": pythonPart19,
-    "part-20-decorators-superpower": pythonPart20,
-    "part-21-generators-iterators": pythonPart21,
-    "part-22-file-handling": pythonPart22,
-    "part-23-exception-handling": pythonPart23
+    "part-1-philosophy-origin": pyPart1,
+    "part-2-environment-craft": pyPart2,
+    "part-3-hello-world-anatomy": pyPart3,
+    "part-4-variables-memory": pyPart4,
+    "part-5-numbers-math": pyPart5,
+    "part-6-strings-unicode": pyPart6,
+    "part-7-string-formatting": pyPart7,
+    "part-8-boolean-operators": pyPart8,
+    "part-9-conditionals-match": pyPart9,
+    "part-10-lists-workhorse": pyPart10,
+    "part-11-tuples-immutability": pyPart11,
+    "part-12-dictionaries-hash-tables": pyPart12,
+    "part-13-sets-set-theory": pyPart13,
+    "part-14-range-enumerate-zip": pyPart14,
+    "part-15-for-while-loops": pyPart15,
+    "part-16-functions-building-blocks": pyPart16,
+    "part-17-recursion-advanced-functions": pyPart17,
+    "part-18-lambda-functional": pyPart18,
+    "part-19-closures-lexical": pyPart19,
+    "part-20-decorators-superpower": pyPart20,
+    "part-21-generators-iterators": pyPart21,
+    "part-22-file-handling": pyPart22,
+    "part-23-exception-handling": pyPart23
   }
+};
+
+const SERIES_DATA_MAP = {
+  "ml-foundations": mlSeriesData,
+  "python-unlocked": pythonSeriesData
 };
 
 function renderContent(block, i, theme) {
@@ -259,7 +264,7 @@ export default function TutorialPost({ theme }) {
   }
 
   // Get series data for navigation
-  const series = seriesSlug === "ml-foundations" ? seriesData : null;
+  const series = SERIES_DATA_MAP[seriesSlug] || null;
   const currentPartIndex = series ? series.parts.findIndex(p => p.slug === partSlug) : -1;
   const currentPart = currentPartIndex >= 0 ? series.parts[currentPartIndex] : null;
   const prevPart = currentPartIndex > 0 ? series.parts[currentPartIndex - 1] : null;
