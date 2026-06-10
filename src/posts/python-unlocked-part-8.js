@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Truthiness in Python",
-      "code": "# === FALSY VALUES ===
+      "code": `# === FALSY VALUES ===
 # These evaluate to False in boolean contexts
 
 falsy_values = [
@@ -134,7 +134,7 @@ print(f"  all({numbers}) = {all(numbers)}")
 print(f"  all({has_zero}) = {all(has_zero)}")
 print(f"  any({has_zero}) = {any(has_zero)}")
 print(f"  all({empty_list}) = {all(empty_list)}")  # True! (vacuous truth)
-print(f"  any({empty_list}) = {any(empty_list)}")  # False!"
+print(f"  any({empty_list}) = {any(empty_list)}")  # False!"`
     },
     {
       "type": "h2",
@@ -147,16 +147,16 @@ print(f"  any({empty_list}) = {any(empty_list)}")  # False!"
     {
       "type": "code-block",
       "label": "Short-Circuit Mastery",
-      "code": "# === AND: RETURNS FIRST FALSY OR LAST TRUTHY ===
+      "code": `# === AND: RETURNS FIRST FALSY OR LAST TRUTHY ===
 print("and operator:")
 print(f"  True and True   = {True and True}")     # True
 print(f"  True and False  = {True and False}")    # False
 print(f"  False and True  = {False and True}")    # False (short-circuits!)
 print(f"  1 and 2         = {1 and 2}")           # 2 (returns last truthy)
 print(f"  0 and 2         = {0 and 2}")           # 0 (returns first falsy)
-print(f"  hello and empty = {"hello" and ""}")  # empty string (first falsy)
+print(f"  hello and empty = {'hello' and ''}")  # empty string (first falsy)
 
-# === OR: RETURNS FIRST TRUTHY OR LAST FALSY ===
+# === OR: RETURNS FIRST TRUTHY OR LAST FALFY ===
 print("\nor operator:")
 print(f"  True or True    = {True or True}")      # True (short-circuits!)
 print(f"  True or False   = {True or False}")     # True (short-circuits!)
@@ -164,7 +164,7 @@ print(f"  False or True   = {False or True}")     # True
 print(f"  False or False  = {False or False}")    # False
 print(f"  1 or 2          = {1 or 2}")            # 1 (returns first truthy)
 print(f"  0 or 2          = {0 or 2}")            # 2 (returns last truthy)
-print(f"  empty or hello  = {"" or "hello"}")   # hello (returns first truthy)
+print(f"  empty or hello  = {'' or 'hello'}")   # hello (returns first truthy)
 
 # === PRACTICAL PATTERNS ===
 
@@ -215,7 +215,7 @@ print(f"  Result: {result} (operation skipped!)")
 
 print("\nLazy evaluation with or:")
 result = True or expensive_operation()
-print(f"  Result: {result} (operation skipped!)")"
+print(f"  Result: {result} (operation skipped!)")"`
     },
     {
       "type": "h2",
@@ -228,7 +228,7 @@ print(f"  Result: {result} (operation skipped!)")"
     {
       "type": "code-block",
       "label": "Bitwise Operations",
-      "code": "# === BITWISE OPERATORS ===
+      "code": `# === BITWISE OPERATORS ===
 # &  (AND):    Both bits must be 1
 # |  (OR):     At least one bit is 1
 # ^  (XOR):    Exactly one bit is 1
@@ -273,9 +273,9 @@ def toggle_permission(user_flags, permission):
 user = READ | WRITE
 print(f"\nUser permissions: {user:04b} ({user})")
 
-print(f"Can read?    {has_permission(user, READ)}")
-print(f"Can write?   {has_permission(user, WRITE)}")
-print(f"Can execute? {has_permission(user, EXECUTE)}")
+print(f"Can read?    {READ}")
+print(f"Can write?   {WRITE}")
+print(f"Can execute? {EXECUTE}")
 
 # Grant execute permission
 user = grant_permission(user, EXECUTE)
@@ -314,7 +314,7 @@ print(f"Built-in: {bin(user).count('1')}")
 
 # === PRACTICAL: ISOLATING LOWEST SET BIT ===
 lowest = user & -user
-print(f"\nLowest set bit in {user}: {lowest} ({lowest:04b})")"
+print(f"\nLowest set bit in {user}: {lowest} ({lowest:04b})")"`
     },
     {
       "type": "h2",
@@ -327,9 +327,9 @@ print(f"\nLowest set bit in {user}: {lowest} ({lowest:04b})")"
     {
       "type": "code-block",
       "label": "Operator Precedence Table",
-      "code": "# === PYTHON OPERATOR PRECEDENCE (HIGH TO LOW) ===
+      "code": `# === PYTHON OPERATOR PRECEDENCE (HIGH TO LOW) ===
 # 1.  ()              Parentheses (grouping)
-# 2.  **              Exponentiation
+# 2.  ** Exponentiation
 # 3.  +x, -x, ~x      Unary plus, minus, bitwise NOT
 # 4.  *, @, /, //, %  Multiplication, matrix, division, floor, modulo
 # 5.  +, -            Addition, subtraction
@@ -407,7 +407,7 @@ while (item := data[i] if i < len(data) else None) is not None:
     print(f"  Item: {item}")
     i += 1
     if i >= len(data):
-        break"
+        break"`
     },
     {
       "type": "h2",
@@ -420,17 +420,245 @@ while (item := data[i] if i < len(data) else None) is not None:
     {
       "type": "code-block",
       "label": "Program 1: Truth Table Generator",
-      "code": """"\nProgram 1: Truth Table Generator\nGenerates truth tables for boolean expressions.\nDemonstrates boolean logic, operator precedence, and formatting.\n"""\ndef generate_truth_table(expression_name, func):\n    """Generate a truth table for a boolean function.\n\n    Args:\n        expression_name: Name of the expression\n        func: Function that takes two booleans and returns a boolean\n\n    Returns:\n        str: Formatted truth table\n    """\n    lines = [\n        f"\n{expression_name}",\n        "=" * 30,\n        "| A     | B     | Result |",\n        "|-------|-------|--------|"\n    ]\n\n    for a in [False, True]:\n        for b in [False, True]:\n            result = func(a, b)\n            lines.append(f"| {a:<5} | {b:<5} | {result:<6} |")\n\n    return "\n".join(lines)\n\ndef main():\n    """Main truth table program."""\n    print("=" * 40)\n    print("BOOLEAN TRUTH TABLE GENERATOR")\n    print("=" * 40)\n\n    expressions = [\n        ("AND (A and B)", lambda a, b: a and b),\n        ("OR (A or B)", lambda a, b: a or b),\n        ("XOR (A != B)", lambda a, b: a != b),\n        ("NAND (not (A and B))", lambda a, b: not (a and b)),\n        ("NOR (not (A or B))", lambda a, b: not (a or b)),\n        ("IMPLIES (not A or B)", lambda a, b: not a or b),\n    ]\n\n    for name, func in expressions:\n        print(generate_truth_table(name, func))\n\n    print("\n" + "=" * 40)\n\nif __name__ == "__main__":\n    main()"
+      "code": `"""
+Program 1: Truth Table Generator
+Generates truth tables for boolean expressions.
+Demonstrates boolean logic, operator precedence, and formatting.
+"""
+def generate_truth_table(expression_name, func):
+    """Generate a truth table for a boolean function.
+
+    Args:
+        expression_name: Name of the expression
+        func: Function that takes two booleans and returns a boolean
+
+    Returns:
+        str: Formatted truth table
+    """
+    lines = [
+        f"\n{expression_name}",
+        "=" * 30,
+        "| A     | B     | Result |",
+        "|-------|-------|--------|"
+    ]
+
+    for a in [False, True]:
+        for b in [False, True]:
+            result = func(a, b)
+            lines.append(f"| {a:<5} | {b:<5} | {result:<6} |")
+
+    return "\n".join(lines)
+
+def main():
+    """Main truth table program."""
+    print("=" * 40)
+    print("BOOLEAN TRUTH TABLE GENERATOR")
+    print("=" * 40)
+
+    expressions = [
+        ("AND (A and B)", lambda a, b: a and b),
+        ("OR (A or B)", lambda a, b: a or b),
+        ("XOR (A != B)", lambda a, b: a != b),
+        ("NAND (not (A and B))", lambda a, b: not (a and b)),
+        ("NOR (not (A or B))", lambda a, b: not (a or b)),
+        ("IMPLIES (not A or B)", lambda a, b: not a or b),
+    ]
+
+    for name, func in expressions:
+        print(generate_truth_table(name, func))
+
+    print("\n" + "=" * 40)
+
+if __name__ == "__main__":
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Permission System",
-      "code": """"\nProgram 2: Permission System\nA complete permission system using bitwise operators.\nDemonstrates flags, masks, and bitwise operations.\n"""\nclass Permissions:\n    """Permission flags using bitwise operations."""\n    READ = 1 << 0      # 0b0001 = 1\n    WRITE = 1 << 1     # 0b0010 = 2\n    EXECUTE = 1 << 2   # 0b0100 = 4\n    DELETE = 1 << 3    # 0b1000 = 8\n    ADMIN = 1 << 4     # 0b10000 = 16\n\nclass User:\n    """A user with permission flags."""\n\n    def __init__(self, name, permissions=0):\n        self.name = name\n        self.permissions = permissions\n\n    def can(self, permission):\n        """Check if user has a permission."""\n        return bool(self.permissions & permission)\n\n    def grant(self, permission):\n        """Grant a permission."""\n        self.permissions |= permission\n        return self\n\n    def revoke(self, permission):\n        """Revoke a permission."""\n        self.permissions &= ~permission\n        return self\n\n    def toggle(self, permission):\n        """Toggle a permission."""\n        self.permissions ^= permission\n        return self\n\n    def list_permissions(self):\n        """List all active permissions."""\n        result = []\n        for name, flag in vars(Permissions).items():\n            if not name.startswith("_") and self.can(flag):\n                result.append(name)\n        return result\n\n    def __repr__(self):\n        perms = ", ".join(self.list_permissions()) or "NONE"\n        return f"User({self.name!r}, [{perms}])"\n\ndef main():\n    """Main permission system program."""\n    print("=" * 50)\n    print("PERMISSION SYSTEM")\n    print("=" * 50)\n\n    alice = User("Alice", Permissions.READ | Permissions.WRITE)\n    bob = User("Bob", Permissions.READ | Permissions.EXECUTE)\n    charlie = User("Charlie", Permissions.ADMIN)\n\n    print("Initial users:")\n    print(f"  {alice}")\n    print(f"  {bob}")\n    print(f"  {charlie}")\n\n    print("Permission checks:")\n    for user in [alice, bob, charlie]:\n        print(f"\n  {user.name}:")\n        print(f"    Can read?    {user.can(Permissions.READ)}")\n        print(f"    Can write?   {user.can(Permissions.WRITE)}")\n        print(f"    Can execute? {user.can(Permissions.EXECUTE)}")\n        print(f"    Can delete?  {user.can(Permissions.DELETE)}")\n        print(f"    Is admin?    {user.can(Permissions.ADMIN)}")\n\n    print("\nGranting delete to Alice...")\n    alice.grant(Permissions.DELETE)\n    print(f"  {alice}")\n\n    print("Revoking execute from Bob...")\n    bob.revoke(Permissions.EXECUTE)\n    print(f"  {bob}")\n\n    print("Toggling admin on Charlie...")\n    charlie.toggle(Permissions.ADMIN)\n    print(f"  {charlie}")\n\n    print("=" * 50)\n\nif __name__ == "__main__":\n    main()"
+      "code": `"""
+Program 2: Permission System
+A complete permission system using bitwise operators.
+Demonstrates flags, masks, and bitwise operations.
+"""
+class Permissions:
+    """Permission flags using bitwise operations."""
+    READ = 1 << 0      # 0b0001 = 1
+    WRITE = 1 << 1     # 0b0010 = 2
+    EXECUTE = 1 << 2   # 0b0100 = 4
+    DELETE = 1 << 3    # 0b1000 = 8
+    ADMIN = 1 << 4     # 0b10000 = 16
+
+class User:
+    """A user with permission flags."""
+
+    def __init__(self, name, permissions=0):
+        self.name = name
+        self.permissions = permissions
+
+    def can(self, permission):
+        """Check if user has a permission."""
+        return bool(self.permissions & permission)
+
+    def grant(self, permission):
+        """Grant a permission."""
+        self.permissions |= permission
+        return self
+
+    def revoke(self, permission):
+        """Revoke a permission."""
+        self.permissions &= ~permission
+        return self
+
+    def toggle(self, permission):
+        """Toggle a permission."""
+        self.permissions ^= permission
+        return self
+
+    def list_permissions(self):
+        """List all active permissions."""
+        result = []
+        for name, flag in vars(Permissions).items():
+            if not name.startswith("_") and self.can(flag):
+                result.append(name)
+        return result
+
+    def __repr__(self):
+        perms = ", ".join(self.list_permissions()) or "NONE"
+        return f"User({self.name!r}, [{perms}])"
+
+def main():
+    """Main permission system program."""
+    print("=" * 50)
+    print("PERMISSION SYSTEM")
+    print("=" * 50)
+
+    alice = User("Alice", Permissions.READ | Permissions.WRITE)
+    bob = User("Bob", Permissions.READ | Permissions.EXECUTE)
+    charlie = User("Charlie", Permissions.ADMIN)
+
+    print("Initial users:")
+    print(f"  {alice}")
+    print(f"  {bob}")
+    print(f"  {charlie}")
+
+    print("Permission checks:")
+    for user in [alice, bob, charlie]:
+        print(f"\n  {user.name}:")
+        print(f"    Can read?    {user.can(Permissions.READ)}")
+        print(f"    Can write?   {user.can(Permissions.WRITE)}")
+        print(f"    Can execute? {user.can(Permissions.EXECUTE)}")
+        print(f"    Can delete?  {user.can(Permissions.DELETE)}")
+        print(f"    Is admin?    {user.can(Permissions.ADMIN)}")
+
+    print("\nGranting delete to Alice...")
+    alice.grant(Permissions.DELETE)
+    print(f"  {alice}")
+
+    print("Revoking execute from Bob...")
+    bob.revoke(Permissions.EXECUTE)
+    print(f"  {bob}")
+
+    print("Toggling admin on Charlie...")
+    charlie.toggle(Permissions.ADMIN)
+    print(f"  {charlie}")
+
+    print("=" * 50)
+
+if __name__ == "__main__":
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Circuit Simulator",
-      "code": """"\nProgram 3: Circuit Simulator\nSimulates digital logic gates using boolean operators.\nDemonstrates boolean logic, operator combinations, and truth tables.\n"""\nclass LogicGate:\n    """Base class for logic gates."""\n\n    def __init__(self, name):\n        self.name = name\n\n    def evaluate(self, *inputs):\n        raise NotImplementedError\n\n    def __repr__(self):\n        return f"{self.name} Gate"\n\nclass ANDGate(LogicGate):\n    def evaluate(self, a, b):\n        return a and b\n\nclass ORGate(LogicGate):\n    def evaluate(self, a, b):\n        return a or b\n\nclass NOTGate(LogicGate):\n    def evaluate(self, a):\n        return not a\n\nclass XORGate(LogicGate):\n    def evaluate(self, a, b):\n        return a != b\n\nclass NANDGate(LogicGate):\n    def evaluate(self, a, b):\n        return not (a and b)\n\nclass NORGate(LogicGate):\n    def evaluate(self, a, b):\n        return not (a or b)\n\nclass Circuit:\n    """A circuit composed of logic gates."""\n\n    def __init__(self):\n        self.gates = []\n\n    def add(self, gate):\n        self.gates.append(gate)\n        return self\n\n    def simulate(self, inputs):\n        """Simulate the circuit with given inputs."""\n        result = inputs\n        for gate in self.gates:\n            if isinstance(gate, NOTGate):\n                result = gate.evaluate(result)\n            else:\n                a, b = result if isinstance(result, tuple) else (result, result)\n                result = gate.evaluate(a, b)\n        return result\n\ndef main():\n    """Main circuit simulator program."""\n    print("=" * 50)\n    print("DIGITAL CIRCUIT SIMULATOR")\n    print("=" * 50)\n\n    gates = [\n        ANDGate(), ORGate(), NOTGate(),\n        XORGate(), NANDGate(), NORGate()\n    ]\n\n    print("Individual gates:")\n    for gate in gates:\n        if isinstance(gate, NOTGate):\n            print(f"\n  {gate}:")\n            for a in [False, True]:\n                print(f"    {a} -> {gate.evaluate(a)}")\n        else:\n            print(f"\n  {gate}:")\n            for a in [False, True]:\n                for b in [False, True]:\n                    print(f"    {a}, {b} -> {gate.evaluate(a, b)}")\n\n    print("\n" + "=" * 50)\n\nif __name__ == "__main__":\n    main()"
+      "code": `"""
+Program 3: Circuit Simulator
+Simulates digital logic gates using boolean operators.
+Demonstrates boolean logic, operator combinations, and truth tables.
+"""
+class LogicGate:
+    """Base class for logic gates."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def evaluate(self, *inputs):
+        raise NotImplementedError
+
+    def __repr__(self):
+        return f"{self.name} Gate"
+
+class ANDGate(LogicGate):
+    def evaluate(self, a, b):
+        return a and b
+
+class ORGate(LogicGate):
+    def evaluate(self, a, b):
+        return a or b
+
+class NOTGate(LogicGate):
+    def evaluate(self, a):
+        return not a
+
+class XORGate(LogicGate):
+    def evaluate(self, a, b):
+        return a != b
+
+class NANDGate(LogicGate):
+    def evaluate(self, a, b):
+        return not (a and b)
+
+class NORGate(LogicGate):
+    def evaluate(self, a, b):
+        return not (a or b)
+
+class Circuit:
+    """A circuit composed of logic gates."""
+
+    def __init__(self):
+        self.gates = []
+
+    def add(self, gate):
+        self.gates.append(gate)
+        return self
+
+    def simulate(self, inputs):
+        """Simulate the circuit with given inputs."""
+        result = inputs
+        for gate in self.gates:
+            if isinstance(gate, NOTGate):
+                result = gate.evaluate(result)
+            else:
+                a, b = result if isinstance(result, tuple) else (result, result)
+                result = gate.evaluate(a, b)
+        return result
+
+def main():
+    """Main circuit simulator program."""
+    print("=" * 50)
+    print("DIGITAL CIRCUIT SIMULATOR")
+    print("=" * 50)
+
+    gates = [
+        ANDGate(), ORGate(), NOTGate(),
+        XORGate(), NANDGate(), NORGate()
+    ]
+
+    print("Individual gates:")
+    for gate in gates:
+        if isinstance(gate, NOTGate):
+            print(f"\n  {gate}:")
+            for a in [False, True]:
+                print(f"    {a} -> {gate.evaluate(a)}")
+        else:
+            print(f"\n  {gate}:")
+            for a in [False, True]:
+                for b in [False, True]:
+                    print(f"    {a}, {b} -> {gate.evaluate(a, b)}")
+
+    print("\n" + "=" * 50)
+
+if __name__ == "__main__":
+    main()`
     },
     {
       "type": "h2",
