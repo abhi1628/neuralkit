@@ -296,7 +296,7 @@ print(t.substitute(user_name="Alice", item_count=5))
 # Template strings do NOT evaluate arbitrary expressions!
 # This is safe even with malicious user input:
 
-user_template = "\${name.upper()}"  # Even this is safe!
+user_template = "\u0024{name.upper()}"  # Even this is safe!
 t = Template(user_template)
 print(t.substitute(name="alice"))   # alice.upper() is NOT executed
 
@@ -372,15 +372,15 @@ def generate_receipt(items, store_name="Python Mart", tax_rate=0.08):
 
     # Items
     for item in items:
-        receipt += f"{item.name:<24} {item.quantity:>3}  \\${item.price:>6.2f}  \\${item.total:>6.2f}\n"
+        receipt += f"{item.name:<24} {item.quantity:>3}  \\u0024{item.price:>6.2f}  \\u0024{item.total:>6.2f}\n"
 
     # Footer
     receipt += f"""
 {"-" * 40}
-    Subtotal:                          \\${subtotal:>8.2f}
-    Tax ({tax_rate:.0%}):                         \\${tax:>8.2f}
+    Subtotal:                          \\u0024{subtotal:>8.2f}
+    Tax ({tax_rate:.0%}):                         \\u0024{tax:>8.2f}
 {"=" * 40}
-    TOTAL:                             \\${total:>8.2f}
+    TOTAL:                             \\u0024{total:>8.2f}
 {"=" * 40}
     THANK YOU FOR SHOPPING!
     """
