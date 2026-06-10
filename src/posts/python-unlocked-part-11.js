@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Why Tuples Exist",
-      "code": "# === REASON 1: HASHABILITY ===
+      "code": `# === REASON 1: HASHABILITY ===
 # Tuples can be dictionary keys and set elements
 
 # Lists are unhashable (mutable = cannot be hashed)
@@ -133,7 +133,7 @@ try:
 except TypeError as e:
     print(f"  {e}")
 
-print("\nTuple fundamentals complete!")"
+print("\nTuple fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -146,7 +146,7 @@ print("\nTuple fundamentals complete!")"
     {
       "type": "code-block",
       "label": "Packing & Unpacking Mastery",
-      "code": "# === PACKING ===
+      "code": `# === PACKING ===
 # Creating tuples without parentheses (tuple literal)
 
 coordinates = 40.7128, -74.0060  # Packed tuple
@@ -265,7 +265,7 @@ print(f"\nUsing _: x={x}, z={z}")
 for _ in range(3):
     print("  Doing something 3 times")
 
-print("\nPacking & unpacking mastery complete!")"
+print("\nPacking & unpacking mastery complete!")`
     },
     {
       "type": "h2",
@@ -278,7 +278,7 @@ print("\nPacking & unpacking mastery complete!")"
     {
       "type": "code-block",
       "label": "Named Tuples Mastery",
-      "code": "# === collections.namedtuple ===
+      "code": `# === collections.namedtuple ===
 # The classic named tuple from the standard library
 
 from collections import namedtuple
@@ -407,7 +407,7 @@ for user in rows:
     if user.is_active:
         print(f"  {user.username} <{user.email}>")
 
-print("\nNamed tuples mastery complete!")"
+print("\nNamed tuples mastery complete!")`
     },
     {
       "type": "h2",
@@ -420,7 +420,7 @@ print("\nNamed tuples mastery complete!")"
     {
       "type": "code-block",
       "label": "The id() Trick",
-      "code": "# === THE id() FUNCTION ===
+      "code": `# === THE id() FUNCTION ===
 # Returns the unique identity of an object (memory address)
 
 a = (1, 2, 3)
@@ -522,7 +522,7 @@ top, s4 = s3.pop()
 print(f"Popped {top}, remaining: {s4}")
 print(f"Old stack still valid: {s3}")
 
-print("\nid() trick mastery complete!")"
+print("\nid() trick mastery complete!")`
     },
     {
       "type": "h2",
@@ -535,7 +535,7 @@ print("\nid() trick mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Coordinate System",
-      "code": """"
+      "code": `"""
 Program 1: Coordinate System
 2D/3D coordinate operations using tuples.
 Demonstrates tuple math, unpacking, and named tuples.
@@ -644,12 +644,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Function Multi-Return",
-      "code": """"
+      "code": `"""
 Program 2: Function Multi-Return
 Functions that return multiple values using tuples.
 Demonstrates packing, unpacking, and named tuple returns.
@@ -782,12 +782,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Immutable Configuration",
-      "code": """"
+      "code": `"""
 Program 3: Immutable Configuration
 An immutable configuration system using tuples and named tuples.
 Demonstrates immutability, functional updates, and deep nesting.
@@ -910,7 +910,9 @@ def main():
     print(f"Features: {config.config.features}")
 
     # Create dev version (immutable update)
-    dev_config = config.update_server(debug=True, port=3000)\n                        .update_database(host="dev-db", pool_size=5)\n                        .add_feature("debug_ui")
+    dev_config = config.update_server(debug=True, port=3000)\
+                        .update_database(host="dev-db", pool_size=5)\
+                        .add_feature("debug_ui")
 
     print(f"\nDev config: {dev_config}")
     print(f"Dev features: {dev_config.config.features}")
@@ -943,12 +945,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Named Tuple Database Row",
-      "code": """"
+      "code": `"""
 Program 4: Named Tuple Database Row
 Simulates database operations using named tuples as rows.
 Demonstrates named tuple CRUD, filtering, and type safety.
@@ -1115,7 +1117,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
