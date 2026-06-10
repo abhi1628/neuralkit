@@ -31,7 +31,7 @@ const post = {
     {
       "type": "code-block",
       "label": "try-except-else-finally Mastery",
-      "code": "# === THE COMPLETE try-except-else-finally BLOCK ===
+      "code": `# === THE COMPLETE try-except-else-finally BLOCK ===
 # Execution order: try -> [except if exception] -> [else if no exception] -> finally
 
 # --- Basic try-except ---
@@ -55,12 +55,12 @@ try:
     # Simulate a complex operation
     raise ValueError('Invalid input')
 except ValueError as e:
-    print(f'\nSpecific catch: {e}')
+    print(f'\\nSpecific catch: {e}')
 except Exception as e:
     print(f'General catch: {e}')  # Won't execute if ValueError caught
 
 # --- else clause: runs ONLY if no exception occurred ---
-print(f'\nelse clause demonstration:')
+print(f'\\nelse clause demonstration:')
 for value in [2, 0]:
     try:
         result = 10 / value
@@ -70,15 +70,15 @@ for value in [2, 0]:
         print(f'  {value}: Success! Result = {result}')
 
 # --- finally clause: ALWAYS runs (cleanup, resource release) ---
-print(f'\nfinally clause demonstration:')
+print(f'\\nfinally clause demonstration:')
 
 def demo_finally(value):
     try:
         result = 10 / value
-        return result  # finally runs BEFORE return!
+        return result  // finally runs BEFORE return!
     except ZeroDivisionError:
         print(f'  Exception caught')
-        return -1  # finally still runs!
+        return -1  // finally still runs!
     finally:
         print(f'  finally: cleanup for value={value}')
 
@@ -86,7 +86,7 @@ print(f'  Result: {demo_finally(2)}')
 print(f'  Result: {demo_finally(0)}')
 
 # --- Full block: try-except-else-finally ---
-print(f'\nFull block execution:')
+print(f'\\nFull block execution:')
 
 def process_data(data):
     try:
@@ -105,7 +105,7 @@ def process_data(data):
 for data in ['42', 'not_a_number']:
     print(f'Input: {data!r}')
     result = process_data(data)
-    print(f'  Returned: {result}\n')
+    print(f'  Returned: {result}\\n')
 
 # --- Bare except vs except Exception ---
 # 'except:' catches EVERYTHING including KeyboardInterrupt and SystemExit
@@ -119,14 +119,14 @@ print(f'  ValueError base: {ValueError.__bases__}')
 # --- try without except (finally only) ---
 # Useful for guaranteed cleanup even when not handling exceptions
 
-print(f'\ntry-finally (no except):')
+print(f'\\ntry-finally (no except):')
 try:
     print(f'  Doing work...')
     x = 1 / 0
 finally:
     print(f'  Cleanup always runs, exception propagates!')
 
-print("\ntry-except-else-finally mastery complete!")"
+print("\\ntry-except-else-finally mastery complete!")`
     },
     {
       "type": "h2",
@@ -139,7 +139,7 @@ print("\ntry-except-else-finally mastery complete!")"
     {
       "type": "code-block",
       "label": "Exception Hierarchy Mastery",
-      "code": "# === EXCEPTION HIERARCHY ===
+      "code": `# === EXCEPTION HIERARCHY ===
 # BaseException -> Exception -> [ArithmeticError, LookupError, OSError, ...]
 #                        -> [ValueError, TypeError, KeyError, IndexError, ...]
 
@@ -155,7 +155,7 @@ print('Exception hierarchy (partial):')
 print_exception_tree(BaseException)
 
 # --- Common built-in exceptions ---
-print(f'\nCommon exceptions and their use cases:')
+print(f'\\nCommon exceptions and their use cases:')
 
 exceptions_demo = [
     ('ValueError', lambda: int('not_a_number')),
@@ -182,21 +182,21 @@ for name, func in exceptions_demo:
         print(f'  {name}: Permission denied (expected on non-root systems)')
 
 # --- Exception inheritance ---
-print(f'\nInheritance checks:')
+print(f'\\nInheritance checks:')
 print(f'  FileNotFoundError is OSError: {issubclass(FileNotFoundError, OSError)}')
 print(f'  FileNotFoundError is Exception: {issubclass(FileNotFoundError, Exception)}')
 print(f'  ValueError is LookupError: {issubclass(ValueError, LookupError)}')
 print(f'  KeyError is LookupError: {issubclass(KeyError, LookupError)}')
 
 # --- Catching parent catches children ---
-print(f'\nCatching OSError catches FileNotFoundError:')
+print(f'\\nCatching OSError catches FileNotFoundError:')
 try:
     open('does_not_exist.txt')
 except OSError as e:
     print(f'  Caught as OSError: {type(e).__name__}: {e}')
 
 # --- isinstance with exceptions ---
-print(f'\nUsing isinstance with exceptions:')
+print(f'\\nUsing isinstance with exceptions:')
 try:
     {}['missing']
 except Exception as e:
@@ -205,7 +205,7 @@ except Exception as e:
     print(f'  isinstance(e, Exception): {isinstance(e, Exception)}')
 
 # --- Exception args ---
-print(f'\nException arguments:')
+print(f'\\nException arguments:')
 try:
     raise ValueError('message', 42, 'extra')
 except ValueError as e:
@@ -215,7 +215,7 @@ except ValueError as e:
 
 # --- errno module for OSError codes ---
 import errno
-print(f'\nOSError errno codes:')
+print(f'\\nOSError errno codes:')
 print(f'  ENOENT (No such file): {errno.ENOENT}')
 print(f'  EACCES (Permission denied): {errno.EACCES}')
 print(f'  EEXIST (File exists): {errno.EEXIST}')
@@ -225,7 +225,7 @@ try:
 except OSError as e:
     print(f'  Error code: {e.errno} ({errno.errorcode.get(e.errno, "unknown")})')
 
-print("\nException hierarchy mastery complete!")"
+print("\nException hierarchy mastery complete!")`
     },
     {
       "type": "h2",
@@ -238,9 +238,9 @@ print("\nException hierarchy mastery complete!")"
     {
       "type": "code-block",
       "label": "Custom Exceptions Mastery",
-      "code": "# === CUSTOM EXCEPTIONS ===
+      "code": `# === CUSTOM EXCEPTIONS ===
 
-# --- Basic custom exception ---
+# --- Base custom exception ---
 class APIError(Exception):
     """Base exception for API errors."""
     pass
@@ -295,17 +295,23 @@ for endpoint in ['/timeout', '/error', '/rate_limit', '/success']:
         print(f'  {endpoint}: Generic API error: {e}')
 
 # --- raise statement ---
-print(f'\nraise statement:')
+print(f'\\nraise statement:')
 
 # Re-raise current exception (preserves traceback)
 try:
     raise ValueError('Original error')
 except ValueError:
     print(f'  Caught, re-raising...')
-    raise  # Re-raises the same ValueError with original traceback
+    # Re-raises the same ValueError with original traceback
 
 # --- raise ... from: Exception chaining ---
-print(f'\nException chaining with raise ... from:')
+print(f'\\nException chaining with raise ... from:')
+
+import json
+
+class ConfigError(Exception):
+    """Configuration error."""
+    pass
 
 def parse_config_file(path):
     try:
@@ -316,10 +322,6 @@ def parse_config_file(path):
     except json.JSONDecodeError as e:
         raise ConfigError(f'Invalid JSON in config: {path}') from e
 
-class ConfigError(Exception):
-    """Configuration error."""
-    pass
-
 # Chain demonstration
 try:
     parse_config_file('missing_config.json')
@@ -329,7 +331,7 @@ except ConfigError as e:
     print(f'  __cause__ type: {type(e.__cause__).__name__}')
 
 # --- Implicit chaining (no from) ---
-print(f'\nImplicit chaining (raise inside except):')
+print(f'\\nImplicit chaining (raise inside except):')
 
 try:
     try:
@@ -343,7 +345,7 @@ except RuntimeError as e:
     print(f'  __suppress_context__: {e.__suppress_context__}')
 
 # --- Explicit vs implicit chaining ---
-print(f'\nExplicit vs implicit:')
+print(f'\\nExplicit vs implicit:')
 
 # Explicit (recommended): preserves intent
 try:
@@ -366,7 +368,7 @@ except RuntimeError as e:
     print(f'  __context__: {e.__context__}')
 
 # --- Exception groups (Python 3.11+) ---
-print(f'\nExceptionGroup (Python 3.11+):')
+print(f'\\nExceptionGroup (Python 3.11+):')
 try:
     raise ExceptionGroup('multiple errors', [
         ValueError('Invalid value'),
@@ -380,7 +382,7 @@ except* TypeError as eg:
 except* KeyError as eg:
     print(f'  Caught KeyErrors: {len(eg.exceptions)}')
 
-print("\nCustom exceptions mastery complete!")"
+print("\nCustom exceptions mastery complete!")`
     },
     {
       "type": "h2",
@@ -393,7 +395,7 @@ print("\nCustom exceptions mastery complete!")"
     {
       "type": "code-block",
       "label": "EAFP vs LBYL Mastery",
-      "code": "# === EAFP vs LBYL ===
+      "code": `# === EAFP vs LBYL ===
 # EAFP = Easier to Ask Forgiveness than Permission
 # LBYL = Look Before You Leap
 
@@ -439,14 +441,14 @@ def read_file_eafp(path):
 with open('test_read.txt', 'w') as f:
     f.write('Hello')
 
-print(f'\nFile reading:')
+print(f'\\nFile reading:')
 print(f'  LBYL: {read_file_lbyl("test_read.txt")[:10]}...')
 print(f'  EAFP: {read_file_eafp("test_read.txt")[:10]}...')
 print(f'  LBYL missing: {read_file_lbyl("missing.txt")}')
 print(f'  EAFP missing: {read_file_eafp("missing.txt")}')
 
 # --- Race condition: LBYL is vulnerable ---
-print(f'\nRace condition problem:')
+print(f'\\nRace condition problem:')
 
 def delete_if_exists_lbyl(path):
     # TOCTOU vulnerability: Time-of-check to time-of-use
@@ -484,12 +486,12 @@ def process_eafp(value):
         except TypeError:
             return None
 
-print(f'\nType handling:')
+print(f'\\nType handling:')
 for val in ['hello', 42, [1, 2]]:
     print(f'  {val!r}: LBYL={process_lbyl(val)}, EAFP={process_eafp(val)}')
 
 # --- Example 4: Duck typing (EAFP is essential) ---
-print(f'\nDuck typing with EAFP:')
+print(f'\\nDuck typing with EAFP:')
 
 def get_length(obj):
     """Works with any object that has a length."""
@@ -502,7 +504,7 @@ for item in ['string', [1, 2, 3], {'a': 1}, 42, None]:
     print(f'  {item!r}: length = {get_length(item)}')
 
 # --- When LBYL is appropriate ---
-print(f'\nWhen LBYL makes sense:')
+print(f'\\nWhen LBYL makes sense:')
 
 # 1. When the check is cheap and the exception is expensive
 # 2. When checking is the primary logic (not error handling)
@@ -521,7 +523,7 @@ else:
     result = None
 
 # --- EAFP with finally for cleanup ---
-print(f'\nEAFP with cleanup:')
+print(f'\\nEAFP with cleanup:')
 
 def process_with_cleanup(data):
     resource = {'open': True, 'data': None}
@@ -543,7 +545,7 @@ process_with_cleanup({})
 # Cleanup
 os.unlink('test_read.txt')
 
-print("\nEAFP vs LBYL mastery complete!")"
+print("\nEAFP vs LBYL mastery complete!")`
     },
     {
       "type": "h2",
@@ -556,7 +558,7 @@ print("\nEAFP vs LBYL mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Robust Calculator",
-      "code": """"
+      "code": `"""
 Program 1: Robust Calculator
 A calculator that handles all edge cases gracefully.
 Demonstrates exception handling, custom exceptions, and EAFP.
@@ -706,7 +708,7 @@ def main():
     calc = RobustCalculator()
     
     # Successful calculations
-    print(f'\nSuccessful calculations:')
+    print(f'\\nSuccessful calculations:')
     for op, a, b in [('+', 10, 5), ('*', 7, 3), ('**', 2, 10), ('sqrt', 16, None)]:
         try:
             if b is None:
@@ -718,7 +720,7 @@ def main():
             print(f'  {op}({a}, {b}): ERROR - {e}')
     
     # Error cases
-    print(f'\nError handling:')
+    print(f'\\nError handling:')
     for op, a, b in [('/', 10, 0), ('sqrt', -4, None), ('log', 0, None), ('unknown', 1, 2)]:
         try:
             if b is None:
@@ -730,7 +732,7 @@ def main():
             print(f'  {op}({a}, {b}): {type(e).__name__}: {e}')
     
     # Batch processing
-    print(f'\nBatch processing:')
+    print(f'\\nBatch processing:')
     batch = [
         ('+', 10, 5),
         ('/', 10, 0),
@@ -744,22 +746,22 @@ def main():
         print(f'  {r["operation"]}: {status} = {r.get("result", r.get("error"))}')
     
     # History
-    print(f'\nCalculation history (last 5):')
+    print(f'\\nCalculation history (last 5):')
     for entry in calc.history.get_last(5):
         status = 'OK' if entry['error'] is None else f'ERROR: {entry["error"]}'
         print(f'  {entry["operation"]}: {status}')
     
-    print(f'\nTotal errors: {len(calc.history.get_errors())}')
+    print(f'\\nTotal errors: {len(calc.history.get_errors())}')
     
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: File Opener with Retries",
-      "code": """"
+      "code": `"""
 Program 2: File Opener with Retries
 Opens files with automatic retry, exponential backoff, and detailed error context.
 Demonstrates exception chaining, custom exceptions, and EAFP with cleanup.
@@ -836,7 +838,6 @@ class RobustFileOpener:
     def open(self, path: str, mode: str = 'r', encoding: str = 'utf-8') -> FileResult:
         """Open file with retry logic."""
         start_time = time.perf_counter()
-        path_obj = Path(path)
         
         for attempt in range(self.max_retries + 1):
             try:
@@ -937,7 +938,7 @@ def main():
     )
     
     # Successful open
-    print(f'\nOpening existing file:')
+    print(f'\\nOpening existing file:')
     result = opener.open('readable.txt')
     print(f'  Status: {result.status.name}')
     print(f'  Content: {result.content[:20]}...')
@@ -945,14 +946,14 @@ def main():
     print(f'  Time: {result.elapsed_time:.4f}s')
     
     # Missing file
-    print(f'\nOpening missing file:')
+    print(f'\\nOpening missing file:')
     result = opener.open('missing.txt')
     print(f'  Status: {result.status.name}')
     print(f'  Error: {result.error_message}')
     print(f'  Original: {type(result.original_error).__name__}')
     
     # Multiple files
-    print(f'\nOpening multiple files:')
+    print(f'\\nOpening multiple files:')
     results = opener.open_multiple(['readable.txt', 'missing.txt', 'readable.txt'])
     for r in results:
         print(f'  {r.path}: {r.status.name}')
@@ -963,12 +964,12 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Custom Exception Hierarchy",
-      "code": """"
+      "code": `"""
 Program 3: Custom Exception Hierarchy
 A complete domain-specific exception hierarchy for a data processing pipeline.
 Demonstrates inheritance, exception attributes, and context-rich error reporting.
@@ -1217,19 +1218,19 @@ def main():
         {'id': '6', 'name': 'eve', 'email': 'eve@example.com', 'age': '42'},
     ]
     
-    print(f'\nProcessing {len(test_records)} records:')
+    print(f'\\nProcessing {len(test_records)} records:')
     try:
         results = pipeline.process_batch(test_records)
-        print(f'\nResults: {len(results)} succeeded, {pipeline.failed} failed')
+        print(f'\\nResults: {len(results)} succeeded, {pipeline.failed} failed')
         for r in results:
             print(f'  {r["id"]}: {r["name"]}, {r["email"]}, age={r["age"]}, category={r["category"]}')
     except PipelineAbortedError as e:
-        print(f'\nPipeline aborted: {e}')
+        print(f'\\nPipeline aborted: {e}')
         print(f'  Errors collected: {len(e.errors)}')
         for err in e.errors:
             print(f'    - {type(err).__name__}: {err}')
     
-    print(f'\nException hierarchy:')
+    print(f'\\nException hierarchy:')
     print(f'  PipelineAbortedError -> DataPipelineError -> Exception')
     print(f'  ValidationError -> DataPipelineError -> Exception')
     print(f'  TransformationError -> DataPipelineError -> Exception')
@@ -1238,12 +1239,12 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Context Manager from Scratch",
-      "code": """"
+      "code": `"""
 Program 4: Context Manager from Scratch
 Build context managers using both class-based and generator-based approaches.
 Demonstrates __enter__, __exit__, @contextmanager, and exception handling in context managers.
@@ -1402,19 +1403,19 @@ def main():
     print('=' * 50)
 
     # --- Class-based context manager ---
-    print(f'\n1. Database Transaction (success):')
+    print(f'\\n1. Database Transaction (success):')
     with DatabaseTransaction('production_db') as tx:
         tx.execute('INSERT INTO users (name) VALUES ("Alice")')
         tx.execute('UPDATE stats SET count = count + 1')
     print(f'  Result: {tx.result.status.name}, {tx.result.operations} ops')
     
-    print(f'\n2. Database Transaction (with error, suppressed):')
+    print(f'\\n2. Database Transaction (with error, suppressed):')
     with DatabaseTransaction('production_db') as tx:
         tx.execute('INSERT INTO users (name) VALUES ("Bob")')
         raise ValueError('Simulated validation error')  # Will be suppressed
     print(f'  Result: {tx.result.status.name}, {tx.result.operations} ops')
     
-    print(f'\n3. Database Transaction (with error, propagated):')
+    print(f'\\n3. Database Transaction (with error, propagated):')
     try:
         with DatabaseTransaction('production_db') as tx:
             tx.execute('INSERT INTO users (name) VALUES ("Charlie")')
@@ -1423,12 +1424,12 @@ def main():
         print(f'  Caught outside: {e}')
     
     # --- Generator-based context manager ---
-    print(f'\n4. Timed Execution (success):')
+    print(f'\\n4. Timed Execution (success):')
     with timed_execution('Data Processing'):
         time.sleep(0.05)
         print(f'  Doing work...')
     
-    print(f'\n5. Timed Execution (failure):')
+    print(f'\\n5. Timed Execution (failure):')
     try:
         with timed_execution('Risky Operation'):
             raise ValueError('Something went wrong')
@@ -1436,7 +1437,7 @@ def main():
         print(f'  Exception propagated to caller')
     
     # --- Resource pool ---
-    print(f'\n6. Resource Pool:')
+    print(f'\\n6. Resource Pool:')
     pool = ['connection_1', 'connection_2', 'connection_3']
     print(f'  Pool before: {pool}')
     with resource_pool(pool, max_borrow=2) as borrowed:
@@ -1444,7 +1445,7 @@ def main():
     print(f'  Pool after: {pool}')
     
     # --- Retry context ---
-    print(f'\n7. Retry Context:')
+    print(f'\\n7. Retry Context:')
     attempt_count = 0
     def flaky_operation():
         nonlocal attempt_count
@@ -1457,14 +1458,14 @@ def main():
         flaky_operation()
     
     # --- Nested context managers ---
-    print(f'\n8. Nested Context Managers:')
+    print(f'\\n8. Nested Context Managers:')
     with logging_context('Outer'):
         with logging_context('Inner'):
             with timed_execution('Nested Work'):
                 print(f'  Performing nested work')
     
     # --- Context manager with exception info ---
-    print(f'\n9. Exception Information in __exit__:')
+    print(f'\\n9. Exception Information in __exit__:')
     
     class ExceptionInspector:
         def __enter__(self):
@@ -1489,10 +1490,10 @@ def main():
     print('=' * 50)
 
 if __name__ == '__main__':
-    main()"
+    main()`
     },
     {
-      "type": "h2",
+      "type": "quiz",
       "text": "Quiz: Test Your Understanding"
     },
     {
