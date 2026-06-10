@@ -57,12 +57,12 @@ const post = {
     {
       "type": "code-block",
       "label": "The Zen of Python",
-      "code": "# Open your Python interpreter and type this:
+      "code": `# Open your Python interpreter and type this:
 import this
 
 # The output is the Zen of Python by Tim Peters (1999)
 # But the text is encoded with ROT13 cipher as an Easter egg!
-# Let's decode it properly and understand each aphorism."
+# Let's decode it properly and understand each aphorism.`
     },
     {
       "type": "h3",
@@ -75,7 +75,7 @@ import this
     {
       "type": "code-block",
       "label": "Beautiful vs Ugly",
-      "code": "# UGLY: What is this doing? You have to read every character.
+      "code": `# UGLY: What is this doing? You have to read every character.
 def f(a,b,c):return a+b*c if c>0 else a-b*c
 
 # BEAUTIFUL: You understand the intent in 0.5 seconds.
@@ -87,7 +87,7 @@ def calculate_adjusted_value(base, multiplier, factor):
         return base - multiplier * factor
 
 # The beautiful version is 4x longer but 10x faster to understand.
-# In a team of 10 developers, that understanding speed compounds."
+# In a team of 10 developers, that understanding speed compounds.`
     },
     {
       "type": "h3",
@@ -100,7 +100,7 @@ def calculate_adjusted_value(base, multiplier, factor):
     {
       "type": "code-block",
       "label": "Explicit vs Implicit",
-      "code": "# IMPLICIT: JavaScript-style type coercion (Python does NOT do this)
+      "code": `# IMPLICIT: JavaScript-style type coercion (Python does NOT do this)
 # In JS: '5' + 3 = '53' (implicit string conversion)
 # In JS: '5' - 3 = 2   (implicit number conversion)
 # This is confusing and bug-prone.
@@ -109,14 +109,14 @@ def calculate_adjusted_value(base, multiplier, factor):
 number_str = '5'
 number_int = 3
 
-# You must explicitly convert:
-result_concat = number_str + str(number_int)    # '53'
-result_math = int(number_str) + number_int        # 8
+// You must explicitly convert:
+result_concat = number_str + str(number_int)    // '53'
+result_math = int(number_str) + number_int        // 8
 
-# Python raises TypeError if you forget:
-# number_str + number_int  # TypeError: can only concatenate str to str
+// Python raises TypeError if you forget:
+// number_str + number_int  // TypeError: can only concatenate str to str
 
-# This seems annoying at first. But it prevents 3 AM debugging sessions."
+// This seems annoying at first. But it prevents 3 AM debugging sessions.`
     },
     {
       "type": "h3",
@@ -137,7 +137,7 @@ result_math = int(number_str) + number_int        # 8
     {
       "type": "code-block",
       "label": "Flat vs Nested",
-      "code": "# NESTED: The Pyramid of Doom
+      "code": `# NESTED: The Pyramid of Doom
 def process_user(user):
     if user:
         if user.is_active:
@@ -165,7 +165,7 @@ def process_user_flat(user):
         return 'No profile'
     return user.profile.name
 
-# The flat version reads like a checklist. The nested version reads like a maze."
+# The flat version reads like a checklist. The nested version reads like a maze.`
     },
     {
       "type": "h3",
@@ -194,7 +194,7 @@ def process_user_flat(user):
     {
       "type": "code-block",
       "label": "Consistency in Action",
-      "code": "# In Python, EVERYTHING iterable uses the same pattern:
+      "code": `# In Python, EVERYTHING iterable uses the same pattern:
 
 # List
 for item in [1, 2, 3]:
@@ -219,7 +219,7 @@ for i in range(5):
 # The pattern is identical: 'for item in iterable:'
 # You don't need to learn 'for each', 'for i=0; i<n; i++', 
 # 'while not EOF', or any other special syntax.
-# One pattern. Infinite applications."
+# One pattern. Infinite applications.`
     },
     {
       "type": "h3",
@@ -297,7 +297,7 @@ for i in range(5):
     {
       "type": "code-block",
       "label": "Python 3.12 Highlights",
-      "code": "# === 1. F-STRING DEBUG EXPRESSIONS ===
+      "code": `# === 1. F-STRING DEBUG EXPRESSIONS ===
 # Python 3.8 introduced f-strings. 3.12 made them debuggable.
 
 name = 'Alice'
@@ -356,7 +356,7 @@ stmt = '[x * 2 for x in data]'
 result = timeit.timeit(stmt, setup=setup, number=10000)
 print(f'List comprehension: {result:.4f} seconds')
 
-# In 3.12, this is significantly faster than in 3.10 or earlier."
+# In 3.12, this is significantly faster than in 3.10 or earlier.`
     },
     {
       "type": "h2",
@@ -382,7 +382,7 @@ print(f'List comprehension: {result:.4f} seconds')
         {
           "num": "3",
           "title": "Configure Virtual Environments",
-          "text": "Never install packages globally. Always use virtual environments. Python 3.12 includes 'venv' by default. Create: 'python -m venv myenv'. Activate: 'source myenv/bin/activate' (macOS/Linux) or 'myenv\Scripts\activate' (Windows)."
+          "text": "Never install packages globally. Always use virtual environments. Python 3.12 includes 'venv' by default. Create: 'python -m venv myenv'. Activate: 'source myenv/bin/activate' (macOS/Linux) or 'myenv\\Scripts\\activate' (Windows)."
         },
         {
           "num": "4",
@@ -399,7 +399,7 @@ print(f'List comprehension: {result:.4f} seconds')
     {
       "type": "code-block",
       "label": "Environment Setup Verification",
-      "code": "# Verify your setup with this script
+      "code": `# Verify your setup with this script
 import sys
 import platform
 
@@ -441,8 +441,8 @@ except ImportError:
 # Test Python 3.12 features
 if sys.version_info >= (3, 12):
     name = 'Python 3.12'
-    print(f'\n✅ {name} confirmed!')
-    print(f'   Debug f-string: {name=}')  # Should print: name='Python 3.12'"
+    print(f'\\n✅ {name} confirmed!')
+    print(f'   Debug f-string: {name=}')  # Should print: name='Python 3.12'`
     },
     {
       "type": "h2",
@@ -480,7 +480,7 @@ if sys.version_info >= (3, 12):
     {
       "type": "code-block",
       "label": "Bytecode Exploration",
-      "code": "# Let's see the bytecode for a simple function
+      "code": `# Let's see the bytecode for a simple function
 import dis
 
 def greet(name):
@@ -504,7 +504,7 @@ dis.dis(greet)
 # 18 RETURN_VALUE                     → Return the result
 
 # This is what Python actually executes. Your beautiful f-string
-# becomes a sequence of stack operations. The PVM is elegant in its simplicity."
+// becomes a sequence of stack operations. The PVM is elegant in its simplicity.`
     },
     {
       "type": "h2",
@@ -517,7 +517,7 @@ dis.dis(greet)
     {
       "type": "code-block",
       "label": "REPL Mastery",
-      "code": "# The standard REPL: just type 'python' in your terminal
+      "code": `# The standard REPL: just type 'python' in your terminal
 # But there are better alternatives:
 
 # === IPYTHON: The Enhanced REPL ===
@@ -568,7 +568,7 @@ dis.dis(greet)
 >>> type([])
 <class 'list'>
 >>> type({})
-<class 'dict'>"
+<class 'dict'>`
     },
     {
       "type": "h2",
