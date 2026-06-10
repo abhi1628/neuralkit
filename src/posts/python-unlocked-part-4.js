@@ -38,7 +38,7 @@ const post = {
     {
       "type": "code-block",
       "label": "The Label Metaphor in Action",
-      "code": "# === THE LABEL METAPHOR ===
+      "code": `# === THE LABEL METAPHOR ===
 # Imagine your kitchen. You have a jar of honey on the counter.
 # You put a sticky note on it that says 'sweetener'.
 # Then you put another sticky note on the SAME jar that says 'tea_additive'.
@@ -84,7 +84,7 @@ print(f'Both changed because they point to the SAME object!')
 
 # This is the #1 source of bugs for Python beginners.
 # They think jar2 = jar1 creates a copy. It does not.
-# It creates a second label for the same object."
+# It creates a second label for the same object.`
     },
     {
       "type": "h2",
