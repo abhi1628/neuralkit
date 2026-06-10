@@ -32,14 +32,14 @@ const post = {
     {
       "type": "code-block",
       "label": "Your First Python Program",
-      "code": "# Create a file named hello.py
+      "code": `# Create a file named hello.py
 print('Hello, World!')
 
 # Run it:
 # python hello.py
 
 # Output:
-# Hello, World!"
+# Hello, World!`
     },
     {
       "type": "p",
