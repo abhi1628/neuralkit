@@ -318,7 +318,7 @@ class Employee:
         self.years = years
 
     def __repr__(self):
-        return f"Employee({self.name!r}, ${self.salary}, {self.years}y)"
+        return f"Employee({self.name!r}, \${self.salary}, {self.years}y)"
 
     def salary_per_year(self):
         return self.salary / self.years if self.years > 0 else 0
@@ -728,8 +728,8 @@ def main():
     print(f"  Valid records: {result['total_valid']}")
     print(f"  Seniors: {result['seniors']}")
     print(f"  High earners: {result['high_earners']}")
-    print(f"  Average salary: ${result['avg_salary']:,.2f}")
-    print(f"  Total payroll: ${result['total_payroll']:,.2f}")
+    print(f"  Average salary: \${result['avg_salary']:,.2f}")
+    print(f"  Total payroll: \${result['total_payroll']:,.2f}")
 
     print(f"\nBy department:")
     for dept, count in result['by_department'].items():
@@ -741,7 +741,7 @@ def main():
 
     print(f"\nCleaned records:")
     for r in result['records']:
-        print(f"  {r.name}, {r.age}, ${r.salary:,.2f}, {r.department}, {r.seniority}")
+        print(f"  {r.name}, {r.age}, \${r.salary:,.2f}, {r.department}, {r.seniority}")
 
     print("=" * 50)
 
