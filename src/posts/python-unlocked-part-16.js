@@ -18,7 +18,7 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where everything is a function. Numbers, logic, arithmetic, even recursion itself could be expressed as functions operating on functions. Church's insight was revolutionary: functions are not just subroutines. They are the fundamental building blocks of computation. Ninety years later, in 2026, Python functions embody that philosophy. They are first-class objects — you can pass them as arguments, return them from other functions, store them in variables, and even dynamically compose them into complex pipelines. But most developers use only a fraction of their power. They define functions with fixed parameters, struggle with mutable default arguments, and never exploit the full flexibility of *args and **kwargs. In this part, we will explore the full depth of Python's function machinery. You will learn the LEGB scope rule, why mutable defaults are the most common function bug, how *args and **kwargs enable infinite flexibility, and why first-class functions are the gateway to decorators and functional programming. By the end, functions will not be subroutines. They will be the building blocks of your craft."
+      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where everything is a function. Numbers, logic, arithmetic, even recursion itself could be expressed as functions operating on functions. Church's insight was revolutionary: functions are not just subroutines. They are the fundamental building blocks of computation. Ninety years later, in 2026, Python functions embody that philosophy. They are first-class objects — you can pass them as arguments, return them from other functions, store them in variables, and even compose them into pipelines. But most developers use only a fraction of their power. They define functions with fixed parameters, struggle with mutable default arguments, and never exploit the full flexibility of *args and **kwargs. In this part, we will explore the full depth of Python's function machinery. You will learn the LEGB scope rule, why mutable defaults are the most common function bug, how *args and **kwargs enable infinite flexibility, and why first-class functions are the gateway to decorators and functional programming. By the end, functions will not be subroutines. They will be the building blocks of your craft."
     },
     {
       "type": "code-block",
@@ -33,14 +33,14 @@ const post = {
 # Basic function
 def greet(name):
     """Return a greeting string."""
-    return f"Hello, {name}!"
+    return f"Hello, \${name}!"
 
 print(greet("Alice"))
 
 # Function with no return (returns None implicitly)
 def print_greeting(name):
     """Print a greeting (no return)."""
-    print(f"Hello, {name}!")
+    print(f"Hello, \${name}!")
 
 result = print_greeting("Bob")
 print(f"Return value: {result}")  # None
@@ -51,7 +51,7 @@ def get_user_info():
     return "Alice", 30, "Engineer"
 
 name, age, job = get_user_info()
-print(f"\nUser: {name}, {age}, {job}")
+print(f"\\nUser: {name}, {age}, {job}")
 
 # Function with early returns (guard clauses)
 def divide(a, b):
@@ -62,7 +62,7 @@ def divide(a, b):
         return None
     return a / b
 
-print(f"\n10 / 2 = {divide(10, 2)}")
+print(f"\\n10 / 2 = {divide(10, 2)}")
 print(f"10 / 0 = {divide(10, 0)}")
 
 # === FUNCTION ATTRIBUTES ===
@@ -72,7 +72,7 @@ def example_function():
     """This is the docstring."""
     pass
 
-print(f"\nFunction name: {example_function.__name__}")
+print(f"\\nFunction name: {example_function.__name__}")
 print(f"Docstring: {example_function.__doc__}")
 print(f"Module: {example_function.__module__}")
 
@@ -88,13 +88,13 @@ def process_data(items: List[int], threshold: float = 0.5) -> Optional[List[int]
     return [x for x in items if x > threshold]
 
 result = process_data([1, 2, 3, 0.1, 0.8], 0.5)
-print(f"\nProcessed: {result}")
+print(f"\\nProcessed: {result}")
 
 # === LAMBDA FUNCTIONS ===
 # Anonymous functions for simple operations
 
 square = lambda x: x ** 2
-print(f"\nLambda square: {square(5)}")
+print(f"\\nLambda square: {square(5)}")
 
 # Lambda in higher-order functions
 numbers = [1, 2, 3, 4, 5]
@@ -121,14 +121,15 @@ def calculate_area(length: float, width: float) -> float:
         raise ValueError("Dimensions must be non-negative")
     return length * width
 
-print(f"\nArea: {calculate_area(5, 3)}")
+print(f"\\nArea: {calculate_area(5, 3)}")
 
-print("\nFunction anatomy complete!")`
+print("\\nFunction anatomy complete!")`
     },
     {
       "type": "code-block",
       "label": "Parameters & Arguments Mastery",
-      "code": `# === POSITIONAL ARGUMENTS ===
+      "code": `
+# === POSITIONAL ARGUMENTS ===
 # Matched by position
 
 def describe_person(name, age, city):
@@ -150,7 +151,7 @@ print(describe_person("Alice", city="NYC", age=30))
 def greet(name, greeting="Hello", punctuation="!"):
     return f"{greeting}, {name}{punctuation}"
 
-print(f"\n{greet('Alice')}")
+print(f"\\n{greet('Alice')}")
 print(f"{greet('Bob', 'Hi')}")
 print(f"{greet('Charlie', 'Hey', '?')}")
 
@@ -162,7 +163,7 @@ def add_item_bad(item, items=[]):
     items.append(item)
     return items
 
-print(f"\nMutable default trap:")
+print(f"\\nMutable default trap:")
 print(f"Call 1: {add_item_bad('a')}")  # ['a']
 print(f"Call 2: {add_item_bad('b')}")  # ['a', 'b'] - BUG!
 print(f"Call 3: {add_item_bad('c')}")  # ['a', 'b', 'c'] - BUG!
@@ -175,7 +176,7 @@ def add_item_good(item, items=None):
     items.append(item)
     return items
 
-print(f"\nFixed version:")
+print(f"\\nFixed version:")
 print(f"Call 1: {add_item_good('a')}")
 print(f"Call 2: {add_item_good('b')}")
 print(f"Call 3: {add_item_good('c')}")
@@ -187,7 +188,7 @@ def sum_all(*args):
     """Sum any number of arguments."""
     return sum(args)
 
-print(f"\nsum_all(1, 2, 3) = {sum_all(1, 2, 3)}")
+print(f"\\nsum_all(1, 2, 3) = {sum_all(1, 2, 3)}")
 print(f"sum_all(1, 2, 3, 4, 5) = {sum_all(1, 2, 3, 4, 5)}")
 print(f"sum_all() = {sum_all()}")
 
@@ -197,7 +198,7 @@ def log_message(level, *args):
     message = ' '.join(str(arg) for arg in args)
     return f"[{level}] {message}"
 
-print(f"\n{log_message('INFO', 'User', 'Alice', 'logged', 'in')}")
+print(f"\\n{log_message('INFO', 'User', 'Alice', 'logged', 'in')}")
 
 # Unpacking with *
 values = [1, 2, 3, 4, 5]
@@ -213,7 +214,7 @@ def create_user(name, **kwargs):
     return user
 
 user = create_user('Alice', age=30, city='NYC', email='alice@example.com')
-print(f"\nUser: {user}")
+print(f"\\nUser: {user}")
 
 # **kwargs with required and defaults
 def configure_server(host, port=8080, **kwargs):
@@ -243,7 +244,7 @@ def advanced_function(a, b, *args, c=10, d=20, **kwargs):
     }
 
 result = advanced_function(1, 2, 3, 4, 5, c=100, x=99, y=88)
-print(f"\nAdvanced: {result}")
+print(f"\\nAdvanced: {result}")
 
 # === KEYWORD-ONLY ARGUMENTS ===
 # Parameters after * must be passed by keyword
@@ -253,7 +254,7 @@ def safe_divide(a, b, *, precision=2):
     result = a / b if b != 0 else 0
     return round(result, precision)
 
-print(f"\nsafe_divide(10, 3, precision=4) = {safe_divide(10, 3, precision=4)}")
+print(f"\\nsafe_divide(10, 3, precision=4) = {safe_divide(10, 3, precision=4)}")
 # safe_divide(10, 3, 4)  # TypeError!
 
 # === POSITIONAL-ONLY ARGUMENTS (Python 3.8+) ===
@@ -263,16 +264,17 @@ def greet_positional(name, /, greeting="Hello"):
     """name must be positional, greeting can be keyword."""
     return f"{greeting}, {name}!"
 
-print(f"\n{greet_positional('Alice')}")
+print(f"\\n{greet_positional('Alice')}")
 print(f"{greet_positional('Bob', greeting='Hi')}")
 # greet_positional(name='Charlie')  # TypeError!
 
-print("\nParameters & arguments mastery complete!")`
+print("\\nParameters & arguments mastery complete!")`
     },
     {
       "type": "code-block",
       "label": "LEGB Scope Mastery",
-      "code": `# === THE LEGB RULE ===
+      "code": `
+# === THE LEGB RULE ===
 # Local -> Enclosing -> Global -> Built-in
 
 # --- Local scope ---
@@ -318,7 +320,7 @@ def increment_good():
 
 increment_good()
 increment_good()
-print(f"\nCounter after increments: {counter}")
+print(f"\\nCounter after increments: {counter}")
 
 # === THE nonlocal KEYWORD ===
 # Modify enclosing (non-global) scope
@@ -334,7 +336,7 @@ def make_counter():
 counter_a = make_counter()
 counter_b = make_counter()
 
-print(f"\nCounter A: {counter_a()}")  # 1
+print(f"\\nCounter A: {counter_a()}")  # 1
 print(f"Counter A: {counter_a()}")  # 2
 print(f"Counter B: {counter_b()}")  # 1 (independent!)
 print(f"Counter A: {counter_a()}")  # 3
@@ -361,7 +363,7 @@ def modify_config():
     config['level'] = 'DEBUG'
 
 modify_config()
-print(f"\nModified config: {config}")
+print(f"\\nModified config: {config}")
 
 # But reassignment requires global
 settings = {'theme': 'light'}
@@ -382,18 +384,19 @@ print(f"Reassigned settings: {settings}")
 
 def inspect_scope():
     local_var = 42
-    print(f"\nLocal vars: {list(locals().keys())}")
+    print(f"\\nLocal vars: {list(locals().keys())}")
     print(f"Has local_var: {'local_var' in locals()}")
 
 inspect_scope()
 print(f"Global has global_x: {'global_x' in globals()}")
 
-print("\nLEGB scope mastery complete!")`
+print("\\nLEGB scope mastery complete!")`
     },
     {
       "type": "code-block",
       "label": "First-Class Functions Mastery",
-      "code": `# === FUNCTIONS AS OBJECTS ===
+      "code": `
+# === FUNCTIONS AS OBJECTS ===
 # Assign, store, pass, return
 
 # Assign to variable
@@ -412,7 +415,7 @@ operations = {
     'div': lambda a, b: a / b if b != 0 else None,
 }
 
-print(f"\nOperations:")
+print(f"\\nOperations:")
 for name, func in operations.items():
     print(f"  {name}(10, 5) = {func(10, 5)}")
 
@@ -422,7 +425,7 @@ def apply_operation(a, b, operation):
     return operation(a, b)
 
 result = apply_operation(10, 5, operations['add'])
-print(f"\napply_operation(10, 5, add) = {result}")
+print(f"\\napply_operation(10, 5, add) = {result}")
 
 # Return from function (factory pattern)
 def make_multiplier(factor):
@@ -434,7 +437,7 @@ def make_multiplier(factor):
 triple = make_multiplier(3)
 double = make_multiplier(2)
 
-print(f"\ntriple(5) = {triple(5)}")
+print(f"\\ntriple(5) = {triple(5)}")
 print(f"double(5) = {double(5)}")
 
 # === HIGHER-ORDER FUNCTIONS ===
@@ -455,7 +458,7 @@ def square(x):
 add_then_square = compose(square, add_one)
 square_then_add = compose(add_one, square)
 
-print(f"\ncompose(square, add_one)(5) = {add_then_square(5)}")  # (5+1)² = 36
+print(f"\\ncompose(square, add_one)(5) = {add_then_square(5)}")  # (5+1)² = 36
 print(f"compose(add_one, square)(5) = {square_then_add(5)}")  # 5²+1 = 26
 
 # === CALLBACK PATTERN ===
@@ -472,7 +475,7 @@ def print_result(result):
 def save_result(result):
     print(f"Saving: {result}")
 
-print(f"\nCallbacks:")
+print(f"\\nCallbacks:")
 process_data([1, 2, 3], print_result)
 process_data([1, 2, 3], save_result)
 
@@ -498,7 +501,7 @@ def add_prefix(text):
 
 raw = "  hello world  "
 processed = pipeline(raw, strip_spaces, to_uppercase, add_prefix)
-print(f"\nPipeline: '{raw}' -> '{processed}'")
+print(f"\\nPipeline: '{raw}' -> '{processed}'")
 
 # === SORTING WITH KEY FUNCTIONS ===
 # Pass a function to determine sort order
@@ -511,7 +514,7 @@ users = [
 
 # Sort by age
 by_age = sorted(users, key=lambda u: u['age'])
-print(f"\nBy age: {[u['name'] for u in by_age]}")
+print(f"\\nBy age: {[u['name'] for u in by_age]}")
 
 # Sort by name length
 by_name_len = sorted(users, key=lambda u: len(u['name']))
@@ -523,29 +526,25 @@ print(f"By name length: {[u['name'] for u in by_name_len]}")
 def sample_function(a, b, c=10, *args, d=20, **kwargs):
     pass
 
-print(f"\nFunction introspection:")
+print(f"\\nFunction introspection:")
 print(f"  Name: {sample_function.__name__}")
 print(f"  Defaults: {sample_function.__defaults__}")
 print(f"  Code name: {sample_function.__code__.co_name}")
 print(f"  Var names: {sample_function.__code__.co_varnames}")
 
-print("\nFirst-class functions mastery complete!")`
+print("\\nFirst-class functions mastery complete!")`
     },
     {
       "type": "programs",
       "text": "Programs: Logic in Action"
     },
     {
-      "type": "p",
-      "text": "Theory without practice is philosophy. Let us build programs that use functions, parameters, scope, and first-class functions to solve real problems."
-    },
-    {
       "type": "code-block",
       "label": "Program 1: Calculator with Functions",
-      "code": `"""
+      "code": `
+"""
 Program 1: Calculator with Functions
 A calculator using first-class functions and operations dict.
-Demonstrates functions as data, higher-order functions, and error handling.
 """
 
 from typing import Callable, Dict, Optional, List
@@ -631,7 +630,7 @@ def main():
     calc = Calculator()
 
     # Basic operations
-    print(f"\nBasic operations:")
+    print(f"\\nBasic operations:")
     print(f"  add(10, 5) = {calc.calculate('add', 10, 5)}")
     print(f"  sub(10, 5) = {calc.calculate('sub', 10, 5)}")
     print(f"  mul(10, 5) = {calc.calculate('mul', 10, 5)}")
@@ -639,25 +638,25 @@ def main():
     print(f"  pow(2, 10) = {calc.calculate('pow', 2, 10)}")
 
     # Variable arguments
-    print(f"\nVariable arguments:")
+    print(f"\\nVariable arguments:")
     print(f"  sum(1, 2, 3, 4, 5) = {calc.calculate('sum', 1, 2, 3, 4, 5)}")
     print(f"  avg(10, 20, 30) = {calc.calculate('avg', 10, 20, 30)}")
     print(f"  max(3, 1, 4, 1, 5) = {calc.calculate('max', 3, 1, 4, 1, 5)}")
 
     # Chaining
-    print(f"\nChaining: 5 + 3 * 2 = {calc.chain(5, ('add', 3), ('mul', 2))}")
+    print(f"\\nChaining: 5 + 3 * 2 = {calc.chain(5, ('add', 3), ('mul', 2))}")
 
     # Custom operation
     calc.register('double_add', lambda a, b: (a + b) * 2)
-    print(f"\nCustom operation double_add(3, 4) = {calc.calculate('double_add', 3, 4)}")
+    print(f"\\nCustom operation double_add(3, 4) = {calc.calculate('double_add', 3, 4)}")
 
     # History
-    print(f"\nHistory ({len(calc.get_history())} operations):")
+    print(f"\\nHistory ({len(calc.get_history())} operations):")
     for entry in calc.get_history()[-3:]:
         print(f"  {entry['operation']}{entry['args']} = {entry.get('result', 'ERROR')}")
 
     # Error handling
-    print(f"\nError handling:")
+    print(f"\\nError handling:")
     try:
         calc.calculate('div', 10, 0)
     except ValueError as e:
@@ -674,7 +673,6 @@ if __name__ == "__main__":
       "code": `"""
 Program 2: Factorial Function
 Multiple factorial implementations with error handling.
-Demonstrates recursion, iteration, memoization, and validation.
 """
 
 from functools import lru_cache
@@ -761,19 +759,19 @@ def main():
     # Compare implementations
     test_values = [5, 10, 15, 20]
 
-    print(f"\nFactorial values:")
+    print(f"\\nFactorial values:")
     for n in test_values:
         iter_result = Factorial.iterative(n)
         print(f"  {n}! = {iter_result}")
 
     # Large factorial
-    print(f"\n50! (first 20 digits): {str(Factorial.iterative(50))[:20]}...")
+    print(f"\\n50! (first 20 digits): {str(Factorial.iterative(50))[:20]}...")
     print(f"50! has {len(str(Factorial.iterative(50)))} digits")
 
     # Memoization comparison
     import time
 
-    print(f"\nMemoization comparison (100!):")
+    print(f"\\nMemoization comparison (100!):")
     start = time.perf_counter()
     Factorial.recursive(100)
     t_rec = time.perf_counter() - start
@@ -786,7 +784,7 @@ def main():
     print(f"  Memoized:  {t_memo:.6f}s")
 
     # Stirling approximation
-    print(f"\nStirling's approximation:")
+    print(f"\\nStirling's approximation:")
     for n in [10, 50, 100]:
         exact = Factorial.iterative(n)
         approx = Factorial.approximate_stirling(n)
@@ -794,7 +792,7 @@ def main():
         print(f"  {n}!: exact={exact}, approx={approx:.2e}, error={error:.4f}%")
 
     # Trailing zeros
-    print(f"\nTrailing zeros in n!:")
+    print(f"\\nTrailing zeros in n!:")
     for n in [10, 25, 50, 100, 1000]:
         zeros = Factorial.trailing_zeros(n)
         print(f"  {n}! has {zeros} trailing zeros")
@@ -810,7 +808,6 @@ if __name__ == "__main__":
       "code": `"""
 Program 3: Prime Checker Function
 Multiple prime checking algorithms with performance analysis.
-Demonstrates function composition, benchmarking, and optimization.
 """
 
 import time
@@ -918,7 +915,7 @@ def main():
 
     # Test correctness
     test_numbers = [1, 2, 3, 4, 17, 18, 97, 100, 997, 1000]
-    print(f"\nPrime checks:")
+    print(f"\\nPrime checks:")
     for n in test_numbers:
         result = PrimeChecker.optimized(n)
         status = "prime" if result else "not prime"
@@ -926,7 +923,7 @@ def main():
 
     # Find primes up to 100
     primes = PrimeChecker.find_primes(100)
-    print(f"\nPrimes up to 100: {primes}")
+    print(f"\\nPrimes up to 100: {primes}")
     print(f"Count: {len(primes)}")
 
     # Benchmark
@@ -937,7 +934,7 @@ def main():
     }
     test_values = [1009, 10007, 100003]
 
-    print(f"\nBenchmarks (seconds):")
+    print(f"\\nBenchmarks (seconds):")
     results = PrimeChecker.benchmark(methods, test_values)
     for name, times in results.items():
         avg_time = sum(times) / len(times)
@@ -945,7 +942,7 @@ def main():
 
     # Miller-Rabin for large numbers
     large_primes = [104729, 1299709, 15485863]
-    print(f"\nMiller-Rabin probabilistic test:")
+    print(f"\\nMiller-Rabin probabilistic test:")
     for n in large_primes:
         result = PrimeChecker.miller_rabin(n)
         print(f"  {n}: {'prime' if result else 'not prime'}")
@@ -961,7 +958,6 @@ if __name__ == "__main__":
       "code": `"""
 Program 4: Flexible Logger
 A configurable logging system using first-class functions.
-Demonstrates function composition, callbacks, and configuration.
 """
 
 from typing import Callable, Dict, List, Optional
@@ -1093,7 +1089,7 @@ def main():
     logger = Logger("MyApp", "DEBUG")
     logger.add_handler(console_handler)
 
-    print("\n--- Basic Logging ---")
+    print("\\n--- Basic Logging ---")
     logger.debug("Application starting")
     logger.info("Connected to database")
     logger.warn("High memory usage")
@@ -1103,7 +1099,7 @@ def main():
     colored_logger = Logger("ColoredApp", "DEBUG")
     colored_logger.add_handler(colored_handler)
 
-    print("\n--- Colored Logging ---")
+    print("\\n--- Colored Logging ---")
     colored_logger.debug("Debug message")
     colored_logger.info("Info message")
     colored_logger.warn("Warning message")
@@ -1114,7 +1110,7 @@ def main():
     custom_logger.set_formatter(minimal_formatter)
     custom_logger.add_handler(console_handler)
 
-    print("\n--- Custom Formatter ---")
+    print("\\n--- Custom Formatter ---")
     custom_logger.info("Minimal format message")
 
     # Multiple handlers
@@ -1122,11 +1118,11 @@ def main():
     multi_logger.add_handler(console_handler)
     multi_logger.add_handler(json_handler)
 
-    print("\n--- Multiple Handlers ---")
+    print("\\n--- Multiple Handlers ---")
     multi_logger.info("This appears in two formats")
 
     # History
-    print(f"\n--- History ({len(logger.get_history())} entries) ---")
+    print(f"\\n--- History ({len(logger.get_history())} entries) ---")
     for entry in logger.get_history()[-3:]:
         print(f"  {entry['level']}: {entry['message']}")
 
