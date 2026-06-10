@@ -27,6 +27,8 @@ import pythonPart18 from "../posts/python-unlocked-part-18";
 import pythonPart19 from "../posts/python-unlocked-part-19";
 import pythonPart20 from "../posts/python-unlocked-part-20";
 import pythonPart21 from "../posts/python-unlocked-part-21";
+import pythonPart22 from "../posts/python-unlocked-part-22";
+import pythonPart23 from "../posts/python-unlocked-part-23";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -56,7 +58,9 @@ const CONTENT_MAP = {
     "part-18-lambda-functional": pythonPart18,
     "part-19-closures-lexical": pythonPart19,
     "part-20-decorators-superpower": pythonPart20,
-    "part-21-generators-iterators": pythonPart21
+    "part-21-generators-iterators": pythonPart21,
+    "part-22-file-handling": pythonPart22,
+    "part-23-exception-handling": pythonPart23
   }
 };
 
