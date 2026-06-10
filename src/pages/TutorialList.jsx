@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
+import pythonSeriesData from "../posts/python-unlocked-series";
 
 // In the future, this will be an array of all series
-const ALL_SERIES = [seriesData];
+const ALL_SERIES = [seriesData, pythonSeriesData];
 
 export default function TutorialList({ theme }) {
   const navigate = useNavigate();
