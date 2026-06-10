@@ -32,9 +32,9 @@ const post = {
     {
       "type": "code-block",
       "label": "Iterator Protocol Mastery",
-      "code": "# === THE ITERATOR PROTOCOL ===
+      "code": `# === THE ITERATOR PROTOCOL ===
 # __iter__() -> returns iterator object
-# __next__() -> returns next value or raises StopIteration
+# __next__() -> returns next value or raises StopIteration`
 
 class CountDown:
     """Custom iterator that counts down."""
