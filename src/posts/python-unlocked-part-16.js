@@ -18,20 +18,13 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where everything is a function. Numbers, logic, arithmetic, even recursion itself could be expressed as functions operating on functions. Church's insight was revolutionary: functions are not just subroutines. They are the fundamental building blocks of computation. Ninety years later, in 2026, Python functions embody that philosophy. They are first-class objects — you can pass them as arguments, return them from other functions, store them in variables, and even compose them into pipelines. But most developers use only a fraction of their power. They define functions with fixed parameters, struggle with mutable default arguments, and never exploit the full flexibility of *args and **kwargs. In this part, we will explore the full depth of Python's function machinery. You will learn the LEGB scope rule, why mutable defaults are the most common function bug, how *args and **kwargs enable infinite flexibility, and why first-class functions are the gateway to decorators and functional programming. By the end, functions will not be subroutines. They will be the building blocks of your craft."
-    },
-    {
-      "type": "h2",
-      "text": "Defining, Calling, and Returning"
-    },
-    {
-      "type": "p",
-      "text": "A function is a named block of code that takes inputs, performs operations, and optionally returns a result. But Python functions are more than that. They are objects with attributes, docstrings, type hints, and introspection capabilities. Understanding the full anatomy of a function means writing code that is self-documenting, testable, and composable."
+      "text": "In 1936, Alonzo Church introduced the lambda calculus — a formal system where everything is a function. Numbers, logic, arithmetic, even recursion itself could be expressed as functions operating on functions. Church's insight was revolutionary: functions are not just subroutines. They are the fundamental building blocks of computation. Ninety years later, in 2026, Python functions embody that philosophy. They are first-class objects — you can pass them as arguments, return them from other functions, store them in variables, and even dynamically compose them into complex pipelines. But most developers use only a fraction of their power. They define functions with fixed parameters, struggle with mutable default arguments, and never exploit the full flexibility of *args and **kwargs. In this part, we will explore the full depth of Python's function machinery. You will learn the LEGB scope rule, why mutable defaults are the most common function bug, how *args and **kwargs enable infinite flexibility, and why first-class functions are the gateway to decorators and functional programming. By the end, functions will not be subroutines. They will be the building blocks of your craft."
     },
     {
       "type": "code-block",
       "label": "Function Anatomy",
-      "code": "# === DEFINING FUNCTIONS ===
+      "code": `
+# === DEFINING FUNCTIONS ===
 # def name(parameters):
 #     """docstring"""
 #     body
@@ -130,20 +123,12 @@ def calculate_area(length: float, width: float) -> float:
 
 print(f"\nArea: {calculate_area(5, 3)}")
 
-print("\nFunction anatomy complete!")"
-    },
-    {
-      "type": "h2",
-      "text": "Parameters vs Arguments: The Full Arsenal"
-    },
-    {
-      "type": "p",
-      "text": "Parameters are the variables in the function definition. Arguments are the values passed when calling the function. Python supports four types of parameters: positional, keyword, default, and variable-length (*args, **kwargs). Understanding the distinction and how they interact is the key to writing flexible, reusable functions."
+print("\nFunction anatomy complete!")`
     },
     {
       "type": "code-block",
       "label": "Parameters & Arguments Mastery",
-      "code": "# === POSITIONAL ARGUMENTS ===
+      "code": `# === POSITIONAL ARGUMENTS ===
 # Matched by position
 
 def describe_person(name, age, city):
@@ -282,20 +267,12 @@ print(f"\n{greet_positional('Alice')}")
 print(f"{greet_positional('Bob', greeting='Hi')}")
 # greet_positional(name='Charlie')  # TypeError!
 
-print("\nParameters & arguments mastery complete!")"
-    },
-    {
-      "type": "h2",
-      "text": "Scope: The LEGB Rule"
-    },
-    {
-      "type": "p",
-      "text": "Python resolves variable names using the LEGB rule: Local, Enclosing, Global, Built-in. Understanding this rule means you know exactly where Python looks for a name, why global variables are dangerous, and when to use nonlocal to modify enclosing scope. The rule is simple but profound: Python searches scopes from innermost to outermost, and it stops at the first match."
+print("\nParameters & arguments mastery complete!")`
     },
     {
       "type": "code-block",
       "label": "LEGB Scope Mastery",
-      "code": "# === THE LEGB RULE ===
+      "code": `# === THE LEGB RULE ===
 # Local -> Enclosing -> Global -> Built-in
 
 # --- Local scope ---
@@ -411,20 +388,12 @@ def inspect_scope():
 inspect_scope()
 print(f"Global has global_x: {'global_x' in globals()}")
 
-print("\nLEGB scope mastery complete!")"
-    },
-    {
-      "type": "h2",
-      "text": "First-Class Functions: Functions as Objects"
-    },
-    {
-      "type": "p",
-      "text": "In Python, functions are first-class objects. You can assign them to variables, store them in data structures, pass them as arguments to other functions, and return them from functions. This is not just a feature — it is the foundation of higher-order functions, decorators, and functional programming patterns. When you treat functions as data, you unlock a new level of abstraction."
+print("\nLEGB scope mastery complete!")`
     },
     {
       "type": "code-block",
       "label": "First-Class Functions Mastery",
-      "code": "# === FUNCTIONS AS OBJECTS ===
+      "code": `# === FUNCTIONS AS OBJECTS ===
 # Assign, store, pass, return
 
 # Assign to variable
@@ -560,10 +529,10 @@ print(f"  Defaults: {sample_function.__defaults__}")
 print(f"  Code name: {sample_function.__code__.co_name}")
 print(f"  Var names: {sample_function.__code__.co_varnames}")
 
-print("\nFirst-class functions mastery complete!")"
+print("\nFirst-class functions mastery complete!")`
     },
     {
-      "type": "h2",
+      "type": "programs",
       "text": "Programs: Logic in Action"
     },
     {
@@ -573,7 +542,7 @@ print("\nFirst-class functions mastery complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Calculator with Functions",
-      "code": """"
+      "code": `"""
 Program 1: Calculator with Functions
 A calculator using first-class functions and operations dict.
 Demonstrates functions as data, higher-order functions, and error handling.
@@ -697,12 +666,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Factorial Function",
-      "code": """"
+      "code": `"""
 Program 2: Factorial Function
 Multiple factorial implementations with error handling.
 Demonstrates recursion, iteration, memoization, and validation.
@@ -833,12 +802,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Prime Checker Function",
-      "code": """"
+      "code": `"""
 Program 3: Prime Checker Function
 Multiple prime checking algorithms with performance analysis.
 Demonstrates function composition, benchmarking, and optimization.
@@ -984,12 +953,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Flexible Logger",
-      "code": """"
+      "code": `"""
 Program 4: Flexible Logger
 A configurable logging system using first-class functions.
 Demonstrates function composition, callbacks, and configuration.
@@ -1073,7 +1042,7 @@ def file_handler(filename: str):
     """Create a file handler."""
     def handler(entry: dict):
         with open(filename, 'a') as f:
-            f.write(entry['formatted'] + '\n')
+            f.write(entry['formatted'] + '\\n')
     return handler
 
 def colored_handler(entry: dict):
@@ -1164,7 +1133,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
