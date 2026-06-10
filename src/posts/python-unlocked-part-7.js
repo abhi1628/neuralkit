@@ -31,7 +31,7 @@ const post = {
     {
       "type": "code-block",
       "label": "% Formatting: The Legacy Style",
-      "code": "# === % FORMATTING BASICS ===
+      "code": `# === % FORMATTING BASICS ===
 # Uses % operator with format specifiers
 # Format: %[(name)][flags][width][.precision]type
 
@@ -82,7 +82,7 @@ print("%(name)s scored %(score).1f%%" % data)  # Bob scored 95.5%
 
 # Safe alternative: always use literal format string
 user_input = "Alice"
-print("Hello, %s!" % user_input)  # Safe: format string is literal"
+print("Hello, %s!" % user_input)  # Safe: format string is literal"`
     },
     {
       "type": "h2",
@@ -95,7 +95,7 @@ print("Hello, %s!" % user_input)  # Safe: format string is literal"
     {
       "type": "code-block",
       "label": "str.format() Mastery",
-      "code": "# === POSITIONAL ARGUMENTS ===
+      "code": `# === POSITIONAL ARGUMENTS ===
 print("Hello, {}!".format("Alice"))           # Hello, Alice!
 print("{} + {} = {}".format(2, 3, 5))        # 2 + 3 = 5
 
@@ -161,7 +161,7 @@ print("{:{width}}".format("hello", width=width))  # hello     (width 10)
 # === WHEN NOT TO USE str.format() ===
 # 1. Simple inline formatting (use f-strings instead)
 # 2. Performance-critical code (f-strings are faster)
-# 3. User-generated format strings (security risk)"
+# 3. User-generated format strings (security risk)"`
     },
     {
       "type": "h2",
@@ -174,7 +174,7 @@ print("{:{width}}".format("hello", width=width))  # hello     (width 10)
     {
       "type": "code-block",
       "label": "f-strings Mastery",
-      "code": "# === BASIC f-STRINGS ===
+      "code": `# === BASIC f-STRINGS ===
 name = "Alice"
 age = 30
 print(f"Hello, {name}!")              # Hello, Alice!
@@ -183,19 +183,19 @@ print(f"{name} is {age} years old")    # Alice is 30 years old
 # === EXPRESSIONS INSIDE BRACES ===
 x = 10
 y = 3
-print(f"{x} + {y} = {x + y}"))       # 10 + 3 = 13
-print(f"{x} * {y} = {x * y}"))       # 10 * 3 = 30
-print(f"sqrt({x}) = {x ** 0.5:.2f}"))  # sqrt(10) = 3.16
+print(f"{x} + {y} = {x + y}")        # 10 + 3 = 13
+print(f"{x} * {y} = {x * y}")        # 10 * 3 = 30
+print(f"sqrt({x}) = {x ** 0.5:.2f}")  # sqrt(10) = 3.16
 
 # === FORMAT SPECIFIERS ===
 pi = 3.14159265359
-print(f"Pi = {pi:.2f}"))             # 3.14
+print(f"Pi = {pi:.2f}")             # 3.14
 print(f"Pi = {pi:.10f}")             # 3.1415926536
 print(f"Pi = {pi:+.2f}")             # +3.14
 
 # === ALIGNMENT AND WIDTH ===
 word = "hello"
-print(f"|{word:>10}|"))             # |     hello|
+print(f"|{word:>10}|")             # |     hello|
 print(f"|{word:<10}|")             # |hello     |
 print(f"|{word:^10}|")             # |  hello  |
 print(f"|{word:*^10}|")             # |**hello**|
@@ -213,20 +213,20 @@ print(f"{num:e}")                    # 1.234567e+06
 # === DATE AND TIME FORMATTING ===
 from datetime import datetime
 now = datetime.now()
-print(f"Today: {now:%Y-%m-%d}"))       # 2026-06-22
-print(f"Time: {now:%H:%M:%S}"))        # 14:30:00
-print(f"Full: {now:%A, %B %d, %Y}"))   # Monday, June 22, 2026
+print(f"Today: {now:%Y-%m-%d}")       # 2026-06-22
+print(f"Time: {now:%H:%M:%S}")        # 14:30:00
+print(f"Full: {now:%A, %B %d, %Y}")   # Monday, June 22, 2026
 
 # === PYTHON 3.8+: DEBUG EXPRESSIONS ===
 x = 42
 y = 3.14
-print(f"{x=}"))                      # x=42
-print(f"{y=}"))                      # y=3.14
-print(f"{x + y=}"))                  # x + y=45.14
+print(f"{x=}")                      # x=42
+print(f"{y=}")                      # y=3.14
+print(f"{x + y=}")                  # x + y=45.14
 
 # === PYTHON 3.12: ADVANCED DEBUG ===
-print(f"{x=:.2f}"))                   # x=42.00
-print(f"{x + y=:.4f}"))               # x + y=45.1400
+print(f"{x=:.2f}")                   # x=42.00
+print(f"{x + y=:.4f}")               # x + y=45.1400
 
 # === MULTILINE f-STRINGS ===
 user = "Alice"
@@ -248,7 +248,7 @@ print(report)
 # === WHEN NOT TO USE f-STRINGS ===
 # 1. Dynamic format strings (use str.format() instead)
 # 2. User-generated format strings (security risk)
-# 3. When the expression is too complex (hurts readability)"
+# 3. When the expression is too complex (hurts readability)"`
     },
     {
       "type": "h2",
@@ -261,7 +261,7 @@ print(report)
     {
       "type": "code-block",
       "label": "Template Strings: The Safe Choice",
-      "code": "from string import Template
+      "code": `from string import Template
 
 # === BASIC TEMPLATE USAGE ===
 t = Template("Hello, $name!")
@@ -313,7 +313,7 @@ print(t.substitute(name="alice"))   # alice.upper() is NOT executed
 # === WHEN NOT TO USE TEMPLATE STRINGS ===
 # 1. Complex formatting (no format specifiers)
 # 2. Performance-critical code (slower than f-strings)
-# 3. When you need expressions or method calls"
+# 3. When you need expressions or method calls"`
     },
     {
       "type": "h2",
@@ -326,7 +326,7 @@ print(t.substitute(name="alice"))   # alice.upper() is NOT executed
     {
       "type": "code-block",
       "label": "Program 1: Receipt Generator",
-      "code": """"
+      "code": `"""
 Program 1: Receipt Generator
 Generates a formatted receipt using f-strings.
 Demonstrates alignment, precision, and number formatting.
@@ -372,15 +372,15 @@ def generate_receipt(items, store_name="Python Mart", tax_rate=0.08):
 
     # Items
     for item in items:
-        receipt += f"{item.name:<24} {item.quantity:>3}  ${item.price:>6.2f}  ${item.total:>6.2f}\n"
+        receipt += f"{item.name:<24} {item.quantity:>3}  \${item.price:>6.2f}  \${item.total:>6.2f}\n"
 
     # Footer
     receipt += f"""
 {"-" * 40}
-    Subtotal:                          ${subtotal:>8.2f}
-    Tax ({tax_rate:.0%}):                         ${tax:>8.2f}
+    Subtotal:                          \${subtotal:>8.2f}
+    Tax ({tax_rate:.0%}):                         \${tax:>8.2f}
 {"=" * 40}
-    TOTAL:                             ${total:>8.2f}
+    TOTAL:                             \${total:>8.2f}
 {"=" * 40}
     THANK YOU FOR SHOPPING!
     """
@@ -400,12 +400,12 @@ def main():
     print(receipt)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Report Formatter",
-      "code": """"
+      "code": `"""
 Program 2: Report Formatter
 Generates formatted reports using str.format() for templates.
 Demonstrates dynamic formatting and template reuse.
@@ -474,12 +474,12 @@ def main():
     print(report)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Safe SQL Query Builder",
-      "code": """"
+      "code": `"""
 Program 3: Safe SQL Query Builder
 Builds SQL queries safely using Template strings.
 Demonstrates why Template strings are essential for security.
@@ -573,10 +573,10 @@ def main():
     print("=" * 60)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
-      "type": "h2",
+      "type": "quiz",
       "text": "Quiz: Test Your Understanding"
     },
     {
@@ -599,7 +599,7 @@ if __name__ == "__main__":
     },
     {
       "type": "p",
-      "text": "A1: % formatting is the legacy C-style format, good for quick scripts and logging but deprecated for new code. str.format() is the modern dynamic formatting, ideal for templates stored in variables, internationalization, and complex attribute access. f-strings are the most readable and fastest, perfect for inline formatting with expressions — they are the default choice for Python 3.6+. Template strings are the safest, designed for user-generated content where security is paramount. A2: f"{1234567.89:>015,.2f}" produces 00001,234,567.89. Breakdown: > (right-align), 0 (zero-pad), 15 (width), , (thousands separator), .2f (2 decimal places). A3: str.format() with user input like {0.__class__} can expose internal attributes through introspection. Template strings only support simple $variable substitution and do not evaluate expressions or access attributes, making them safe by design. A4: f-string debug expressions like {x=} automatically show both the variable name and value, reducing boilerplate. print(x, y, x+y) requires manual labeling and is harder to read. Debug f-strings are self-documenting and can include format specifiers like {x=:.2f}. A5: Use str.format() with calculated column widths based on the maximum content length. Format each row with {name:<{name_width}} {price:>{price_width}.2f} {quantity:>{qty_width}}. Add separators between header and data, and after each row if desired."
+      "text": "A1: % formatting is the legacy C-style format, good for quick scripts and logging but deprecated for new code. str.format() is the modern dynamic formatting, ideal for templates stored in variables, internationalization, and complex attribute access. f-strings are the most readable and fastest, perfect for inline formatting with expressions — they are the default choice for Python 3.6+. Template strings are the safest, designed for user-generated content where security is paramount. A2: f\"{1234567.89:>015,.2f}\" produces 00001,234,567.89. Breakdown: > (right-align), 0 (zero-pad), 15 (width), , (thousands separator), .2f (2 decimal places). A3: str.format() with user input like {0.__class__} can expose internal attributes through introspection. Template strings only support simple $variable substitution and do not evaluate expressions or access attributes, making them safe by design. A4: f-string debug expressions like {x=} automatically show both the variable name and value, reducing boilerplate. print(x, y, x+y) requires manual labeling and is harder to read. Debug f-strings are self-documenting and can include format specifiers like {x=:.2f}. A5: Use str.format() with calculated column widths based on the maximum content length. Format each row with {name:<{name_width}} {price:>{price_width}.2f} {quantity:>{qty_width}}. Add separators between header and data, and after each row if desired."
     },
     {
       "type": "h2",
