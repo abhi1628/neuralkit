@@ -187,8 +187,8 @@ print(f'File system encoding: {locale.getfilesystemencoding()}')
 
 # --- Writing binary data ---
 with open('binary_data.bin', 'wb') as f:
-    f.write(b'\x00\x01\x02\x03')
-    f.write(b'\xff\xfe')
+    f.write(b'\\x00\\x01\\x02\\x03')
+    f.write(b'\\xff\\xfe')
 
 with open('binary_data.bin', 'rb') as f:
     data = f.read()
@@ -214,10 +214,10 @@ with open('newline_test.txt', 'r', newline='') as f:
 # --- Encoding errors ---
 # strict (default): raise UnicodeDecodeError
 # ignore: skip bad bytes
-# replace: replace with \ufffd (replacement character)
+# replace: replace with \\ufffd (replacement character)
 # backslashreplace: replace with \xNN escape
 
-bad_bytes = b'\xff\xfeValid UTF-8: café'
+bad_bytes = b'\\xff\\xfeValid UTF-8: café'
 
 for error_mode in ['strict', 'ignore', 'replace', 'backslashreplace']:
     try:
