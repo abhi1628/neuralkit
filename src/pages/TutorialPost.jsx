@@ -5,6 +5,28 @@ import part1Content from "../posts/ml-foundations-part-1";
 import part2Content from "../posts/ml-foundations-part-2";
 import part3Content from "../posts/ml-foundations-part-3";
 import part4Content from '../posts/ml-foundations-part-4';
+import pythonSeriesData from "../posts/python-unlocked-series";
+import pythonSeriesData from "../posts/python-unlocked-part-1";
+import pythonSeriesData from "../posts/python-unlocked-part-2";
+import pythonSeriesData from "../posts/python-unlocked-part-3";
+import pythonSeriesData from "../posts/python-unlocked-part-4";
+import pythonSeriesData from "../posts/python-unlocked-part-5";
+import pythonSeriesData from "../posts/python-unlocked-part-6";
+import pythonSeriesData from "../posts/python-unlocked-part-7";
+import pythonSeriesData from "../posts/python-unlocked-part-8";
+import pythonSeriesData from "../posts/python-unlocked-part-9";
+import pythonSeriesData from "../posts/python-unlocked-part-10";
+import pythonSeriesData from "../posts/python-unlocked-part-11";
+import pythonSeriesData from "../posts/python-unlocked-part-12";
+import pythonSeriesData from "../posts/python-unlocked-part-13";
+import pythonSeriesData from "../posts/python-unlocked-part-14";
+import pythonSeriesData from "../posts/python-unlocked-part-15";
+import pythonSeriesData from "../posts/python-unlocked-part-16";
+import pythonSeriesData from "../posts/python-unlocked-part-17";
+import pythonSeriesData from "../posts/python-unlocked-part-18";
+import pythonSeriesData from "../posts/python-unlocked-part-19";
+import pythonSeriesData from "../posts/python-unlocked-part-20";
+import pythonSeriesData from "../posts/python-unlocked-part-21";
 
 const CONTENT_MAP = {
   "ml-foundations": {
