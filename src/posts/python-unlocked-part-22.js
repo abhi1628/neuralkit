@@ -215,7 +215,7 @@ with open('newline_test.txt', 'r', newline='') as f:
 # strict (default): raise UnicodeDecodeError
 # ignore: skip bad bytes
 # replace: replace with \\ufffd (replacement character)
-# backslashreplace: replace with \xNN escape
+# backslashreplace: replace with \\xNN escape
 
 bad_bytes = b'\\xff\\xfeValid UTF-8: café'
 
