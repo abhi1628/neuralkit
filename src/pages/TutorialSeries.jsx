@@ -1,6 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
 import landingPost from "../posts/ml-foundations-landing"; // ← STATIC IMPORT, not require()
+import pythonSeriesData from "../posts/python-unlocked-series";
+import pythonLandingPost from "../posts/python-unlocked-landing";
 
 export default function TutorialSeries({ theme }) {
   const navigate = useNavigate();
@@ -10,6 +12,7 @@ export default function TutorialSeries({ theme }) {
   const seriesColor = "#10b981";
 
   const series = seriesSlug === "ml-foundations" ? seriesData : null;
+  const pythonSeries = seriesSlug === "python-foundations" ? pythonSeriesData : null;
 
   if (!series) {
     return (
