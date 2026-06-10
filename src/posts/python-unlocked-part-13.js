@@ -32,7 +32,7 @@ const post = {
     {
       "type": "code-block",
       "label": "Set Fundamentals",
-      "code": "# === CREATING SETS ===
+      "code": `# === CREATING SETS ===
 # Literal syntax: {1, 2, 3} (empty {} is dict, use set() for empty set)
 
 numbers = {1, 2, 3, 4, 5}
@@ -134,7 +134,7 @@ print(f"Popped: {popped}, remaining: {s}")
 s.clear()
 print(f"After clear: {s}")
 
-print("\nSet fundamentals complete!")"
+print("\nSet fundamentals complete!")`
     },
     {
       "type": "h2",
@@ -147,7 +147,7 @@ print("\nSet fundamentals complete!")"
     {
       "type": "code-block",
       "label": "Set Operations Mastery",
-      "code": "# === SET OPERATIONS ===
+      "code": `# === SET OPERATIONS ===
 # Visualize with Venn diagram mental model
 
 A = {1, 2, 3, 4, 5}
@@ -245,7 +245,7 @@ print(f"Only in second: {only_in_second}")
 print(f"In both:        {in_both}")
 print(f"In either:      {in_either}")
 
-print("\nSet operations mastery complete!")"
+print("\nSet operations mastery complete!")`
     },
     {
       "type": "h2",
@@ -258,7 +258,7 @@ print("\nSet operations mastery complete!")"
     {
       "type": "code-block",
       "label": "frozenset Mastery",
-      "code": "# === FROZENSET ===
+      "code": `# === FROZENSET ===
 # Immutable, hashable set
 
 # Create frozenset
@@ -327,7 +327,7 @@ expensive_operation({1, 2, 3})
 expensive_operation({3, 2, 1})  # Same set, different order -> cache hit!
 expensive_operation({4, 5})
 
-print("\nfrozenset mastery complete!")"
+print("\nfrozenset mastery complete!")`
     },
     {
       "type": "h2",
@@ -340,7 +340,7 @@ print("\nfrozenset mastery complete!")"
     {
       "type": "code-block",
       "label": "Set Comprehensions Mastery",
-      "code": "# === SET COMPREHENSIONS ===
+      "code": `# === SET COMPREHENSIONS ===
 # {expression for item in iterable if condition}
 
 # Basic: unique squares
@@ -394,7 +394,7 @@ print(f"\nCategories: {categories}")
 fs = frozenset(x**2 for x in range(10) if x % 2 == 0)
 print(f"\nfrozenset comprehension: {fs}")
 
-print("\nSet comprehension mastery complete!")"
+print("\nSet comprehension mastery complete!")`
     },
     {
       "type": "h2",
@@ -407,7 +407,7 @@ print("\nSet comprehension mastery complete!")"
     {
       "type": "code-block",
       "label": "Real-World Set Applications",
-      "code": "# === DEDUPLICATION ===
+      "code": `# === DEDUPLICATION ===
 # The most common set operation
 
 # Remove duplicates from list while preserving order (Python 3.7+)
@@ -515,10 +515,10 @@ unique_editor = editor_perms - admin_perms - viewer_perms
 print(f"Unique to admin: {unique_admin}")
 print(f"Unique to editor: {unique_editor}")
 
-print("\nReal-world applications complete!")"
+print("\nReal-world applications complete!")`
     },
     {
-      "type": "h2",
+      "type": "programs",
       "text": "Programs: Logic in Action"
     },
     {
@@ -528,7 +528,7 @@ print("\nReal-world applications complete!")"
     {
       "type": "code-block",
       "label": "Program 1: Venn Diagram Generator",
-      "code": """"
+      "code": `"""
 Program 1: Venn Diagram Generator
 Generates Venn diagram data from sets.
 Demonstrates all set operations and ASCII visualization.
@@ -656,12 +656,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 2: Duplicate Finder",
-      "code": """"
+      "code": `"""
 Program 2: Duplicate Finder
 Finds duplicates in files, lists, and nested data.
 Demonstrates deduplication, hashing, and set operations.
@@ -797,12 +797,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 3: Tag System",
-      "code": """"
+      "code": `"""
 Program 3: Tag System
 A complete tag-based categorization system using sets.
 Demonstrates set operations for tag queries and recommendations.
@@ -974,12 +974,12 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "code-block",
       "label": "Program 4: Mutual Friends Finder",
-      "code": """"
+      "code": `"""
 Program 4: Mutual Friends Finder
 Social network analysis using sets.
 Demonstrates set operations for relationship analysis.
@@ -1160,7 +1160,7 @@ def main():
     print("=" * 50)
 
 if __name__ == "__main__":
-    main()"
+    main()`
     },
     {
       "type": "h2",
