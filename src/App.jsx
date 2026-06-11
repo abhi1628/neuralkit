@@ -35,6 +35,7 @@ import DevToolsPanel, { AnalyticsDashboardSnippet } from './components/DevToolsP
 import CodePlayground from './components/CodePlayground';
 import AskAuthor from './components/AskAuthor';
 import ChatWidget from './components/ChatWidget';
+import PageWrapper from './components/PageWrapper';
 import UserFeedback from './components/UserFeedback';
 import ToolDetailView from './pages/ToolDetailView';
 
@@ -265,7 +266,7 @@ export default function App() {
         <Route path="/"            element={<AppInner />} />
         
         {/* ✅ REGISTERED: CRAWLER FRIENDLY ISOLATED SEO VIEW PATHS */}
-        <Route path="/tools/:toolSlug" element={<ToolDetailView />} />
+        <Route path="/tools/:toolSlug" element={<PageWrapper><ToolDetailView /></PageWrapper>} />
         
         {/* ✅ REGISTERED: DEDICATED ADMIN STATS LOOKUP ROUTE LINK */}
         <Route path="/dashboard" element={
@@ -277,20 +278,20 @@ export default function App() {
           </div>
         } />
 
-        <Route path="/learn"       element={<BlogListPage />} />
-        <Route path="/learn/:slug" element={<BlogPostPage />} />
-        <Route path="/privacy"     element={<PrivacyPage />} />
-        <Route path="/contact"     element={<ContactPage />} />
-        <Route path="/about"       element={<AboutPage />} />
+        <Route path="/learn"       element={<PageWrapper><BlogListPage /></PageWrapper>} />
+        <Route path="/learn/:slug" element={<PageWrapper><BlogPostPage /></PageWrapper>} />
+        <Route path="/privacy"     element={<PageWrapper><PrivacyPage /></PageWrapper>} />
+        <Route path="/contact"     element={<PageWrapper><ContactPage /></PageWrapper>} />
+        <Route path="/about"       element={<PageWrapper><AboutPage /></PageWrapper>} />
         <Route path="*"            element={<AppInner />} />
-        <Route path="/playground" element={<CodePlayground />} />
-        <Route path="/breakit" element={<BreakItPage />} />
-        <Route path="/breakit/:slug" element={<BreakItChallengePage />} />
-        <Route path="/roadmaps" element={<RoadmapListPage />} />
-        <Route path="/roadmaps/:slug" element={<RoadmapDetailPage />} />
-        <Route path="/tutorials" element={<TutorialListPage />} />
-        <Route path="/tutorials/:seriesSlug" element={<TutorialSeriesPage />} />
-        <Route path="/tutorials/:seriesSlug/:partSlug" element={<TutorialPostPage />} />
+        <Route path="/playground" element={<PageWrapper><CodePlayground /></PageWrapper>} />
+        <Route path="/breakit" element={<PageWrapper><BreakItPage /></PageWrapper>} />
+        <Route path="/breakit/:slug" element={<PageWrapper><BreakItChallengePage /></PageWrapper>} />
+        <Route path="/roadmaps" element={<PageWrapper><RoadmapListPage /></PageWrapper>} />
+        <Route path="/roadmaps/:slug" element={<PageWrapper><RoadmapDetailPage /></PageWrapper>} />
+        <Route path="/tutorials" element={<PageWrapper><TutorialListPage /></PageWrapper>} />
+        <Route path="/tutorials/:seriesSlug" element={<PageWrapper><TutorialSeriesPage /></PageWrapper>} />
+        <Route path="/tutorials/:seriesSlug/:partSlug" element={<PageWrapper><TutorialPostPage /></PageWrapper>} />
       </Routes>
     </ErrorBoundary>
   );
