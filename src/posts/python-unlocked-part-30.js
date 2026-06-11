@@ -878,7 +878,7 @@ def vault_stats(storage) -> str:
 def export_markdown(notes: list[dict]) -> str:
     lines = ["# PyVault Export\\n", f"*{len(notes)} notes*\\n\\n---\\n"]
     for note in sorted(notes, key=lambda n: n['title']):
-        tags = ' '.join(f"`#{t}`" for t in note.get('tags', []))
+        tags = ' '.join(f"\`#{t}\`" for t in note.get('tags', []))
         lines += [
             f"## {note['title']}",
             f"*{note['note_type']} · {note['created_at'][:10]}*",
