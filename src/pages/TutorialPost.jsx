@@ -29,6 +29,13 @@ import pyPart20 from "../posts/python-unlocked-part-20";
 import pyPart21 from "../posts/python-unlocked-part-21";
 import pyPart22 from "../posts/python-unlocked-part-22";
 import pyPart23 from "../posts/python-unlocked-part-23";
+import pyPart24 from "../posts/python-unlocked-part-24";
+import pyPart25 from "../posts/python-unlocked-part-25";
+import pyPart26 from "../posts/python-unlocked-part-26";
+import pyPart27 from "../posts/python-unlocked-part-27";
+import pyPart28 from "../posts/python-unlocked-part-28";
+import pyPart29 from "../posts/python-unlocked-part-29";
+import pyPart30 from "../posts/python-unlocked-part-30";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -60,7 +67,14 @@ const CONTENT_MAP = {
     "part-20-decorators-superpower": pyPart20,
     "part-21-generators-iterators": pyPart21,
     "part-22-file-handling": pyPart22,
-    "part-23-exception-handling": pyPart23
+    "part-23-exception-handling": pyPart23,
+    "part-24-modules-packages": pyPart24,
+    "part-25-oop-foundations": pyPart25,
+    "part-26-oop-inheritance": pyPart26,
+    "part-27-magic-methods": pyPart27,
+    "part-28-metaclasses-descriptors": pyPart28,
+    "part-29-standard-library": pyPart29,
+    "part-30-final-project": pyPart30
   }
 };
 
