@@ -159,6 +159,130 @@ const appStyles = `
   @supports (backdrop-filter: blur(20px)) {
     .mobile-menu { backdrop-filter: blur(20px) saturate(180%); }
   }
+
+  /* ── Zer0 Chatbot Styles ─────────────────────────────────────── */
+  @keyframes zer0Pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  @keyframes zer0SlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes zer0FadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes zer0Typing {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes zer0Shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  .zer0-chat-window {
+    animation: zer0SlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .zer0-chat-window .zer0-typing-dot {
+    animation: zer0Typing 1.4s infinite;
+  }
+  .zer0-chat-window .zer0-typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .zer0-chat-window .zer0-typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  .zer0-follow-up-chip {
+    animation: zer0FadeIn 0.4s ease forwards;
+  }
+  .zer0-follow-up-chip:nth-child(1) { animation-delay: 0.05s; }
+  .zer0-follow-up-chip:nth-child(2) { animation-delay: 0.1s; }
+  .zer0-follow-up-chip:nth-child(3) { animation-delay: 0.15s; }
+  .zer0-quick-reply::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.05), transparent);
+    transition: left 0.5s;
+  }
+  .zer0-quick-reply:hover::before {
+    left: 100%;
+  }
+  [data-theme="dark"] .zer0-quick-reply::before {
+    background: linear-gradient(90deg, transparent, rgba(167,139,250,0.08), transparent);
+  }
+  @media (max-width: 768px) {
+    .zer0-chat-window {
+      border-radius: 0 !important;
+      width: 100% !important;
+      max-height: 100vh !important;
+      bottom: 0 !important;
+      right: 0 !important;
+    }
+    .scroll-to-top {
+      bottom: 90px !important;
+    }
+    .zer0-chat-open ~ .scroll-to-top,
+    .zer0-chat-window ~ .scroll-to-top {
+      display: none !important;
+    }
+  }
+  @media (min-width: 769px) {
+    .scroll-to-top {
+      bottom: 90px !important;
+    }
+  }
+  .zer0-chat-window ::-webkit-scrollbar {
+    width: 4px;
+  }
+  .zer0-chat-window ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .zer0-chat-window ::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 2px;
+  }
+  .zer0-chat-window ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+  .zer0-chat-window pre {
+    color: #e2e0ff;
+  }
+  .zer0-chat-window code {
+    font-family: 'Space Mono', monospace;
+  }
+  .zer0-chat-window,
+  .zer0-trigger-btn {
+    z-index: 9999 !important;
+  }
+  .zer0-trigger-btn.has-notification {
+    animation: zer0Pulse 2s infinite;
+  }
+  .zer0-follow-ups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 36px;
+    margin-top: 4px;
+  }
+  .zer0-limit-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    text-align: center;
+    animation: zer0FadeIn 0.3s ease;
+  }
+  [data-theme="dark"] .zer0-limit-card {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+  [data-theme="light"] .zer0-limit-card {
+    background: rgba(239,68,68,0.04);
+    border: 1px solid rgba(239,68,68,0.12);
+  }
 `;
 
 export default appStyles;
