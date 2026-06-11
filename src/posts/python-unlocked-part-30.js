@@ -449,7 +449,7 @@ class MarkdownExporter(Exporter, format_name="markdown"):
     def export(self, notes: list[dict], output: Path) -> int:
         lines = ["# My PyVault Export\\n", f"*{len(notes)} notes*\\n\\n---\\n"]
         for note in sorted(notes, key=lambda n: n.get('title', '')):
-            tags_str = ' '.join(f"`#{t}`" for t in note.get('tags', []))
+            tags_str = ' '.join(["`#" + t + "`" for t in note.get('tags', [])])
             lines += [
                 f"## {note['title']}",
                 f"*{note.get('note_type', 'NOTE')} · {note.get('created_at', '')[:10]}*",
