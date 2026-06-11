@@ -1,4 +1,4 @@
-// api/feedback.js — Secure, anonymized feedback API
+// api/feedback.js — Secure, anonymized feedback API with fixed rate limits
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 
@@ -31,6 +31,7 @@ function applySecurityHeaders(res) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
 }
+
 export default async function handler(req, res) {
   applySecurityHeaders(res);
   const origin = req.headers.origin;
@@ -44,24 +45,30 @@ export default async function handler(req, res) {
   const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress;
   const now = Date.now();
 
-  // Rate limit GET: 30 per hour per IP
+  // Rate limit GET: 120 per hour per IP (supports 30s polling comfortably)
   if (req.method === "GET") {
     const getKey = `get_${clientIp}`;
     const getEntry = rateStore.get(getKey);
     if (getEntry && now - getEntry.windowStart < 3600000) {
-      if (getEntry.count >= 30) return res.status(429).json({ error: "Too many requests. Try again later." });
+      if (getEntry.count >= 120) {
+        res.setHeader('Retry-After', Math.ceil((getEntry.windowStart + 3600000 - now) / 1000));
+        return res.status(429).json({ error: "Too many requests. Try again later." });
+      }
       getEntry.count++;
     } else {
       rateStore.set(getKey, { windowStart: now, count: 1 });
     }
   }
 
-  // Rate limit POST: 3 per hour per IP
+  // Rate limit POST: 5 per hour per IP (slightly more generous)
   if (req.method === "POST") {
     const postKey = `post_${clientIp}`;
     const postEntry = rateStore.get(postKey);
     if (postEntry && now - postEntry.windowStart < 3600000) {
-      if (postEntry.count >= 3) return res.status(429).json({ error: "Too many submissions. Try again later." });
+      if (postEntry.count >= 5) {
+        res.setHeader('Retry-After', Math.ceil((postEntry.windowStart + 3600000 - now) / 1000));
+        return res.status(429).json({ error: "Too many submissions. Try again later." });
+      }
       postEntry.count++;
     } else {
       rateStore.set(postKey, { windowStart: now, count: 1 });
@@ -95,6 +102,8 @@ export default async function handler(req, res) {
         created_at: item.created_at,
       }));
 
+      // Cache control: allow 15s client-side caching to reduce redundant fetches
+      res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
       return res.status(200).json(sanitized);
     } catch (err) {
       console.error("Feedback fetch error:", err);
