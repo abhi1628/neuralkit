@@ -34,6 +34,7 @@ import ResumeBuilderTool from './components/ResumeBuilderTool';
 import DevToolsPanel, { AnalyticsDashboardSnippet } from './components/DevToolsPanel'; // FIXED: Imported analytics block
 import CodePlayground from './components/CodePlayground';
 import AskAuthor from './components/AskAuthor';
+import ChatWidget from './components/ChatWidget';
 import UserFeedback from './components/UserFeedback';
 import ToolDetailView from './pages/ToolDetailView';
 
@@ -234,6 +235,8 @@ function AppInner() {
       <UserFeedback />
       <AboutSection currentYear={currentYear} />
 
+      <ChatWidget />
+
       <ScrollToTop />
     </div>
   );
@@ -270,6 +273,7 @@ export default function App() {
             <div style={{ maxWidth: '960px', margin: '0 auto', background: theme === 'dark' ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.03)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '20px', padding: '36px' }}>
               <AnalyticsDashboardSnippet />
             </div>
+            <ChatWidget />
           </div>
         } />
 
