@@ -399,7 +399,7 @@ const seriesData = {
     },
     {
       "partNumber": 26,
-      "slug": "part-26-oop-inheritance-polymorphism",
+      "slug": "part-26-oop-inheritance",
       "title": "OOP: Inheritance & Polymorphism — Code Reuse",
       "readTime": "28 min read",
       "date": "July 30, 2026",
@@ -414,7 +414,7 @@ const seriesData = {
     },
     {
       "partNumber": 27,
-      "slug": "part-27-oop-magic-methods",
+      "slug": "part-27-magic-methods",
       "title": "OOP: Magic Methods & Protocols — Python's Hidden Language",
       "readTime": "32 min read",
       "date": "August 1, 2026",
@@ -429,7 +429,7 @@ const seriesData = {
     },
     {
       "partNumber": 28,
-      "slug": "part-28-oop-metaclasses-descriptors",
+      "slug": "part-28-metaclasses-descriptors",
       "title": "OOP: Metaclasses & Descriptors — The Deep Magic",
       "readTime": "30 min read",
       "date": "August 3, 2026",
@@ -444,7 +444,7 @@ const seriesData = {
     },
     {
       "partNumber": 29,
-      "slug": "part-29-standard-library-treasure",
+      "slug": "part-29-standard-library",
       "title": "The Standard Library Treasure Hunt",
       "readTime": "28 min read",
       "date": "August 5, 2026",
@@ -459,7 +459,7 @@ const seriesData = {
     },
     {
       "partNumber": 30,
-      "slug": "part-30-final-project-framework",
+      "slug": "part-30-final-project",
       "title": "The Final Project: Build Your Pythonic Framework",
       "readTime": "35 min read",
       "date": "August 7, 2026",
