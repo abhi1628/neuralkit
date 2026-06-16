@@ -730,11 +730,15 @@ export default function LabLens() {
                     </div>
                   ))}
                 </div>
-                {result.disclaimer && (
-                  <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.03)', border: `1px solid ${border}`, borderRadius: '10px', padding: '16px 18px' }}>
-                    <div style={{ fontSize: '0.7rem', color: muted, lineHeight: 1.7 }}>⚕ {result.disclaimer}</div>
+                <div style={{ background: warnBg, border: `1px solid ${warnBorder}`, borderRadius: '10px', padding: '16px 18px' }}>
+                  <div style={{ fontSize: '0.75rem', color: warn, fontWeight: 700, marginBottom: '10px', letterSpacing: '0.05em' }}>⚕ IMPORTANT CAUTION</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '0.72rem', color: warn, lineHeight: 1.7 }}>🇬🇧 This is an AI-generated explanation for educational purposes only. It is not a medical diagnosis. Always consult a qualified doctor before making any health decisions.</div>
+                    <div style={{ fontSize: '0.72rem', color: warn, lineHeight: 1.7 }}>🇮🇳 यह केवल शैक्षिक उद्देश्यों के लिए AI द्वारा तैयार की गई जानकारी है। यह कोई चिकित्सीय निदान नहीं है। कोई भी स्वास्थ्य निर्णय लेने से पहले योग्य डॉक्टर से परामर्श करें।</div>
+                    <div style={{ fontSize: '0.72rem', color: warn, lineHeight: 1.7 }}>🇪🇸 Esta es una explicación generada por IA con fines educativos únicamente. No es un diagnóstico médico. Consulte siempre a un médico calificado antes de tomar decisiones de salud.</div>
+                    <div style={{ fontSize: '0.72rem', color: warn, lineHeight: 1.7 }}>🇮🇳 இது கல்வி நோக்கங்களுக்காக மட்டுமே AI உருவாக்கிய விளக்கமாகும். இது மருத்துவ நோயறிதல் அல்ல. எந்த உடல்நல முடிவையும் எடுப்பதற்கு முன் தகுதிவாய்ந்த மருத்துவரை அணுகவும்।</div>
                   </div>
-                )}
+                </div>
               </div>
             )}
 
