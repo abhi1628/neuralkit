@@ -452,7 +452,7 @@ export default function LabLens() {
       <div style={{ maxWidth: '840px', margin: '0 auto', padding: '60px 20px 80px', fontFamily: "'Space Mono', monospace" }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '32px', textAlign: 'left' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: isDark ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)', border: `1px solid rgba(16,185,129,0.25)`, borderRadius: '100px', padding: '5px 16px', marginBottom: '16px' }}>
             <span style={{ fontSize: '0.6rem', color: green, letterSpacing: '0.18em' }}>◆ MEDICAL · AI + FUZZY LOGIC</span>
           </div>
