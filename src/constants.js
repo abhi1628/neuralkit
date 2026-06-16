@@ -44,6 +44,7 @@ export const TOOL_MODELS = {
   interviewEval:        MODELS.MEDIUM,     // scoring JSON — medium more reliable
   trivia:               MODELS.MEDIUM,     // JSON output — 8b more reliable than gemma
   askAuthor:            MODELS.MEDIUM,     // upgraded: 8b more reliable than gemma
+  labLens:              MODELS.HEAVY,      // medical report — needs precision + nuanced reasoning
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
