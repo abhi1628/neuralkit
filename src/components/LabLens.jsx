@@ -412,7 +412,8 @@ export default function LabLens() {
         setLoadingStep(`Translating to ${lang.nativeLabel}…`);
         try {
           const { system, user } = buildTranslationPrompt(language, englishResult);
-          const transRes = await callAI(fallbackModel, 'lablens-translate', [
+          // Use primary model for translation — Tamil/Hindi need the stronger model
+          const transRes = await callAI(primaryModel, 'lablens-translate', [
             { role:'system', content: system },
             { role:'user',   content: user   },
           ]);
@@ -427,6 +428,15 @@ export default function LabLens() {
         }
       }
 
+      // Normalize overall_status — model sometimes returns unexpected values
+      const validStatuses = ['normal', 'attention_needed', 'urgent'];
+      if (!validStatuses.includes(finalResult.overall_status)) {
+        const s = (finalResult.overall_status || '').toLowerCase();
+        if (s.includes('urgent') || s.includes('critical'))             finalResult.overall_status = 'urgent';
+        else if (s.includes('attention') || s.includes('abnormal'))     finalResult.overall_status = 'attention_needed';
+        else if (overallFuzzy && overallFuzzy !== 'unknown')            finalResult.overall_status = overallFuzzy;
+        else                                                            finalResult.overall_status = 'attention_needed';
+      }
       setResult(finalResult);
       setActiveTab('summary');
     } catch(err) {
