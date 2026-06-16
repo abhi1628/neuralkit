@@ -459,7 +459,7 @@ export default function LabLens() {
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(2rem,5vw,3rem)', fontWeight: 800, color: isDark ? '#fff' : '#1a1a1a', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '10px' }}>
             Lab<span style={{ color: green }}>Lens</span>
           </h1>
-          <p style={{ fontSize: '0.92rem', color: muted, lineHeight: 1.75, maxWidth: '580px', marginBottom: '16px', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.92rem', color: muted, lineHeight: 1.75, maxWidth: '580px', marginBottom: '16px', textAlign: 'justify' }}>
             Paste or upload your lab report. LabLens scores every value on a nuanced severity scale using fuzzy logic, then AI explains what it means — in your language.
           </p>
           {/* Fixed: orange text on amber bg — fully visible in both modes */}
