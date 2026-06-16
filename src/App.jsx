@@ -31,6 +31,7 @@ import ToolPanel from './components/ToolPanel';
 import MCQPanel from './components/MCQPanel';
 import UploadTool from './components/UploadTool';
 import ResumeBuilderTool from './components/ResumeBuilderTool';
+import LabLens from './components/LabLens';
 import DevToolsPanel, { AnalyticsDashboardSnippet } from './components/DevToolsPanel'; // FIXED: Imported analytics block
 import CodePlayground from './components/CodePlayground';
 import AskAuthor from './components/AskAuthor';
@@ -75,6 +76,7 @@ function AIToolsSection({ activeTool, setActiveTool }) {
     { id: 'summarizer-upload', icon: '📄', name: 'Document Summarizer',      tagline: 'Upload PDF or Word — instant AI structured summary' },
     { id: 'resume-upload',     icon: '📋', name: 'Resume Analyzer & Enhancer', tagline: 'Upload your resume — expert feedback, ATS score & AI-improved download' },
     { id: 'resume-builder',    icon: '🏗️', name: 'Resume Builder',            tagline: 'Build a professional ATS-optimized resume from scratch — step by step' },
+    { id: 'lablens',           icon: '🔬', name: 'LabLens',                     tagline: 'Paste your lab report — AI + fuzzy logic explains every value in plain English' },
   ];
 
   const activeInfo = ALL_TOOL_CARDS[activeTool] || ALL_TOOL_CARDS[0];
@@ -85,6 +87,8 @@ function AIToolsSection({ activeTool, setActiveTool }) {
     if (activeTool === 2) return <MCQPanel  tool={TOOLS[2]} />;
     if (activeTool === 3) return <UploadTool {...UPLOAD_TOOLS[0]} />;
     if (activeTool === 4) return <UploadTool {...UPLOAD_TOOLS[1]} />;
+    if (activeTool === 5) return <ResumeBuilderTool />;
+    if (activeTool === 6) return <LabLens />;
     return <ResumeBuilderTool />;
   }, [activeTool]);
 
