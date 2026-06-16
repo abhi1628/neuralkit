@@ -168,7 +168,7 @@ function buildSystemPrompt(language = 'english') {
     tamil:   'Tamil (Tamil script)',
   };
   const langInstruction = langMap[language]
-    ? `\n\nLANGUAGE INSTRUCTION: Write ALL text values in the JSON in ${langMap[language]}. Keep parameter names, numeric values, units, and the fuzzy_label field in English — but every other string field (headline, summary, plain_meaning, significance, plain_explanation, questions_for_doctor, lifestyle_notes, disclaimer, urgent_alert, what_doctor_looks_for) must be written in ${langMap[language]}. CRITICAL: Your response must still be valid JSON. Do not use line breaks inside string values. Use \\n for line breaks within strings if needed.`
+    ? `\n\nLANGUAGE INSTRUCTION: Write ALL text values in the JSON in ${langMap[language]}. Keep parameter names, numeric values, units, and the fuzzy_label field in English — but every other string field (headline, summary, plain_meaning, significance, plain_explanation, questions_for_doctor, lifestyle_notes, disclaimer, urgent_alert, what_doctor_looks_for) must be written in ${langMap[language]}. CRITICAL: Your response must be valid JSON parseable by JSON.parse(). Rules: no line breaks inside string values, no trailing commas, no unescaped quotes inside strings, no markdown. Write all strings on a single line. If a string would contain a quote character, escape it as \\".`
     : '';
 
   return `You are LabLens, an expert medical report explainer. You help patients understand lab results in plain, accurate, trustworthy language. You NEVER diagnose — you explain, contextualize, and guide.
@@ -415,7 +415,17 @@ export default function LabLens() {
 
       const data   = await res.json();
       const raw    = data?.choices?.[0]?.message?.content || '';
-      const parsed = safeParseJSON(raw);
+      let parsed;
+      try {
+        parsed = safeParseJSON(raw);
+      } catch (_) {
+        // Non-English JSON parse failed — retry in English, translate display client-side
+        // Simpler fix: retry same call with stricter JSON-only instruction
+        const retryRes = await callAI(fallbackModel, 'lablens-retry');
+        const retryData = await retryRes.json();
+        const retryRaw  = retryData?.choices?.[0]?.message?.content || '';
+        parsed = safeParseJSON(retryRaw);
+      }
       setResult(parsed);
       setActiveTab('summary');
     } catch (err) {
