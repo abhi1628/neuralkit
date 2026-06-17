@@ -256,7 +256,7 @@ RESPOND ONLY with valid JSON, no markdown, no preamble:
 }
 
 // ── Field-by-field translation — no JSON structure to corrupt ──
-async function translateFields(englishResult, targetLang, callAI, primaryModel, fallbackModel) {
+async function translateFields(englishResult, targetLang, callAI, primaryModel, fallbackModel, onProgress) {
   // Collect all text that needs translation
   const fields = {
     headline:    englishResult.headline || '',
@@ -275,7 +275,11 @@ async function translateFields(englishResult, targetLang, callAI, primaryModel, 
   const results = {};
 
   // Translate each field group independently — if one fails, others still work
+  const fieldKeys = Object.keys(fields);
+  let stepNum = 0;
   for (const [key, val] of Object.entries(fields)) {
+    stepNum++;
+    if (onProgress) onProgress(stepNum, fieldKeys.length);
     if (!val) { results[key] = val; continue; }
     try {
       let res;
@@ -415,8 +419,15 @@ export default function LabLens() {
   const [result, setResult]           = useState(null);
   const [fuzzyData, setFuzzyData]     = useState(null);
   const [loading, setLoading]         = useState(false);
-  const [loadingStep, setLoadingStep] = useState('');
-  const [loadingPdf, setLoadingPdf]   = useState(false);
+  const [loadingStep, setLoadingStep]     = useState('');
+  const [progressSteps, setProgressSteps] = useState([]);
+  const [loadingPdf, setLoadingPdf]       = useState(false);
+
+  // Progress helpers — each step has id, label, status: 'active'|'done'|'fail'|'skip'
+  const addStep  = (id, label)        => setProgressSteps(prev => [...prev, { id, label, status:'active' }]);
+  const doneStep = (id, label)        => setProgressSteps(prev => prev.map(s => s.id===id ? { ...s, status:'done', label:label||s.label } : s));
+  const failStep = (id, label)        => setProgressSteps(prev => prev.map(s => s.id===id ? { ...s, status:'fail', label:label||s.label } : s));
+  const skipStep = (id, label)        => setProgressSteps(prev => prev.map(s => s.id===id ? { ...s, status:'skip', label:label||s.label } : s));
   const [error, setError]             = useState('');
   const [charCount, setCharCount]     = useState(0);
   const [activeTab, setActiveTab]     = useState('summary');
@@ -493,7 +504,7 @@ export default function LabLens() {
     if (!report.trim())            { setError('Please paste your lab results or medical report.'); return; }
     if (report.trim().length < 30) { setError('Report is too short. Please paste the full text.'); return; }
 
-    setLoading(true); setError(''); setResult(null); setFuzzyData(null);
+    setLoading(true); setError(''); setResult(null); setFuzzyData(null); setProgressSteps([]);
 
     const patientInfo = {
       age: patientAge ? parseInt(patientAge) : null,
@@ -501,11 +512,13 @@ export default function LabLens() {
     };
 
     try {
-      // Step 1: Fuzzy analysis (client-side)
+      // Step 1: Fuzzy analysis (client-side — instant)
+      addStep('fuzzy', 'Running fuzzy logic engine…');
       const parsedValues = parseLabText(report, patientInfo);
       const syndromes    = detectSyndromes(parsedValues);
       const overallFuzzy = computeOverallSeverity(parsedValues, syndromes);
       setFuzzyData({ parsedValues, syndromes, overallFuzzy });
+      doneStep('fuzzy', `✓ ${parsedValues.length} values scored · ${syndromes.length} pattern${syndromes.length!==1?'s':''} detected`);
 
       const fuzzyContext = parsedValues.length > 0
         ? `FUZZY PRE-ANALYSIS (use these scores to calibrate your language precisely):\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nComputed overall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
@@ -520,7 +533,8 @@ export default function LabLens() {
       });
 
       // Step 2a: English analysis
-      setLoadingStep('Analyzing values with fuzzy scoring…');
+      addStep('ai', 'AI reading your report and writing explanations…');
+      setLoadingStep('AI reading your report…');
       let res;
       try {
         res = await callAI(primaryModel, 'lablens-v5', [
@@ -540,6 +554,7 @@ export default function LabLens() {
       const data   = await res.json();
       const raw    = data?.choices?.[0]?.message?.content || '';
       let englishResult = safeParseJSON(raw);
+      doneStep('ai', `✓ Analysis complete — ${(englishResult.findings||[]).length} findings explained`);
 
       // Validate & override AI fuzzy scores with our computed ones (prevent hallucination)
       if (englishResult.findings && parsedValues.length > 0) {
@@ -564,10 +579,15 @@ export default function LabLens() {
       // Step 2b: Translate if non-English
       let finalResult = englishResult;
       if (language !== 'english' && lang.targetLang) {
+        addStep('trans', `Translating to ${lang.nativeLabel} (5 steps)…`);
         setLoadingStep(`Translating to ${lang.nativeLabel}…`);
-        finalResult = await translateFields(englishResult, lang.targetLang, callAI, primaryModel, fallbackModel);
+        finalResult = await translateFields(englishResult, lang.targetLang, callAI, primaryModel, fallbackModel,
+          (step, total) => setProgressSteps(prev => prev.map(s => s.id==='trans' ? { ...s, label:`Translating to ${lang.nativeLabel}… (${step}/${total})` } : s))
+        );
+        doneStep('trans', `✓ Translation to ${lang.nativeLabel} complete`);
       }
 
+      addStep('done', '✓ Report ready');
       setResult(finalResult);
       setActiveTab('summary');
     } catch(err) {
@@ -577,7 +597,7 @@ export default function LabLens() {
     }
   }, [report, language, patientAge, patientSex]);
 
-  function clear() { setReport(''); setResult(null); setFuzzyData(null); setError(''); setCharCount(0); }
+  function clear() { setReport(''); setResult(null); setFuzzyData(null); setError(''); setCharCount(0); setProgressSteps([]); }
 
   const flagged = result?.findings?.filter(f=>f.flag) || [];
 
@@ -713,14 +733,46 @@ export default function LabLens() {
         {error && <div style={{ background:'rgba(248,113,113,0.08)', border:'1px solid rgba(248,113,113,0.25)', borderRadius:'10px', padding:'12px 16px', marginBottom:'14px', fontSize:'0.82rem', color:red, lineHeight:1.6 }}>{error}</div>}
 
         {loading && (
-          <div style={{ background:card, border:`1px solid ${border}`, borderRadius:'16px', padding:'44px', textAlign:'center' }}>
-            <div style={{ fontSize:'2rem', marginBottom:'14px' }}>🔬</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'1.05rem', color:isDark?'#fff':'#1a1a1a', marginBottom:'10px' }}>Analyzing your report…</div>
-            <div style={{ fontSize:'0.78rem', color:muted, lineHeight:2 }}>
-              Step 1: Fuzzy logic scoring each value's severity<br />
-              Step 2: Detecting patterns across related markers<br />
-              Step 3: {loadingStep || lang.step3}
+          <div style={{ background:card, border:`1px solid ${border}`, borderRadius:'16px', padding:'28px', marginBottom:'14px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
+              <div style={{ fontSize:'1.6rem' }}>🔬</div>
+              <div>
+                <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'0.95rem', color:isDark?'#fff':'#1a1a1a' }}>Analyzing your report…</div>
+                <div style={{ fontSize:'0.68rem', color:muted, marginTop:'2px' }}>Each step updates as it completes</div>
+              </div>
             </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'9px' }}>
+              {progressSteps.length === 0 && (
+                <div style={{ fontSize:'0.75rem', color:muted, padding:'8px 0' }}>Starting…</div>
+              )}
+              {progressSteps.map((step) => {
+                const isDone   = step.status === 'done';
+                const isFail   = step.status === 'fail';
+                const isSkip   = step.status === 'skip';
+                const isActive = step.status === 'active';
+                const stepColor = isDone ? green : isFail ? red : isSkip ? muted : ac;
+                const icon = isDone ? '✓' : isFail ? '✗' : isSkip ? '−' : '○';
+                return (
+                  <div key={step.id} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 14px', background: isDone?(isDark?'rgba(16,185,129,0.06)':'rgba(16,185,129,0.04)'):isActive?(isDark?'rgba(167,139,250,0.08)':'rgba(124,58,237,0.04)'):'transparent', border:`1px solid ${isDone?green+'30':isActive?ac+'40':border}`, borderRadius:'10px', transition:'all 0.4s ease' }}>
+                    <div style={{ width:'24px', height:'24px', borderRadius:'50%', background:isDone?green+'20':isActive?ac+'15':'transparent', border:`1.5px solid ${stepColor}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <span style={{ fontSize:'0.68rem', color:stepColor, fontWeight:700 }}>{icon}</span>
+                    </div>
+                    <span style={{ fontSize:'0.77rem', color:isDone?(isDark?'rgba(255,255,255,0.7)':'rgba(0,0,0,0.6)'):isActive?(isDark?'#fff':'#1a1a1a'):muted, fontFamily:"'Space Mono',monospace", flex:1, lineHeight:1.4 }}>
+                      {step.label}
+                    </span>
+                    {isActive && (
+                      <div style={{ display:'flex', gap:'3px', flexShrink:0 }}>
+                        {[0,1,2].map(i => (
+                          <div key={i} style={{ width:'5px', height:'5px', borderRadius:'50%', background:ac, opacity: 0.8,
+                            animation:`lablens-bounce 1.2s ease-in-out ${i*0.2}s infinite` }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <style>{'.lablens-bounce-wrap { } @keyframes lablens-bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }'}</style>
           </div>
         )}
 
