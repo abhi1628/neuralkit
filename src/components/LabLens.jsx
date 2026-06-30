@@ -187,27 +187,29 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  // Strip Qwen/GPT OSS reasoning block
-  let cleaned = raw
-    .replace(/<think[\s\S]*?<\/think>/i, '')   // Closed think block
-    .trim();
+  // Strip a completed <think>...</think> reasoning block (some models always emit one)
+  raw = raw.replace(/<think>[\s\S]*?<\/think>/i, '').trim();
 
-  // If there's still an unclosed <think, the model was truncated mid-reasoning
-  if (/^<think/i.test(cleaned)) {
-    throw new Error('Model ran out of tokens during reasoning. Please try again with a shorter report.');
+  // If a <think> tag is still open, the response got cut off mid-reasoning —
+  // there is no JSON to recover. Fail fast with a clear message instead of
+  // letting the brace-search below grab garbage from inside the thinking text.
+  if (/<think>/i.test(raw)) {
+    throw new Error('Model response was truncated during reasoning (no JSON produced).');
   }
 
-  // Find first { and last }
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
+  // Find first { — everything before is garbage (preamble, etc.)
+  const firstBrace = raw.indexOf('{');
+  if (firstBrace === -1) throw new Error('No JSON found.');
 
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error('No JSON object found in response.');
-  }
+  let jsonStr = raw.slice(firstBrace);
 
-  let jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
+  // Find last } — everything after is garbage
+  const lastBrace = jsonStr.lastIndexOf('}');
+  if (lastBrace === -1) throw new Error('No JSON closing brace found.');
 
-  // Fix common LLM JSON errors
+  jsonStr = jsonStr.slice(0, lastBrace + 1);
+
+  // Cleanup
   jsonStr = jsonStr
     .replace(/,\s*([}\]])/g, '$1')
     .replace(/[\u2018\u2019]/g, "'")
@@ -217,8 +219,7 @@ function safeParseJSON(raw) {
     .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' ');
 
   try {
-    const parsed = JSON.parse(jsonStr);
-    if (parsed && typeof parsed === 'object') return parsed;
+    return JSON.parse(jsonStr);
   } catch (e) {
     throw new Error('Could not parse response. Please try again.');
   }
@@ -496,10 +497,6 @@ export default function LabLens() {
     if (report.trim().length < 30) { setError('Report is too short. Please paste the full text.'); return; }
 
     setLoading(true); setError(''); setResult(null); setFuzzyData(null); setProgressSteps([]);
-        // ADD DEBUG LOGS HERE ↓↓↓
-    console.log('[LabLens] TOOL_MODELS.labLens:', TOOL_MODELS.labLens);
-    console.log('[LabLens] MODELS.HEAVY:', MODELS.HEAVY);
-    console.log('[LabLens] MODELS.MEDIUM:', MODELS.MEDIUM);
 
     const patientInfo = {
       age: patientAge ? parseInt(patientAge) : null,
@@ -519,16 +516,27 @@ export default function LabLens() {
         ? `FUZZY PRE-ANALYSIS (use these scores to calibrate your language precisely):\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nComputed overall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
         : 'Note: Could not parse structured values. Analyze from raw text only.';
 
-      const primaryModel  = 'qwen/qwen3.6-27b';
+      // Use non-reasoning instruct models for structured JSON output.
+      // Reasoning models (e.g. qwen3.6-thinking variants) emit a <think> block
+      // before the answer, which burns the token budget and can get truncated
+      // before any JSON is produced. If you must use a reasoning model, raise
+      // max_tokens substantially (6000+) to give it room to finish thinking
+      // AND produce the JSON.
+      const primaryModel  = TOOL_MODELS.labLens || MODELS.MEDIUM;
       const fallbackModel = MODELS.HEAVY;
-
-      // ADD DEBUG LOGS HERE ↓↓↓
-      console.log('[LabLens] primaryModel:', primaryModel);
-      console.log('[LabLens] fallbackModel:', fallbackModel);
 
       const callAI = async (model, toolId, messages) => fetchWithBackoff(GROQ_API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ model, max_tokens:6000, temperature:0.0, toolId, messages }),
+        body:JSON.stringify({
+          model,
+          max_tokens: 4000,
+          temperature: 0.0,
+          toolId,
+          messages,
+          // Helps some providers suppress reasoning output for structured tasks.
+          // Harmless no-op if the provider/model doesn't support it.
+          reasoning_effort: 'low',
+        }),
       });
 
       // Step 2a: English analysis
@@ -550,31 +558,49 @@ export default function LabLens() {
         else throw e;
       }
 
-      const data   = await res.json();
-const raw    = data?.choices?.[0]?.message?.content || '';
-let englishResult;
+      const data = await res.json();
+      const raw  = data?.choices?.[0]?.message?.content || '';
+      let englishResult;
 
-try {
-  englishResult = safeParseJSON(raw);
-} catch (parseErr) {
-  console.error('[LabLens] JSON parse failed. Raw response:', raw.slice(0, 500));
-  // Fallback: display raw text if JSON fails
-  setError('AI returned unformatted text. Showing raw response below.');
-  setResult({
-    headline: 'AI Response (Unformatted)',
-    overall_status: 'attention_needed',
-    summary: raw.slice(0, 2000),
-    urgent_alert: null,
-    findings: [],
-    syndrome_explanations: [],
-    questions_for_doctor: ['Please try again with a clearer report.'],
-    lifestyle_notes: [],
-    ai_opinion_note: 'These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment.'
-  });
-  setLoading(false);
-  setLoadingStep('');
-  return;
-}
+      try {
+        englishResult = safeParseJSON(raw);
+      } catch (parseErr) {
+        console.error('[LabLens] JSON parse failed:', parseErr.message, '\nRaw response:', raw.slice(0, 500));
+
+        // If it was a reasoning-truncation issue, retry once with the
+        // fallback model and a bigger token budget instead of giving up.
+        if (/truncated during reasoning/i.test(parseErr.message)) {
+          try {
+            const retryRes = await callAI(fallbackModel, 'lablens-v5-retry', [
+              { role:'system', content: buildAnalysisPrompt(patientInfo) },
+              { role:'user',   content: `${fuzzyContext}\n\nRAW REPORT:\n${report}` },
+            ]);
+            const retryData = await retryRes.json();
+            const retryRaw  = retryData?.choices?.[0]?.message?.content || '';
+            englishResult = safeParseJSON(retryRaw);
+          } catch (retryErr) {
+            console.error('[LabLens] Retry also failed:', retryErr.message);
+          }
+        }
+
+        if (!englishResult) {
+          setError('AI returned unformatted text. Showing raw response below.');
+          setResult({
+            headline: 'AI Response (Unformatted)',
+            overall_status: 'attention_needed',
+            summary: raw.replace(/<think>[\s\S]*?<\/think>/i, '').trim().slice(0, 2000) || raw.slice(0, 2000),
+            urgent_alert: null,
+            findings: [],
+            syndrome_explanations: [],
+            questions_for_doctor: ['Please try again with a clearer report.'],
+            lifestyle_notes: [],
+            ai_opinion_note: 'These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment.'
+          });
+          setLoading(false);
+          setLoadingStep('');
+          return;
+        }
+      }
       doneStep('ai', `✓ Analysis complete — ${(englishResult.findings||[]).length} findings explained`);
 
       // Validate & override AI fuzzy scores with our computed ones (prevent hallucination)
