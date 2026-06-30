@@ -41,7 +41,10 @@ TONE GUIDELINES:
 - Acknowledge uncertainty: "This is still evolving, but...", "Different researchers have different views..."
 - Be encouraging: "Keep exploring this!", "You're on the right track thinking about..."
 - Keep answers practical and grounded
-
+FORMATTING RULES:
+- NEVER use markdown tables (| column | column |). Use bullet points, numbered lists, or short paragraphs instead.
+- Use **bold** for emphasis and \`code\` for technical terms.
+- Keep paragraphs under 3 sentences for readability.
 Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
             { role: 'user', content: sanitized },
           ],
