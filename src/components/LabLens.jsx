@@ -187,19 +187,17 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  // Find first { — everything before is garbage (thinking, preamble, etc.)
+  // Find first { and last } — ignore everything else
   const firstBrace = raw.indexOf('{');
-  if (firstBrace === -1) throw new Error('No JSON found.');
+  const lastBrace = raw.lastIndexOf('}');
 
-  let jsonStr = raw.slice(firstBrace);
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    throw new Error('No JSON object found in response.');
+  }
 
-  // Find last } — everything after is garbage
-  const lastBrace = jsonStr.lastIndexOf('}');
-  if (lastBrace === -1) throw new Error('No JSON closing brace found.');
+  let jsonStr = raw.slice(firstBrace, lastBrace + 1);
 
-  jsonStr = jsonStr.slice(0, lastBrace + 1);
-
-  // Cleanup
+  // Fix common LLM JSON errors
   jsonStr = jsonStr
     .replace(/,\s*([}\]])/g, '$1')
     .replace(/[\u2018\u2019]/g, "'")
@@ -209,7 +207,8 @@ function safeParseJSON(raw) {
     .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' ');
 
   try {
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    if (parsed && typeof parsed === 'object') return parsed;
   } catch (e) {
     throw new Error('Could not parse response. Please try again.');
   }
