@@ -8,13 +8,8 @@ export const WORD_LIMIT_UPLOAD = 40000;
 export { ROADMAPS, getRoadmapBySlug, getAllRoadmapSlugs } from "./data/roadmaps/index.js";
 
 // ── Model Routing ─────────────────────────────────────────────
-// Each model has its OWN separate rate limit bucket on Groq.
-// Assigning the right model per task = multiple quota pools for free.
-//
-// HEAVY   → llama-3.3-70b-versatile  (best reasoning, 6k TPM bucket)
-// MEDIUM  → llama-3.1-8b-instant     (fast, capable, separate 6k TPM bucket)
-// LARGE-CTX → llama-3.1-8b-instant   (128k context window, best for big docs)
-// LIGHT   → llama-3.1-8b-instant     (fast, separate bucket, simple tasks)
+// UPDATED June 30, 2026: Replaced decommissioned Llama 3.3 70B & 3.1 8B
+// with GPT OSS and Llama 4 Scout per Groq Console
 
 export const MODELS = {
   // Needs best reasoning — resume logic, JSON generation
