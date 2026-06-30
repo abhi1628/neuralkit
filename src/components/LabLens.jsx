@@ -596,7 +596,7 @@ export default function LabLens() {
         : 'Note: Could not parse structured values. Analyze from raw text only.';
 
       const primaryModel  = TOOL_MODELS.labLens || MODELS.HEAVY;
-      const fallbackModel = MODELS.MEDIUM;
+      const fallbackModel = 'qwen/qwen3.6-27b';
 
       const callAI = async (model, toolId, messages) => fetchWithBackoff(GROQ_API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
