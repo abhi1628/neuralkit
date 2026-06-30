@@ -187,15 +187,25 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  // Find first { and last } — ignore everything else
-  const firstBrace = raw.indexOf('{');
-  const lastBrace = raw.lastIndexOf('}');
+  // Strip Qwen/GPT OSS reasoning block
+  let cleaned = raw
+    .replace(/<think[\s\S]*?<\/think>/i, '')   // Closed think block
+    .trim();
+
+  // If there's still an unclosed <think, the model was truncated mid-reasoning
+  if (/^<think/i.test(cleaned)) {
+    throw new Error('Model ran out of tokens during reasoning. Please try again with a shorter report.');
+  }
+
+  // Find first { and last }
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
 
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
     throw new Error('No JSON object found in response.');
   }
 
-  let jsonStr = raw.slice(firstBrace, lastBrace + 1);
+  let jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
 
   // Fix common LLM JSON errors
   jsonStr = jsonStr
@@ -518,7 +528,7 @@ export default function LabLens() {
 
       const callAI = async (model, toolId, messages) => fetchWithBackoff(GROQ_API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ model, max_tokens:2500, temperature:0.0, toolId, messages }),
+        body:JSON.stringify({ model, max_tokens:6000, temperature:0.0, toolId, messages }),
       });
 
       // Step 2a: English analysis
