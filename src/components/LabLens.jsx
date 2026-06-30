@@ -187,41 +187,82 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  const cleaners = [
-    // 1. Strip markdown fences
-    s => s.replace(/```json\s*/gi, '').replace(/```\s*$/g, '').replace(/```/g, ''),
-    // 2. Strip any text before first { and after last }
-    s => {
-      const firstBrace = s.indexOf('{');
-      const lastBrace = s.lastIndexOf('}');
-      if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return s;
-      return s.slice(firstBrace, lastBrace + 1);
-    },
-    // 3. Fix common JSON syntax errors from LLMs
-    s => s
-      .replace(/,\s*([}\]])/g, '$1')           // trailing commas
-      .replace(/[\u2018\u2019]/g, "'")         // smart single quotes
-      .replace(/[\u201C\u201D]/g, '"')         // smart double quotes
-      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // unquoted keys
-      .replace(/:\s*'([^']*?)'/g, ':"$1"')     // single-quoted string values
-      .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' '), // control chars
-    // 4. Handle nested braces by finding the outermost balanced JSON
-    s => {
-      let depth = 0, start = -1;
-      for (let i = 0; i < s.length; i++) {
-        if (s[i] === '{') { if (depth === 0) start = i; depth++; }
-        else if (s[i] === '}') { depth--; if (depth === 0 && start !== -1) return s.slice(start, i + 1); }
-      }
-      return s;
-    },
-  ];
+  // Step 1: Strip markdown code blocks
+  let cleaned = raw
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*$/g, '')
+    .replace(/```/g, '');
 
-  for (const cleaner of cleaners) {
+  // Step 2: Find the outermost balanced JSON object
+  let jsonStr = '';
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+  let startIdx = -1;
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"' && !inString) {
+      inString = true;
+    } else if (char === '"' && inString) {
+      inString = false;
+    }
+
+    if (!inString) {
+      if (char === '{') {
+        if (depth === 0) startIdx = i;
+        depth++;
+      } else if (char === '}') {
+        depth--;
+        if (depth === 0 && startIdx !== -1) {
+          jsonStr = cleaned.slice(startIdx, i + 1);
+          break;
+        }
+      }
+    }
+  }
+
+  if (!jsonStr && startIdx !== -1) {
+    // Unclosed JSON — try anyway
+    jsonStr = cleaned.slice(startIdx);
+  }
+  if (!jsonStr) {
+    jsonStr = cleaned; // fallback
+  }
+
+  // Step 3: Aggressive cleanup of common LLM JSON errors
+  jsonStr = jsonStr
+    .replace(/,\s*([}\]])/g, '$1')              // trailing commas
+    .replace(/[\u2018\u2019]/g, "'")            // smart single quotes
+    .replace(/[\u201C\u201D]/g, '"')            // smart double quotes
+    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // unquoted keys
+    .replace(/:\s*'([^']*?)'/g, ':"$1"')        // single-quoted values
+    .replace(/\\n/g, '\\\\n')                   // escaped newlines in strings
+    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' '); // control chars
+
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (parsed && typeof parsed === 'object') return parsed;
+  } catch (e) {
+    // Last resort: try with relaxed parsing
     try {
-      const cleaned = cleaner(raw);
-      const parsed = JSON.parse(cleaned);
-      if (parsed && typeof parsed === 'object') return parsed;
-    } catch (_) { /* try next */ }
+      // Remove any text after the last valid JSON closing brace
+      const lastBrace = jsonStr.lastIndexOf('}');
+      if (lastBrace > 0) {
+        const trimmed = jsonStr.slice(0, lastBrace + 1);
+        const parsed2 = JSON.parse(trimmed);
+        if (parsed2 && typeof parsed2 === 'object') return parsed2;
+      }
+    } catch (_) {}
   }
 
   throw new Error('Could not parse response. Please try again.');
@@ -582,8 +623,30 @@ export default function LabLens() {
       }
 
       const data   = await res.json();
-      const raw    = data?.choices?.[0]?.message?.content || '';
-      let englishResult = safeParseJSON(raw);
+const raw    = data?.choices?.[0]?.message?.content || '';
+let englishResult;
+
+try {
+  englishResult = safeParseJSON(raw);
+} catch (parseErr) {
+  console.error('[LabLens] JSON parse failed. Raw response:', raw.slice(0, 500));
+  // Fallback: display raw text if JSON fails
+  setError('AI returned unformatted text. Showing raw response below.');
+  setResult({
+    headline: 'AI Response (Unformatted)',
+    overall_status: 'attention_needed',
+    summary: raw.slice(0, 2000),
+    urgent_alert: null,
+    findings: [],
+    syndrome_explanations: [],
+    questions_for_doctor: ['Please try again with a clearer report.'],
+    lifestyle_notes: [],
+    ai_opinion_note: 'These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment.'
+  });
+  setLoading(false);
+  setLoadingStep('');
+  return;
+}
       doneStep('ai', `✓ Analysis complete — ${(englishResult.findings||[]).length} findings explained`);
 
       // Validate & override AI fuzzy scores with our computed ones (prevent hallucination)
