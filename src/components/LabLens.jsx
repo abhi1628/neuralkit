@@ -187,54 +187,32 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  // Step 1: Strip GPT OSS thinking/reasoning blocks
-  // Handles: <think...>...</think, <thinking...>, reasoning traces, etc.
-  let cleaned = raw
-    .replace(/<think[\s\S]*?<\/think>/gi, '')     // Standard think tags
-    .replace(/<thinking[\s\S]*?<\/thinking>/gi, '') // Thinking tags
-    .replace(/<think[\s\S]*$/gi, '')               // Unclosed think tags (truncated)
-    .replace(/Here's a thinking process:[\s\S]*/gi, '') // Plain text reasoning
-    .replace(/\*\*Thinking process:\*\*[\s\S]*/gi, '')
-    .trim();
+  // Find first { — everything before is garbage (thinking, preamble, etc.)
+  const firstBrace = raw.indexOf('{');
+  if (firstBrace === -1) throw new Error('No JSON found.');
 
-  // Step 2: Strip markdown code blocks
-  cleaned = cleaned
-    .replace(/```json\s*/gi, '')
-    .replace(/```\s*$/g, '')
-    .replace(/```/g, '')
-    .trim();
+  let jsonStr = raw.slice(firstBrace);
 
-  // Step 3: Find first { and last } for JSON boundaries
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error('No JSON object found in response.');
-  }
-  
-  let jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
+  // Find last } — everything after is garbage
+  const lastBrace = jsonStr.lastIndexOf('}');
+  if (lastBrace === -1) throw new Error('No JSON closing brace found.');
 
-  // Step 4: Fix common LLM JSON syntax errors
+  jsonStr = jsonStr.slice(0, lastBrace + 1);
+
+  // Cleanup
   jsonStr = jsonStr
-    .replace(/,\s*([}\]])/g, '$1')              // trailing commas
-    .replace(/[\u2018\u2019]/g, "'")            // smart single quotes
-    .replace(/[\u201C\u201D]/g, '"')            // smart double quotes
-    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // unquoted keys
-    .replace(/:\s*'([^']*?)'/g, ':"$1"')        // single-quoted values
-    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' '); // control chars
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')
+    .replace(/:\s*'([^']*?)'/g, ':"$1"')
+    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' ');
 
   try {
-    const parsed = JSON.parse(jsonStr);
-    if (parsed && typeof parsed === 'object') return parsed;
+    return JSON.parse(jsonStr);
   } catch (e) {
-    // Last resort: try with just the cleaned string
-    try {
-      const parsed2 = JSON.parse(cleaned);
-      if (parsed2 && typeof parsed === 'object') return parsed2;
-    } catch (_) {}
+    throw new Error('Could not parse response. Please try again.');
   }
-
-  throw new Error('Could not parse response. Please try again.');
 }
 
 // ═══════════════════════════════════════════════════════════════
