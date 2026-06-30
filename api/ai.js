@@ -2,22 +2,18 @@
 // FIXED: Inline security improvements without external imports to avoid path issues
 
 const MODEL_WHITELIST = [
-  "gpt-oss-120b",
-  "gpt-oss-20b",
-  "llama-4-scout-17b-16e",
-  "qwen-3-32b",        // backup option
-  "qwen-3.6-27b",      // backup option
+  "openai/gpt-oss-120b",
+  "openai/gpt-oss-20b",
+  "qwen/qwen3.6-27b",  // exact API ID — includes slash, no hyphen
 ];
 
 const MODEL_FALLBACKS = {
-  "gpt-oss-120b":        "qwen-3.6-27b",      // if 120B down, use Qwen
-  "llama-4-scout-17b-16e": "gpt-oss-20b",     // if Scout down, use 20B
-  "gpt-oss-20b":         "llama-4-scout-17b-16e", // cross-fallback
-  "qwen-3-32b":          "gpt-oss-120b",
-  "qwen-3.6-27b":        "gpt-oss-120b",
+  "openai/gpt-oss-120b": "qwen/qwen3.6-27b",   // if 120B fails, use Qwen
+  "openai/gpt-oss-20b":  "openai/gpt-oss-120b", // if 20B fails, upscale
+  "qwen/qwen3.6-27b":    "openai/gpt-oss-120b", // if Qwen fails, use 120B
 };
 
-const DEFAULT_MODEL = "gpt-oss-120b";
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
 const MAX_TOKENS_CAP  = 2000;
 const FETCH_TIMEOUT   = 30000; // 30 seconds
 const MAX_BODY_SIZE   = 2 * 1024 * 1024; // 2MB
