@@ -6,6 +6,57 @@ import { sanitizeInput, sanitizeOutput, fetchWithBackoff } from '../utils';
 import TryExample from './TryExample';
 import OutputActions from './OutputActions';
 
+function renderMarkdown(text, isDark) {
+  if (!text) return '';
+  
+  let html = text
+    // Escape HTML first
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  
+  // Headers
+  html = html
+    .replace(/^### (.*$)/gim, '<h3 style="font-size:1rem;font-weight:700;margin:16px 0 8px;color:' + (isDark ? '#fff' : '#1a1a1a') + ';">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 style="font-size:1.1rem;font-weight:700;margin:18px 0 10px;color:' + (isDark ? '#fff' : '#1a1a1a') + ';">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 style="font-size:1.2rem;font-weight:700;margin:20px 0 12px;color:' + (isDark ? '#fff' : '#1a1a1a') + ';">$1</h1>');
+  
+  // Bold and italic
+  html = html
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight:700;">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/___(.*?)___/g, '<strong><em>$1</em></strong>')
+    .replace(/__(.*?)__/g, '<strong>$1</strong>')
+    .replace(/_(.*?)_/g, '<em>$1</em>');
+  
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code style="background:' + (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)') + ';padding:2px 6px;border-radius:4px;font-size:0.85em;font-family:monospace;">$1</code>');
+  
+  // Bullet lists
+  html = html.replace(/^- (.*$)/gim, '<li style="margin:4px 0;padding-left:4px;">$1</li>');
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul style="margin:8px 0;padding-left:20px;">$&</ul>');
+  
+  // Numbered lists
+  html = html.replace(/^\d+\. (.*$)/gim, '<li style="margin:4px 0;padding-left:4px;">$1</li>');
+  
+  // Blockquotes
+  html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left:3px solid #a78bfa;padding-left:12px;margin:8px 0;color:' + (isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)') + ';">$1</blockquote>');
+  
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;">$1</a>');
+  
+  // Line breaks (but not inside tags)
+  html = html.replace(/\n/g, '<br>');
+  
+  // Clean up double <br> inside lists
+  html = html.replace(/<\/li><br>/g, '</li>');
+  html = html.replace(/<ul><br>/g, '<ul>');
+  html = html.replace(/<\/ul><br>/g, '</ul>');
+  
+  return html;
+}
+
 export default function AskAuthor() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -42,9 +93,12 @@ TONE GUIDELINES:
 - Be encouraging: "Keep exploring this!", "You're on the right track thinking about..."
 - Keep answers practical and grounded
 FORMATTING RULES:
-- NEVER use markdown tables (| column | column |). Use bullet points, numbered lists, or short paragraphs instead.
-- Use **bold** for emphasis and \`code\` for technical terms.
-- Keep paragraphs under 3 sentences for readability.
+- Output PLAIN TEXT only. No markdown tables, no ### headers, no --- dividers.
+- Use simple bullet points with "-" at the start of lines for lists.
+- Use **bold** for emphasis and `code` for technical terms.
+- Keep paragraphs under 3 sentences.
+- NEVER use markdown link syntax [text](url). Write URLs as plain text.
+- NEVER use markdown blockquotes (> text).
 Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
             { role: 'user', content: sanitized },
           ],
@@ -93,11 +147,11 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
       {error && <div style={{ color: '#ff6b6b', fontSize: '0.82rem', marginBottom: '12px' }}>⚠ {error}</div>}
       {answer && (
         <div>
-          <div style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '24px 28px', fontSize: '0.9rem', color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)', lineHeight: 1.85, textAlign: 'left' }}>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.65rem', color: ac, marginBottom: '10px', letterSpacing: '0.1em' }}>◆ PROF. ABHISHEK SINGH</div>
-            {answer}
-          </div>
-          <OutputActions text={answer} filename="zeroapi-ask-author" onClear={handleClear} />
+          <div 
+      style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '24px 28px', fontSize: '0.9rem', color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)', lineHeight: 1.85, textAlign: 'left' }}
+      dangerouslySetInnerHTML={{ __html: renderMarkdown(answer, isDark) }}
+    />
+    <OutputActions text={answer} filename="zeroapi-ask-author" onClear={handleClear} />
         </div>
       )}
     </div>
