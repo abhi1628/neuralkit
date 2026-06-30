@@ -6,11 +6,11 @@ import { sanitizeInput, sanitizeOutput, fetchWithBackoff } from '../utils';
 import TryExample from './TryExample';
 import OutputActions from './OutputActions';
 
+// ── Markdown renderer ─────────────────────────────────────────
 function renderMarkdown(text, isDark) {
   if (!text) return '';
   
   let html = text
-    // Escape HTML first
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
@@ -35,10 +35,12 @@ function renderMarkdown(text, isDark) {
   
   // Bullet lists
   html = html.replace(/^- (.*$)/gim, '<li style="margin:4px 0;padding-left:4px;">$1</li>');
-  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul style="margin:8px 0;padding-left:20px;">$&</ul>');
   
   // Numbered lists
   html = html.replace(/^\d+\. (.*$)/gim, '<li style="margin:4px 0;padding-left:4px;">$1</li>');
+  
+  // Wrap consecutive li's in ul
+  html = html.replace(/(<li[^>]*>.*?<\/li>(?:\s*<li[^>]*>.*?<\/li>)*)/gs, '<ul style="margin:8px 0;padding-left:20px;">$1</ul>');
   
   // Blockquotes
   html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left:3px solid #a78bfa;padding-left:12px;margin:8px 0;color:' + (isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)') + ';">$1</blockquote>');
@@ -46,7 +48,10 @@ function renderMarkdown(text, isDark) {
   // Links
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:#a78bfa;text-decoration:none;">$1</a>');
   
-  // Line breaks (but not inside tags)
+  // Horizontal rules
+  html = html.replace(/^---$/gim, '<hr style="border:none;border-top:1px solid ' + (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)') + ';margin:16px 0;">');
+  
+  // Line breaks
   html = html.replace(/\n/g, '<br>');
   
   // Clean up double <br> inside lists
@@ -92,13 +97,12 @@ TONE GUIDELINES:
 - Acknowledge uncertainty: "This is still evolving, but...", "Different researchers have different views..."
 - Be encouraging: "Keep exploring this!", "You're on the right track thinking about..."
 - Keep answers practical and grounded
+
 FORMATTING RULES:
-- Output PLAIN TEXT only. No markdown tables, no ### headers, no --- dividers.
-- Use simple bullet points with "-" at the start of lines for lists.
-- Use **bold** for emphasis and `code` for technical terms.
-- Keep paragraphs under 3 sentences.
-- NEVER use markdown link syntax [text](url). Write URLs as plain text.
-- NEVER use markdown blockquotes (> text).
+- NEVER use markdown tables (| column | column |). Use bullet points, numbered lists, or short paragraphs instead.
+- Use **bold** for emphasis and \`code\` for technical terms.
+- Keep paragraphs under 3 sentences for readability.
+
 Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
             { role: 'user', content: sanitized },
           ],
@@ -148,10 +152,10 @@ Answer questions about AI, Agentic Systems, LLMs, Python, and research.` },
       {answer && (
         <div>
           <div 
-      style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '24px 28px', fontSize: '0.9rem', color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)', lineHeight: 1.85, textAlign: 'left' }}
-      dangerouslySetInnerHTML={{ __html: renderMarkdown(answer, isDark) }}
-    />
-    <OutputActions text={answer} filename="zeroapi-ask-author" onClear={handleClear} />
+            style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '12px', padding: '24px 28px', fontSize: '0.9rem', color: isDark ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.8)', lineHeight: 1.85, textAlign: 'left' }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(answer, isDark) }}
+          />
+          <OutputActions text={answer} filename="zeroapi-ask-author" onClear={handleClear} />
         </div>
       )}
     </div>
