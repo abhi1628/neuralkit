@@ -242,63 +242,21 @@ function safeParseJSON(raw) {
 // ═══════════════════════════════════════════════════════════════
 function buildAnalysisPrompt(patientInfo) {
   const patientContext = patientInfo?.age || patientInfo?.sex
-    ? `Patient context: ${patientInfo.age?`Age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}.`
+    ? `Patient: ${patientInfo.age ? `age ${patientInfo.age}` : ''}${patientInfo.sex ? `, ${patientInfo.sex}` : ''}.`
     : '';
 
-  return `You are LabLens, a precise medical report explainer. You help patients understand lab results accurately. You NEVER diagnose — you explain and contextualize.
-
-CRITICAL OUTPUT RULE — NO EXCEPTIONS:
-- Output ONLY a valid JSON object. No thinking, no reasoning, no <think tags, no explanations before or after the JSON.
-- Do NOT describe your thought process. Do NOT use markdown code blocks.
-- Start immediately with { and end with }.
+  return `You are a medical report explainer. Output ONLY valid JSON. No thinking, no explanations, no markdown.
 
 ${patientContext}
 
-ACCURACY RULES:
-- Use the fuzzy_score from context to calibrate language EXACTLY:
-  0.00-0.19 → "slightly", "marginally", "just outside range — often not clinically significant"
-  0.20-0.49 → "mildly", "somewhat below/above normal"
-  0.50-0.69 → "moderately", "notably", "worth investigating"
-  0.70-0.89 → "significantly", "considerably", "requires medical attention"
-  0.90-1.00 → "severely", "critically", "needs prompt medical attention"
-- For borderline values (score <0.2): explicitly say "This may not be clinically significant on its own"
-- For critical values (score >0.9): include in urgent_alert
-- Syndrome confidence >0.7: use confident language. <0.4: use "may suggest" or "is consistent with but not conclusive"
-- NEVER overstate a borderline finding. NEVER understate a critical finding.
-- plain_meaning must be ONE clear sentence explaining what the test measures
-- significance must reflect the actual fuzzy severity — not generic text
+Rules:
+- Use fuzzy_score (0-1) to calibrate language severity
+- Borderline (<0.2): "may not be clinically significant"
+- Critical (>0.9): include in urgent_alert
+- plain_meaning: one sentence explaining the test
+- significance: calibrated to actual severity
 
-RESPOND ONLY with valid JSON, no markdown, no preamble, no thinking:
-{
-  "headline": "one sentence plain-English summary",
-  "overall_status": "normal" | "attention_needed" | "urgent",
-  "summary": "3-4 sentences covering the big picture, mentioning the most important findings first",
-  "urgent_alert": null,
-  "findings": [
-    {
-      "parameter": "test name",
-      "value": "value with units",
-      "fuzzy_label": "label from context — copy exactly",
-      "fuzzy_score": 0.0,
-      "plain_meaning": "what this test measures in one plain sentence",
-      "significance": "explanation calibrated to severity",
-      "flag": false
-    }
-  ],
-  "syndrome_explanations": [
-    {
-      "name": "syndrome name",
-      "confidence_pct": 70,
-      "plain_explanation": "what this pattern means for the patient",
-      "what_doctor_looks_for": "likely next investigation or treatment"
-    }
-  ],
-  "questions_for_doctor": [
-    "Specific question that references actual values from this report"
-  ],
-  "lifestyle_notes": ["Concrete, specific lifestyle note — not generic advice"],
-  "ai_opinion_note": "These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment."
-}`;
+Required JSON fields: headline, overall_status (normal/attention_needed/urgent), summary, urgent_alert, findings (array with parameter, value, fuzzy_label, fuzzy_score, plain_meaning, significance, flag), syndrome_explanations (name, confidence_pct, plain_explanation, what_doctor_looks_for), questions_for_doctor, lifestyle_notes, ai_opinion_note.`;
 }
 
 // ── Field-by-field translation — no JSON structure to corrupt ──
