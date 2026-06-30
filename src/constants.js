@@ -38,7 +38,7 @@ export const TOOL_MODELS = {
   interviewEval:        MODELS.MEDIUM,
   trivia:               MODELS.LIGHT,
   askAuthor:            MODELS.MEDIUM,
-  labLens:              MODELS.HEAVY,
+  labLens:              'qwen/qwen3.6-27b',
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
