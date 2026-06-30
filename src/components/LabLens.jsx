@@ -509,6 +509,10 @@ export default function LabLens() {
     if (report.trim().length < 30) { setError('Report is too short. Please paste the full text.'); return; }
 
     setLoading(true); setError(''); setResult(null); setFuzzyData(null); setProgressSteps([]);
+        // ADD DEBUG LOGS HERE ↓↓↓
+    console.log('[LabLens] TOOL_MODELS.labLens:', TOOL_MODELS.labLens);
+    console.log('[LabLens] MODELS.HEAVY:', MODELS.HEAVY);
+    console.log('[LabLens] MODELS.MEDIUM:', MODELS.MEDIUM);
 
     const patientInfo = {
       age: patientAge ? parseInt(patientAge) : null,
@@ -528,8 +532,12 @@ export default function LabLens() {
         ? `FUZZY PRE-ANALYSIS (use these scores to calibrate your language precisely):\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nComputed overall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
         : 'Note: Could not parse structured values. Analyze from raw text only.';
 
-      const primaryModel  = TOOL_MODELS.labLens || MODELS.HEAVY;
-      const fallbackModel = 'qwen/qwen3.6-27b';
+      const primaryModel  = 'qwen/qwen3.6-27b';
+      const fallbackModel = MODELS.HEAVY;
+
+      // ADD DEBUG LOGS HERE ↓↓↓
+      console.log('[LabLens] primaryModel:', primaryModel);
+      console.log('[LabLens] fallbackModel:', fallbackModel);
 
       const callAI = async (model, toolId, messages) => fetchWithBackoff(GROQ_API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
