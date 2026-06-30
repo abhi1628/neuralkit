@@ -38,7 +38,12 @@ export const TOOL_MODELS = {
   interviewEval:        MODELS.MEDIUM,
   trivia:               MODELS.LIGHT,
   askAuthor:            MODELS.MEDIUM,
-  labLens:              'qwen/qwen3.6-27b',
+  // NOTE: previously 'qwen/qwen3.6-27b' — that's a reasoning model whose
+  // <think> block scales with the number of lab values being analyzed and
+  // was regularly blowing past max_tokens before producing any JSON.
+  // gpt-oss-120b gives the same "best reasoning for medical analysis" tier
+  // without leaking unclosed <think> text into the response content.
+  labLens:              MODELS.HEAVY,
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
