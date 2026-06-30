@@ -187,81 +187,50 @@ function computeOverallSeverity(parsedValues, syndromes) {
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
-  // Step 1: Strip markdown code blocks
+  // Step 1: Strip GPT OSS thinking/reasoning blocks
+  // Handles: <think...>...</think, <thinking...>, reasoning traces, etc.
   let cleaned = raw
+    .replace(/<think[\s\S]*?<\/think>/gi, '')     // Standard think tags
+    .replace(/<thinking[\s\S]*?<\/thinking>/gi, '') // Thinking tags
+    .replace(/<think[\s\S]*$/gi, '')               // Unclosed think tags (truncated)
+    .replace(/Here's a thinking process:[\s\S]*/gi, '') // Plain text reasoning
+    .replace(/\*\*Thinking process:\*\*[\s\S]*/gi, '')
+    .trim();
+
+  // Step 2: Strip markdown code blocks
+  cleaned = cleaned
     .replace(/```json\s*/gi, '')
     .replace(/```\s*$/g, '')
-    .replace(/```/g, '');
+    .replace(/```/g, '')
+    .trim();
 
-  // Step 2: Find the outermost balanced JSON object
-  let jsonStr = '';
-  let depth = 0;
-  let inString = false;
-  let escapeNext = false;
-  let startIdx = -1;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    const char = cleaned[i];
-
-    if (escapeNext) {
-      escapeNext = false;
-      continue;
-    }
-    if (char === '\\') {
-      escapeNext = true;
-      continue;
-    }
-    if (char === '"' && !inString) {
-      inString = true;
-    } else if (char === '"' && inString) {
-      inString = false;
-    }
-
-    if (!inString) {
-      if (char === '{') {
-        if (depth === 0) startIdx = i;
-        depth++;
-      } else if (char === '}') {
-        depth--;
-        if (depth === 0 && startIdx !== -1) {
-          jsonStr = cleaned.slice(startIdx, i + 1);
-          break;
-        }
-      }
-    }
+  // Step 3: Find first { and last } for JSON boundaries
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+    throw new Error('No JSON object found in response.');
   }
+  
+  let jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
 
-  if (!jsonStr && startIdx !== -1) {
-    // Unclosed JSON — try anyway
-    jsonStr = cleaned.slice(startIdx);
-  }
-  if (!jsonStr) {
-    jsonStr = cleaned; // fallback
-  }
-
-  // Step 3: Aggressive cleanup of common LLM JSON errors
+  // Step 4: Fix common LLM JSON syntax errors
   jsonStr = jsonStr
     .replace(/,\s*([}\]])/g, '$1')              // trailing commas
     .replace(/[\u2018\u2019]/g, "'")            // smart single quotes
     .replace(/[\u201C\u201D]/g, '"')            // smart double quotes
     .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // unquoted keys
     .replace(/:\s*'([^']*?)'/g, ':"$1"')        // single-quoted values
-    .replace(/\\n/g, '\\\\n')                   // escaped newlines in strings
     .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' '); // control chars
 
   try {
     const parsed = JSON.parse(jsonStr);
     if (parsed && typeof parsed === 'object') return parsed;
   } catch (e) {
-    // Last resort: try with relaxed parsing
+    // Last resort: try with just the cleaned string
     try {
-      // Remove any text after the last valid JSON closing brace
-      const lastBrace = jsonStr.lastIndexOf('}');
-      if (lastBrace > 0) {
-        const trimmed = jsonStr.slice(0, lastBrace + 1);
-        const parsed2 = JSON.parse(trimmed);
-        if (parsed2 && typeof parsed2 === 'object') return parsed2;
-      }
+      const parsed2 = JSON.parse(cleaned);
+      if (parsed2 && typeof parsed === 'object') return parsed2;
     } catch (_) {}
   }
 
@@ -273,10 +242,16 @@ function safeParseJSON(raw) {
 // ═══════════════════════════════════════════════════════════════
 function buildAnalysisPrompt(patientInfo) {
   const patientContext = patientInfo?.age || patientInfo?.sex
-    ? `Patient context: ${patientInfo.age?`Age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}. Adjust your language accordingly (e.g. for elderly patients note age-related normal variations).`
+    ? `Patient context: ${patientInfo.age?`Age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}.`
     : '';
 
   return `You are LabLens, a precise medical report explainer. You help patients understand lab results accurately. You NEVER diagnose — you explain and contextualize.
+
+CRITICAL OUTPUT RULE — NO EXCEPTIONS:
+- Output ONLY a valid JSON object. No thinking, no reasoning, no <think tags, no explanations before or after the JSON.
+- Do NOT describe your thought process. Do NOT use markdown code blocks.
+- Start immediately with { and end with }.
+
 ${patientContext}
 
 ACCURACY RULES:
@@ -293,7 +268,7 @@ ACCURACY RULES:
 - plain_meaning must be ONE clear sentence explaining what the test measures
 - significance must reflect the actual fuzzy severity — not generic text
 
-RESPOND ONLY with valid JSON, no markdown, no preamble:
+RESPOND ONLY with valid JSON, no markdown, no preamble, no thinking:
 {
   "headline": "one sentence plain-English summary",
   "overall_status": "normal" | "attention_needed" | "urgent",
