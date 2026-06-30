@@ -533,9 +533,6 @@ export default function LabLens() {
           temperature: 0.0,
           toolId,
           messages,
-          // Helps some providers suppress reasoning output for structured tasks.
-          // Harmless no-op if the provider/model doesn't support it.
-          reasoning_effort: 'low',
         }),
       });
 
