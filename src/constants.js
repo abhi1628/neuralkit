@@ -12,34 +12,33 @@ export { ROADMAPS, getRoadmapBySlug, getAllRoadmapSlugs } from "./data/roadmaps/
 // with GPT OSS and Llama 4 Scout per Groq Console
 
 export const MODELS = {
-  // Needs best reasoning — resume logic, JSON generation
-  HEAVY:     'llama-3.3-70b-versatile',
+  // Best reasoning — resume JSON, ATS scoring, medical analysis
+  HEAVY:     'openai/gpt-oss-120b',
   // Fast + capable — code, summaries, Q&A, MCQs
-  MEDIUM:    'llama-3.1-8b-instant',
-  // 128k context — large document uploads (mixtral decommissioned)
-  LARGE_CTX: 'llama-3.1-8b-instant',
+  MEDIUM:    'openai/gpt-oss-20b',
+  // Large context — document uploads (120B has 131k context)
+  LARGE_CTX: 'openai/gpt-oss-120b',
   // Quick tasks — trivia, interview eval
-  LIGHT:     'llama-3.1-8b-instant',
+  LIGHT:     'openai/gpt-oss-20b',
 };
 
 // ── Tool → Model assignments ──────────────────────────────────
-// Change model here without touching any component file
 export const TOOL_MODELS = {
-  resumeBuilder:        MODELS.HEAVY,      // JSON generation, needs precision
-  resumeAnalyzer:       MODELS.HEAVY,      // ATS scoring, complex analysis
-  resumeBuilderTool:    MODELS.HEAVY,      // wizard JSON output
-  coverLetter:          MODELS.MEDIUM,     // writing task, 8b handles well
-  documentSummarizer:   MODELS.LARGE_CTX,  // large files, 128k context
-  documentQA:           MODELS.LARGE_CTX,  // Q&A on big docs
-  researchSummarizer:   MODELS.MEDIUM,     // structured output, 8b is fine
-  codeExplainer:        MODELS.MEDIUM,     // code analysis, 8b excels here
-  mcqGenerator:         MODELS.MEDIUM,     // structured MCQ format
-  codePlayground:       MODELS.MEDIUM,     // code explanation
-  interviewQuestions:   MODELS.MEDIUM,     // question generation
-  interviewEval:        MODELS.MEDIUM,     // scoring JSON — medium more reliable
-  trivia:               MODELS.MEDIUM,     // JSON output — 8b more reliable than gemma
-  askAuthor:            MODELS.MEDIUM,     // upgraded: 8b more reliable than gemma
-  labLens:              MODELS.HEAVY,      // medical report — needs precision + nuanced reasoning
+  resumeBuilder:        MODELS.HEAVY,
+  resumeAnalyzer:       MODELS.HEAVY,
+  resumeBuilderTool:    MODELS.HEAVY,
+  coverLetter:          MODELS.MEDIUM,
+  documentSummarizer:   MODELS.LARGE_CTX,
+  documentQA:           MODELS.LARGE_CTX,
+  researchSummarizer:   MODELS.MEDIUM,
+  codeExplainer:        MODELS.MEDIUM,
+  mcqGenerator:         MODELS.MEDIUM,
+  codePlayground:       MODELS.MEDIUM,
+  interviewQuestions:   MODELS.MEDIUM,
+  interviewEval:        MODELS.MEDIUM,
+  trivia:               MODELS.LIGHT,
+  askAuthor:            MODELS.MEDIUM,
+  labLens:              MODELS.HEAVY,
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
