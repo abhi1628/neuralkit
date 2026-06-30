@@ -186,14 +186,44 @@ function computeOverallSeverity(parsedValues, syndromes) {
 // ═══════════════════════════════════════════════════════════════
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
+
   const cleaners = [
-    s => s,
-    s => s.match(/\{[\s\S]*\}/)?.[0] || s,
-    s => (s.match(/\{[\s\S]*\}/)?.[0]||s).replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/,\s*([}\]])/g,'$1').replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g,' '),
+    // 1. Strip markdown fences
+    s => s.replace(/```json\s*/gi, '').replace(/```\s*$/g, '').replace(/```/g, ''),
+    // 2. Strip any text before first { and after last }
+    s => {
+      const firstBrace = s.indexOf('{');
+      const lastBrace = s.lastIndexOf('}');
+      if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return s;
+      return s.slice(firstBrace, lastBrace + 1);
+    },
+    // 3. Fix common JSON syntax errors from LLMs
+    s => s
+      .replace(/,\s*([}\]])/g, '$1')           // trailing commas
+      .replace(/[\u2018\u2019]/g, "'")         // smart single quotes
+      .replace(/[\u201C\u201D]/g, '"')         // smart double quotes
+      .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":')  // unquoted keys
+      .replace(/:\s*'([^']*?)'/g, ':"$1"')     // single-quoted string values
+      .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, ' '), // control chars
+    // 4. Handle nested braces by finding the outermost balanced JSON
+    s => {
+      let depth = 0, start = -1;
+      for (let i = 0; i < s.length; i++) {
+        if (s[i] === '{') { if (depth === 0) start = i; depth++; }
+        else if (s[i] === '}') { depth--; if (depth === 0 && start !== -1) return s.slice(start, i + 1); }
+      }
+      return s;
+    },
   ];
+
   for (const cleaner of cleaners) {
-    try { return JSON.parse(cleaner(raw)); } catch(_) {}
+    try {
+      const cleaned = cleaner(raw);
+      const parsed = JSON.parse(cleaned);
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch (_) { /* try next */ }
   }
+
   throw new Error('Could not parse response. Please try again.');
 }
 
@@ -529,7 +559,7 @@ export default function LabLens() {
 
       const callAI = async (model, toolId, messages) => fetchWithBackoff(GROQ_API_URL, {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ model, max_tokens:2500, temperature:0.1, toolId, messages }),
+        body:JSON.stringify({ model, max_tokens:2500, temperature:0.0, toolId, messages }),
       });
 
       // Step 2a: English analysis
