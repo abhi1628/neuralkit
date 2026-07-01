@@ -289,41 +289,41 @@ AUDIENCE: A patient reading their own lab results at home. Use plain everyday la
 ANTI-REPETITION RULE — CRITICAL: Every section below has a distinct job. Never repeat the same sentence, fact, or phrase across sections. A reader goes through all tabs — if they see the same information twice, it feels broken.
 
 SEVERITY LANGUAGE (calibrate to fuzzy_score):
-- fuzzy_score 0–0.2: "slightly outside range — may not be clinically significant"
-- fuzzy_score 0.2–0.4: "mildly abnormal — worth monitoring"
-- fuzzy_score 0.4–0.6: "moderately abnormal — discuss with your doctor"
-- fuzzy_score 0.6–0.8: "significantly abnormal — see your doctor soon"
-- fuzzy_score 0.8–1.0: "critically abnormal — requires prompt medical attention"
+- fuzzy_score 0.0–0.2: "slightly outside the normal range — may not need action right now"
+- fuzzy_score 0.2–0.4: "mildly abnormal — worth monitoring at your next check-up"
+- fuzzy_score 0.4–0.6: "moderately abnormal — discuss with your doctor at your next visit"
+- fuzzy_score 0.6–0.8: "significantly abnormal — see your doctor within the next week or two"
+- fuzzy_score 0.8–1.0: "seriously abnormal — requires prompt medical attention, ideally within days"
 
 SECTION JOBS (write each with its distinct purpose):
 
-headline: One punchy sentence naming the key finding(s). No values, no repetition of overall_status.
+headline: One clear sentence naming the most important finding(s). No numbers, no overall_status word.
 
 overall_status: "normal" | "attention_needed" | "urgent"
 
-summary: 3–4 sentences telling the big picture story — what the report shows overall, why it matters for daily life, and what the patient should do next. Do NOT list individual values here. This is the "so what" paragraph.
+summary: 3–4 sentences. Tell the big picture story — what this report shows overall, how it may be affecting daily life right now (energy, symptoms), and the single most important next step. Do NOT list individual test values here. End with what the patient should do.
 
-urgent_alert: Only if fuzzy_score > 0.85. One sentence naming what needs immediate attention and why. null otherwise.
+urgent_alert: Trigger this if ANY of these: (a) fuzzy_score ≥ 0.85, OR (b) clinical_override is true AND fuzzy_score ≥ 0.75, OR (c) overall_status is "urgent". Write one clear sentence saying what needs prompt attention and why. Set to null if none apply.
 
-findings array — each finding has:
-  - parameter: test name as written in the report
-  - value: the patient's result with unit
+findings array — each finding MUST have ALL these fields:
+  - parameter: test name exactly as in the report
+  - value: patient's result with unit
   - fuzzy_label: from fuzzy pre-analysis
-  - fuzzy_score: from fuzzy pre-analysis
-  - flag: true if fuzzy_score > 0.1
-  - plain_meaning: EDUCATIONAL — explain what this test measures in the body, why doctors order it, and what it reveals about health. 1–2 sentences. Same for every finding regardless of whether it is abnormal.
-  - significance: PERSONALIZED — what THIS patient's specific number means for them. If normal: reassure briefly. If abnormal: explain the likely cause, what symptoms it might explain, and the clinical priority. Do NOT repeat what plain_meaning said. Do NOT mention the overall pattern or other tests here.
-  - care_note: (NEW field) For flagged values only — one concrete, practical thing the patient can do or ask about for THIS specific finding. Leave empty string "" for normal values.
+  - fuzzy_score: number from fuzzy pre-analysis (do not change this)
+  - flag: true if fuzzy_score > 0.1, else false
+  - plain_meaning: EDUCATIONAL (2 full sentences minimum). Sentence 1: what this test measures in the body and why doctors order it. Sentence 2: what a normal result tells you about health, and — for abbreviations/technical names (RDW, MCV, MCH, MCHC, TIBC, eGFR, HbA1c etc.) — spell out the full name and explain the concept using a simple analogy or everyday comparison.
+  - significance: PERSONALIZED to this patient (2–3 sentences). Sentence 1: what their specific number means at this severity level. Sentence 2: what symptoms or body effects this level may be causing. Sentence 3 (if flagged): clinical priority — is this urgent, monitor, or reassure? Do NOT repeat anything from plain_meaning. Do NOT mention other test results or patterns.
+  - care_note: For flagged values (fuzzy_score > 0.1) only — one specific, actionable sentence: something the patient can do today OR a specific question to ask their doctor about this particular test. Use "" for normal values.
 
-syndrome_explanations array — each syndrome has:
-  - name: pattern name
-  - confidence_pct: 0–100
-  - plain_explanation: Explain this pattern as a story — how multiple test results together point to one underlying issue. Start with "Your results together suggest..." Explain what this condition does to the body in plain terms. 2–3 sentences. Do NOT repeat individual value descriptions from findings.
-  - what_doctor_looks_for: What tests or exam findings the doctor will use to confirm this pattern. What treatment options exist. Practical next steps. Do NOT repeat plain_explanation.
+syndrome_explanations array — each syndrome:
+  - name: use the EXACT syndrome name from the fuzzy pre-analysis (do not rephrase)
+  - confidence_pct: integer 0–100 from fuzzy pre-analysis
+  - plain_explanation: Start with "Your results together suggest...". Explain what this pattern means as a connected story — how the body gets into this state, what it feels like from the inside. 2–3 sentences. Do NOT mention individual test values — those are in the findings tab. Do NOT repeat what you wrote in summary.
+  - what_doctor_looks_for: What additional tests or physical exam findings the doctor will use to confirm. What the main treatment options are. One concrete next step the patient can take. Do NOT repeat plain_explanation content.
 
-questions_for_doctor: 4–6 specific questions this patient should ask based on their actual results. Make them specific (mention the actual parameter and value), not generic health questions. Start each with "I noticed that my..." or "Could you explain..."
+questions_for_doctor: Array of 5–6 strings. Each must mention the actual test name and value from this report. Start with "I noticed that my [test] is [value] —" then ask something specific. Separate each question with "|||" — do NOT use newlines inside questions.
 
-lifestyle_notes: 4–5 practical, specific actions relevant to THIS report's findings. Not generic health advice. Tie each note to a specific finding (e.g., "Your low ferritin suggests your iron stores are depleted — eating red meat, lentils, or spinach with vitamin C can help absorb more iron").
+lifestyle_notes: Array of 4–5 strings. Each must be specific to a finding in this report — name the test and value, explain the connection, then give one concrete action. Separate each note with "|||" — do NOT use newlines inside notes.
 
 ai_opinion_note: "These explanations are generated by AI based on standard reference ranges and are for educational purposes only. They are not a diagnosis. Please consult your doctor before making any health decisions."
 
@@ -343,11 +343,11 @@ async function translateFields(englishResult, targetLang, callAI, primaryModel, 
     ).join('\n---\n'),
     // syndromes: array of [plain_explanation, what_doctor] pairs
     syndromes: (englishResult.syndrome_explanations||[]).map(s => `EXPLANATION: ${s.plain_explanation}\nDOCTOR: ${s.what_doctor_looks_for}`).join('\n---\n'),
-    questions: (englishResult.questions_for_doctor||[]).join('\n'),
-    lifestyle: (englishResult.lifestyle_notes||[]).join('\n'),
+    questions: (englishResult.questions_for_doctor||[]).join('|||'),
+    lifestyle: (englishResult.lifestyle_notes||[]).join('|||'),
   };
 
-  const systemMsg = `You are a precise medical translator. Translate each section from English to ${targetLang}. Keep all medical terms, parameter names, and numeric values in English. Translate only the explanatory prose. Output ONLY the translated text in the EXACT same format as input — same section labels (MEANING:, SIGNIFICANCE:, EXPLANATION:, DOCTOR:, ---), same line breaks.`;
+  const systemMsg = `You are a precise medical translator. Translate each section from English to ${targetLang}. Keep all medical terms, parameter names, and numeric values in English. Translate only the explanatory prose. Output ONLY the translated text in the EXACT same format as input — same section labels (MEANING:, SIGNIFICANCE:, CARE:, EXPLANATION:, DOCTOR:, ---), same line breaks, and preserve any ||| delimiters exactly as-is.`;
 
   const results = {};
 
@@ -416,8 +416,8 @@ async function translateFields(englishResult, targetLang, callAI, primaryModel, 
     urgent_alert: results.urgent_alert || englishResult.urgent_alert,
     findings:    mergedFindings,
     syndrome_explanations: mergedSyndromes,
-    questions_for_doctor: results.questions ? results.questions.split('\n').filter(Boolean) : englishResult.questions_for_doctor,
-    lifestyle_notes: results.lifestyle ? results.lifestyle.split('\n').filter(Boolean) : englishResult.lifestyle_notes,
+    questions_for_doctor: results.questions ? results.questions.split('|||').map(s=>s.trim()).filter(Boolean) : englishResult.questions_for_doctor,
+    lifestyle_notes: results.lifestyle ? results.lifestyle.split('|||').map(s=>s.trim()).filter(Boolean) : englishResult.lifestyle_notes,
   };
 }
 
@@ -1025,7 +1025,14 @@ export default function LabLens() {
                 <div style={{ fontSize:'0.68rem', color:muted, lineHeight:1.6, padding:'0 2px' }}>Multi-marker patterns — when several results together point to a single underlying condition.</div>
                 {!(result.syndrome_explanations?.length>0)
                   ? <div style={{ background:card, border:`1px solid ${border}`, borderRadius:'14px', padding:'32px', textAlign:'center' }}><div style={{ fontSize:'0.88rem', color:muted }}>No significant multi-marker patterns detected.</div></div>
-                  : (result.syndrome_explanations||[]).map((s,i)=>{ const fuzzyS=fuzzyData?.syndromes?.find(fs=>fs.name===s.name); const conf=fuzzyS?.confidence||(s.confidence_pct/100); const col=conf>0.7?red:conf>0.4?warn:green; return (
+                  : (result.syndrome_explanations||[]).map((s,i)=>{ 
+                    // Fuzzy name match — AI may slightly rephrase syndrome names
+                    const fuzzyS = fuzzyData?.syndromes?.find(fs =>
+                      fs.name === s.name ||
+                      s.name?.toLowerCase().includes(fs.name?.toLowerCase().split(' ')[0]) ||
+                      fs.name?.toLowerCase().includes(s.name?.toLowerCase().split(' ')[0])
+                    );
+                    const conf=fuzzyS?.confidence||(s.confidence_pct/100); const col=conf>0.7?red:conf>0.4?warn:green; return (
                     <div key={i} style={{ background:`${col}08`, border:`1px solid ${col}30`, borderRadius:'14px', padding:'20px' }}>
                       <div style={{ display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:'8px', marginBottom:'10px' }}>
                         <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'0.95rem', color:isDark?'#fff':'#1a1a1a' }}>{s.name}</div>
