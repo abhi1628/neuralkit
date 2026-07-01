@@ -280,54 +280,46 @@ function buildAnalysisPrompt(patientInfo) {
     ? `Patient: ${patientInfo.age ? `age ${patientInfo.age}` : ''}${patientInfo.sex ? `, ${patientInfo.sex}` : ''}.`
     : '';
 
-  return `You are a medical report explainer writing for someone with no medical background. Output ONLY valid JSON. No thinking, no preamble, no markdown.
-
+  return `You are a medical report explainer for patients with no medical background. Output ONLY valid JSON. No thinking, no preamble, no markdown.
 ${patientContext}
 
-AUDIENCE: A patient reading their own lab results at home. Use plain everyday language. Avoid jargon. When a medical term is unavoidable, immediately explain it in parentheses.
+Write in plain everyday language. Spell out abbreviations: RDW=Red Cell Distribution Width, MCV=Mean Corpuscular Volume, MCH=Mean Corpuscular Hemoglobin, MCHC=MCH Concentration, TIBC=Total Iron Binding Capacity, eGFR=estimated Glomerular Filtration Rate. Explain jargon in parentheses.
 
-ANTI-REPETITION RULE — CRITICAL: Every section below has a distinct job. Never repeat the same sentence, fact, or phrase across sections. A reader goes through all tabs — if they see the same information twice, it feels broken.
+ANTI-REPETITION: Each section has a distinct job. Never repeat a fact across sections.
 
-SEVERITY LANGUAGE (calibrate to fuzzy_score):
-- fuzzy_score 0.0–0.2: "slightly outside the normal range — may not need action right now"
-- fuzzy_score 0.2–0.4: "mildly abnormal — worth monitoring at your next check-up"
-- fuzzy_score 0.4–0.6: "moderately abnormal — discuss with your doctor at your next visit"
-- fuzzy_score 0.6–0.8: "significantly abnormal — see your doctor within the next week or two"
-- fuzzy_score 0.8–1.0: "seriously abnormal — requires prompt medical attention, ideally within days"
+SEVERITY (use fuzzy_score to calibrate wording):
+0.0-0.2: slightly outside range, may not need action | 0.2-0.4: mildly abnormal, monitor | 0.4-0.6: moderately abnormal, see doctor | 0.6-0.8: significantly abnormal, see doctor soon | 0.8-1.0: seriously abnormal, prompt attention needed
 
-SECTION JOBS (write each with its distinct purpose):
+OUTPUT this exact JSON structure — be concise but accurate:
+{
+  "headline": "One sentence: the most important finding. No numbers.",
+  "overall_status": "normal|attention_needed|urgent",
+  "summary": "2-3 sentences: big picture story, daily-life impact, what to do next. No individual values.",
+  "urgent_alert": "One sentence if: fuzzy_score>=0.85 OR (clinical_override=true AND score>=0.75). Otherwise null.",
+  "findings": [{
+    "parameter": "test name from report",
+    "value": "result with unit",
+    "fuzzy_label": "from pre-analysis",
+    "fuzzy_score": 0.0,
+    "flag": true,
+    "plain_meaning": "1-2 sentences: what this test measures + why doctors order it. For abbreviations spell out the full name.",
+    "significance": "1-2 sentences: what THIS patient's number means + likely symptoms or impact. Do not repeat plain_meaning.",
+    "care_note": "One action or question for flagged values. Empty string for normal."
+  }],
+  "syndrome_explanations": [{
+    "name": "EXACT name from fuzzy pre-analysis",
+    "confidence_pct": 0,
+    "plain_explanation": "2 sentences starting 'Your results together suggest...'. Body-level story, no individual values.",
+    "what_doctor_looks_for": "1-2 sentences: confirmatory tests, treatment options, next step."
+  }],
+  "questions_for_doctor": ["I noticed that my [test] is [value] — [specific question]"],
+  "lifestyle_notes": ["Your [test] of [value] means [explanation] — [one concrete action]"],
+  "ai_opinion_note": "AI-generated for educational purposes only. Not a diagnosis. Consult your doctor."
+}
 
-headline: One clear sentence naming the most important finding(s). No numbers, no overall_status word.
-
-overall_status: "normal" | "attention_needed" | "urgent"
-
-summary: 3–4 sentences. Tell the big picture story — what this report shows overall, how it may be affecting daily life right now (energy, symptoms), and the single most important next step. Do NOT list individual test values here. End with what the patient should do.
-
-urgent_alert: Trigger this if ANY of these: (a) fuzzy_score ≥ 0.85, OR (b) clinical_override is true AND fuzzy_score ≥ 0.75, OR (c) overall_status is "urgent". Write one clear sentence saying what needs prompt attention and why. Set to null if none apply.
-
-findings array — each finding MUST have ALL these fields:
-  - parameter: test name exactly as in the report
-  - value: patient's result with unit
-  - fuzzy_label: from fuzzy pre-analysis
-  - fuzzy_score: number from fuzzy pre-analysis (do not change this)
-  - flag: true if fuzzy_score > 0.1, else false
-  - plain_meaning: EDUCATIONAL (2 full sentences minimum). Sentence 1: what this test measures in the body and why doctors order it. Sentence 2: what a normal result tells you about health, and — for abbreviations/technical names (RDW, MCV, MCH, MCHC, TIBC, eGFR, HbA1c etc.) — spell out the full name and explain the concept using a simple analogy or everyday comparison.
-  - significance: PERSONALIZED to this patient (2–3 sentences). Sentence 1: what their specific number means at this severity level. Sentence 2: what symptoms or body effects this level may be causing. Sentence 3 (if flagged): clinical priority — is this urgent, monitor, or reassure? Do NOT repeat anything from plain_meaning. Do NOT mention other test results or patterns.
-  - care_note: For flagged values (fuzzy_score > 0.1) only — one specific, actionable sentence: something the patient can do today OR a specific question to ask their doctor about this particular test. Use "" for normal values.
-
-syndrome_explanations array — each syndrome:
-  - name: use the EXACT syndrome name from the fuzzy pre-analysis (do not rephrase)
-  - confidence_pct: integer 0–100 from fuzzy pre-analysis
-  - plain_explanation: Start with "Your results together suggest...". Explain what this pattern means as a connected story — how the body gets into this state, what it feels like from the inside. 2–3 sentences. Do NOT mention individual test values — those are in the findings tab. Do NOT repeat what you wrote in summary.
-  - what_doctor_looks_for: What additional tests or physical exam findings the doctor will use to confirm. What the main treatment options are. One concrete next step the patient can take. Do NOT repeat plain_explanation content.
-
-questions_for_doctor: Array of 5–6 strings. Each must mention the actual test name and value from this report. Start with "I noticed that my [test] is [value] —" then ask something specific. Separate each question with "|||" — do NOT use newlines inside questions.
-
-lifestyle_notes: Array of 4–5 strings. Each must be specific to a finding in this report — name the test and value, explain the connection, then give one concrete action. Separate each note with "|||" — do NOT use newlines inside notes.
-
-ai_opinion_note: "These explanations are generated by AI based on standard reference ranges and are for educational purposes only. They are not a diagnosis. Please consult your doctor before making any health decisions."
-
-Output ONLY valid JSON. Start with { and end with }.`;
+questions_for_doctor: 4-5 items, each mentioning actual test name and value.
+lifestyle_notes: 3-4 items, each tied to a specific finding with one concrete action.
+Output ONLY valid JSON. Start with { end with }.`; 
 }
 
 // ── Field-by-field translation — no JSON structure to corrupt ──
@@ -614,7 +606,7 @@ export default function LabLens() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           model,
-          max_tokens: 16000,
+          max_tokens: 8000,
           temperature: 0.0,
           toolId,
           messages,
