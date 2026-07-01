@@ -14,7 +14,7 @@ const MODEL_FALLBACKS = {
 };
 
 const DEFAULT_MODEL = "openai/gpt-oss-120b";
-const MAX_TOKENS_CAP  = 2000;
+const MAX_TOKENS_CAP  = 8000; // raised from 2000 — LabLens medical analysis needs ~3000-4000 tokens
 const FETCH_TIMEOUT   = 30000; // 30 seconds
 const MAX_BODY_SIZE   = 2 * 1024 * 1024; // 2MB
 
@@ -262,10 +262,8 @@ export default async function handler(req, res) {
 
   const rawMaxTokens = Number(max_tokens);
   const safeMaxTokens = (
-    Number.isFinite(rawMaxTokens) && 
-    rawMaxTokens > 0 && 
-    rawMaxTokens <= MAX_TOKENS_CAP
-  ) ? Math.floor(rawMaxTokens) : 1000;
+    Number.isFinite(rawMaxTokens) && rawMaxTokens > 0
+  ) ? Math.min(Math.floor(rawMaxTokens), MAX_TOKENS_CAP) : 1000;
 
   const rawTemp = Number(temperature);
   const safeTemperature = (
