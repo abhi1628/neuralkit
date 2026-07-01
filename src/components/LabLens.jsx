@@ -182,8 +182,55 @@ function computeOverallSeverity(parsedValues, syndromes) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SAFE JSON PARSER
+// PARTIAL JSON RECOVERY — extracts fields even from truncated output
 // ═══════════════════════════════════════════════════════════════
+function partialParseJSON(raw) {
+  // Strip think blocks
+  raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+  // Helper: extract a simple string field value
+  const str = (key) => {
+    const m = raw.match(new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+    return m ? m[1] : null;
+  };
+
+  // Helper: extract a JSON array by key — grab everything between first [ and
+  // matching ], tolerating a truncated array by closing it ourselves.
+  const arr = (key) => {
+    const start = raw.search(new RegExp(`"${key}"\\s*:\\s*\\[`));
+    if (start === -1) return [];
+    const bracketIdx = raw.indexOf('[', start);
+    let depth = 0, i = bracketIdx, end = -1;
+    for (; i < raw.length; i++) {
+      if (raw[i] === '[') depth++;
+      else if (raw[i] === ']') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    let chunk = end !== -1 ? raw.slice(bracketIdx, end + 1) : raw.slice(bracketIdx) + ']';
+    // Remove trailing incomplete object
+    chunk = chunk.replace(/,?\s*\{[^}]*$/, ']');
+    try { return JSON.parse(chunk); } catch { return []; }
+  };
+
+  const headline       = str('headline');
+  const overall_status = str('overall_status');
+  const summary        = str('summary');
+  const urgent_alert   = str('urgent_alert');
+
+  // Only proceed if we got at least headline or summary
+  if (!headline && !summary) return null;
+
+  return {
+    headline:       headline || 'Report Analysis',
+    overall_status: overall_status || 'attention_needed',
+    summary:        summary || '',
+    urgent_alert:   urgent_alert || null,
+    findings:             arr('findings'),
+    syndrome_explanations: arr('syndrome_explanations'),
+    questions_for_doctor: arr('questions_for_doctor').filter(q => typeof q === 'string'),
+    lifestyle_notes:      arr('lifestyle_notes').filter(n => typeof n === 'string'),
+    ai_opinion_note: str('ai_opinion_note') || '',
+  };
+}
 function safeParseJSON(raw) {
   if (!raw) throw new Error('Empty response.');
 
@@ -527,7 +574,7 @@ export default function LabLens() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           model,
-          max_tokens: 8000,
+          max_tokens: 16000,
           temperature: 0.0,
           toolId,
           messages,
@@ -578,11 +625,18 @@ export default function LabLens() {
           }
         }
 
+        // Try partial recovery — extracts whatever fields exist from a truncated response
         if (!englishResult) {
-          // No valid JSON came back — fall back to showing the model's plain-text
-          // response as-is. This is a legitimate, readable output mode (not an
-          // error), so no warning banner — just render it with line breaks intact.
-          const cleanText = raw.replace(/<think>[\s\S]*?<\/think>/i, '').replace(/<\/?think>/gi, '').trim();
+          const partial = partialParseJSON(raw);
+          if (partial) {
+            console.log('[LabLens] Partial JSON recovery succeeded');
+            englishResult = partial;
+          }
+        }
+
+        if (!englishResult) {
+          // Nothing parseable — show clean text, not raw JSON
+          const cleanText = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<\/?think>/gi, '').trim();
           doneStep('ai', '✓ Analysis complete');
           setResult({
             headline: 'Report Analysis',
