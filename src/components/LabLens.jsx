@@ -516,12 +516,10 @@ export default function LabLens() {
         ? `FUZZY PRE-ANALYSIS (use these scores to calibrate your language precisely):\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nComputed overall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
         : 'Note: Could not parse structured values. Analyze from raw text only.';
 
-      // Use non-reasoning instruct models for structured JSON output.
-      // Reasoning models (e.g. qwen3.6-thinking variants) emit a <think> block
-      // before the answer, which burns the token budget and can get truncated
-      // before any JSON is produced. If you must use a reasoning model, raise
-      // max_tokens substantially (6000+) to give it room to finish thinking
-      // AND produce the JSON.
+      // labLens now uses gpt-oss-120b (non-thinking content channel), so
+      // max_tokens here is purely for the JSON payload itself — full panels
+      // (CBC + iron studies, ~13+ findings plus syndromes/questions/lifestyle)
+      // need real headroom or the response truncates mid-array.
       const primaryModel  = TOOL_MODELS.labLens || MODELS.MEDIUM;
       const fallbackModel = MODELS.HEAVY;
 
@@ -529,7 +527,7 @@ export default function LabLens() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           model,
-          max_tokens: 4000,
+          max_tokens: 8000,
           temperature: 0.0,
           toolId,
           messages,
@@ -581,18 +579,24 @@ export default function LabLens() {
         }
 
         if (!englishResult) {
-          setError('AI returned unformatted text. Showing raw response below.');
+          // No valid JSON came back — fall back to showing the model's plain-text
+          // response as-is. This is a legitimate, readable output mode (not an
+          // error), so no warning banner — just render it with line breaks intact.
+          const cleanText = raw.replace(/<think>[\s\S]*?<\/think>/i, '').replace(/<\/?think>/gi, '').trim();
+          doneStep('ai', '✓ Analysis complete');
           setResult({
-            headline: 'AI Response (Unformatted)',
-            overall_status: 'attention_needed',
-            summary: raw.replace(/<think>[\s\S]*?<\/think>/i, '').trim().slice(0, 2000) || raw.slice(0, 2000),
+            headline: 'Report Analysis',
+            overall_status: overallFuzzy !== 'unknown' ? overallFuzzy : 'attention_needed',
+            summary: cleanText || 'No analysis text was returned. Please try again.',
+            textMode: true,
             urgent_alert: null,
             findings: [],
             syndrome_explanations: [],
-            questions_for_doctor: ['Please try again with a clearer report.'],
+            questions_for_doctor: [],
             lifestyle_notes: [],
             ai_opinion_note: 'These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment.'
           });
+          setActiveTab('summary');
           setLoading(false);
           setLoadingStep('');
           return;
@@ -845,7 +849,10 @@ export default function LabLens() {
 
             {/* Tabs */}
             <div style={{ display:'flex', gap:'3px', background:isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.04)', borderRadius:'10px', padding:'4px', marginBottom:'18px' }}>
-              {[{key:'summary',label:'Summary'},{key:'findings',label:`Values (${(result.findings||[]).length})`},{key:'flagged',label:`Flagged (${flagged.length})`},{key:'patterns',label:`Patterns (${(result.syndrome_explanations||[]).length})`},{key:'questions',label:'Ask Doctor'}].map(tab=>(
+              {(result.textMode
+                ? [{key:'summary',label:'Summary'}]
+                : [{key:'summary',label:'Summary'},{key:'findings',label:`Values (${(result.findings||[]).length})`},{key:'flagged',label:`Flagged (${flagged.length})`},{key:'patterns',label:`Patterns (${(result.syndrome_explanations||[]).length})`},{key:'questions',label:'Ask Doctor'}]
+              ).map(tab=>(
                 <button key={tab.key} onClick={()=>setActiveTab(tab.key)}
                   style={{ flex:1, background:activeTab===tab.key?(isDark?'rgba(255,255,255,0.08)':'#fff'):'transparent', border:activeTab===tab.key?`1px solid ${border}`:'1px solid transparent', borderRadius:'7px', padding:'8px 2px', fontSize:'0.58rem', color:activeTab===tab.key?(isDark?'#fff':'#1a1a1a'):muted, cursor:'pointer', fontFamily:"'Space Mono',monospace", fontWeight:activeTab===tab.key?700:400, transition:'all 0.15s' }}>
                   {tab.label}
@@ -857,7 +864,7 @@ export default function LabLens() {
               <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
                 <div style={{ background:card, border:`1px solid ${border}`, borderRadius:'14px', padding:'20px' }}>
                   <div style={{ fontSize:'0.6rem', color:green, letterSpacing:'0.15em', marginBottom:'10px', textTransform:'uppercase' }}>◆ Summary</div>
-                  <p style={{ fontSize:'0.92rem', color:text, lineHeight:1.85, margin:0, fontFamily:scriptFont }}>{result.summary}</p>
+                  <p style={{ fontSize:'0.92rem', color:text, lineHeight:1.85, margin:0, fontFamily:scriptFont, whiteSpace:'pre-wrap' }}>{result.summary}</p>
                 </div>
                 {result.lifestyle_notes?.length>0 && (
                   <div style={{ background:card, border:`1px solid ${border}`, borderRadius:'14px', padding:'20px' }}>
