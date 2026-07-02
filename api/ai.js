@@ -8,13 +8,13 @@ const MODEL_WHITELIST = [
 ];
 
 const MODEL_FALLBACKS = {
-  "openai/gpt-oss-120b": "qwen/qwen3.6-27b",   // if 120B fails, use Qwen
-  "openai/gpt-oss-20b":  "openai/gpt-oss-120b", // if 20B fails, upscale
-  "qwen/qwen3.6-27b":    "openai/gpt-oss-120b", // if Qwen fails, use 120B
+  "openai/gpt-oss-120b": "openai/gpt-oss-20b",  // if 120B fails, use 20B (NOT qwen — thinking model burns all tokens)
+  "openai/gpt-oss-20b":  "openai/gpt-oss-120b", // if 20B fails, upscale back
+  "qwen/qwen3.6-27b":    "openai/gpt-oss-20b",  // if Qwen fails, use 20B instruct
 };
 
 const DEFAULT_MODEL = "openai/gpt-oss-120b";
-const MAX_TOKENS_CAP  = 8000; // raised from 2000 — LabLens medical analysis needs ~3000-4000 tokens
+const MAX_TOKENS_CAP  = 8000; // raised — LabLens needs ~3000-4000 tokens for full CBC analysis
 const FETCH_TIMEOUT   = 30000; // 30 seconds
 const MAX_BODY_SIZE   = 2 * 1024 * 1024; // 2MB
 
@@ -313,6 +313,11 @@ export default async function handler(req, res) {
 
   try {
     const { res: groqRes, data } = await callGroq(safeModel, messages, safeMaxTokens, safeTemperature);
+
+    // Log non-OK responses so we can see rate limits / model errors in Vercel logs
+    if (!groqRes.ok) {
+      console.error('[ZeroAPI] Groq error:', groqRes.status, JSON.stringify(data?.error || data).slice(0, 300));
+    }
 
     // Add rate limit headers to successful responses
     res.setHeader('X-RateLimit-Remaining', stdCheck.remaining - 1);
