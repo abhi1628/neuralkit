@@ -148,10 +148,23 @@ function detectSyndromes(parsedValues) {
 
 function parseLabText(text, patientInfo) {
   const results=[], lines=text.split('\n');
+
+  // 7 patterns covering all common lab report formats
   const patterns=[
-    /([A-Za-z][A-Za-z0-9\s/(),%]+?)\s*[:\t]\s*([\d.]+)\s*([a-zA-Z%/µμ³⁶⁰³\s]*?)\s*[\[(](?:[Rr]ef[:\s]*)?(\d+\.?\d*)\s*[-–to]\s*(\d+\.?\d*)[\])]/,
-    /([A-Za-z][A-Za-z0-9\s/(),%]{2,30}?)\s{2,}([\d.]+)\s+([a-zA-Z%/µμK³⁶⁰\s]*?)\s{2,}(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)/,
-    /([A-Za-z][A-Za-z0-9\s/(),%]+?)\s+([\d.]+)\s+([a-zA-Z%/µμK³⁶\s]*?)\s+[Rr]ef[:\s]+(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)/,
+    // P1: name  value unit  [Ref: lo-hi]  ← most common (sample report format)
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s{2,}([\d.]+)\s*([a-zA-Z%/µμK³⁶⁰\s]{0,15}?)\s*\[Ref:\s*([\d.]+)\s*[-–]\s*([\d.]+)\]/,
+    // P2: name  value unit  (Ref: lo-hi)
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s{2,}([\d.]+)\s*([a-zA-Z%/µμK³⁶⁰\s]{0,15}?)\s*\(Ref:\s*([\d.]+)\s*[-–]\s*([\d.]+)\)/,
+    // P3: name: value unit [lo-hi] or (lo-hi)  ← colon-after-name format
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s*:\s*([\d.]+)\s*([a-zA-Z%/µμK³⁶⁰\s]{0,15}?)\s*[\[(](?:[Rr]ef[:\s]*)?([\d.]+)\s*[-–]\s*([\d.]+)[\])]/,
+    // P4: name  value unit  lo-hi  ← bare numbers, no brackets
+    /([A-Za-z][A-Za-z0-9\s/(),%]{2,30}?)\s{2,}([\d.]+)\s+([a-zA-Z%/µμK³⁶⁰]{1,10}\s*)\s{2,}([\d.]+)\s*[-–]\s*([\d.]+)/,
+    // P5: name value unit Ref: lo-hi  ← "Ref:" keyword without brackets
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s+([\d.]+)\s+([a-zA-Z%/µμK³⁶\s]{0,15}?)\s+[Rr]ef[:\s]+([\d.]+)\s*[-–]\s*([\d.]+)/,
+    // P6: name value unit [Reference: lo-hi]
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s+([\d.]+)\s*([a-zA-Z%/µμK³⁶⁰\s]{0,15}?)\s*\[[Rr]eference:\s*([\d.]+)\s*[-–]\s*([\d.]+)\]/,
+    // P7: name  value unit  (lo-hi)  ← bare parentheses, no keyword
+    /([A-Za-z][A-Za-z0-9\s/(),%]{1,35}?)\s{2,}([\d.]+)\s*([a-zA-Z%/µμK³⁶⁰\s]{0,15}?)\s*\(\s*([\d.]+)\s*[-–]\s*([\d.]+)\s*\)/,
   ];
   for (const line of lines) {
     if (line.trim().length<5) continue;
@@ -592,8 +605,8 @@ export default function LabLens() {
       doneStep('fuzzy', `✓ ${parsedValues.length} values scored · ${syndromes.length} pattern${syndromes.length!==1?'s':''} detected`);
 
       const fuzzyContext = parsedValues.length > 0
-        ? `FUZZY PRE-ANALYSIS (use these scores to calibrate your language precisely):\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nComputed overall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
-        : 'Note: Could not parse structured values. Analyze from raw text only.';
+        ? `FUZZY PRE-ANALYSIS — ${parsedValues.length} parameters parsed. Generate a findings entry for EVERY parameter listed below:\n${JSON.stringify(parsedValues.map(v=>({ name:v.name, value:v.value, unit:v.unit, ref:`${v.refLow}-${v.refHigh}`, fuzzy_score:v.fuzzy.score, fuzzy_label:v.fuzzy.label, direction:v.fuzzy.direction, clinical_override:v.fuzzy.clinical||false })),null,2)}\n\nDetected syndromes:\n${JSON.stringify(syndromes.map(s=>({ name:s.name, confidence:+(s.confidence).toFixed(2), confidence_pct:Math.round(s.confidence*100), urgency:s.urgency, clinical_note:s.clinical_note })),null,2)}\n\nOverall severity: ${overallFuzzy}\n${patientInfo.age||patientInfo.sex?`Patient: ${patientInfo.age?`age ${patientInfo.age}`:''}${patientInfo.sex?`, ${patientInfo.sex}`:''}`:''}`
+        : 'Note: Could not parse structured values from this report. Analyze from raw text only and generate findings for every test you can identify.';
 
       // labLens now uses gpt-oss-120b (non-thinking content channel), so
       // max_tokens here is purely for the JSON payload itself — full panels
@@ -690,14 +703,45 @@ export default function LabLens() {
       }
       doneStep('ai', `✓ Analysis complete — ${(englishResult.findings||[]).length} findings explained`);
 
-      // Validate & override AI fuzzy scores with our computed ones (prevent hallucination)
-      if (englishResult.findings && parsedValues.length > 0) {
+      // ── Findings: fuzzy-first guarantee ────────────────────
+      // Build findings from parsedValues (always complete) then enrich
+      // with AI text where the model generated it. This ensures Values
+      // and Flagged tabs NEVER show (0) regardless of AI truncation.
+      if (parsedValues.length > 0) {
+        const aiFindings = englishResult.findings || [];
+        // Build AI text lookup by parameter name (loose match)
+        const aiLookup = {};
+        for (const f of aiFindings) {
+          const key = (f.parameter || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+          aiLookup[key] = f;
+        }
+        const findAI = (pvName) => {
+          const key = pvName.toLowerCase().replace(/[^a-z0-9]/g,'');
+          if (aiLookup[key]) return aiLookup[key];
+          // partial match — try first 4 chars
+          const short = key.slice(0,4);
+          return Object.values(aiLookup).find(f =>
+            (f.parameter||'').toLowerCase().replace(/[^a-z0-9]/g,'').startsWith(short)
+          ) || null;
+        };
+        englishResult.findings = parsedValues.map(pv => {
+          const ai = findAI(pv.name);
+          return {
+            parameter:    pv.name,
+            value:        `${pv.value} ${pv.unit}`.trim(),
+            fuzzy_label:  pv.fuzzy.label,
+            fuzzy_score:  pv.fuzzy.score,
+            flag:         pv.fuzzy.score > 0.1,
+            plain_meaning: ai?.plain_meaning || '',
+            significance:  ai?.significance  || '',
+            care_note:     ai?.care_note     || '',
+          };
+        });
+      } else if (englishResult.findings && parsedValues.length > 0) {
+        // Legacy override path (kept for safety)
         englishResult.findings = englishResult.findings.map(f => {
-          const match = parsedValues.find(p => p.name.toLowerCase().includes(f.parameter?.toLowerCase().substring(0,5)));
-          if (match) {
-            return { ...f, fuzzy_score: match.fuzzy.score, fuzzy_label: match.fuzzy.label, flag: match.fuzzy.score > 0.1 };
-          }
-          return f;
+          const match = parsedValues.find(p => p.name.toLowerCase().includes((f.parameter||'').toLowerCase().substring(0,5)));
+          return match ? { ...f, fuzzy_score: match.fuzzy.score, fuzzy_label: match.fuzzy.label, flag: match.fuzzy.score > 0.1 } : f;
         });
       }
 
