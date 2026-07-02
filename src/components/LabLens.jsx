@@ -91,7 +91,10 @@ function fuzzyScore(value, refLow, refHigh, paramName = '') {
                   return { score:+Math.min(1,0.8+(dev-0.50)/0.50*0.2).toFixed(3), label:'critically_high', direction:'high' };
 }
 
-function fuzzyAnd(...scores) { return Math.min(...scores.filter(s => s > 0)); }
+function fuzzyAnd(...scores) {
+  const pos = scores.filter(s => s > 0);
+  return pos.length === 0 ? 0 : Math.min(...pos);
+}
 
 function detectSyndromes(parsedValues) {
   const find  = names => { for (const n of names) { const h=parsedValues.find(v=>v.name.toLowerCase().includes(n)); if(h) return h; } return null; };
@@ -691,11 +694,7 @@ export default function LabLens() {
             if (errObj?.error) apiError = typeof errObj.error === 'string' ? errObj.error : (errObj.error?.message || 'API error');
           } catch {}
 
-          const summaryText = apiError
-            ? `Service error: ${apiError}. The fuzzy analysis below is still accurate — AI explanations unavailable right now.`
-            : cleanText || 'AI explanation unavailable — the service may be busy. Your fuzzy analysis results are shown below.';
-
-          // Build findings and syndromes from fuzzy data so tabs work
+          // Build findings and syndromes from fuzzy data so all tabs work
           const fuzzyFindings = parsedValues.map(pv => ({
             parameter:    pv.name,
             value:        `${pv.value} ${pv.unit}`.trim(),
@@ -703,35 +702,73 @@ export default function LabLens() {
             fuzzy_score:  pv.fuzzy.score,
             flag:         pv.fuzzy.score > 0.1,
             plain_meaning: '',
-            significance:  pv.fuzzy.score > 0 ? `${pv.name} is ${pv.fuzzy.label.replace(/_/g,' ')} at ${pv.value} ${pv.unit} (reference: ${pv.refLow}–${pv.refHigh}).` : `${pv.name} is within the normal reference range.`,
-            care_note: pv.fuzzy.score > 0.4 ? `Discuss this result with your doctor.` : '',
+            significance:  pv.fuzzy.score > 0
+              ? `${pv.name} is ${pv.fuzzy.label.replace(/_/g,' ')} at ${pv.value} ${pv.unit} (reference: ${pv.refLow}–${pv.refHigh}).`
+              : `${pv.name} is within the normal reference range (${pv.refLow}–${pv.refHigh}).`,
+            care_note: pv.fuzzy.score > 0.4 ? 'Discuss this result with your doctor.' : '',
           }));
 
           const fuzzyPatterns = syndromes.map(s => ({
             name: s.name,
-            confidence_pct: Math.round(s.confidence * 100),
-            plain_explanation: `Your results together suggest ${s.name.toLowerCase()}. ${s.clinical_note}`,
-            what_doctor_looks_for: `Urgency: ${s.urgency}. Ask your doctor about further evaluation.`,
+            confidence_pct: Math.min(100, Math.round((s.confidence||0) * 100)),
+            plain_explanation: `Your results together suggest ${s.name.toLowerCase()}. ${s.clinical_note||''}`,
+            what_doctor_looks_for: `Urgency: ${s.urgency}. Ask your doctor about further evaluation and confirmatory tests.`,
           }));
+
+          // Build a useful summary from fuzzy engine data
+          const criticalItems = parsedValues.filter(v => v.fuzzy.label.includes('critical') || (v.fuzzy.clinical && v.fuzzy.score >= 0.75));
+          const severeItems   = parsedValues.filter(v => v.fuzzy.label.includes('severe') && !criticalItems.find(c=>c.name===v.name));
+          const mildItems     = parsedValues.filter(v => v.fuzzy.score > 0.1 && v.fuzzy.score < 0.6);
+          const fuzzyPatternNames = syndromes.map(s=>s.name).join(', ');
+
+          const fuzzyParts = [
+            criticalItems.length > 0
+              ? `${criticalItems.length} value${criticalItems.length>1?'s':''} require prompt attention: ${criticalItems.map(v=>v.name).join(', ')}.`
+              : '',
+            severeItems.length > 0
+              ? `${severeItems.length} value${severeItems.length>1?'s':''} are significantly abnormal: ${severeItems.map(v=>v.name).join(', ')}.`
+              : '',
+            mildItems.length > 0 && criticalItems.length === 0 && severeItems.length === 0
+              ? `${mildItems.length} value${mildItems.length>1?'s are':' is'} mildly outside the normal range.`
+              : '',
+            fuzzyPatternNames ? `Detected pattern${syndromes.length>1?'s':''}: ${fuzzyPatternNames}.` : '',
+            'Full AI explanations are temporarily unavailable — please try again in a moment. The severity scores and tab data below are accurate.',
+          ].filter(Boolean).join(' ');
+
+          // Generate doctor questions from top flagged values + syndromes
+          const topFlagged = parsedValues.filter(v=>v.fuzzy.score>0.3).slice(0,4);
+          const fuzzyQuestions = [
+            ...topFlagged.map(v=>
+              `I noticed that my ${v.name} is ${v.value} ${v.unit} (reference: ${v.refLow}–${v.refHigh}) — what does this mean for my health?`
+            ),
+            ...syndromes.slice(0,2).map(s=>
+              `The analysis shows a ${s.name} — what additional tests would you recommend to confirm this?`
+            ),
+          ].slice(0,5);
+
+          const safeConfPct = syndromes[0] ? Math.min(100, Math.round((syndromes[0].confidence||0)*100)) : 0;
 
           doneStep('ai', parsedValues.length > 0 ? `✓ Fuzzy analysis complete — ${parsedValues.length} values scored` : '⚠ AI unavailable');
           setResult({
             headline: parsedValues.length > 0
-              ? syndromes[0] ? `${syndromes[0].name} detected with ${Math.round(syndromes[0].confidence*100)}% confidence` : 'Lab values analyzed — see flagged tab for abnormal results'
+              ? syndromes[0]
+                ? `${syndromes[0].name} detected with ${safeConfPct}% confidence`
+                : `${parsedValues.filter(v=>v.fuzzy.score>0.1).length} abnormal values detected — see Flagged tab`
               : 'Report Analysis',
             overall_status: overallFuzzy !== 'unknown' ? overallFuzzy : 'attention_needed',
-            summary: summaryText,
+            summary: apiError
+              ? `Service error: ${apiError}. Fuzzy analysis results are shown below.`
+              : fuzzyParts,
             textMode: false,
             urgent_alert: parsedValues.some(v => v.fuzzy.label.includes('critical') || (v.fuzzy.clinical && v.fuzzy.score >= 0.75))
               ? `Critical or severely abnormal values detected — please consult your doctor promptly.`
               : null,
             findings: fuzzyFindings,
             syndrome_explanations: fuzzyPatterns,
-            questions_for_doctor: [],
+            questions_for_doctor: fuzzyQuestions,
             lifestyle_notes: [],
-            ai_opinion_note: 'Fuzzy logic analysis only — AI text explanations unavailable. These severity scores are accurate but plain-language explanations could not be generated.'
+            ai_opinion_note: 'Fuzzy logic analysis only — AI text explanations unavailable. Severity scores are accurate.'
           });
-          setActiveTab(fuzzyFindings.some(f=>f.flag) ? 'flagged' : 'summary');
           setLoading(false);
           setLoadingStep('');
           return;
