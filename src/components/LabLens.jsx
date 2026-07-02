@@ -680,22 +680,58 @@ export default function LabLens() {
         }
 
         if (!englishResult) {
-          // Nothing parseable — show clean text, not raw JSON
-          const cleanText = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<\/?think>/gi, '').trim();
-          doneStep('ai', '✓ Analysis complete');
+          // AI returned nothing parseable — use fuzzy engine data to populate tabs
+          // so Values, Flagged, Patterns still work even without AI text
+          let cleanText = raw.replace(/<think>[\s\S]*?<\/think>/gi, '').replace(/<\/?think>/gi, '').trim();
+
+          // Detect API error objects (rate limit, model error, etc.)
+          let apiError = '';
+          try {
+            const errObj = JSON.parse(raw);
+            if (errObj?.error) apiError = typeof errObj.error === 'string' ? errObj.error : (errObj.error?.message || 'API error');
+          } catch {}
+
+          const summaryText = apiError
+            ? `Service error: ${apiError}. The fuzzy analysis below is still accurate — AI explanations unavailable right now.`
+            : cleanText || 'AI explanation unavailable — the service may be busy. Your fuzzy analysis results are shown below.';
+
+          // Build findings and syndromes from fuzzy data so tabs work
+          const fuzzyFindings = parsedValues.map(pv => ({
+            parameter:    pv.name,
+            value:        `${pv.value} ${pv.unit}`.trim(),
+            fuzzy_label:  pv.fuzzy.label,
+            fuzzy_score:  pv.fuzzy.score,
+            flag:         pv.fuzzy.score > 0.1,
+            plain_meaning: '',
+            significance:  pv.fuzzy.score > 0 ? `${pv.name} is ${pv.fuzzy.label.replace(/_/g,' ')} at ${pv.value} ${pv.unit} (reference: ${pv.refLow}–${pv.refHigh}).` : `${pv.name} is within the normal reference range.`,
+            care_note: pv.fuzzy.score > 0.4 ? `Discuss this result with your doctor.` : '',
+          }));
+
+          const fuzzyPatterns = syndromes.map(s => ({
+            name: s.name,
+            confidence_pct: Math.round(s.confidence * 100),
+            plain_explanation: `Your results together suggest ${s.name.toLowerCase()}. ${s.clinical_note}`,
+            what_doctor_looks_for: `Urgency: ${s.urgency}. Ask your doctor about further evaluation.`,
+          }));
+
+          doneStep('ai', parsedValues.length > 0 ? `✓ Fuzzy analysis complete — ${parsedValues.length} values scored` : '⚠ AI unavailable');
           setResult({
-            headline: 'Report Analysis',
+            headline: parsedValues.length > 0
+              ? syndromes[0] ? `${syndromes[0].name} detected with ${Math.round(syndromes[0].confidence*100)}% confidence` : 'Lab values analyzed — see flagged tab for abnormal results'
+              : 'Report Analysis',
             overall_status: overallFuzzy !== 'unknown' ? overallFuzzy : 'attention_needed',
-            summary: cleanText || 'No analysis text was returned. Please try again.',
-            textMode: true,
-            urgent_alert: null,
-            findings: [],
-            syndrome_explanations: [],
+            summary: summaryText,
+            textMode: false,
+            urgent_alert: parsedValues.some(v => v.fuzzy.label.includes('critical') || (v.fuzzy.clinical && v.fuzzy.score >= 0.75))
+              ? `Critical or severely abnormal values detected — please consult your doctor promptly.`
+              : null,
+            findings: fuzzyFindings,
+            syndrome_explanations: fuzzyPatterns,
             questions_for_doctor: [],
             lifestyle_notes: [],
-            ai_opinion_note: 'These results and suggestions represent AI analysis based on standard reference ranges. They are not a substitute for professional medical judgment.'
+            ai_opinion_note: 'Fuzzy logic analysis only — AI text explanations unavailable. These severity scores are accurate but plain-language explanations could not be generated.'
           });
-          setActiveTab('summary');
+          setActiveTab(fuzzyFindings.some(f=>f.flag) ? 'flagged' : 'summary');
           setLoading(false);
           setLoadingStep('');
           return;
