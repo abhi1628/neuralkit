@@ -4,6 +4,22 @@ import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { loadScript, fetchWithBackoff } from '../utils';
 
+// Robust JSON parser — same as ResumeBuilder
+function safeParseResume(raw) {
+  if (!raw) throw new Error('Empty response.');
+  let s = raw.replace(/```json|```/g, '').trim();
+  const first = s.indexOf('{');
+  if (first === -1) throw new Error('No JSON found.');
+  s = s.slice(first);
+  const last = s.lastIndexOf('}');
+  if (last === -1) throw new Error('Incomplete JSON — try again.');
+  s = s.slice(0, last + 1)
+        .replace(/,\s*([}\]])/g, '$1')
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2018\u2019]/g, "'");
+  return JSON.parse(s);
+}
+
 const STEPS = ['Personal Info', 'Summary & Target', 'Experience', 'Education', 'Skills', 'Projects & Extras', 'Review & Generate'];
 
 const BLANK_DATA = () => ({
@@ -71,16 +87,19 @@ export default function ResumeBuilderTool() {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: TOOL_MODELS.resumeBuilderTool, max_tokens: 1500,
+          model: TOOL_MODELS.resumeBuilderTool,
+          max_tokens: 4000,
+          temperature: 0.1,
           messages: [
-            { role: 'system', content: `You are an expert resume writer and ATS specialist. Given structured form data, produce a polished, ATS-optimized resume as JSON.\nCRITICAL: Return ONLY valid JSON — no markdown backticks, no preamble.\nRules:\n- Rewrite bullet points with strong action verbs and quantify where context implies metrics\n- Polish the summary into 2-3 compelling sentences for the target role\n- Keep ALL information exactly. Never fabricate any detail.\n- Omit empty sections entirely.\nOutput format: {"name":"","contact":{"email":"","phone":"","location":"","linkedin":"","github":""},"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"soft":[],"tools":[]},"certifications":[],"projects":[{"name":"","description":"","tech":""}],"languages":[],"achievements":[]}` },
+            { role: 'system', content: `You are an expert resume writer and ATS specialist. Produce a polished, ATS-optimized resume as JSON only.\nCRITICAL: Return ONLY valid JSON — no markdown, no preamble, no backticks.\nRules:\n1. KEYWORD PRESERVATION: Copy ALL skills, tools, technologies, and frameworks VERBATIM into the skills section. ATS does literal string matching — never rephrase exact tool names.\n2. Skills must be exhaustive — include every tech term, language, platform, methodology from the input.\n3. Rewrite bullets with strong action verbs. Quantify only where the user already provided numbers.\n4. Polish the summary into 2-3 compelling sentences for the target role.\n5. Never fabricate any detail. Keep ALL information exactly.\n6. Single-column only — two-column layouts break ATS parsers.\n7. Keep all sections that have data.\nOutput: {"name":"","contact":{"email":"","phone":"","location":"","linkedin":"","github":"","website":""},"summary":"","experience":[{"title":"","company":"","dates":"","bullets":[]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"tools":[],"soft":[]},"publications":{"books":[],"papers":[],"datasets":[]},"projects":[{"name":"","description":"","tech":""}],"certifications":[],"awards":[],"mentorship":[],"languages":[],"achievements":[]}` },
             { role: 'user', content: `Target Role: ${data.target}\nName: ${data.name} | Email: ${data.email} | Phone: ${data.phone} | Location: ${data.location}\nLinkedIn: ${data.linkedin} | GitHub: ${data.github}\n\nSummary: ${data.summary}\n\nExperience:\n${data.experience.map(e => `${e.title} at ${e.company} (${e.startDate}–${e.current ? 'Present' : e.endDate})\n${e.bullets}`).join('\n\n')}\n\nEducation:\n${data.education.map(e => `${e.degree} in ${e.field}, ${e.institution}, ${e.year}, GPA: ${e.gpa}`).join('\n')}\n\nTechnical Skills: ${data.techSkills}\nTools: ${data.tools}\nSoft Skills: ${data.softSkills}\n\nProjects:\n${data.projects.map(p => `${p.name} (${p.tech}): ${p.description}`).join('\n')}\n\nCertifications:\n${data.certs}\nLanguages: ${data.languages}\nAchievements:\n${data.achievements}` },
           ],
         }),
       });
       const json = await res.json();
-      const raw  = json?.choices?.[0]?.message?.content || '';
-      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      const raw = json?.choices?.[0]?.message?.content || '';
+      if (!raw) throw new Error(json?.error?.message || 'Empty response. Please try again.');
+      const parsed = safeParseResume(raw);
       setResumeData(parsed); setStep(7);
     } catch (e) { setBuildError(e.message || 'Generation failed. Please check your inputs and try again.'); }
     setGenerating(false);
@@ -115,7 +134,7 @@ export default function ResumeBuilderTool() {
         doc.splitTextToSize(text, 190 - (indent - 10)).forEach(line => { if (y > 278) { doc.addPage(); y = 18; } doc.text(line, indent, y); y += 5; });
       };
 
-      if (resumeData.summary) { section('Professional Summary'); body(resumeData.summary); y += 3; }
+      if (resumeData.summary) { section('Summary'); body(resumeData.summary); y += 3; }
       if (resumeData.experience?.length) {
         section('Experience');
         resumeData.experience.forEach(exp => {
@@ -150,7 +169,37 @@ export default function ResumeBuilderTool() {
           if (rest.length > 1) rest.slice(1).forEach(l => body(l, 10));
         }); y += 2;
       }
-      if (resumeData.certifications?.length) { section('Certifications'); resumeData.certifications.forEach(cert => body(`• ${cert}`, 14)); }
+      if (resumeData.projects?.length) {
+        section('Projects');
+        resumeData.projects.forEach(p => {
+          if (y > 270) { doc.addPage(); y = 18; }
+          doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+          doc.text(`${p.name || ''}${p.tech ? `  (${p.tech})` : ''}`, 10, y); y += 5;
+          if (p.description) body(`• ${p.description}`, 14); y += 2;
+        });
+      }
+      if (resumeData.certifications?.length) { section('Certifications'); resumeData.certifications.forEach(cert => body(`• ${cert}`, 14)); y += 2; }
+      if (resumeData.publications) {
+        const pubSections = [
+          { label: 'Books', items: resumeData.publications.books },
+          { label: 'Papers & Journals', items: resumeData.publications.papers },
+          { label: 'Datasets', items: resumeData.publications.datasets },
+        ].filter(s => s.items?.length);
+        if (pubSections.length) {
+          section('Publications');
+          pubSections.forEach(ps => {
+            if (y > 278) { doc.addPage(); y = 18; }
+            doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(80,80,80);
+            doc.text(ps.label.toUpperCase(), 10, y); y += 4;
+            ps.items.forEach(item => body(`• ${item}`, 14));
+          });
+          y += 2;
+        }
+      }
+      if (resumeData.awards?.length) { section('Awards'); resumeData.awards.forEach(a => body(`• ${a}`, 14)); y += 2; }
+      if (resumeData.mentorship?.length) { section('Volunteer & Mentorship'); resumeData.mentorship.forEach(m => body(`• ${m}`, 14)); y += 2; }
+      if (resumeData.achievements?.length) { section('Achievements'); resumeData.achievements.forEach(a => body(`• ${a}`, 14)); y += 2; }
+      if (resumeData.languages?.length) { section('Languages'); body(resumeData.languages.join('  ·  '), 10); }
       const pages = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pages; i++) { doc.setPage(i); doc.setFontSize(7); doc.setTextColor(180,180,180); doc.text(`Generated by ZeroAPI.in | Page ${i} of ${pages}`, 105, 291, { align: 'center' }); }
       doc.save(`${(resumeData.name || 'resume').replace(/\s+/g, '-').toLowerCase()}-zeroapi.pdf`);
@@ -182,10 +231,54 @@ export default function ResumeBuilderTool() {
         <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px' }}>✅ RESUME READY</div>
         <div style={{ fontSize: '1.05rem', fontWeight: 700, color: isDark ? '#fff' : '#0f172a', marginBottom: '4px' }}>{resumeData.name}</div>
         <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.45)' : '#64748b', fontFamily: "'Space Mono', monospace", marginBottom: '18px' }}>
-          {[resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? 's' : ''}`, resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(' · ')}
+          {[
+            resumeData.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? 's' : ''}`,
+            resumeData.skills?.technical?.length && `${resumeData.skills.technical.length} skills`,
+            resumeData.education?.length && `${resumeData.education.length} education`,
+            resumeData.publications?.books?.length && `${resumeData.publications.books.length} book${resumeData.publications.books.length > 1 ? 's' : ''}`,
+            resumeData.publications?.papers?.length && `${resumeData.publications.papers.length} paper${resumeData.publications.papers.length > 1 ? 's' : ''}`,
+          ].filter(Boolean).join(' · ')}
         </div>
+
+        {/* ── Preview Panel ── */}
+        <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : '#fafafa', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.09)'}`, borderRadius: '10px', padding: '20px', marginBottom: '18px', maxHeight: '420px', overflowY: 'auto' }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.6rem', color: ac, letterSpacing: '0.12em', marginBottom: '14px' }}>◆ PREVIEW — REVIEW BEFORE DOWNLOADING</div>
+          {resumeData.summary && <div style={{ marginBottom: '14px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Summary</div><div style={{ fontSize: '0.82rem', color: isDark?'rgba(255,255,255,0.82)':'rgba(0,0,0,0.75)', lineHeight: 1.7 }}>{resumeData.summary}</div></div>}
+          {resumeData.experience?.length > 0 && (
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '8px', textTransform:'uppercase' }}>Experience</div>
+              {resumeData.experience.map((e,i) => (
+                <div key={i} style={{ marginBottom: '10px', paddingLeft: '0' }}>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 600, color: isDark?'#fff':'#1a1a1a', marginBottom: '2px' }}>{e.title}{e.company ? ` — ${e.company}` : ''} <span style={{ fontWeight: 400, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', fontSize: '0.75rem' }}>{e.dates}</span></div>
+                  {(e.bullets||[]).map((b,j) => <div key={j} style={{ fontSize: '0.79rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.55, paddingLeft: '14px', marginTop: '3px' }}>• {b}</div>)}
+                </div>
+              ))}
+            </div>
+          )}
+          {resumeData.publications && (resumeData.publications.books?.length > 0 || resumeData.publications.papers?.length > 0 || resumeData.publications.datasets?.length > 0) && (
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Publications</div>
+              {resumeData.publications.books?.map((b,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '3px' }}>📘 {b}</div>)}
+              {resumeData.publications.papers?.map((p,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '3px' }}>📄 {p}</div>)}
+              {resumeData.publications.datasets?.map((d,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '3px' }}>🗂 {d}</div>)}
+            </div>
+          )}
+          {resumeData.awards?.length > 0 && (
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Awards</div>
+              {resumeData.awards.map((a,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '3px' }}>🏆 {a}</div>)}
+            </div>
+          )}
+          {resumeData.skills && (
+            <div>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Skills</div>
+              <div style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.6 }}>{[...(resumeData.skills.technical||[]), ...(resumeData.skills.tools||[])].join(' · ')}</div>
+            </div>
+          )}
+        </div>
+
         <div style={{ background: isDark ? 'rgba(255,180,0,0.15)' : '#fff8e1', border: `1px solid ${isDark ? 'rgba(255,180,0,0.3)' : '#f59e0b'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '18px', fontSize: '0.78rem', color: isDark ? '#febc2e' : '#b45309', lineHeight: 1.6 }}>
-          ⚠ Review carefully before sending to employers. AI-generated content may need adjustments.
+          ⚠ Review all content above before downloading — verify publications, dates, and metrics match your original.
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={downloadPdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
