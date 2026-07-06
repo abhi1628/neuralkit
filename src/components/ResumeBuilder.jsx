@@ -4,6 +4,37 @@ import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { loadScript, fetchWithBackoff } from '../utils';
 
+// Robust JSON parser — handles preamble, truncation, markdown fences
+function safeParseResume(raw) {
+  if (!raw) throw new Error('Empty response.');
+  let s = raw.replace(/```json|```/g, '').trim();
+  const first = s.indexOf('{');
+  if (first === -1) throw new Error('No JSON found.');
+  s = s.slice(first);
+  const last = s.lastIndexOf('}');
+  if (last === -1) throw new Error('Incomplete JSON.');
+  s = s.slice(0, last + 1)
+        .replace(/,\s*([}\]])/g, '$1')
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2018\u2019]/g, "'");
+  return JSON.parse(s);
+}
+
+const RESUME_SCHEMA = `{
+  "name":"",
+  "contact":{"email":"","phone":"","location":"","linkedin":"","github":"","website":""},
+  "summary":"2-3 sentence professional summary tailored to target role",
+  "experience":[{"title":"","company":"","dates":"","bullets":["strong action verb + quantified achievement"]}],
+  "education":[{"degree":"","institution":"","dates":"","gpa":""}],
+  "skills":{"technical":[],"tools":[],"soft":[]},
+  "publications":{"books":[],"papers":[],"datasets":[]},
+  "projects":[{"name":"","description":"","tech":""}],
+  "certifications":[],
+  "awards":[],
+  "mentorship":[],
+  "languages":[]
+}`;
+
 export default function ResumeBuilder({ originalText, analysisText, onDataParsed }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -16,26 +47,37 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [template,       setTemplate]       = useState('modern');
 
+  // Trim input — 12000 chars is safe with our 4000 token output budget
+  // 6000 was too low: a resume with multiple roles + publications exceeds it silently
+  const trimmedOriginal  = (originalText  || '').slice(0, 12000);
+  const trimmedAnalysis  = (analysisText  || '').slice(0, 2000);
+
   async function generateResume() {
     setStep('generating'); setBuildError('');
     try {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: TOOL_MODELS.resumeBuilder, max_tokens: 1500,
+          model: TOOL_MODELS.resumeBuilder,
+          max_tokens: 4000,
+          temperature: 0.1,
           messages: [
-            { role: 'system', content: `You are an expert resume writer and ATS optimization specialist. Given original resume text and analysis feedback, generate an improved resume.\n\nCRITICAL: Respond ONLY with a valid JSON object. No preamble, no markdown backticks.\n\nFormat:\n{"name":"Full Name","contact":{"email":"","phone":"","location":"","linkedin":""},"summary":"2-3 sentence professional summary","experience":[{"title":"","company":"","dates":"","bullets":["action verb + achievement"]}],"education":[{"degree":"","institution":"","dates":"","gpa":""}],"skills":{"technical":[],"soft":[],"tools":[]},"certifications":[],"projects":[{"name":"","description":"","tech":""}]}\n\nRules:\n- Extract ONLY information from the original resume. Never invent or add fake data.\n- Improve bullet points to start with strong action verbs.\n- Add metrics where they exist in the original.\n- Omit sections with no data.\n- Return ONLY valid JSON.` },
-            { role: 'user', content: `Original Resume:\n${originalText}\n\nAnalysis Feedback:\n${analysisText}` },
+            { role: 'system', content: `You are an expert resume writer and ATS specialist. Produce an improved resume as valid JSON only.\n\nCRITICAL RULES — follow exactly:\n1. Output ONLY valid JSON — no preamble, no markdown, no backticks.\n2. Extract ONLY information from the original resume. Never invent any detail.\n3. KEYWORD PRESERVATION (critical for ATS): Copy ALL skills, tools, technologies, frameworks, and domain terms VERBATIM into the skills section. Do NOT rephrase exact tool names — ATS systems do literal string matching. 'TensorFlow' stays 'TensorFlow', not 'deep learning framework'.\n4. Skills section MUST be exhaustive — include every technical term, language, platform, and methodology mentioned anywhere in the original.\n5. Preserve ALL publications, books, papers, datasets exactly as written — do not summarize or shorten.\n6. Single-column layout only — two-column breaks ATS parsers.\n7. Strengthen bullet points with action verbs. Quantify ONLY where the original already has numbers — never invent metrics.\n8. Keep ALL sections that had content — do not drop any section.\n\nSchema:\n${RESUME_SCHEMA}\n\nReturn ONLY valid JSON.` },
+            { role: 'user', content: `Original Resume:\n${trimmedOriginal}\n\nAnalysis Feedback (apply selectively — ignore any two-column layout suggestions):\n${trimmedAnalysis}` },
           ],
         }),
       });
       const data = await res.json();
       const raw = data?.choices?.[0]?.message?.content || '';
-      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      if (!raw) throw new Error(data?.error?.message || 'Empty response from AI. Please try again.');
+      const parsed = safeParseResume(raw);
       setResumeData(parsed);
       setStep('done');
       if (onDataParsed) onDataParsed(parsed);
-    } catch (e) { setBuildError(e.message || 'Failed to generate resume. Please try again.'); setStep('error'); }
+    } catch (e) {
+      setBuildError(e.message || 'Failed to generate resume. Please try again.');
+      setStep('error');
+    }
   }
 
   async function downloadResumePdf() {
@@ -66,7 +108,7 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
         doc.splitTextToSize(text, 190 - (indent - 10)).forEach(line => { if (y > 278) { doc.addPage(); y = 18; } doc.text(line, indent, y); y += 5; });
       };
 
-      if (resumeData.summary) { section('Professional Summary'); body(resumeData.summary); y += 3; }
+      if (resumeData.summary) { section('Summary'); body(resumeData.summary); y += 3; }
       if (resumeData.experience?.length) {
         section('Experience');
         resumeData.experience.forEach(exp => {
@@ -113,6 +155,25 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
           if (p.description) body(`• ${p.description}`, 14); y += 2;
         });
       }
+      if (resumeData.publications) {
+        const pubSections = [
+          { label: 'Books', items: resumeData.publications.books },
+          { label: 'Papers & Journals', items: resumeData.publications.papers },
+          { label: 'Datasets', items: resumeData.publications.datasets },
+        ].filter(s => s.items?.length);
+        if (pubSections.length) {
+          section('Publications');
+          pubSections.forEach(ps => {
+            if (y > 278) { doc.addPage(); y = 18; }
+            doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(80,80,80);
+            doc.text(ps.label.toUpperCase(), 10, y); y += 4;
+            ps.items.forEach(item => body(`• ${item}`, 14));
+          });
+          y += 2;
+        }
+      }
+      if (resumeData.awards?.length) { section('Awards'); resumeData.awards.forEach(a => body(`• ${a}`, 14)); y += 2; }
+      if (resumeData.mentorship?.length) { section('Volunteer & Mentorship'); resumeData.mentorship.forEach(m => body(`• ${m}`, 14)); y += 2; }
       if (resumeData.certifications?.length) { section('Certifications'); resumeData.certifications.forEach(cert => body(`• ${cert}`, 14)); }
 
       const pages = doc.internal.getNumberOfPages();
@@ -175,15 +236,31 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
       <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '6px' }}>✅ RESUME READY</div>
       <div style={{ fontSize: '1.05rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a', marginBottom: '4px' }}>{resumeData?.name}</div>
       <div style={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)', marginBottom: '18px', fontFamily: "'Space Mono', monospace" }}>
-        {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? 's' : ''}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(' · ')}
+        {[resumeData?.experience?.length && `${resumeData.experience.length} role${resumeData.experience.length > 1 ? 's' : ''}`, resumeData?.skills?.technical?.length && `${resumeData.skills.technical.length} skills`, resumeData?.publications?.books?.length && `${resumeData.publications.books.length} books`, resumeData?.education?.length && `${resumeData.education.length} education`].filter(Boolean).join(' · ')}
       </div>
+
+      {/* ── PREVIEW PANEL ── */}
+      <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : '#fafafa', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.09)'}`, borderRadius: '10px', padding: '20px', marginBottom: '18px', maxHeight: '420px', overflowY: 'auto' }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.6rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px' }}>◆ PREVIEW — REVIEW BEFORE DOWNLOADING</div>
+        {resumeData?.summary && <div style={{ marginBottom: '12px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Summary</div><div style={{ fontSize: '0.82rem', color: isDark?'rgba(255,255,255,0.8)':'rgba(0,0,0,0.75)', lineHeight: 1.65 }}>{resumeData.summary}</div></div>}
+        {resumeData?.experience?.length > 0 && <div style={{ marginBottom: '12px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Experience</div>{resumeData.experience.map((e,i) => <div key={i} style={{ marginBottom: '8px' }}><div style={{ fontSize: '0.82rem', fontWeight: 600, color: isDark?'#fff':'#1a1a1a' }}>{e.title} — {e.company} <span style={{ fontWeight: 400, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', fontSize: '0.76rem' }}>{e.dates}</span></div>{(e.bullets||[]).map((b,j) => <div key={j} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, paddingLeft: '12px', marginTop: '2px' }}>• {b}</div>)}</div>)}</div>}
+        {resumeData?.publications && (resumeData.publications.books?.length > 0 || resumeData.publications.papers?.length > 0) && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Publications</div>
+            {resumeData.publications.books?.map((b,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '2px' }}>📘 {b}</div>)}
+            {resumeData.publications.papers?.map((p,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '2px' }}>📄 {p}</div>)}
+          </div>
+        )}
+        {resumeData?.skills && <div style={{ marginBottom: '4px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Skills</div><div style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.6 }}>{[...(resumeData.skills.technical||[]), ...(resumeData.skills.tools||[])].join(' · ')}</div></div>}
+      </div>
+
       <div style={{ marginBottom: '12px', display: 'flex', gap: '6px' }}>
         {['modern','classic','minimal'].map(t => (
           <button key={t} onClick={() => setTemplate(t)} style={{ background: template === t ? ac : 'transparent', border: `1px solid ${template === t ? ac : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`, borderRadius: '6px', padding: '4px 12px', color: template === t ? '#000' : isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '0.68rem', cursor: 'pointer', fontFamily: "'Space Mono', monospace", textTransform: 'uppercase' }}>{t}</button>
         ))}
       </div>
       <div style={{ background: isDark ? 'rgba(255,180,0,0.15)' : '#fff8e1', border: `1px solid ${isDark ? 'rgba(255,180,0,0.3)' : '#b45309'}`, borderRadius: '8px', padding: '10px 14px', marginBottom: '20px', fontSize: '0.78rem', color: isDark ? '#febc2e' : '#b45309', lineHeight: 1.6 }}>
-        ⚠ Review all content before sending. AI may not capture every nuance of your experience.
+        ⚠ Review all content in the preview above before downloading. Verify publications, dates, and metrics match your original.
       </div>
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         <button onClick={downloadResumePdf} disabled={downloadingPdf} style={{ background: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : 'linear-gradient(135deg, #a78bfa, #818cf8)', border: 'none', borderRadius: '10px', padding: '10px 22px', color: downloadingPdf ? (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)') : '#000', fontWeight: 700, fontSize: '0.82rem', cursor: downloadingPdf ? 'not-allowed' : 'pointer', fontFamily: "'Space Mono', monospace", display: 'flex', alignItems: 'center', gap: '8px' }}>
