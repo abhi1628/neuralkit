@@ -240,18 +240,69 @@ export default function ResumeBuilder({ originalText, analysisText, onDataParsed
       </div>
 
       {/* ── PREVIEW PANEL ── */}
-      <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : '#fafafa', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.09)'}`, borderRadius: '10px', padding: '20px', marginBottom: '18px', maxHeight: '420px', overflowY: 'auto' }}>
-        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.6rem', color: ac, letterSpacing: '0.12em', marginBottom: '12px' }}>◆ PREVIEW — REVIEW BEFORE DOWNLOADING</div>
-        {resumeData?.summary && <div style={{ marginBottom: '12px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Summary</div><div style={{ fontSize: '0.82rem', color: isDark?'rgba(255,255,255,0.8)':'rgba(0,0,0,0.75)', lineHeight: 1.65 }}>{resumeData.summary}</div></div>}
-        {resumeData?.experience?.length > 0 && <div style={{ marginBottom: '12px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Experience</div>{resumeData.experience.map((e,i) => <div key={i} style={{ marginBottom: '8px' }}><div style={{ fontSize: '0.82rem', fontWeight: 600, color: isDark?'#fff':'#1a1a1a' }}>{e.title} — {e.company} <span style={{ fontWeight: 400, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', fontSize: '0.76rem' }}>{e.dates}</span></div>{(e.bullets||[]).map((b,j) => <div key={j} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, paddingLeft: '12px', marginTop: '2px' }}>• {b}</div>)}</div>)}</div>}
-        {resumeData?.publications && (resumeData.publications.books?.length > 0 || resumeData.publications.papers?.length > 0) && (
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase' }}>Publications</div>
-            {resumeData.publications.books?.map((b,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '2px' }}>📘 {b}</div>)}
-            {resumeData.publications.papers?.map((p,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.5, marginTop: '2px' }}>📄 {p}</div>)}
+      <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : '#fafafa', border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.09)'}`, borderRadius: '10px', padding: '20px', marginBottom: '18px', maxHeight: '480px', overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '14px' }}>
+          <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.6rem', color: ac, letterSpacing: '0.12em' }}>◆ PREVIEW — REVIEW BEFORE DOWNLOADING</div>
+          <div style={{ fontSize: '0.6rem', color: isDark?'rgba(255,255,255,0.3)':'rgba(0,0,0,0.3)', fontFamily:"'Space Mono',monospace" }}>scroll ↕</div>
+        </div>
+
+        {resumeData?.summary && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '5px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Summary</div>
+            <div style={{ fontSize: '0.82rem', color: isDark?'rgba(255,255,255,0.82)':'rgba(0,0,0,0.75)', lineHeight: 1.7, wordBreak:'break-word', overflowWrap:'break-word' }}>{resumeData.summary}</div>
           </div>
         )}
-        {resumeData?.skills && <div style={{ marginBottom: '4px' }}><div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px', textTransform:'uppercase' }}>Skills</div><div style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.6 }}>{[...(resumeData.skills.technical||[]), ...(resumeData.skills.tools||[])].join(' · ')}</div></div>}
+
+        {resumeData?.experience?.length > 0 && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '8px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Experience</div>
+            {resumeData.experience.map((e,i) => (
+              <div key={i} style={{ marginBottom: '10px', borderLeft: `2px solid ${isDark?'rgba(167,139,250,0.3)':'rgba(124,58,237,0.2)'}`, paddingLeft: '10px' }}>
+                <div style={{ fontSize: '0.83rem', fontWeight: 700, color: isDark?'#e2d9f3':'#1a1a1a', wordBreak:'break-word' }}>{e.title}{e.company ? ` — ${e.company}` : ''}</div>
+                <div style={{ fontSize: '0.72rem', color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '4px' }}>{e.dates}</div>
+                {(e.bullets||[]).map((b,j) => (
+                  <div key={j} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.68)':'rgba(0,0,0,0.68)', lineHeight: 1.6, paddingLeft: '10px', marginTop: '3px', wordBreak:'break-word', overflowWrap:'break-word' }}>• {b}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {resumeData?.publications && (resumeData.publications.books?.length > 0 || resumeData.publications.papers?.length > 0 || resumeData.publications.datasets?.length > 0) && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Publications</div>
+            {resumeData.publications.books?.map((b,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.55, marginTop: '3px', wordBreak:'break-word', overflowWrap:'break-word' }}>📘 {b}</div>)}
+            {resumeData.publications.papers?.map((p,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.55, marginTop: '3px', wordBreak:'break-word', overflowWrap:'break-word' }}>📄 {p}</div>)}
+            {resumeData.publications.datasets?.map((d,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.55, marginTop: '3px', wordBreak:'break-word', overflowWrap:'break-word' }}>🗂 {d}</div>)}
+          </div>
+        )}
+
+        {resumeData?.awards?.length > 0 && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Awards</div>
+            {resumeData.awards.map((a,i) => <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.55, marginTop: '3px', wordBreak:'break-word', overflowWrap:'break-word' }}>🏆 {a}</div>)}
+          </div>
+        )}
+
+        {resumeData?.education?.length > 0 && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '6px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Education</div>
+            {resumeData.education.map((e,i) => (
+              <div key={i} style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.6, marginTop: '3px', wordBreak:'break-word' }}>
+                <span style={{ fontWeight:600, color: isDark?'rgba(255,255,255,0.82)':'rgba(0,0,0,0.75)' }}>{e.degree}</span>{e.institution ? `, ${e.institution}` : ''}{e.dates ? ` · ${e.dates}` : ''}{e.gpa ? ` · GPA ${e.gpa}` : ''}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {resumeData?.skills && (
+          <div>
+            <div style={{ fontSize: '0.62rem', fontWeight: 700, color: isDark?'rgba(255,255,255,0.4)':'rgba(0,0,0,0.4)', marginBottom: '5px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Skills</div>
+            <div style={{ fontSize: '0.78rem', color: isDark?'rgba(255,255,255,0.65)':'rgba(0,0,0,0.65)', lineHeight: 1.7, wordBreak:'break-word', overflowWrap:'break-word' }}>
+              {[...(resumeData.skills.technical||[]), ...(resumeData.skills.tools||[])].join(' · ')}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ marginBottom: '12px', display: 'flex', gap: '6px' }}>
