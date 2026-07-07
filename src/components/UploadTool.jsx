@@ -147,7 +147,7 @@ export default function UploadTool({ prompt, filename, icon, label }) {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             toolId: 'resume-analyzer',
-            model: TOOL_MODELS.resumeAnalyzer, max_tokens: 900, temperature: 0.3,
+            model: TOOL_MODELS.resumeAnalyzer, max_tokens: 2500, temperature: 0.3,
             messages: [
               { role: 'system', content: prompt + '\n\nIMPORTANT FORMATTING RULES:\n- Do NOT include page citations like [Source: page X] for resume analysis\n- Do NOT include confidence indicators like [HIGH], [MEDIUM], [LOW]\n- Be honest and specific about strengths and weaknesses\n- Use bullet points for readability\n- Include specific metrics and numbers when analyzing achievements' },
               { role: 'user',   content: contextForLLM },
