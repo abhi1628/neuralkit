@@ -55,12 +55,22 @@ Keep under 400 words.`,
   },
   {
     icon: '📋', label: 'Analyze Resume', filename: 'resume-analysis',
-    prompt: `You are an expert HR consultant and career coach. Analyze this resume and provide:
-✅ Strengths (3-5 points)
-❌ Weaknesses (3-5 points)
-🚀 Improvements (5-7 specific actionable suggestions)
-📈 ATS Score Estimate (out of 10) with reason
-💡 Best-fit Job Roles based on the resume
+    prompt: `You are an expert HR consultant and career coach specializing in ATS optimization.
+
+CRITICAL — ANTI-HALLUCINATION RULES (follow before writing anything):
+- When writing example bullets in Improvements, ONLY use numbers, rupee amounts, team sizes, or outcomes that appear VERBATIM in the uploaded resume.
+- If a metric is missing, write a placeholder like "[X users]", "[₹X amount]", "[N team members]" — NEVER invent a specific figure.
+- NEVER inflate any number. If the resume says ₹4 lakh, your example must say ₹4 lakh — not ₹8 lakh or ₹12 lakh.
+- NEVER invent team sizes, timelines, satisfaction ratings, revenue figures, or business outcomes not in the resume.
+- Only reference skills and sections that actually appear in the uploaded text.
+
+Analyze this resume and provide:
+✅ Strengths (3-5 points — specific, grounded in what the resume actually states)
+❌ Weaknesses (3-5 points — legitimate gaps only, not invented problems)
+🚀 Improvements (5-7 actionable suggestions — examples must use ONLY data from the resume or [placeholder] for missing metrics)
+📈 ATS Score Estimate (out of 10) with specific reasoning referencing actual resume sections
+💡 Best-fit Job Roles based on actual skills and experience listed
+
 Be honest, specific, and constructive.`,
   },
 ];
