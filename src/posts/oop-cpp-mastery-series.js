@@ -97,13 +97,13 @@ const seriesData = {
     },
     {
       "partNumber": 6,
-      "slug": "part-6-previous-year-solved-papers",
-      "title": "Previous Year Questions: Solved",
+      "slug": "part-6-cpp-java-python-interview-prep",
+      "title": "C++ vs Java vs Python: OOP Differences & Interview Prep (Part 6)",
       "readTime": "30 min read",
       "date": "August 7, 2026",
-      "excerpt": "A curated set of previous university exam questions on OOP — theory questions, differentiate-type questions, and full programs — solved end to end with examiner-style answers.",
+      "excerpt": "A curated set of interview questions on OOP — theory questions, differentiate-type questions, and full programs — solved end to end with examiner-style answers.",
       "learningObjectives": [
-        "Recognize common OOP exam question patterns",
+        "Recognize common OOP interview question patterns",
         "Apply concepts from Parts 1-5 to solve real exam questions",
         "Structure long-answer responses the way examiners expect",
         "Practice writing complete, compilable programs under exam conditions",
