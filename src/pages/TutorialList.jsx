@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import seriesData from "../posts/ml-foundations-series";
 import pythonSeriesData from "../posts/python-unlocked-series";
+import oopCppSeriesData from "../posts/oop-cpp-mastery-series";
 
 // In the future, this will be an array of all series
-const ALL_SERIES = [seriesData, pythonSeriesData];
+const ALL_SERIES = [seriesData, pythonSeriesData, oopCppSeriesData];
 
 export default function TutorialList({ theme }) {
   const navigate = useNavigate();
