@@ -36,6 +36,13 @@ import pyPart27 from "../posts/python-unlocked-part-27";
 import pyPart28 from "../posts/python-unlocked-part-28";
 import pyPart29 from "../posts/python-unlocked-part-29";
 import pyPart30 from "../posts/python-unlocked-part-30";
+import oopCppSeriesData from "../posts/oop-cpp-mastery-series";
+import oopPart1 from "../posts/oop-cpp-mastery-part-1";
+import oopPart2 from "../posts/oop-cpp-mastery-part-2";
+import oopPart3 from "../posts/oop-cpp-mastery-part-3";
+import oopPart4 from "../posts/oop-cpp-mastery-part-4";
+import oopPart5 from "../posts/oop-cpp-mastery-part-5";
+import oopPart6 from "../posts/oop-cpp-mastery-part-6";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -75,20 +82,28 @@ const CONTENT_MAP = {
     "part-28-metaclasses-descriptors": pyPart28,
     "part-29-standard-library": pyPart29,
     "part-30-final-project": pyPart30
+  },
+  "oop-cpp-mastery": {
+    "part-1-oop-fundamentals": oopPart1,
+    "part-2-encapsulation-abstraction": oopPart2,
+    "part-3-inheritance-relationships": oopPart3,
+    "part-4-polymorphism": oopPart4,
+    "part-5-strings-exceptions-threads-collections": oopPart5,
+    "part-6-previous-year-solved-papers": oopPart6
   }
 };
 
 const SERIES_DATA_MAP = {
   "ml-foundations": mlSeriesData,
-  "python-unlocked": pythonSeriesData
+  "python-unlocked": pythonSeriesData,
+  "oop-cpp-mastery": oopCppSeriesData
 };
 
-function renderContent(block, i, theme) {
+function renderContent(block, i, theme, seriesColor = "#10b981") {
   const isDark = theme === "dark";
   const text = isDark ? "rgba(255,255,255,0.82)" : "rgba(0,0,0,0.8)";
   const muted = isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)";
   const border = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
-  const seriesColor = "#10b981";
 
   switch (block.type) {
     case "intro":
@@ -209,6 +224,34 @@ function renderContent(block, i, theme) {
           </div>
         );
 
+    case "table":
+      return (
+        <div key={i} style={{ margin: "24px 0", overflowX: "auto", borderRadius: "12px", border: `1px solid ${border}` }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+            <thead>
+              <tr>
+                {block.headers.map((h, hi) => (
+                  <th key={hi} style={{ textAlign: "left", padding: "12px 16px", background: `${seriesColor}18`, color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", letterSpacing: "0.03em", borderBottom: `1px solid ${seriesColor}33`, whiteSpace: "nowrap" }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, ri) => (
+                <tr key={ri} style={{ background: ri % 2 === 0 ? "transparent" : (isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.015)") }}>
+                  {row.map((cell, ci) => (
+                    <td key={ci} style={{ padding: "12px 16px", color: text, lineHeight: 1.6, borderBottom: `1px solid ${border}`, verticalAlign: "top", fontWeight: ci === 0 ? 700 : 400 }}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+
     default:
       return null;
   }
@@ -218,7 +261,10 @@ export default function TutorialPost({ theme }) {
   const { seriesSlug, partSlug } = useParams();
   const navigate = useNavigate();
   const isDark = theme === "dark";
-  const seriesColor = "#10b981";
+
+  // Series lookup - computed early so it's available for loading/error states too
+  const series = SERIES_DATA_MAP[seriesSlug] || null;
+  const seriesColor = series?.categoryColor || "#10b981";
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -278,7 +324,6 @@ export default function TutorialPost({ theme }) {
   }
 
   // Get series data for navigation
-  const series = SERIES_DATA_MAP[seriesSlug] || null;
   const currentPartIndex = series ? series.parts.findIndex(p => p.slug === partSlug) : -1;
   const currentPart = currentPartIndex >= 0 ? series.parts[currentPartIndex] : null;
   const prevPart = currentPartIndex > 0 ? series.parts[currentPartIndex - 1] : null;
@@ -341,7 +386,7 @@ export default function TutorialPost({ theme }) {
 
       {/* Article Body */}
       <div style={{ maxWidth: "800px", margin: "0 auto", padding: "48px 24px 80px", textAlign: "left" }}>
-        {post.content && post.content.map((block, i) => renderContent(block, i, theme))}
+        {post.content && post.content.map((block, i) => renderContent(block, i, theme, seriesColor))}
 
         {/* Part Navigation */}
         <div style={{ marginTop: "64px", paddingTop: "32px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}` }}>
