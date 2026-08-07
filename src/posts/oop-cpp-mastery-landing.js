@@ -5,7 +5,7 @@ const post = {
   "readTime": "10-12 hours total",
   "category": "Object Oriented Programming",
   "categoryColor": "#3b82f6",
-  "excerpt": "A complete, exam-focused walkthrough of OOP using C++ — every concept explained with compilable code, exam-ready definitions, and previous year questions solved end to end.",
+  "excerpt": "A complete, exam-focused walkthrough of OOP using C++ — every concept explained with compilable code, exam-ready definitions, and cross-language interview prep.",
   "coverEmoji": "🧩",
   "tags": [
     "C++",
@@ -17,7 +17,7 @@ const post = {
   "content": [
     {
       "type": "intro",
-      "text": "Most OOP courses teach you syntax without ever showing you how an examiner wants the answer written. You learn 'inheritance' as a keyword, not as a concept you can define, differentiate, and demonstrate with a program under exam pressure. This series closes that gap. Every unit from your syllabus is covered with a working C++ program, a precise definition you can reproduce word-for-word in an exam, and a set of practice questions modeled on how these topics are actually asked. By the end, you will not just 'understand' OOP — you will be able to answer any theory or programming question your syllabus can throw at you."
+      "text": "Most OOP courses teach you syntax without ever showing you how an examiner wants the answer written. You learn 'inheritance' as a keyword, not as a concept you can define, differentiate, and demonstrate with a program under exam pressure. This series closes that gap. Every unit from your syllabus is covered with a working C++ program, a precise definition you can reproduce word-for-word in an exam, and a set of practice questions modeled on how these topics are actually asked. By the end, you will not just 'understand' OOP — you will be able to answer any theory or programming question your syllabus can throw at you, and hold your own in technical interviews comparing C++, Java, and Python."
     },
     {
       "type": "h2",
@@ -59,7 +59,7 @@ const post = {
         "You are preparing for a university OOP & Methodology paper and need concept + code + exam answers in one place.",
         "You know basic C++ syntax but freeze when asked to 'differentiate' or 'explain with example' in theory questions.",
         "You want programs you can actually compile and run, not pseudocode or fragments.",
-        "You want previous year questions solved so you know exactly what 'a full mark answer' looks like.",
+        "You want interview-ready answers comparing C++, Java, and Python OOP concepts with working code in all three.",
         "You are revising the night before an exam and need a structured, unit-wise path, not scattered notes."
       ]
     },
@@ -79,11 +79,11 @@ const post = {
           "dont": "Bury the definition inside long paragraphs you have to dig through under time pressure."
         },
         {
-          "do": "Include a 'Previous Year Questions: Solved' part with real exam-style questions answered fully.",
-          "dont": "Leave you guessing what the actual exam will ask."
+          "do": "Part 6 gives you cross-language OOP comparison + 15 real interview questions with answers in C++, Java, and Python.",
+          "dont": "Leave you guessing what interviewers actually ask or how to answer in multiple languages."
         },
         {
-          "do": "Build strictly unit-wise, matching your syllabus order: Intro → Encapsulation → Relationships → Polymorphism → Strings/Exceptions/Threads/Collections.",
+          "do": "Build strictly unit-wise, matching your syllabus order: Intro → Encapsulation → Relationships → Polymorphism → Strings/Exceptions/Threads/Collections → Interview Prep.",
           "dont": "Reorganize topics in a way that doesn't map to how you'll be tested."
         }
       ]
@@ -94,7 +94,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Each part maps directly to a unit in your syllabus, plus a final part dedicated entirely to solved previous year questions. Work through them in order — later units assume you're comfortable with earlier ones."
+      "text": "Each part maps directly to a unit in your syllabus, plus a final part dedicated to cross-language comparison and interview preparation. Work through them in order — later units assume you're comfortable with earlier ones."
     },
     {
       "type": "steps",
@@ -126,8 +126,8 @@ const post = {
         },
         {
           "num": "6",
-          "title": "Previous Year Questions: Solved",
-          "text": "A curated set of real exam questions — theory, differentiate-type, and full programs — solved with examiner-style structure. Finish here, then loop back and re-attempt any part you scored low on. (30 min read + 2 hours practice)"
+          "title": "C++ vs Java vs Python: Interview Prep",
+          "text": "Head-to-head comparison of every OOP concept across C++, Java, and Python with working code in all three languages, plus 15 conceptual interview questions asked at top companies. (32 min read + 2 hours practice)"
         }
       ]
     },
@@ -189,8 +189,8 @@ const post = {
         },
         {
           "num": "4",
-          "title": "Solve Part 6 under timed conditions",
-          "text": "Previous year questions should be attempted like a real exam — set a timer, write by hand if possible, then check your answer against the solution."
+          "title": "Master Part 6 for interviews",
+          "text": "Part 6 is your interview weapon. Practice explaining each differentiator out loud in under 60 seconds. Write the same class in all three languages from memory."
         }
       ]
     },
@@ -216,6 +216,10 @@ const post = {
         {
           "title": "Part 5 Project: ATM & Library Management System",
           "desc": "Two complete case-study programs combining every concept from the series: classes, inheritance, exception handling, and collections, built the way exam 'design a system' questions expect."
+        },
+        {
+          "title": "Part 6 Project: Cross-Language Portfolio",
+          "desc": "The same OOP concepts — classes, inheritance, polymorphism, exceptions, static members — written in C++, Java, and Python side by side, ready to explain in any interview."
         }
       ]
     },
@@ -225,7 +229,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "You have the roadmap and the syllabus mapping. Begin with the fundamentals, then move unit by unit through to the solved previous year papers."
+      "text": "You have the roadmap and the syllabus mapping. Begin with the fundamentals, then move unit by unit through to the cross-language interview prep."
     },
     {
       "type": "cta",
@@ -242,15 +246,15 @@ const post = {
       "items": [
         {
           "title": "Do I need any special compiler?",
-          "desc": "No. Any standard C++ compiler works — g++, Code::Blocks, Dev-C++, or an online compiler. All code uses standard C++ (C++11 and above), no platform-specific extensions."
+          "desc": "No. Any standard C++ compiler works — g++, Code::Blocks, Dev-C++, or an online compiler. All code uses standard C++ (C++11 and above), no platform-specific extensions. For Part 6, you'll also need a Java compiler (javac) and Python interpreter (python3)."
         },
         {
           "title": "Is this enough for my university exam alone?",
-          "desc": "This series covers the theory and programming syllabus you provided in full depth. Pair it with your class notes for any institution-specific question patterns, and use Part 6 to calibrate against real previous year papers."
+          "desc": "This series covers the theory and programming syllabus you provided in full depth. Pair it with your class notes for any institution-specific question patterns, and use Part 6 to prepare for viva and interview rounds."
         },
         {
-          "title": "Can I jump straight to Part 6 (Previous Year Questions)?",
-          "desc": "You can, but Part 6 assumes you've already built the vocabulary and code fluency from Parts 1-5. If you can't answer a Part 6 question confidently, go back to the matching unit."
+          "title": "Can I jump straight to Part 6?",
+          "desc": "You can, but Part 6 assumes you've already built the vocabulary and code fluency from Parts 1-5. If you can't write a constructor or explain virtual functions confidently, go back to the matching unit first."
         },
         {
           "title": "Is this free?",
@@ -261,7 +265,7 @@ const post = {
     {
       "type": "callout",
       "icon": "🎯",
-      "text": "The Bottom Line: OOP in an exam is not about memorizing code — it's about being able to define, differentiate, and demonstrate. This series gives you all three, unit by unit, ending with real solved papers so you know exactly what a complete answer looks like. Start Part 1 now."
+      "text": "The Bottom Line: OOP in an exam is not about memorizing code — it's about being able to define, differentiate, and demonstrate. This series gives you all three, unit by unit, ending with cross-language interview prep so you can explain OOP no matter which language an interviewer names. Start Part 1 now."
     }
   ]
 };
