@@ -3,18 +3,24 @@ import seriesData from "../posts/ml-foundations-series";
 import mlLandingPost from "../posts/ml-foundations-landing"; // ← STATIC IMPORT, not require()
 import pythonSeriesData from "../posts/python-unlocked-series";
 import pythonLandingPost from "../posts/python-unlocked-landing";
+import oopCppSeriesData from "../posts/oop-cpp-mastery-series";
+import oopCppLandingPost from "../posts/oop-cpp-mastery-landing";
 
 export default function TutorialSeries({ theme }) {
   const navigate = useNavigate();
   const { seriesSlug } = useParams();
   const isDark = theme === "dark";
   const ac = isDark ? "#a78bfa" : "#7c3aed";
-  const seriesColor = "#10b981";
 
-  const series = seriesSlug === "ml-foundations" ? seriesData : seriesSlug === "python-unlocked" ? pythonSeriesData : null;
+  const series = seriesSlug === "ml-foundations" ? seriesData
+                : seriesSlug === "python-unlocked" ? pythonSeriesData
+                : seriesSlug === "oop-cpp-mastery" ? oopCppSeriesData
+                : null;
   const landingPost = seriesSlug === "ml-foundations" ? mlLandingPost 
                   : seriesSlug === "python-unlocked" ? pythonLandingPost 
+                  : seriesSlug === "oop-cpp-mastery" ? oopCppLandingPost
                   : null;
+  const seriesColor = series?.categoryColor || "#10b981";
 
   if (!series) {
     return (
@@ -150,6 +156,34 @@ export default function TutorialSeries({ theme }) {
       )}
     </div>
   );
+
+      case "table":
+        return (
+          <div key={i} style={{ margin: "24px 0", overflowX: "auto", borderRadius: "12px", border: `1px solid ${border}` }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
+              <thead>
+                <tr>
+                  {block.headers.map((h, hi) => (
+                    <th key={hi} style={{ textAlign: "left", padding: "12px 16px", background: `${seriesColor}18`, color: isDark ? "#fff" : "#1a1a1a", fontFamily: "'Space Mono',monospace", fontSize: "0.72rem", letterSpacing: "0.03em", borderBottom: `1px solid ${seriesColor}33`, whiteSpace: "nowrap" }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {block.rows.map((row, ri) => (
+                  <tr key={ri} style={{ background: ri % 2 === 0 ? "transparent" : (isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.015)") }}>
+                    {row.map((cell, ci) => (
+                      <td key={ci} style={{ padding: "12px 16px", color: text, lineHeight: 1.6, borderBottom: `1px solid ${border}`, verticalAlign: "top", fontWeight: ci === 0 ? 700 : 400 }}>
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
 
       default:
         return null;
