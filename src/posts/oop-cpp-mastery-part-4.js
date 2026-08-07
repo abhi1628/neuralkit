@@ -45,6 +45,12 @@ const post = {
       "text": "C++ implements polymorphism in two ways: compile-time (static) polymorphism, resolved by the compiler before the program runs; and run-time (dynamic) polymorphism, resolved during program execution based on the actual object type."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/polymorphism.png",
+      "alt": "Types of Polymorphism in OOP",
+      "caption": "Diagram showing Compile-Time (Static) and Run-Time (Dynamic) Polymorphism with examples"
+    },
+    {
       "type": "h2",
       "text": "Compile-Time (Static) Polymorphism"
     },
