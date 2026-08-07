@@ -74,6 +74,12 @@ const post = {
       "text": "C++ supports five types of inheritance. The exam expects you to name them, explain each in one line, and write a short example for at least the first three."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/inheritance-types.png",
+      "alt": "Types of Inheritance in C++",
+      "caption": "Diagram showing Single, Multilevel, Multiple, Hierarchical, and Hybrid inheritance"
+    },
+    {
       "type": "table",
       "headers": [
         "Type",
