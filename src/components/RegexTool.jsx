@@ -112,42 +112,33 @@ export default function RegexTool() {
           messages: [
             {
   role: 'system',
-  content: `You are an expert regex engineer and educator. When a user describes a pattern they need, you produce:
+  content: `You are an expert regex engineer. When a user describes a pattern, you MUST analyze their input carefully and match the EXACT format they show — never assume US-centric defaults.
 
-1. A **valid, optimized regex pattern** (JavaScript/PCRE compatible).
-2. A **token-by-token explanation** — break down every symbol, group, and quantifier.
-3. **Recommended flags** (g, i, m, s, u) with justification.
-4. **3 test cases** that SHOULD match and 2 that SHOULD NOT match.
-5. **Edge-case warnings** — common false positives or limitations.
-
-Output ONLY valid JSON in this exact schema:
+Output ONLY valid JSON:
 {
   "pattern": "the regex string",
-  "flags": "recommended flags as a string, e.g. 'gi'",
-  "explanation": [
-    { "token": "^", "meaning": "Start of string anchor" },
-    { "token": "\\\\d+", "meaning": "One or more digits" }
-  ],
-  "testCases": {
-    "shouldMatch": ["example1", "example2", "example3"],
-    "shouldNotMatch": ["bad1", "bad2"]
-  },
-  "warnings": ["Warning about edge case 1", "Warning about edge case 2"]
+  "flags": "recommended flags string",
+  "explanation": [{"token": "...", "meaning": "..."}],
+  "testCases": {"shouldMatch": ["...", "...", "..."], "shouldNotMatch": ["...", "..."]},
+  "warnings": ["Any assumptions"]
 }
 
-CRITICAL RULES — follow exactly:
-- Output ONLY valid JSON. No markdown, no backticks, no preamble.
-- Escape backslashes properly in the JSON string (e.g., "\\\\d" for \\d).
-- For email patterns: TLD must be {2,} (2 or MORE letters), NOT {2}. Support .com, .edu, .co.in, .ac.uk.
-- For phone numbers: always allow optional country codes (+91, +1), optional separators (space, hyphen), and never hardcode to exactly one format.
-- For URLs: support http, https, optional www, and paths/query strings.
-- For dates: accept leading zeros (01, 02) and realistic ranges.
-- If the request is vague, produce a sensible default and note assumptions.
-- Never invent features not supported by standard JavaScript RegExp.`,
+CRITICAL RULES:
+1. Output ONLY valid JSON. No markdown, no backticks, no preamble, no thinking tags.
+2. If the user provides an example (like "+919713163762" or "user@email.com"), analyze its structure EXACTLY:
+   - What country code? (+91, +1, +44, etc.)
+   - How many digits total?
+   - Are there separators? (spaces, hyphens, dots?)
+   - What grouping? (Indian 5-5, US 3-3-4, or none?)
+3. NEVER assume US formats (3-3-4 grouping, +1 prefix) unless the example clearly shows it.
+4. NEVER use ^ and $ anchors unless the user explicitly says "validate" or "exact match." Default to finding patterns anywhere in text.
+5. For emails: TLD must be {2,} (2 or MORE letters). Support .com, .edu, .co.in, .ac.uk.
+6. If the request is vague, produce the SIMPLEST pattern that matches the example and note assumptions in "warnings."
+7. Escape backslashes properly in JSON string values.`,
 },
             {
               role: 'user',
-              content: `Generate a regex for: ${description.trim().slice(0, 500)}`,
+              content: `Generate a regex for this request. If an example number/string is included, match THAT exact format:\n\n${description.trim().slice(0, 500)}`,
             },
           ],
         }),
@@ -156,7 +147,7 @@ CRITICAL RULES — follow exactly:
       const raw = data?.choices?.[0]?.message?.content || '';
       if (!raw) throw new Error(data?.error?.message || 'Empty response from AI.');
 
-      let jsonStr = raw.replace(/```json|```/g, '').trim();
+      let jsonStr = raw..replace(/<think[\s\S]*?<\/think>/gi, '').replace(/```json|```/g, '').trim();
       const first = jsonStr.indexOf('{');
       const last = jsonStr.lastIndexOf('}');
       if (first === -1 || last === -1) throw new Error('AI did not return valid JSON.');
