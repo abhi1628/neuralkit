@@ -11,41 +11,89 @@ const STYLES = [
   { key: 'chicago', label: 'Chicago 17th', desc: 'History, Business, Fine Arts', color: '#10b981' },
 ];
 
-// ── Aggressive JSON repair ───────────────────────────────────
+// ── Extract DOI from various formats ───────────────────────────
+function extractDoi(input) {
+  const m = input.match(/\b(10\.\d{4,}(?:\.\d+)*\/[^\s,;]+)\b/);
+  return m ? m[1] : null;
+}
+
+// ── Extract arXiv ID ────────────────────────────────────────
+function extractArxiv(input) {
+  const m = input.match(/(?:arxiv\.org\/abs\/)?(\d{4}\.\d{4,5}|[a-z-]+\/\d{7})/i);
+  return m ? m[1] : null;
+}
+
+// ── Resolve DOI via CrossRef (free, no key) ──────────────────
+async function resolveDoi(doi) {
+  try {
+    const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`);
+    if (!res.ok) return null;
+    const { message: m } = await res.json();
+    return {
+      sourceType: 'DOI',
+      doi: m.DOI || doi,
+      title: m.title?.[0] || '',
+      authors: (m.author || []).map(a => `${a.given || ''} ${a.family || ''}`.trim()).filter(Boolean),
+      journal: m['container-title']?.[0] || m.publisher || '',
+      year: String(m.published?.['date-parts']?.[0]?.[0] || m.created?.['date-parts']?.[0]?.[0] || ''),
+      volume: m.volume || '',
+      issue: m.issue || '',
+      pages: m.page || '',
+      url: m.URL || `https://doi.org/${doi}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ── Resolve arXiv via API ─────────────────────────────────────
+async function resolveArxiv(id) {
+  try {
+    const res = await fetch(`https://export.arxiv.org/api/query?search_query=id:${encodeURIComponent(id)}&max_results=1`);
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'application/xml');
+    const entry = doc.querySelector('entry');
+    if (!entry) return null;
+    const title = entry.querySelector('title')?.textContent?.trim() || '';
+    const authors = Array.from(entry.querySelectorAll('author name')).map(n => n.textContent.trim());
+    const published = entry.querySelector('published')?.textContent?.trim() || '';
+    const year = published ? published.slice(0, 4) : '';
+    return {
+      sourceType: 'arXiv',
+      arxivId: id,
+      title,
+      authors,
+      journal: 'arXiv preprint',
+      year,
+      volume: '',
+      issue: '',
+      pages: '',
+      url: `https://arxiv.org/abs/${id}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ── Robust JSON repair ────────────────────────────────────────
 function repairJson(raw) {
   if (!raw) throw new Error('Empty response.');
-
-  // 1. Strip thinking tags, markdown fences, and preamble
   let s = raw
     .replace(/<think>[\s\S]*?<\/think>/gi, '')
     .replace(/```json\s*|\s*```/g, '')
     .replace(/^\s*json\s*/i, '')
     .trim();
-
-  // 2. Find the JSON object boundaries
   const first = s.indexOf('{');
   const last = s.lastIndexOf('}');
-  if (first === -1 || last === -1 || last < first) {
-    throw new Error('No JSON object found in response.');
-  }
-  s = s.slice(first, last + 1);
-
-  // 3. Fix trailing commas before } or ]
-  s = s.replace(/,\s*([}\]])/g, '$1');
-
-  // 4. Fix smart quotes
-  s = s.replace(/[\u201C\u201D]/g, '\\"')
-       .replace(/[\u2018\u2019]/g, "'");
-
-  // 5. Try parsing
+  if (first === -1 || last === -1 || last < first) throw new Error('No JSON object found.');
+  s = s.slice(first, last + 1).replace(/,\s*([}\]])/g, '$1');
   try {
     return JSON.parse(s);
   } catch (err) {
-    // 6. If still failing, try to fix unescaped quotes inside strings
-    // This regex finds quotes that are inside string values but not escaped
-    // It's a best-effort fix for citation titles containing quotes
     try {
-      const fixed = s.replace(/(?<=: ")([^"]*?)"([^"]*?)(?=",?)/g, '$1\\"$2');
+      const fixed = s.replace(/[\u201C\u201D]/g, '\\"').replace(/[\u2018\u2019]/g, "'");
       return JSON.parse(fixed);
     } catch {
       throw new Error(`JSON parse failed: ${err.message}`);
@@ -63,71 +111,83 @@ export default function CitationFormatter() {
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const [copied, setCopied] = useState(null);
+  const [metaStatus, setMetaStatus] = useState(''); // 'fetching' | 'found' | 'not-found'
 
   async function generateCitations() {
     if (!input.trim()) return;
-    setLoading(true); setError(''); setResults(null);
+    setLoading(true); setError(''); setResults(null); setMetaStatus('');
+
+    let metadata = null;
+    const doi = extractDoi(input);
+    const arxiv = extractArxiv(input);
+
+    // ── Try metadata resolution ──
+    if (doi) {
+      setMetaStatus('fetching');
+      metadata = await resolveDoi(doi);
+    } else if (arxiv) {
+      setMetaStatus('fetching');
+      metadata = await resolveArxiv(arxiv);
+    }
+
+    if (metadata) setMetaStatus('found');
+
+    // ── Build AI prompt ──
+    let userContent;
+    if (metadata) {
+      userContent = `Format the following verified metadata into citations. Use ONLY the provided fields. Do NOT invent or guess anything.\n\n${JSON.stringify(metadata, null, 2)}`;
+    } else {
+      userContent = `Generate citations from this raw reference text. Extract what you can and note any missing information.\n\n${input.trim().slice(0, 8000)}`;
+    }
+
     try {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: TOOL_MODELS.citationFormatter || TOOL_MODELS.codeExplainer,
-          max_tokens: 4000,
-          temperature: 0.05, // ↓ even lower for strict formatting
+          max_tokens: 2500,
+          temperature: 0.05,
           messages: [
             {
               role: 'system',
-              content: `You are a citation formatting machine. Your ONLY job is to output valid JSON.
+              content: `You are a citation formatting machine. Output ONLY valid JSON.
 
-RULES — follow exactly:
-1. Output ONLY a single JSON object. No markdown, no explanation, no thinking.
-2. Escape ALL double quotes inside string values with backslash. Example: "Title with \\"quotes\\" inside"
-3. Do NOT use smart quotes, curly quotes, or any special Unicode characters.
-4. Do NOT include trailing commas.
-5. If a field is unknown, use "Unknown" — never leave it empty or omit it.
+RULES:
+1. Output ONLY a single JSON object. No markdown, no explanation.
+2. Escape double quotes inside string values with backslash.
+3. No trailing commas. No smart quotes.
+4. If metadata is provided, use it exactly. Do NOT invent authors, titles, or dates.
 
-Required JSON schema:
+Schema:
 {
-  "source": "Brief description of the detected source",
-  "apa": "APA 7th citation string",
-  "mla": "MLA 9th citation string",
-  "ieee": "IEEE citation string",
-  "chicago": "Chicago 17th citation string",
-  "bibtex": "BibTeX entry string",
-  "notes": ["Any missing info or assumptions"]
+  "source": "Detected source description",
+  "apa": "APA 7th citation",
+  "mla": "MLA 9th citation",
+  "ieee": "IEEE citation",
+  "chicago": "Chicago 17th citation",
+  "bibtex": "BibTeX entry",
+  "notes": ["Any missing fields or assumptions"]
 }`
             },
-            {
-              role: 'user',
-              content: `Format citations for: ${input.trim().slice(0, 8000)}`
-            },
+            { role: 'user', content: userContent },
           ],
         }),
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error?.message || `API error ${res.status}`);
-      }
+      if (!res.ok) throw new Error(data?.error?.message || `API error ${res.status}`);
 
       const raw = data?.choices?.[0]?.message?.content;
-      if (!raw || raw.trim().length === 0) {
-        throw new Error('AI returned empty response.');
-      }
+      if (!raw?.trim()) throw new Error('AI returned empty response.');
 
       const parsed = repairJson(raw);
-
-      // Validate required fields
-      if (!parsed.apa && !parsed.mla && !parsed.ieee && !parsed.chicago) {
-        throw new Error('AI returned citation data in unexpected format.');
-      }
+      if (!parsed.apa && !parsed.mla) throw new Error('Invalid citation data.');
 
       setResults(parsed);
     } catch (e) {
-      console.error('[CitationFormatter] Error:', e);
-      setError(e.message || 'Failed to generate citations. Please try again.');
+      console.error('[CitationFormatter]', e);
+      setError(e.message || 'Failed to generate citations. Try again.');
     }
     setLoading(false);
   }
@@ -164,7 +224,6 @@ Required JSON schema:
     fontSize: '0.9rem',
     outline: 'none',
     resize: 'vertical',
-    transition: 'border-color 0.2s',
   };
 
   const btnPrimary = {
@@ -201,7 +260,7 @@ Required JSON schema:
         </label>
         <textarea
           rows={5}
-          placeholder={`Examples:\n• 10.1038/s41586-021-03819-2\n• https://arxiv.org/abs/1706.03762\n• Vaswani et al., Attention Is All You Need, NeurIPS 2017`}
+          placeholder={`Examples:\n• 10.1016/j.egyr.2023.03.109\n• https://arxiv.org/abs/1706.03762\n• Vaswani et al., Attention Is All You Need, NeurIPS 2017`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           style={{ ...inputStyle, minHeight: '120px' }}
@@ -212,7 +271,7 @@ Required JSON schema:
             {input.length}/8000
           </span>
           <span style={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)', fontFamily: "'Space Mono', monospace" }}>
-            AI extracts metadata automatically
+            {metaStatus === 'fetching' ? '🔍 Looking up metadata...' : metaStatus === 'found' ? '✓ Metadata found' : 'Auto-detects DOI / arXiv'}
           </span>
         </div>
       </div>
@@ -251,18 +310,11 @@ Required JSON schema:
                   border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`,
                   borderRadius: '12px',
                   padding: '16px 18px',
-                  position: 'relative',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      background: style.color,
-                      flexShrink: 0,
-                    }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: style.color, flexShrink: 0 }} />
                     <div>
                       <div style={{ fontSize: '0.82rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a', fontFamily: "'Space Mono', monospace" }}>
                         {style.label}
@@ -272,10 +324,7 @@ Required JSON schema:
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => copy(results[style.key] || '', style.key)}
-                    style={{ ...btnSecondary, padding: '4px 10px', fontSize: '0.72rem' }}
-                  >
+                  <button onClick={() => copy(results[style.key] || '', style.key)} style={{ ...btnSecondary, padding: '4px 10px', fontSize: '0.72rem' }}>
                     {copied === style.key ? '✓ Copied' : '📋'}
                   </button>
                 </div>
@@ -315,10 +364,7 @@ Required JSON schema:
                 }}>
                   {results.bibtex}
                 </pre>
-                <button
-                  onClick={() => copy(results.bibtex, 'bibtex')}
-                  style={{ position: 'absolute', top: '10px', right: '10px', ...btnSecondary, background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)' }}
-                >
+                <button onClick={() => copy(results.bibtex, 'bibtex')} style={{ position: 'absolute', top: '10px', right: '10px', ...btnSecondary, background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)' }}>
                   {copied === 'bibtex' ? '✓' : '📋'}
                 </button>
               </div>
@@ -334,7 +380,7 @@ Required JSON schema:
             </div>
           )}
 
-          <button onClick={() => { setResults(null); setInput(''); setError(''); }} style={{ ...btnSecondary, marginTop: '20px' }}>
+          <button onClick={() => { setResults(null); setInput(''); setError(''); setMetaStatus(''); }} style={{ ...btnSecondary, marginTop: '20px' }}>
             ↺ New Citation
           </button>
         </div>
