@@ -147,7 +147,7 @@ CRITICAL RULES:
       const raw = data?.choices?.[0]?.message?.content || '';
       if (!raw) throw new Error(data?.error?.message || 'Empty response from AI.');
 
-      let jsonStr = raw..replace(/<think[\s\S]*?<\/think>/gi, '').replace(/```json|```/g, '').trim();
+      let jsonStr = raw.replace(/<think[\s\S]*?<\/think>/gi, '').replace(/```json|```/g, '').trim();
       const first = jsonStr.indexOf('{');
       const last = jsonStr.lastIndexOf('}');
       if (first === -1 || last === -1) throw new Error('AI did not return valid JSON.');
