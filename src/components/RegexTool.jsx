@@ -23,6 +23,10 @@ const FLAG_OPTIONS = [
   { key: 'u', label: 'u', desc: 'Unicode — proper Unicode support' },
 ];
 
+// ── Book Promo Config ──
+const BOOK_LINK = 'https://www.amazon.com/Simplifying-Regular-Expression-Using-Python/dp/1094777978';
+const BOOK_TITLE = 'Simplifying Regular Expression Using Python: Learn Regex Like Never Before';
+
 export default function RegexTool() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -35,7 +39,7 @@ export default function RegexTool() {
   const [description, setDescription] = useState('');
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState('');
-  const [genResult, setGenResult] = useState(null); // { pattern, flags, explanation, testCases, warnings }
+  const [genResult, setGenResult] = useState(null);
 
   // ── Test state ──
   const [pattern, setPattern] = useState('');
@@ -148,7 +152,6 @@ CRITICAL:
       const raw = data?.choices?.[0]?.message?.content || '';
       if (!raw) throw new Error(data?.error?.message || 'Empty response from AI.');
 
-      // Robust JSON parse
       let jsonStr = raw.replace(/```json|```/g, '').trim();
       const first = jsonStr.indexOf('{');
       const last = jsonStr.lastIndexOf('}');
@@ -159,7 +162,6 @@ CRITICAL:
         .replace(/[\u2018\u2019]/g, "'");
       const parsed = JSON.parse(jsonStr);
 
-      // Validate structure
       if (!parsed.pattern) throw new Error('AI response missing pattern.');
       setGenResult(parsed);
     } catch (e) {
@@ -168,7 +170,6 @@ CRITICAL:
     setGenerating(false);
   }
 
-  // ── Send generated regex to Test tab ──
   function sendToTest(parsed) {
     setPattern(parsed.pattern);
     const newFlags = { g: false, i: false, m: false, s: false, u: false };
@@ -180,7 +181,6 @@ CRITICAL:
     setTimeout(() => testRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }
 
-  // ── Apply preset ──
   function applyPreset(preset) {
     setPattern(preset.pattern);
     const newFlags = { g: false, i: false, m: false, s: false, u: false };
@@ -190,12 +190,10 @@ CRITICAL:
     setFlags(newFlags);
   }
 
-  // ── Copy to clipboard ──
   async function copyToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
     } catch {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -205,7 +203,6 @@ CRITICAL:
     }
   }
 
-  // ── Render highlighted sample text ──
   const renderHighlighted = useCallback(() => {
     if (!sampleText || matches.length === 0) {
       return <span style={{ color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sampleText}</span>;
@@ -253,7 +250,6 @@ CRITICAL:
     return <>{parts}</>;
   }, [sampleText, matches, isDark]);
 
-  // ── Styles ──
   const inputStyle = {
     width: '100%',
     background: isDark ? 'rgba(255,255,255,0.04)' : '#fff',
@@ -306,6 +302,48 @@ CRITICAL:
     fontFamily: "'Space Mono', monospace",
   });
 
+  // ── Book Promo Banner Component ──
+  const BookBanner = () => (
+    <div
+      onClick={() => window.open(BOOK_LINK, '_blank', 'noopener,noreferrer')}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        padding: '14px 18px',
+        marginBottom: '24px',
+        background: isDark
+          ? 'linear-gradient(135deg, rgba(167,139,250,0.08), rgba(129,140,248,0.06))'
+          : 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(99,102,241,0.04))',
+        border: `1px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.15)'}`,
+        borderRadius: '12px',
+        cursor: 'pointer',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-1px)';
+        e.currentTarget.style.boxShadow = isDark
+          ? '0 4px 20px rgba(167,139,250,0.1)'
+          : '0 4px 20px rgba(124,58,237,0.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+    >
+      <div style={{ fontSize: '2rem', flexShrink: 0 }}>📘</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: isDark ? '#e2d9f3' : '#4c1d95', marginBottom: '3px', lineHeight: 1.4 }}>
+          Want to master regex deeply?
+        </div>
+        <div style={{ fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.6)', lineHeight: 1.5 }}>
+          Check out <strong style={{ color: ac }}>{BOOK_TITLE}</strong> — awarded one of the best regex books by BookAuthority.org 🏆
+        </div>
+      </div>
+      <div style={{ fontSize: '1.2rem', flexShrink: 0, color: ac }}>→</div>
+    </div>
+  );
+
   return (
     <div>
       {/* ── Tab Switcher ── */}
@@ -319,6 +357,9 @@ CRITICAL:
       ═══════════════════════════════════════ */}
       {tab === 'generate' && (
         <div>
+          {/* ── Book Promo ── */}
+          <BookBanner />
+
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', marginBottom: '8px', fontFamily: "'Space Mono', monospace" }}>
               Describe what you want to match
@@ -394,7 +435,7 @@ CRITICAL:
                         <div key={i} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', fontFamily: "'Space Mono', monospace", wordBreak: 'break-all' }}>{t}</div>
                       ))}
                     </div>
-                    </div>
+                  </div>
                 </div>
               )}
 
@@ -419,6 +460,28 @@ CRITICAL:
       ═══════════════════════════════════════ */}
       {tab === 'test' && (
         <div ref={testRef}>
+          {/* Subtle book link in Test tab too */}
+          <div
+            onClick={() => window.open(BOOK_LINK, '_blank', 'noopener,noreferrer')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '20px',
+              padding: '10px 14px',
+              background: isDark ? 'rgba(167,139,250,0.05)' : 'rgba(124,58,237,0.04)',
+              border: `1px dashed ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.15)'}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+            }}
+          >
+            <span style={{ fontSize: '1.1rem' }}>📘</span>
+            <span style={{ fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)' }}>
+              Deep dive into regex with <strong style={{ color: ac }}>{BOOK_TITLE}</strong>
+            </span>
+            <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: ac, fontFamily: "'Space Mono', monospace" }}>View →</span>
+          </div>
+
           {/* Presets */}
           <div style={{ marginBottom: '20px' }}>
             <div style={{ fontSize: '0.72rem', fontWeight: 700, color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Quick Presets</div>
