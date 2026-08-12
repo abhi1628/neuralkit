@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { fetchWithBackoff } from '../utils';
+import { runRegexSafely, detectPotentialReDoS } from '../lib/safeRegex';
 
 const PRESETS = [
   { label: 'Email', pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$', flags: '', desc: 'Standard email validation' },
@@ -13,6 +14,8 @@ const PRESETS = [
   { label: 'Strong Password', pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$', flags: '', desc: '8+ chars, upper, lower, number, symbol' },
   { label: 'Aadhaar', pattern: '^\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}$', flags: '', desc: '12-digit Indian Aadhaar' },
   { label: 'PAN Card', pattern: '^[A-Z]{5}[0-9]{4}[A-Z]{1}$', flags: '', desc: 'Indian PAN format' },
+  { label: 'Hex Color', pattern: '^#(?:[0-9a-fA-F]{3}){1,2}$', flags: '', desc: '#fff or #ffffff' },
+  { label: 'Time (HH:MM)', pattern: '^([01]\\d|2[0-3]):([0-5]\\d)$', flags: '', desc: '24-hour time' },
 ];
 
 const FLAG_OPTIONS = [
@@ -23,9 +26,58 @@ const FLAG_OPTIONS = [
   { key: 'u', label: 'u', desc: 'Unicode — proper Unicode support' },
 ];
 
+const DEBOUNCE_MS = 300;
+
 // ── Book Promo Config ──
 const BOOK_LINK = 'https://www.amazon.com/Simplifying-Regular-Expression-Using-Python/dp/1094777978';
 const BOOK_TITLE = 'Simplifying Regular Expression Using Python: Learn Regex Like Never Before';
+
+// ── Robust JSON repair ──
+function repairJson(raw) {
+  if (!raw) throw new Error('Empty response from AI.');
+  let s = raw
+    .replace(/<think[\s\S]*?<\/think>/gi, '')
+    .replace(/```json\s*|\s*```/g, '')
+    .replace(/^\s*json\s*/i, '')
+    .trim();
+  const first = s.indexOf('{');
+  const last = s.lastIndexOf('}');
+  if (first === -1 || last === -1) throw new Error('AI did not return valid JSON.');
+  s = s
+    .slice(first, last + 1)
+    .replace(/,\s*([}\]])/g, '$1')
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'");
+  return JSON.parse(s);
+}
+
+/**
+ * Runs the AI's own shouldMatch/shouldNotMatch examples against the pattern
+ * it generated, off the main thread and with a timeout. This is what catches
+ * cases where the model's regex doesn't actually do what it claims — instead
+ * of trusting the AI's self-reported examples, we verify them.
+ */
+async function selfValidate(pattern, flags, testCases) {
+  const cleanFlags = (flags || '').replace(/[^gimsuy]/g, '');
+  const shouldMatch = testCases?.shouldMatch || [];
+  const shouldNotMatch = testCases?.shouldNotMatch || [];
+
+  const runOne = async (value) => {
+    const res = await runRegexSafely({ pattern, flags: cleanFlags, text: value, mode: 'match', timeoutMs: 1000 });
+    if (!res.ok) return { value, matched: false, error: res.error };
+    return { value, matched: res.results.length > 0 };
+  };
+
+  const matchResults = await Promise.all(shouldMatch.map(runOne));
+  const notMatchResults = await Promise.all(shouldNotMatch.map(runOne));
+
+  const shouldMatchChecked = matchResults.map((r) => ({ ...r, passed: !r.error && r.matched }));
+  const shouldNotMatchChecked = notMatchResults.map((r) => ({ ...r, passed: !r.error && !r.matched }));
+  const allPassed = [...shouldMatchChecked, ...shouldNotMatchChecked].every((r) => r.passed);
+  const engineError = [...matchResults, ...notMatchResults].find((r) => r.error)?.error || null;
+
+  return { shouldMatch: shouldMatchChecked, shouldNotMatch: shouldNotMatchChecked, allPassed, engineError };
+}
 
 export default function RegexTool() {
   const { theme } = useTheme();
@@ -40,6 +92,8 @@ export default function RegexTool() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState('');
   const [genResult, setGenResult] = useState(null);
+  const [validation, setValidation] = useState(null); // { shouldMatch, shouldNotMatch, allPassed, engineError }
+  const [validating, setValidating] = useState(false);
 
   // ── Test state ──
   const [pattern, setPattern] = useState('');
@@ -48,59 +102,94 @@ export default function RegexTool() {
   const [matches, setMatches] = useState([]);
   const [matchError, setMatchError] = useState('');
   const [matchCount, setMatchCount] = useState(0);
+  const [checking, setChecking] = useState(false);
+
+  // ── Replace sub-panel ──
+  const [replaceOn, setReplaceOn] = useState(false);
+  const [replacement, setReplacement] = useState('');
+  const [replaceResult, setReplaceResult] = useState('');
+  const [replaceError, setReplaceError] = useState('');
 
   const testRef = useRef(null);
 
-  // ── Live regex testing ──
+  const activeFlagsStr = Object.entries(flags).filter(([, v]) => v).map(([k]) => k).join('');
+  const redosRisk = detectPotentialReDoS(pattern);
+
+  // ── Live regex testing (debounced, off-main-thread, timeout-protected) ──
   useEffect(() => {
     if (!pattern || !sampleText) {
       setMatches([]);
       setMatchCount(0);
       setMatchError('');
+      setChecking(false);
       return;
     }
-    const activeFlags = Object.entries(flags).filter(([, v]) => v).map(([k]) => k).join('');
-    try {
-      const regex = new RegExp(pattern, activeFlags);
-      const results = [];
-      let m;
-      if (activeFlags.includes('g')) {
-        while ((m = regex.exec(sampleText)) !== null) {
-          if (m.index === regex.lastIndex) regex.lastIndex++;
-          results.push({
-            text: m[0],
-            index: m.index,
-            length: m[0].length,
-            groups: m.slice(1),
-          });
-        }
+    let cancelled = false;
+    setChecking(true);
+    const t = setTimeout(async () => {
+      const res = await runRegexSafely({ pattern, flags: activeFlagsStr, text: sampleText, mode: 'match', timeoutMs: 1500 });
+      if (cancelled) return;
+      if (res.ok) {
+        setMatches(res.results);
+        setMatchCount(res.results.length);
+        setMatchError('');
       } else {
-        m = regex.exec(sampleText);
-        if (m) {
-          results.push({
-            text: m[0],
-            index: m.index,
-            length: m[0].length,
-            groups: m.slice(1),
-          });
-        }
+        setMatches([]);
+        setMatchCount(0);
+        setMatchError(res.error);
       }
-      setMatches(results);
-      setMatchCount(results.length);
-      setMatchError('');
-    } catch (e) {
-      setMatchError(e.message);
-      setMatches([]);
-      setMatchCount(0);
-    }
-  }, [pattern, flags, sampleText]);
+      setChecking(false);
+    }, DEBOUNCE_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [pattern, activeFlagsStr, sampleText]);
 
-  // ── AI Generate ──
-  async function generateRegex() {
+  // ── Live replace preview (debounced) ──
+  useEffect(() => {
+    if (!replaceOn || !pattern || !sampleText) {
+      setReplaceResult('');
+      setReplaceError('');
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const res = await runRegexSafely({
+        pattern,
+        flags: activeFlagsStr,
+        text: sampleText,
+        mode: 'replace',
+        replacement,
+        timeoutMs: 1500,
+      });
+      if (cancelled) return;
+      if (res.ok) {
+        setReplaceResult(res.result);
+        setReplaceError('');
+      } else {
+        setReplaceResult('');
+        setReplaceError(res.error);
+      }
+    }, DEBOUNCE_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [replaceOn, pattern, activeFlagsStr, sampleText, replacement]);
+
+  // ── AI Generate + self-validate ──
+  async function generateRegex(feedback) {
     if (!description.trim()) return;
     setGenerating(true);
     setGenError('');
     setGenResult(null);
+    setValidation(null);
+
+    const userPrompt = feedback
+      ? `Generate a regex for this request. If an example number/string is included, match THAT exact format:\n\n${description.trim().slice(0, 500)}\n\nA previous attempt failed self-testing with this feedback — fix the pattern:\n${feedback}`
+      : `Generate a regex for this request. If an example number/string is included, match THAT exact format:\n\n${description.trim().slice(0, 500)}`;
+
     try {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST',
@@ -111,13 +200,13 @@ export default function RegexTool() {
           temperature: 0.1,
           messages: [
             {
-  role: 'system',
-  content: `You are an expert regex engineer. When a user describes a pattern, you MUST analyze their input carefully and match the EXACT format they show — never assume US-centric defaults.
+              role: 'system',
+              content: `You are an expert regex engineer producing JavaScript-compatible (ECMAScript) regular expressions. When a user describes a pattern, you MUST analyze their input carefully and match the EXACT format they show — never assume US-centric defaults.
 
 Output ONLY valid JSON:
 {
-  "pattern": "the regex string",
-  "flags": "recommended flags string",
+  "pattern": "the regex string, WITHOUT surrounding slashes, valid in JavaScript's RegExp engine",
+  "flags": "recommended flags string (subset of g, i, m, s, u, y)",
   "explanation": [{"token": "...", "meaning": "..."}],
   "testCases": {"shouldMatch": ["...", "...", "..."], "shouldNotMatch": ["...", "..."]},
   "warnings": ["Any assumptions"]
@@ -134,12 +223,11 @@ CRITICAL RULES:
 4. NEVER use ^ and $ anchors unless the user explicitly says "validate" or "exact match." Default to finding patterns anywhere in text.
 5. For emails: TLD must be {2,} (2 or MORE letters). Support .com, .edu, .co.in, .ac.uk.
 6. If the request is vague, produce the SIMPLEST pattern that matches the example and note assumptions in "warnings."
-7. Escape backslashes properly in JSON string values.`,
-},
-            {
-              role: 'user',
-              content: `Generate a regex for this request. If an example number/string is included, match THAT exact format:\n\n${description.trim().slice(0, 500)}`,
+7. Escape backslashes properly in JSON string values (e.g. "\\\\d+" not "\\d+" inside the JSON string).
+8. Do NOT use features unsupported by JavaScript RegExp: no possessive quantifiers (++, *+), no atomic groups (?>...), no recursion, no conditional patterns.
+9. Include at least 3 shouldMatch and 2 shouldNotMatch examples that are realistic and genuinely exercise edge cases (not trivially obvious ones) — these will be programmatically executed against your own pattern to verify correctness, so they must be accurate.`,
             },
+            { role: 'user', content: userPrompt },
           ],
         }),
       });
@@ -147,22 +235,40 @@ CRITICAL RULES:
       const raw = data?.choices?.[0]?.message?.content || '';
       if (!raw) throw new Error(data?.error?.message || 'Empty response from AI.');
 
-      let jsonStr = raw.replace(/<think[\s\S]*?<\/think>/gi, '').replace(/```json|```/g, '').trim();
-      const first = jsonStr.indexOf('{');
-      const last = jsonStr.lastIndexOf('}');
-      if (first === -1 || last === -1) throw new Error('AI did not return valid JSON.');
-      jsonStr = jsonStr.slice(first, last + 1)
-        .replace(/,\s*([}\]])/g, '$1')
-        .replace(/[\u201C\u201D]/g, '"')
-        .replace(/[\u2018\u2019]/g, "'");
-      const parsed = JSON.parse(jsonStr);
-
+      const parsed = repairJson(raw);
       if (!parsed.pattern) throw new Error('AI response missing pattern.');
+
+      // Verify the pattern actually compiles as JS before showing it.
+      const cleanFlags = (parsed.flags || '').replace(/[^gimsuy]/g, '');
+      try {
+        // eslint-disable-next-line no-new
+        new RegExp(parsed.pattern, cleanFlags);
+      } catch (err) {
+        throw new Error(`AI generated an invalid pattern: ${err.message}`);
+      }
+
       setGenResult(parsed);
+      setGenerating(false);
+
+      // Self-validate against the AI's own test cases (async, doesn't block display).
+      if (parsed.testCases && (parsed.testCases.shouldMatch?.length || parsed.testCases.shouldNotMatch?.length)) {
+        setValidating(true);
+        const result = await selfValidate(parsed.pattern, cleanFlags, parsed.testCases);
+        setValidation(result);
+        setValidating(false);
+      }
     } catch (e) {
       setGenError(e.message || 'Failed to generate regex. Please try again.');
+      setGenerating(false);
     }
-    setGenerating(false);
+  }
+
+  function regenerateWithFixes() {
+    if (!genResult || !validation) return;
+    const failedMatch = validation.shouldMatch.filter((r) => !r.passed).map((r) => `"${r.value}" should match but did not`);
+    const failedNotMatch = validation.shouldNotMatch.filter((r) => !r.passed).map((r) => `"${r.value}" should NOT match but did`);
+    const feedback = [...failedMatch, ...failedNotMatch].join('; ') || validation.engineError || 'Pattern failed self-tests.';
+    generateRegex(feedback);
   }
 
   function sendToTest(parsed) {
@@ -339,6 +445,28 @@ CRITICAL RULES:
     </div>
   );
 
+  const testCasePill = (item, isDark2) => (
+    <div
+      key={item.value}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 10px',
+        background: item.passed ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.1)',
+        border: `1px solid ${item.passed ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.35)'}`,
+        borderRadius: '6px',
+        fontSize: '0.8rem',
+        color: isDark2 ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)',
+        fontFamily: "'Space Mono', monospace",
+        wordBreak: 'break-all',
+      }}
+    >
+      <span style={{ flexShrink: 0 }}>{item.passed ? '✓' : '✗'}</span>
+      <span>{item.value}</span>
+    </div>
+  );
+
   return (
     <div>
       {/* ── Tab Switcher ── */}
@@ -372,7 +500,7 @@ CRITICAL RULES:
             </div>
           </div>
 
-          <button onClick={generateRegex} disabled={generating || !description.trim()} style={{ ...btnPrimary, opacity: generating || !description.trim() ? 0.6 : 1, cursor: generating || !description.trim() ? 'not-allowed' : 'pointer' }}>
+          <button onClick={() => generateRegex()} disabled={generating || !description.trim()} style={{ ...btnPrimary, opacity: generating || !description.trim() ? 0.6 : 1, cursor: generating || !description.trim() ? 'not-allowed' : 'pointer' }}>
             {generating ? <><span className="spinner" style={{ width: '14px', height: '14px', display: 'inline-block' }} /> Generating...</> : '⚡ Generate Regex'}
           </button>
 
@@ -384,7 +512,37 @@ CRITICAL RULES:
 
           {genResult && (
             <div style={{ marginTop: '24px', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '14px', padding: '24px' }}>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em', marginBottom: '16px' }}>◆ AI-GENERATED REGEX</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.68rem', color: ac, letterSpacing: '0.12em' }}>◆ AI-GENERATED REGEX</div>
+
+                {validating && (
+                  <div style={{ fontSize: '0.72rem', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontFamily: "'Space Mono', monospace" }}>
+                    ⏳ Verifying against test cases...
+                  </div>
+                )}
+                {!validating && validation && (
+                  <div
+                    style={{
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontFamily: "'Space Mono', monospace",
+                      color: validation.allPassed ? '#22c55e' : '#ef4444',
+                      background: validation.allPassed ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                      border: `1px solid ${validation.allPassed ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.3)'}`,
+                    }}
+                  >
+                    {validation.allPassed ? '✓ Verified — all self-tests passed' : '✗ Self-tests failed'}
+                  </div>
+                )}
+              </div>
+
+              {genResult.pattern && detectPotentialReDoS(genResult.pattern) && (
+                <div style={{ marginBottom: '16px', background: isDark ? 'rgba(255,180,0,0.12)' : '#fff8e1', border: `1px solid ${isDark ? 'rgba(255,180,0,0.25)' : '#b45309'}`, borderRadius: '8px', padding: '10px 14px', fontSize: '0.8rem', color: isDark ? '#febc2e' : '#b45309' }}>
+                  ⚠ This pattern has a structure that can cause catastrophic backtracking (nested quantifiers) on certain inputs. It's protected by a timeout in the Test tab, but consider simplifying it for production use.
+                </div>
+              )}
 
               {/* Pattern */}
               <div style={{ marginBottom: '20px' }}>
@@ -412,23 +570,31 @@ CRITICAL RULES:
                 </div>
               )}
 
-              {/* Test Cases */}
+              {/* Test Cases — now with verified pass/fail, not just AI's word */}
               {genResult.testCases && (
                 <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#22c55e', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Should Match</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {genResult.testCases.shouldMatch?.map((t, i) => (
-                        <div key={i} style={{ padding: '6px 10px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', fontFamily: "'Space Mono', monospace", wordBreak: 'break-all' }}>{t}</div>
-                      ))}
+                      {(validation?.shouldMatch || genResult.testCases.shouldMatch?.map((t) => ({ value: t, passed: null })) || []).map((item) =>
+                        item.passed === null ? (
+                          <div key={item.value} style={{ padding: '6px 10px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '6px', fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', fontFamily: "'Space Mono', monospace", wordBreak: 'break-all' }}>{item.value}</div>
+                        ) : (
+                          testCasePill(item, isDark)
+                        )
+                      )}
                     </div>
                   </div>
                   <div>
                     <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#ef4444', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>✗ Should Not Match</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {genResult.testCases.shouldNotMatch?.map((t, i) => (
-                        <div key={i} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', fontFamily: "'Space Mono', monospace", wordBreak: 'break-all' }}>{t}</div>
-                      ))}
+                      {(validation?.shouldNotMatch || genResult.testCases.shouldNotMatch?.map((t) => ({ value: t, passed: null })) || []).map((item) =>
+                        item.passed === null ? (
+                          <div key={item.value} style={{ padding: '6px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', fontSize: '0.8rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', fontFamily: "'Space Mono', monospace", wordBreak: 'break-all' }}>{item.value}</div>
+                        ) : (
+                          testCasePill(item, isDark)
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -444,7 +610,14 @@ CRITICAL RULES:
                 </div>
               )}
 
-              <button onClick={() => sendToTest(genResult)} style={btnPrimary}>🧪 Test This Regex →</button>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button onClick={() => sendToTest(genResult)} style={btnPrimary}>🧪 Test This Regex →</button>
+                {validation && !validation.allPassed && (
+                  <button onClick={regenerateWithFixes} disabled={generating} style={{ ...btnSecondary, borderColor: '#ef4444', color: '#ef4444' }}>
+                    🔁 Regenerate (fix failing cases)
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -518,6 +691,12 @@ CRITICAL RULES:
             </div>
           </div>
 
+          {redosRisk && (
+            <div style={{ marginBottom: '16px', background: isDark ? 'rgba(255,180,0,0.12)' : '#fff8e1', border: `1px solid ${isDark ? 'rgba(255,180,0,0.25)' : '#b45309'}`, borderRadius: '8px', padding: '10px 14px', fontSize: '0.8rem', color: isDark ? '#febc2e' : '#b45309' }}>
+              ⚠ This pattern has nested/overlapping quantifiers that can cause catastrophic backtracking on adversarial input. Matching below is protected by a timeout, but avoid this shape in production regexes.
+            </div>
+          )}
+
           {/* Sample Text */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', marginBottom: '8px', fontFamily: "'Space Mono', monospace" }}>
@@ -536,7 +715,7 @@ CRITICAL RULES:
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
             <div style={{ padding: '8px 14px', background: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.08)', borderRadius: '8px', border: `1px solid ${isDark ? 'rgba(167,139,250,0.2)' : 'rgba(124,58,237,0.15)'}` }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.75rem', color: ac }}>Matches: </span>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a' }}>{matchCount}</span>
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.9rem', fontWeight: 700, color: isDark ? '#fff' : '#1a1a1a' }}>{checking ? '…' : matchCount}</span>
             </div>
             {matchError && (
               <div style={{ padding: '8px 14px', background: 'rgba(239,68,68,0.1)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: '0.8rem', fontFamily: "'Space Mono', monospace" }}>
@@ -546,6 +725,10 @@ CRITICAL RULES:
             {pattern && !matchError && (
               <button onClick={() => copyToClipboard(pattern)} style={btnSecondary}>📋 Copy Pattern</button>
             )}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto', fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontFamily: "'Space Mono', monospace", cursor: 'pointer' }}>
+              <input type="checkbox" checked={replaceOn} onChange={(e) => setReplaceOn(e.target.checked)} style={{ accentColor: ac, cursor: 'pointer' }} />
+              🔀 Replace mode
+            </label>
           </div>
 
           {/* Highlighted Output */}
@@ -555,6 +738,36 @@ CRITICAL RULES:
               <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '0.85rem', lineHeight: 1.7 }}>
                 {renderHighlighted()}
               </div>
+            </div>
+          )}
+
+          {/* Replace Panel */}
+          {replaceOn && (
+            <div style={{ marginTop: '20px' }}>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', marginBottom: '8px', fontFamily: "'Space Mono', monospace" }}>
+                Replacement (use $1, $2… for capture groups)
+              </label>
+              <input
+                type="text"
+                value={replacement}
+                onChange={(e) => setReplacement(e.target.value)}
+                placeholder="e.g. [$1]"
+                style={{ ...inputStyle, fontFamily: "'Space Mono', monospace", marginBottom: '10px' }}
+              />
+              {replaceError ? (
+                <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.1)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: '0.8rem', fontFamily: "'Space Mono', monospace" }}>
+                  ⚠ {replaceError}
+                </div>
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <pre style={{ background: isDark ? 'rgba(0,0,0,0.3)' : '#f9fafb', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '10px', padding: '14px', fontSize: '0.82rem', fontFamily: "'Space Mono', monospace", color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', minHeight: '60px' }}>
+                    {replaceResult || '(replacement output will appear here)'}
+                  </pre>
+                  {replaceResult && (
+                    <button onClick={() => copyToClipboard(replaceResult)} style={{ position: 'absolute', top: '10px', right: '10px', ...btnSecondary, background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)' }}>📋</button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
