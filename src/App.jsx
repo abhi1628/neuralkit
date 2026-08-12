@@ -39,6 +39,7 @@ import ChatWidget from './components/ChatWidget';
 import PageWrapper from './components/PageWrapper';
 import UserFeedback from './components/UserFeedback';
 import ToolDetailView from './pages/ToolDetailView';
+import RegexTool from './components/RegexTool';
 
 // ── AI Tools section ──────────────────────────────────────────
 const UPLOAD_TOOLS = [
@@ -87,6 +88,7 @@ function AIToolsSection({ activeTool, setActiveTool }) {
     { id: 'resume-upload',     icon: '📋', name: 'Resume Analyzer & Enhancer', tagline: 'Upload your resume — expert feedback, ATS score & AI-improved download' },
     { id: 'resume-builder',    icon: '🏗️', name: 'Resume Builder',            tagline: 'Build a professional ATS-optimized resume from scratch — step by step' },
     { id: 'lablens',           icon: '🔬', name: 'LabLens',                     tagline: 'Paste your lab report — AI + fuzzy logic explains every value in plain English' },
+    { id: 'regex-tool',        icon: '🔍', name: 'AI Regex Generator', tagline: 'Describe in English → get regex + live tester with match highlighting' }, 
   ];
 
   const activeInfo = ALL_TOOL_CARDS[activeTool] || ALL_TOOL_CARDS[0];
@@ -99,6 +101,7 @@ function AIToolsSection({ activeTool, setActiveTool }) {
     if (activeTool === 4) return <UploadTool {...UPLOAD_TOOLS[1]} />;
     if (activeTool === 5) return <ResumeBuilderTool />;
     if (activeTool === 6) return <LabLens />;
+    if (activeTool === 7) return <RegexTool />;
     return <ResumeBuilderTool />;
   }, [activeTool]);
 
