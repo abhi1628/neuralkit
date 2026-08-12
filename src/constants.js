@@ -39,6 +39,7 @@ export const TOOL_MODELS = {
   trivia:               MODELS.LIGHT,
   askAuthor:            MODELS.MEDIUM,
   regexGenerator:       MODELS.MEDIUM,
+  citationFormatter:    MODELS.MEDIUM,
   // NOTE: previously 'qwen/qwen3.6-27b' — that's a reasoning model whose
   // <think> block scales with the number of lab values being analyzed and
   // was regularly blowing past max_tokens before producing any JSON.
