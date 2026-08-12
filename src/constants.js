@@ -38,6 +38,7 @@ export const TOOL_MODELS = {
   interviewEval:        MODELS.MEDIUM,
   trivia:               MODELS.LIGHT,
   askAuthor:            MODELS.MEDIUM,
+  regexGenerator:       MODELS.MEDIUM,
   // NOTE: previously 'qwen/qwen3.6-27b' — that's a reasoning model whose
   // <think> block scales with the number of lab values being analyzed and
   // was regularly blowing past max_tokens before producing any JSON.
@@ -77,17 +78,6 @@ You are an expert research analyst. When given text, produce a thorough structur
 📌 Notable Details (important dates, names, figures, or citations — cite source location when possible)
 
 Be precise, technical yet accessible. Include methodology details even if they seem implicit. Keep under 350 words.`,
-  },
-  {
-    id: 'regexTool',
-    model: MODELS.MEDIUM,
-    icon: '🔍',
-    name: 'AI Regex Generator',
-    tagline: 'Describe in English → get regex + live tester with match highlighting',
-    placeholder: 'e.g., Indian phone numbers with optional +91 and hyphens',
-    inputLabel: 'Description',
-    cta: 'Generate Regex',
-    systemPrompt: `You are an expert regex engineer...`, // the tool uses its own prompt inside the component, but keep this for consistency if using ToolPanel wrapper
   },
   {
     id: 'codeExplainer',
