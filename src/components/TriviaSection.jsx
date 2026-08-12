@@ -4,13 +4,32 @@ import { useTheme } from '../ThemeContext';
 import { GROQ_API_URL, TOOL_MODELS } from '../constants';
 import { fireConfetti, fetchWithBackoff } from '../utils';
 
+// ── Robust JSON parser (handles thinking tags, markdown, truncation)
+function safeParseTrivia(raw) {
+  if (!raw) throw new Error('Empty response.');
+  // Strip thinking / thought tags from reasoning models
+  let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '')
+             .replace(/<thinking>[\s\S]*?<\/thinking>/g, '')
+             .replace(/```json\s*|\s*```/g, '')
+             .trim();
+  const first = s.indexOf('{');
+  if (first === -1) throw new Error('No JSON found.');
+  s = s.slice(first);
+  const last = s.lastIndexOf('}');
+  if (last === -1) throw new Error('Incomplete JSON.');
+  s = s.slice(0, last + 1)
+       .replace(/,\s*([}\]])/g, '$1')
+       .replace(/[\u201C\u201D]/g, '"')
+       .replace(/[\u2018\u2019]/g, "'");
+  return JSON.parse(s);
+}
+
 export default function TriviaSection() {
   const { theme } = useTheme();
   const [trivia,     setTrivia]     = useState(null);
   const [selected,   setSelected]   = useState(null);
   const [loading,    setLoading]    = useState(false);
   const [shared,     setShared]     = useState(false);
-  // useRef instead of useState — avoids stale closure in recursive loadTrivia calls
   const retryCount = useRef(0);
   const [score, setScore] = useState(() => {
     const saved = localStorage.getItem('zeroapi_trivia_score');
@@ -53,22 +72,25 @@ export default function TriviaSection() {
       const res = await fetchWithBackoff(GROQ_API_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: TOOL_MODELS.trivia, max_tokens: 300, temperature: 1.2,
+          model: TOOL_MODELS.trivia,
+          max_tokens: 600,        // ↑ raised — thinking tokens burn ~200-300
+          temperature: 0.3,       // ↓ lowered — strict JSON needs predictability, not creativity
           messages: [
-            { role: 'system', content: `Generate a single AI/tech trivia question. Respond ONLY in this exact JSON format with no extra text:\n{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
+            { role: 'system', content: `You are a trivia generator. Respond ONLY in this exact JSON format with no extra text, no markdown, no thinking tags:\n{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"answer":"A","fact":"one interesting sentence about the answer"}` },
             { role: 'user',   content: `Generate a UNIQUE trivia question (seed:${seed}) specifically about: ${topic}. Make it different from common questions.` },
           ],
         }),
       });
       const data = await res.json();
       const text = data?.choices?.[0]?.message?.content || '';
+      
       let parsed;
       try {
-        const clean = text.replace(/```json\s*|\s*```/g, '').trim();
-        parsed = JSON.parse(clean);
-        if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length !== 4) throw new Error('Invalid');
+        parsed = safeParseTrivia(text);
+        if (!parsed.question || !Array.isArray(parsed.options) || parsed.options.length !== 4) {
+          throw new Error('Invalid schema');
+        }
       } catch {
-        // Use ref so retryCount is always current — no stale closure
         if (retryCount.current < MAX_RETRIES) {
           retryCount.current += 1;
           setLoading(false);
