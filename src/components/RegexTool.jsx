@@ -111,8 +111,8 @@ export default function RegexTool() {
           temperature: 0.1,
           messages: [
             {
-              role: 'system',
-              content: `You are an expert regex engineer and educator. When a user describes a pattern they need, you produce:
+  role: 'system',
+  content: `You are an expert regex engineer and educator. When a user describes a pattern they need, you produce:
 
 1. A **valid, optimized regex pattern** (JavaScript/PCRE compatible).
 2. A **token-by-token explanation** — break down every symbol, group, and quantifier.
@@ -126,7 +126,7 @@ Output ONLY valid JSON in this exact schema:
   "flags": "recommended flags as a string, e.g. 'gi'",
   "explanation": [
     { "token": "^", "meaning": "Start of string anchor" },
-    { "token": "\\d+", "meaning": "One or more digits" }
+    { "token": "\\\\d+", "meaning": "One or more digits" }
   ],
   "testCases": {
     "shouldMatch": ["example1", "example2", "example3"],
@@ -135,12 +135,16 @@ Output ONLY valid JSON in this exact schema:
   "warnings": ["Warning about edge case 1", "Warning about edge case 2"]
 }
 
-CRITICAL:
+CRITICAL RULES — follow exactly:
 - Output ONLY valid JSON. No markdown, no backticks, no preamble.
 - Escape backslashes properly in the JSON string (e.g., "\\\\d" for \\d).
+- For email patterns: TLD must be {2,} (2 or MORE letters), NOT {2}. Support .com, .edu, .co.in, .ac.uk.
+- For phone numbers: always allow optional country codes (+91, +1), optional separators (space, hyphen), and never hardcode to exactly one format.
+- For URLs: support http, https, optional www, and paths/query strings.
+- For dates: accept leading zeros (01, 02) and realistic ranges.
 - If the request is vague, produce a sensible default and note assumptions.
 - Never invent features not supported by standard JavaScript RegExp.`,
-            },
+},
             {
               role: 'user',
               content: `Generate a regex for: ${description.trim().slice(0, 500)}`,
