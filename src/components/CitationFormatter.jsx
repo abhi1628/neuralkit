@@ -11,21 +11,46 @@ const STYLES = [
   { key: 'chicago', label: 'Chicago 17th', desc: 'History, Business, Fine Arts', color: '#10b981' },
 ];
 
-function safeParseCitation(raw) {
+// ── Aggressive JSON repair ───────────────────────────────────
+function repairJson(raw) {
   if (!raw) throw new Error('Empty response.');
-  let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '')
-             .replace(/```json|```/g, '')
-             .trim();
+
+  // 1. Strip thinking tags, markdown fences, and preamble
+  let s = raw
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/```json\s*|\s*```/g, '')
+    .replace(/^\s*json\s*/i, '')
+    .trim();
+
+  // 2. Find the JSON object boundaries
   const first = s.indexOf('{');
-  if (first === -1) throw new Error('No JSON found.');
-  s = s.slice(first);
   const last = s.lastIndexOf('}');
-  if (last === -1) throw new Error('Incomplete JSON.');
-  s = s.slice(0, last + 1)
-       .replace(/,\s*([}\]])/g, '$1')
-       .replace(/[\u201C\u201D]/g, '"')
+  if (first === -1 || last === -1 || last < first) {
+    throw new Error('No JSON object found in response.');
+  }
+  s = s.slice(first, last + 1);
+
+  // 3. Fix trailing commas before } or ]
+  s = s.replace(/,\s*([}\]])/g, '$1');
+
+  // 4. Fix smart quotes
+  s = s.replace(/[\u201C\u201D]/g, '\\"')
        .replace(/[\u2018\u2019]/g, "'");
-  return JSON.parse(s);
+
+  // 5. Try parsing
+  try {
+    return JSON.parse(s);
+  } catch (err) {
+    // 6. If still failing, try to fix unescaped quotes inside strings
+    // This regex finds quotes that are inside string values but not escaped
+    // It's a best-effort fix for citation titles containing quotes
+    try {
+      const fixed = s.replace(/(?<=: ")([^"]*?)"([^"]*?)(?=",?)/g, '$1\\"$2');
+      return JSON.parse(fixed);
+    } catch {
+      throw new Error(`JSON parse failed: ${err.message}`);
+    }
+  }
 }
 
 export default function CitationFormatter() {
@@ -48,53 +73,60 @@ export default function CitationFormatter() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: TOOL_MODELS.citationFormatter || TOOL_MODELS.codeExplainer,
-          max_tokens: 4000,        // ↑ was 2000 — reasoning models burn ~1000-1500 on thinking
-          temperature: 0.1,
+          max_tokens: 4000,
+          temperature: 0.05, // ↓ even lower for strict formatting
           messages: [
             {
               role: 'system',
-              content: `You are an expert academic citation formatter. Respond IMMEDIATELY with valid JSON. Do NOT think or analyze — just format.
+              content: `You are a citation formatting machine. Your ONLY job is to output valid JSON.
 
-Output ONLY valid JSON in this exact schema:
+RULES — follow exactly:
+1. Output ONLY a single JSON object. No markdown, no explanation, no thinking.
+2. Escape ALL double quotes inside string values with backslash. Example: "Title with \\"quotes\\" inside"
+3. Do NOT use smart quotes, curly quotes, or any special Unicode characters.
+4. Do NOT include trailing commas.
+5. If a field is unknown, use "Unknown" — never leave it empty or omit it.
+
+Required JSON schema:
 {
-  "source": "Brief description of what was detected",
-  "apa": "Full APA 7th edition citation",
-  "mla": "Full MLA 9th edition citation",
-  "ieee": "Full IEEE citation",
-  "chicago": "Full Chicago 17th edition citation",
-  "bibtex": "@article{...}",
-  "notes": ["Any missing info or assumptions made"]
-}
-
-CRITICAL:
-- Output ONLY valid JSON. No markdown, no backticks, no preamble, no thinking tags.
-- If the input is a DOI or arXiv ID, infer all possible fields.
-- If info is missing, note it in "notes" and format what you have.`
+  "source": "Brief description of the detected source",
+  "apa": "APA 7th citation string",
+  "mla": "MLA 9th citation string",
+  "ieee": "IEEE citation string",
+  "chicago": "Chicago 17th citation string",
+  "bibtex": "BibTeX entry string",
+  "notes": ["Any missing info or assumptions"]
+}`
             },
             {
               role: 'user',
-              content: `Generate citations for:\n${input.trim().slice(0, 8000)}`
+              content: `Format citations for: ${input.trim().slice(0, 8000)}`
             },
           ],
         }),
       });
+
       const data = await res.json();
-      
-      // Better error diagnosis
+
       if (!res.ok) {
-        throw new Error(data?.error?.message || `API error: ${res.status}`);
+        throw new Error(data?.error?.message || `API error ${res.status}`);
       }
-      
+
       const raw = data?.choices?.[0]?.message?.content;
       if (!raw || raw.trim().length === 0) {
-        console.error('[CitationFormatter] Empty raw response:', JSON.stringify(data));
-        throw new Error('AI returned empty content. The model may have run out of tokens while thinking. Try again.');
+        throw new Error('AI returned empty response.');
       }
-      
-      const parsed = safeParseCitation(raw);
-      if (!parsed.apa && !parsed.mla) throw new Error('Invalid citation data returned.');
+
+      const parsed = repairJson(raw);
+
+      // Validate required fields
+      if (!parsed.apa && !parsed.mla && !parsed.ieee && !parsed.chicago) {
+        throw new Error('AI returned citation data in unexpected format.');
+      }
+
       setResults(parsed);
     } catch (e) {
+      console.error('[CitationFormatter] Error:', e);
       setError(e.message || 'Failed to generate citations. Please try again.');
     }
     setLoading(false);
