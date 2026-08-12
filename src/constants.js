@@ -44,6 +44,7 @@ export const TOOL_MODELS = {
   // gpt-oss-120b gives the same "best reasoning for medical analysis" tier
   // without leaking unclosed <think> text into the response content.
   labLens:              MODELS.HEAVY,
+  regexGenerator:       MODELS.MEDIUM,
 };
 
 // REMOVED: Regex-based prompt injection detection is ineffective.
@@ -76,6 +77,17 @@ You are an expert research analyst. When given text, produce a thorough structur
 📌 Notable Details (important dates, names, figures, or citations — cite source location when possible)
 
 Be precise, technical yet accessible. Include methodology details even if they seem implicit. Keep under 350 words.`,
+  },
+  {
+    id: 'regexTool',
+    model: MODELS.MEDIUM,
+    icon: '🔍',
+    name: 'AI Regex Generator',
+    tagline: 'Describe in English → get regex + live tester with match highlighting',
+    placeholder: 'e.g., Indian phone numbers with optional +91 and hyphens',
+    inputLabel: 'Description',
+    cta: 'Generate Regex',
+    systemPrompt: `You are an expert regex engineer...`, // the tool uses its own prompt inside the component, but keep this for consistency if using ToolPanel wrapper
   },
   {
     id: 'codeExplainer',
