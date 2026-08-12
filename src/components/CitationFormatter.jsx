@@ -13,7 +13,9 @@ const STYLES = [
 
 function safeParseCitation(raw) {
   if (!raw) throw new Error('Empty response.');
-  let s = raw.replace(/```json|```/g, '').trim();
+  let s = raw.replace(/<think>[\s\S]*?<\/think>/g, '')
+             .replace(/```json|```/g, '')
+             .trim();
   const first = s.indexOf('{');
   if (first === -1) throw new Error('No JSON found.');
   s = s.slice(first);
@@ -46,12 +48,12 @@ export default function CitationFormatter() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: TOOL_MODELS.citationFormatter || TOOL_MODELS.codeExplainer,
-          max_tokens: 2000,
+          max_tokens: 4000,        // ↑ was 2000 — reasoning models burn ~1000-1500 on thinking
           temperature: 0.1,
           messages: [
             {
               role: 'system',
-              content: `You are an expert academic citation formatter. When given a DOI, arXiv link, URL, or raw bibliographic text, extract all available metadata and produce perfectly formatted citations.
+              content: `You are an expert academic citation formatter. Respond IMMEDIATELY with valid JSON. Do NOT think or analyze — just format.
 
 Output ONLY valid JSON in this exact schema:
 {
@@ -59,20 +61,15 @@ Output ONLY valid JSON in this exact schema:
   "apa": "Full APA 7th edition citation",
   "mla": "Full MLA 9th edition citation",
   "ieee": "Full IEEE citation",
-  "chicago": "Full Chicago 17th edition (Notes-Bibliography) citation",
+  "chicago": "Full Chicago 17th edition citation",
   "bibtex": "@article{...}",
   "notes": ["Any missing info or assumptions made"]
 }
 
-CRITICAL RULES:
-- Output ONLY valid JSON. No markdown, no backticks, no preamble.
+CRITICAL:
+- Output ONLY valid JSON. No markdown, no backticks, no preamble, no thinking tags.
 - If the input is a DOI or arXiv ID, infer all possible fields.
-- If info is missing, note it in "notes" and format what you have.
-- APA: Author, A. A. (Year). Title. *Journal*, Vol(Issue), pp-pp. https://doi.org/...
-- MLA: Author. "Title." *Journal*, vol. X, no. X, Year, pp. pp-pp.
-- IEEE: A. Author et al., "Title," *Journal*, vol. X, no. X, pp. pp-pp, Year.
-- Chicago: Author. "Title." *Journal* Vol, no. X (Year): pp-pp.
-- Always include DOI/URL when available.`
+- If info is missing, note it in "notes" and format what you have.`
             },
             {
               role: 'user',
@@ -82,8 +79,18 @@ CRITICAL RULES:
         }),
       });
       const data = await res.json();
-      const raw = data?.choices?.[0]?.message?.content || '';
-      if (!raw) throw new Error(data?.error?.message || 'Empty response from AI.');
+      
+      // Better error diagnosis
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `API error: ${res.status}`);
+      }
+      
+      const raw = data?.choices?.[0]?.message?.content;
+      if (!raw || raw.trim().length === 0) {
+        console.error('[CitationFormatter] Empty raw response:', JSON.stringify(data));
+        throw new Error('AI returned empty content. The model may have run out of tokens while thinking. Try again.');
+      }
+      
       const parsed = safeParseCitation(raw);
       if (!parsed.apa && !parsed.mla) throw new Error('Invalid citation data returned.');
       setResults(parsed);
