@@ -448,7 +448,7 @@ const post = {
     },
     {
       "type": "image",
-      "src": "/images/roadmaps/confusion.png",
+      "src": "/images/roadmaps/confusionm.png",
       "alt": "Detailed Confusion Matrix infographic",
       "caption": "Confusion Matrix: TP, TN, FP, FN and the main classification performance measures."
     },
