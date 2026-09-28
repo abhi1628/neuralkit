@@ -54,6 +54,12 @@ const post = {
       "text": "The ML life cycle is the end-to-end sequence of stages followed to build, ship and maintain an ML solution. It is iterative: results from a later stage frequently send you back to an earlier one."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/ml_lifecycle.png",
+      "alt": "The Machine Learning Lifecycle",
+      "caption": "The ML lifecycle: problem definition, data collection, preparation, model building, evaluation, deployment, monitoring and feedback loop"
+    },
+    {
       "type": "steps",
       "items": [
         {
@@ -383,6 +389,12 @@ const post = {
       "text": "Data pre-processing is the set of steps that convert raw, messy data into a clean numeric form an algorithm can learn from. Real data is almost never ready to use, and this stage typically consumes the largest share of project time."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/datapreprocessing.png",
+      "alt": "Machine Learning Data Preprocessing Pipeline",
+      "caption": "Data preprocessing pipeline: collection, cleaning, transformation, feature engineering, feature selection and data splitting"
+    },
+    {
       "type": "table",
       "headers": [
         "Step",
@@ -531,6 +543,12 @@ const post = {
       "text": "Bias is the error caused by wrong or overly simple assumptions in the model, which leads to underfitting. Variance is the error caused by excessive sensitivity to the particular training sample, which leads to overfitting. For squared error, the expected test error decomposes as: Error = Bias² + Variance + Irreducible Error (noise)."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/bias_variance.png",
+      "alt": "The Bias-Variance Tradeoff",
+      "caption": "Bullseye plots, the tradeoff curve and summary table for bias, variance, underfitting and overfitting"
+    },
+    {
       "type": "table",
       "headers": [
         "Aspect",
@@ -582,6 +600,12 @@ const post = {
     {
       "type": "p",
       "text": "These four terms overlap but are not synonyms. Artificial Intelligence is the broad goal of making machines behave intelligently. Machine Learning is a subset of AI that achieves this by learning from data. Deep Learning is a subset of ML that uses multi-layer neural networks. Data Science is a separate, overlapping field that extracts insight from data using statistics, ML, visualization and domain knowledge."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/aimldl.png",
+      "alt": "Hierarchical relationship of AI, ML and DL",
+      "caption": "AI contains ML, which contains DL (Data Science overlaps all three)"
     },
     {
       "type": "table",
