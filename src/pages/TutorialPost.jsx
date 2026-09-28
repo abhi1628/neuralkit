@@ -43,6 +43,12 @@ import oopPart3 from "../posts/oop-cpp-mastery-part-3";
 import oopPart4 from "../posts/oop-cpp-mastery-part-4";
 import oopPart5 from "../posts/oop-cpp-mastery-part-5";
 import oopPart6 from "../posts/oop-cpp-mastery-part-6";
+import mlExamSeriesData from "../posts/ml-exam-mastery-series";
+import mlExamPart1 from "../posts/ml-exam-mastery-part-1";
+import mlExamPart2 from "../posts/ml-exam-mastery-part-2";
+import mlExamPart3 from "../posts/ml-exam-mastery-part-3";
+import mlExamPart4 from "../posts/ml-exam-mastery-part-4";
+import mlExamPart5 from "../posts/ml-exam-mastery-part-5";
 
 const CONTENT_MAP = {
   "ml-foundations": {
@@ -90,13 +96,21 @@ const CONTENT_MAP = {
     "part-4-polymorphism": oopPart4,
     "part-5-strings-exceptions-threads-collections": oopPart5,
     "part-6-previous-year-solved-papers": oopPart6
+  },
+  "ml-exam-mastery": {
+    "part-1-ml-foundations": mlExamPart1,
+    "part-2-clustering": mlExamPart2,
+    "part-3-classification": mlExamPart3,
+    "part-4-ensemble-learning": mlExamPart4,
+    "part-5-dimensionality-reduction": mlExamPart5
   }
 };
 
 const SERIES_DATA_MAP = {
   "ml-foundations": mlSeriesData,
   "python-unlocked": pythonSeriesData,
-  "oop-cpp-mastery": oopCppSeriesData
+  "oop-cpp-mastery": oopCppSeriesData,
+  "ml-exam-mastery": mlExamSeriesData
 };
 
 function renderContent(block, i, theme, seriesColor = "#10b981") {

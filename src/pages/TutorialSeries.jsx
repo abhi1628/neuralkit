@@ -5,6 +5,8 @@ import pythonSeriesData from "../posts/python-unlocked-series";
 import pythonLandingPost from "../posts/python-unlocked-landing";
 import oopCppSeriesData from "../posts/oop-cpp-mastery-series";
 import oopCppLandingPost from "../posts/oop-cpp-mastery-landing";
+import mlExamSeriesData from "../posts/ml-exam-mastery-series";
+import mlExamLandingPost from "../posts/ml-exam-mastery-landing";
 
 export default function TutorialSeries({ theme }) {
   const navigate = useNavigate();
@@ -15,10 +17,12 @@ export default function TutorialSeries({ theme }) {
   const series = seriesSlug === "ml-foundations" ? seriesData
                 : seriesSlug === "python-unlocked" ? pythonSeriesData
                 : seriesSlug === "oop-cpp-mastery" ? oopCppSeriesData
+                : seriesSlug === "ml-exam-mastery" ? mlExamSeriesData
                 : null;
   const landingPost = seriesSlug === "ml-foundations" ? mlLandingPost 
                   : seriesSlug === "python-unlocked" ? pythonLandingPost 
                   : seriesSlug === "oop-cpp-mastery" ? oopCppLandingPost
+                  : seriesSlug === "ml-exam-mastery" ? mlExamLandingPost
                   : null;
   const seriesColor = series?.categoryColor || "#10b981";
 
