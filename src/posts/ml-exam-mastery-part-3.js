@@ -48,6 +48,12 @@ const post = {
       "text": "Despite its name, logistic regression is a classification algorithm. It computes a weighted sum of the features, z = w·x + b, and passes it through the sigmoid function σ(z) = 1 / (1 + e^(−z)) to squash it into a probability between 0 and 1. If P(y=1|x) ≥ 0.5 (threshold), the model predicts class 1, otherwise class 0. The decision boundary is linear."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/logistic.png",
+      "alt": "Detailed Logistic Regression infographic",
+      "caption": "Logistic Regression: sigmoid function, decision boundary, training, extensions, and key concepts."
+    },
+    {
       "type": "p",
       "text": "Training minimizes the log-loss (binary cross-entropy): J = −(1/m) Σ [ y·log(p) + (1−y)·log(1−p) ], typically by gradient descent. For more than two classes, the softmax function generalizes the sigmoid."
     },
@@ -88,6 +94,12 @@ const post = {
     {
       "type": "p",
       "text": "A decision tree is a flowchart-like model in which each internal node tests a feature, each branch is an outcome of the test, and each leaf holds a class label. It is built top-down by choosing, at each node, the feature that splits the data into the purest possible subsets."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/decisiont.png",
+      "alt": "Detailed Decision Tree classification infographic",
+      "caption": "Decision Tree: tree construction, entropy, information gain, classification, regression, and stopping criteria."
     },
     {
       "type": "p",
@@ -131,6 +143,12 @@ const post = {
     {
       "type": "p",
       "text": "An artificial neural network is a model made of layers of interconnected neurons. Each neuron computes a weighted sum of its inputs plus a bias and passes it through a non-linear activation function: output = f(Σ wᵢxᵢ + b). A network has an input layer, one or more hidden layers and an output layer; more than one hidden layer makes it 'deep'."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/neuralnetworks.png",
+      "alt": "Detailed Neural Networks infographic",
+      "caption": "Neural Networks: neurons, activation functions, forward propagation, loss, backpropagation, and training."
     },
     {
       "type": "table",
@@ -201,6 +219,12 @@ const post = {
       "text": "K-NN is a lazy, instance-based algorithm that classifies a new point by finding the k training points closest to it and taking a majority vote of their labels. It makes no assumption about the data distribution (non-parametric) and has no training phase beyond storing the data."
     },
     {
+      "type": "image",
+      "src": "/images/roadmaps/knn.png",
+      "alt": "Detailed K-Nearest Neighbors infographic",
+      "caption": "K-NN: choosing k, distance calculation, nearest neighbors, voting, scaling, and the effect of k."
+    },
+    {
       "type": "steps",
       "items": [
         {
@@ -242,6 +266,12 @@ const post = {
     {
       "type": "p",
       "text": "An SVM finds the separating hyperplane w·x + b = 0 that maximizes the margin, the distance between the hyperplane and the closest points of each class. Those closest points are the support vectors, and they alone determine the boundary; removing any other point changes nothing. Maximizing the margin gives good generalization."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/svm.png",
+      "alt": "Detailed Support Vector Machine infographic",
+      "caption": "SVM: maximum margin, support vectors, soft margin, kernels, C and gamma, and nonlinear classification."
     },
     {
       "type": "table",
@@ -288,6 +318,12 @@ const post = {
     {
       "type": "p",
       "text": "Naive Bayes is a probabilistic classifier based on Bayes' theorem, P(C | x) = P(x | C) · P(C) / P(x). It is called 'naive' because it assumes all features are conditionally independent given the class, so P(x₁,...,xₙ | C) = Π P(xᵢ | C). The predicted class is the one with the highest posterior: ŷ = argmax_C P(C) Π P(xᵢ | C). The assumption is rarely true, yet the algorithm works surprisingly well, especially for text."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/naive.png",
+      "alt": "Detailed Naive Bayes infographic",
+      "caption": "Naive Bayes: Bayes' theorem, conditional independence, Gaussian, Multinomial, and Bernoulli variants."
     },
     {
       "type": "table",
@@ -409,6 +445,12 @@ const post = {
     {
       "type": "p",
       "text": "A confusion matrix is a table that compares predicted classes with actual classes. For a binary problem where 'positive' is the class of interest, it has four cells."
+    },
+    {
+      "type": "image",
+      "src": "/images/roadmaps/confusion.png",
+      "alt": "Detailed Confusion Matrix infographic",
+      "caption": "Confusion Matrix: TP, TN, FP, FN and the main classification performance measures."
     },
     {
       "type": "table",
