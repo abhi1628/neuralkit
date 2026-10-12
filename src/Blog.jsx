@@ -39,6 +39,7 @@ import cudaGpu from "./posts/cuda-gpu-programming-deep-dive";
 import pythonInterview from "./posts/50-python-interview-questions-2026";
 import promptArch from "./posts/prompt-architecture-2026";
 import dataCenterIndia from "./posts/india-datacenters-tropical-computing-2026";
+import mdrCharges from "./posts/upi-mdr-explained-data-2026";
 
 export const BLOG_POSTS = [
   atsResume, python, gitGuide, systemDesign, aiCoding,
@@ -50,7 +51,7 @@ export const BLOG_POSTS = [
   iamSecurityBestPractices, masteringCorsArchitectures, preventingSsrfVulnerabilities,
   hardeningDockerContainers, containerProcessLifecycles, kubernetesProbeOrchestration,
   cachingStrategiesAtScale, resilientMicroserviceArchitectures, scalingStatelessGateways,
-  asynchronousResourceManagement, cudaGpu, pythonInterview, promptArch, dataCenterIndia
+  asynchronousResourceManagement, cudaGpu, pythonInterview, promptArch, dataCenterIndia,mdrCharges,
 ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
 // ── renderContent (unchanged) ─────────────────────────────────
