@@ -229,8 +229,13 @@ const posts = [
   slug: "india-datacenters-tropical-computing-2026",
   title: "Why India Builds Datacenters Differently: The Architecture of Tropical Computing",
   excerpt: "A datacenter in Oregon and a datacenter in Mumbai face the same problem — keep servers cool and powered. But the solutions are radically different. Here's how tropical heat, monsoon humidity, and an unreliable grid force Indian engineers to rethink everything."
+  },
+  {
+  slug: "upi-mdr-explained-data-2026",
+  title: "UPI's New MDR, Explained With Data: What the Fee Is, What UPI Actually Costs, and Who Has Been Paying",
+  excerpt: "From October 15, 2026, some UPI merchant payments carry a 0.4% fee. Not a tax, not a charge on you — but not nothing either. Here is what MDR is, what a UPI transaction really costs to run, who has been absorbing that cost since 2020, and what the numbers can and cannot tell us."
   }
-];
+  ];
 
 // Generate static HTML for each blog post
 posts.forEach(post => {
