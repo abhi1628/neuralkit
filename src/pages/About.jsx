@@ -34,6 +34,35 @@ export default function About({ theme }) {
           <p>Email: <a href="mailto:abhi16.2007@gmail.com" style={{ color: "#0891b2" }}>abhi16.2007@gmail.com</a></p>
           <p>Location: Jabalpur, Madhya Pradesh, India</p>
 
+          <div style={{
+            marginTop: "24px",
+            padding: "20px 22px",
+            border: `1px solid ${isDark ? "rgba(8,145,178,0.35)" : "rgba(8,145,178,0.25)"}`,
+            borderRadius: "12px",
+            background: isDark ? "rgba(8,145,178,0.07)" : "rgba(8,145,178,0.04)"
+          }}>
+            <h2 style={{
+              fontFamily: "'Syne',sans-serif",
+              fontSize: "1.2rem",
+              fontWeight: 700,
+              marginTop: 0,
+              marginBottom: "12px",
+              color: isDark ? "#fff" : "#1a1a1a"
+            }}>Business Registration</h2>
+            <p style={{ margin: "0 0 8px" }}>
+              <strong style={{ color: isDark ? "#fff" : "#1a1a1a" }}>Enterprise:</strong> CodeWorksPress
+            </p>
+            <p style={{ margin: "0 0 10px" }}>
+              <strong style={{ color: isDark ? "#fff" : "#1a1a1a" }}>Udyam Registration Number:</strong> UDYAM-MP-24-0112722
+            </p>
+            <a
+              href="https://udyamregistration.gov.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#0891b2", textDecoration: "underline", textUnderlineOffset: "3px" }}
+            >Official Udyam Registration Portal ↗</a>
+          </div>
+
           <div style={{ marginTop: "32px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <a href="https://www.amazon.com/Agentic-Systems-Engineering-intelligent-collaborate/dp/B0GX5FBCSM" target="_blank" rel="noopener noreferrer" style={{ background: "linear-gradient(135deg,#00ffe0,#0af)", color: "#000", fontWeight: 700, padding: "12px 24px", borderRadius: "10px", textDecoration: "none", fontFamily: "'Space Mono',monospace", fontSize: "0.85rem" }}>📘 Explore the Book →</a>
             <a href="https://www.youtube.com/@pyofpython9668" target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`, color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", padding: "12px 24px", borderRadius: "10px", textDecoration: "none", fontFamily: "'Space Mono',monospace", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "8px" }}>
