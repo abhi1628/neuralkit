@@ -204,6 +204,19 @@ function AboutSection({ currentYear }) {
           Terms & Privacy
         </button>
       </div>
+      {/* Enterprise registration — homepage About section */}
+      <div style={{ marginBottom: '32px', padding: '22px 20px', borderRadius: '14px', background: isDark ? 'rgba(167,139,250,0.07)' : 'rgba(124,58,237,0.045)', border: `1px solid ${isDark ? 'rgba(167,139,250,0.24)' : 'rgba(124,58,237,0.18)'}` }}>
+        <div style={{ fontFamily: "'Space Mono',monospace", fontSize: '0.7rem', color: ac, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '10px' }}>Business Registration</div>
+        <p style={{ margin: '0 0 8px', fontSize: '0.9rem', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.75)' }}>
+          ZeroAPI.in is operated by <strong>CodeWorksPress</strong>.
+        </p>
+        <p style={{ margin: '0 0 10px', fontSize: '0.82rem', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.65)', overflowWrap: 'anywhere' }}>
+          Udyam Registration No.: <strong>UDYAM-MP-24-0112722</strong>
+        </p>
+        <a href="https://udyamregistration.gov.in/" target="_blank" rel="noopener noreferrer" style={{ color: ac, fontSize: '0.8rem', textDecoration: 'underline' }}>
+          Verify via the official Udyam portal ↗
+        </a>
+      </div>
       <div style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)'}`, paddingTop: '24px', color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.4)', fontSize: '0.75rem', fontFamily: "'Space Mono',monospace" }}>
         © {currentYear} ZeroAPI · Free AI Tools · Built with ❤ in Jabalpur, India
       </div>
