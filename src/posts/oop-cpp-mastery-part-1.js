@@ -6,7 +6,7 @@ const post = {
   "title": "Introduction to Object Oriented Thinking & OOP (Part 1)",
   "seriesTitle": "Object-Oriented Programming in C++: The Exam Mastery Series",
   "date": "August 7, 2026",
-  "readTime": "24 min read",
+  "readTime": "30 min read",
   "category": "Object Oriented Programming",
   "categoryColor": "#3b82f6",
   "excerpt": "Procedural vs OOP, features of the OO paradigm, merits and demerits, the Object model, and C++ basics — I/O, data types, type conversion, control statements, loops, and arrays.",
@@ -120,6 +120,47 @@ const post = {
       ]
     },
     {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam Question: Explain how the procedural and object-oriented programming approaches differ, using a banking application as the example. Give two merits and two demerits of the object-oriented methodology."
+    },
+    {
+      "type": "p",
+      "text": "Answer: Consider a banking application that must handle deposits, withdrawals, and transfers for many accounts. In the procedural approach you start from the actions (deposit, withdraw, transfer) and write them as functions that work on separate account data. In the object-oriented approach you start from the entities (Account, Customer, Transaction) and give each one its own data and operations. The code example at the top of this part shows both styles side by side."
+    },
+    {
+      "type": "table",
+      "headers": ["Aspect", "Procedural Banking Application", "Object Oriented Banking Application"],
+      "rows": [
+        ["Starting point", "Top-down: list the tasks (deposit, withdraw, transfer) and write a function for each", "Bottom-up: identify the entities (Account, Customer, Transaction) and design a class for each"],
+        ["Where the data lives", "Balances sit in global variables, arrays, or structs that every function can reach", "balance is a private member inside Account; it travels with the object"],
+        ["Protecting the balance", "Any function can change a balance directly, so a stray bug can corrupt it", "Only Account's own methods (deposit, withdraw) can change it"],
+        ["Enforcing rules", "Rules such as minimum balance or overdraft limit must be repeated in every function that touches a balance", "The rule is written once inside withdraw() and cannot be bypassed from outside"],
+        ["Adding a new account type", "Edit many existing functions and add if-else branches for the new type", "Add a new class, e.g. SavingsAccount derived from Account, and override only what differs"]
+      ]
+    },
+    {
+      "type": "sections-list",
+      "items": [
+        {
+          "title": "Merit 1: Data hiding improves security",
+          "desc": "Because balance is private, no outside code can set it to an arbitrary value. Every change must pass through deposit() or withdraw(), where validation (amount > 0, sufficient funds) is applied. This is critical for a banking system."
+        },
+        {
+          "title": "Merit 2: Inheritance gives reusability and easy extension",
+          "desc": "SavingsAccount and CurrentAccount can inherit the common data and methods of Account and add only their own rules (interest rate, overdraft limit). New account types are added without rewriting tested code."
+        },
+        {
+          "title": "Demerit 1: Steeper learning curve and design effort",
+          "desc": "Before writing any code you must decide the classes, their responsibilities, and the hierarchy. A poor class design is hard to change later, and beginners find this harder than writing a few simple functions."
+        },
+        {
+          "title": "Demerit 2: Overhead and over-engineering for small problems",
+          "desc": "Objects, virtual function calls, and dynamic dispatch add some memory and runtime cost. For a tiny task such as a one-off interest calculator, defining classes adds complexity without any real benefit."
+        }
+      ]
+    },
+    {
       "type": "h2",
       "text": "The Object Model"
     },
@@ -138,6 +179,29 @@ const post = {
       "text": "Real-life analogy: think of identical twins who are the same height, same eye color, and even dressed identically today (same state) — they still have two different Aadhaar numbers / roll numbers (identity). You can talk to either twin (behavior) and get a response, but they remain two separate people. That's exactly how s1 and s2 behave above: same state, different identity."
     },
     {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam Question: List the seven elements of the object model (abstraction, encapsulation, modularity, hierarchy, typing, concurrency, persistence). State one line on each, marking which are major and which are minor."
+    },
+    {
+      "type": "table",
+      "headers": ["Element", "Category", "One-line meaning"],
+      "rows": [
+        ["Abstraction", "Major", "Captures the essential characteristics of an object that distinguish it from all others, ignoring irrelevant detail."],
+        ["Encapsulation", "Major", "Hides the internal structure and implementation of an abstraction behind a well-defined public interface."],
+        ["Modularity", "Major", "Breaks a system into cohesive, loosely coupled modules (classes, files) that can be built and tested independently."],
+        ["Hierarchy", "Major", "Ranks abstractions into levels: 'is-a' (inheritance) and 'part-of' (aggregation)."],
+        ["Typing", "Minor", "Enforces that objects of different types cannot be interchanged, or only in restricted ways, so misuse is caught early."],
+        ["Concurrency", "Minor", "Lets different objects act at the same time through separate threads of control."],
+        ["Persistence", "Minor", "Lets an object's state (and class) outlive the execution of the program, e.g. by saving it to a file or database."]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "📌",
+      "text": "Why major and minor? Major elements are essential: a model without any one of them is not truly object oriented. Minor elements are useful additions but not essential. Quick memory aid: abstraction, encapsulation, modularity, hierarchy are major; typing, concurrency, persistence are minor."
+    },
+    {
       "type": "h2",
       "text": "C++ I/O Processing"
     },
@@ -149,6 +213,42 @@ const post = {
       "type": "code-block",
       "label": "Basic I/O in C++",
       "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    string name;\n    int age;\n\n    cout << \"Enter your name: \";\n    cin >> name;              // reads a single word (stops at whitespace)\n\n    cout << \"Enter your age: \";\n    cin >> age;\n\n    cout << \"Hello \" << name << \", you are \" << age << \" years old.\" << endl;\n\n    // Reading a full line (including spaces) requires getline\n    cin.ignore();              // clear leftover newline from previous cin >>\n    string fullLine;\n    cout << \"Enter a sentence: \";\n    getline(cin, fullLine);\n    cout << \"You said: \" << fullLine << endl;\n\n    return 0;\n}"
+    },
+    {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam Question: Explain with examples how setw, setprecision, fixed and endl format output. Differentiate cin >> str from getline(cin, str)."
+    },
+    {
+      "type": "table",
+      "headers": ["Manipulator", "What it does", "Example and output"],
+      "rows": [
+        ["setw(n)  (needs <iomanip>)", "Sets the minimum field width for the next item only. Shorter values are padded with spaces (right-aligned by default).", "cout << setw(6) << 42;  prints '    42'"],
+        ["setprecision(n)  (needs <iomanip>)", "Sets the number of significant digits. When used with fixed, it sets the number of digits after the decimal point. It stays in effect until changed.", "cout << setprecision(2) << 3.14159;  prints 3.1"],
+        ["fixed", "Switches floating-point output to fixed-point notation (never scientific). It also stays in effect.", "cout << fixed << setprecision(2) << 3.14159;  prints 3.14\ncout << fixed << setprecision(2) << 2.5;  prints 2.50"],
+        ["endl", "Inserts a newline and flushes the output buffer.", "cout << \"Hi\" << endl;  prints Hi and moves to the next line"]
+      ]
+    },
+    {
+      "type": "code-block",
+      "label": "Formatting Output: setw, setprecision, fixed, endl",
+      "code": "#include <iostream>\n#include <iomanip>   // needed for setw and setprecision\nusing namespace std;\n\nint main() {\n    double pi = 3.14159265;\n\n    cout << pi << endl;                    // 3.14159   (default: 6 significant digits)\n    cout << setprecision(3) << pi << endl; // 3.14      (3 significant digits)\n    cout << fixed << pi << endl;           // 3.142     (3 digits after the decimal point)\n\n    cout << \"[\" << setw(8) << 42 << \"]\" << endl;          // [      42]  right-aligned\n    cout << \"[\" << setw(8) << left << 42 << \"]\" << endl;  // [42      ]  left-aligned\n    cout << \"[\" << 42 << \"]\" << endl;                     // [42]  setw affected only one item\n\n    // A neat table\n    cout << left << setw(10) << \"Name\" << right << setw(6) << \"Marks\" << endl;\n    cout << left << setw(10) << \"Riya\" << right << setw(6) << 85 << endl;\n    // Name       Marks\n    // Riya          85\n\n    return 0;\n}"
+    },
+    {
+      "type": "table",
+      "headers": ["Aspect", "cin >> str", "getline(cin, str)"],
+      "rows": [
+        ["What it reads", "One word only; stops at the first whitespace (space, tab, newline)", "The whole line, including spaces, up to the newline"],
+        ["Input 'Riya Sharma'", "str = \"Riya\"; \" Sharma\" stays in the input buffer", "str = \"Riya Sharma\""],
+        ["Leading whitespace", "Skipped automatically", "Kept as part of the string"],
+        ["The newline character", "Left in the buffer", "Extracted from the buffer and discarded (not stored in str)"],
+        ["Common pitfall", "The leftover newline breaks a later getline call", "After a cin >> read, getline returns an empty string unless you call cin.ignore() first"]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "⚠️",
+      "text": "Exam tip: setw affects only the very next item, while setprecision, fixed, left and right stay active until you change them. Mention this distinction to pick up easy marks."
     },
     {
       "type": "h2",
@@ -179,6 +279,51 @@ const post = {
       "type": "code-block",
       "label": "Type Conversion in C++",
       "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Implicit conversion: int promoted to double automatically\n    int a = 5;\n    double b = 2.0;\n    double result = a / b;          // a is implicitly converted to double\n    cout << \"Implicit: \" << result << endl;  // 2.5\n\n    // Explicit conversion (C-style cast)\n    double pi = 3.14159;\n    int truncatedOld = (int)pi;\n    cout << \"C-style cast: \" << truncatedOld << endl;  // 3\n\n    // Explicit conversion (modern C++ recommended style)\n    int truncatedNew = static_cast<int>(pi);\n    cout << \"static_cast: \" << truncatedNew << endl;   // 3\n\n    // Danger: narrowing without care loses data silently\n    int smallNumber = 130;\n    char c = static_cast<char>(smallNumber);  // char range is typically -128 to 127\n    cout << \"Narrowed (may overflow): \" << (int)c << endl;\n\n    return 0;\n}"
+    },
+    {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam Question: Predict the output of the following code. Explain each result and identify the type-conversion rule responsible (assume 32-bit int)."
+    },
+    {
+      "type": "code-block",
+      "label": "Exam Question: Predict the Output",
+      "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a = 7, b = 2;\n    char c = 'A';\n    unsigned int u = 0;\n\n    cout << a / b << \"\" << (float)a / b << endl;\n    cout << c + 1 << \"\" << (char)(c + 1) << endl;\n    u = u - 1;\n    cout << u << endl;\n\n    return 0;\n}"
+    },
+    {
+      "type": "code-block",
+      "label": "Output",
+      "code": "33.5\n66B\n4294967295"
+    },
+    {
+      "type": "sections-list",
+      "items": [
+        {
+          "title": "Line 1, first value: a / b prints 3",
+          "desc": "Both operands are int, so no conversion happens and integer division is performed. The fractional part of 3.5 is discarded (truncation), giving 3. Rule: when both operands have the same type, the result has that type."
+        },
+        {
+          "title": "Line 1, second value: (float)a / b prints 3.5",
+          "desc": "(float)a is an explicit conversion (type cast), so a becomes 7.0f. Now the operands are float and int, so the usual arithmetic conversions promote b to float. Float division gives 3.5. The empty string \"\" prints nothing, so the two values appear joined as 33.5."
+        },
+        {
+          "title": "Line 2, first value: c + 1 prints 66",
+          "desc": "In an arithmetic expression a char is promoted to int (integral promotion). 'A' has ASCII value 65, so c + 1 is the int 66, and cout prints an int as a number."
+        },
+        {
+          "title": "Line 2, second value: (char)(c + 1) prints B",
+          "desc": "The explicit cast converts the int 66 back to char, and cout prints a char as a character, so 66 becomes B. The output is 66B."
+        },
+        {
+          "title": "Line 3: u - 1 prints 4294967295",
+          "desc": "Here int (1) and unsigned int (u) have the same rank, so the signed operand is converted to unsigned (usual arithmetic conversions). Unsigned arithmetic wraps around modulo 2^32, so 0 - 1 becomes 2^32 - 1 = 4294967295. Unsigned overflow is well defined in C++."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "💡",
+      "text": "Note: the question writes \"\" (empty string) between the values, which is why there is no space in 33.5 and 66B. If a space was intended, i.e. \" \", the output would be '3 3.5' and '66 B'. In the exam, write the output for the code exactly as given."
     },
     {
       "type": "h2",
@@ -215,6 +360,25 @@ const post = {
       "type": "code-block",
       "label": "1D and 2D Arrays",
       "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // 1D array\n    int marks[5] = {85, 92, 78, 60, 95};\n    int sum = 0;\n    for (int i = 0; i < 5; i++) {\n        sum += marks[i];\n    }\n    cout << \"Average marks: \" << (sum / 5.0) << endl;\n\n    // 2D array (matrix): 2 rows, 3 columns\n    int matrix[2][3] = {\n        {1, 2, 3},\n        {4, 5, 6}\n    };\n\n    cout << \"Matrix:\" << endl;\n    for (int row = 0; row < 2; row++) {\n        for (int col = 0; col < 3; col++) {\n            cout << matrix[row][col] << \" \";\n        }\n        cout << endl;\n    }\n\n    return 0;\n}"
+    },
+    {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam Question: Write a C++ program that reads n integers into an array and prints the largest element, the second largest element, and the frequency of each distinct element."
+    },
+    {
+      "type": "code-block",
+      "label": "Largest, Second Largest, and Frequency of Each Element",
+      "code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    const int MAX = 100;\n    int arr[MAX];\n    int n;\n\n    cout << \"Enter number of elements (1-\" << MAX << \"): \";\n    cin >> n;\n    if (n < 1 || n > MAX) {\n        cout << \"Invalid size.\" << endl;\n        return 1;\n    }\n\n    cout << \"Enter \" << n << \" integers:\" << endl;\n    for (int i = 0; i < n; i++) {\n        cin >> arr[i];\n    }\n\n    // Pass 1: largest element\n    int largest = arr[0];\n    for (int i = 1; i < n; i++) {\n        if (arr[i] > largest) largest = arr[i];\n    }\n\n    // Pass 2: second largest = biggest value strictly less than 'largest'\n    bool found = false;\n    int second = 0;\n    for (int i = 0; i < n; i++) {\n        if (arr[i] < largest && (!found || arr[i] > second)) {\n            second = arr[i];\n            found = true;\n        }\n    }\n\n    cout << \"Largest element: \" << largest << endl;\n    if (found) cout << \"Second largest element: \" << second << endl;\n    else       cout << \"Second largest element: does not exist (all elements are equal)\" << endl;\n\n    // Frequency of each distinct element\n    bool counted[MAX] = {false};\n    cout << \"Frequencies:\" << endl;\n    for (int i = 0; i < n; i++) {\n        if (counted[i]) continue;          // already reported this value\n        int count = 1;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] == arr[i]) {\n                count++;\n                counted[j] = true;\n            }\n        }\n        cout << arr[i] << \" occurs \" << count << \" time(s)\" << endl;\n    }\n\n    return 0;\n}"
+    },
+    {
+      "type": "code-block",
+      "label": "Sample Run",
+      "code": "Enter number of elements (1-100): 7\nEnter 7 integers:\n4 9 4 7 9 9 2\nLargest element: 9\nSecond largest element: 7\nFrequencies:\n4 occurs 2 time(s)\n9 occurs 3 time(s)\n7 occurs 1 time(s)\n2 occurs 1 time(s)"
+    },
+    {
+      "type": "p",
+      "text": "Logic: Pass 1 finds the maximum. Pass 2 finds the second largest as the biggest value that is strictly less than the maximum, so duplicates of the maximum (like the three 9s above) are not mistaken for the second largest. If all elements are equal, no second largest exists and the program says so. For frequency, each unvisited element is counted against the rest of the array, and the counted[] flags stop a repeated value from being reported twice. Time complexity is O(n^2) for the frequency step and O(n) for the rest."
     },
     {
       "type": "callout",
