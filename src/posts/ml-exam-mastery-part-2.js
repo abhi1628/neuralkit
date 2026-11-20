@@ -1085,6 +1085,351 @@ const post = {
     },
     {
       "type": "h2",
+      "text": "Concept Clinic: Understand Clustering Before Memorising Algorithms"
+    },
+    {
+      "type": "p",
+      "text": "Imagine a college receives thousands of student records but has no labels such as 'sports-focused', 'high-attendance' or 'needs academic support'. Clustering explores the records and discovers groups with similar patterns. The algorithm does not know what the groups mean; a human examines the features and gives the groups useful interpretations afterward. A cluster is therefore a discovered pattern, not automatically a meaningful real-world category."
+    },
+    {
+      "type": "h3",
+      "text": "Similarity, distance and why scaling matters"
+    },
+    {
+      "type": "p",
+      "text": "Suppose a customer dataset contains annual income in rupees (values in lakhs) and number of purchases (values from 1 to 20). If raw Euclidean distance is used, income may dominate simply because its numerical scale is much larger. Standardisation transforms a feature using z = (x − μ) / σ, where μ is the training-set mean and σ is its standard deviation. Fit μ and σ on training data only, then reuse them for new data. Scaling is especially important for distance-based methods such as K-means and fuzzy C-means."
+    },
+    {
+      "type": "callout",
+      "icon": "🧭",
+      "text": "Analogy: comparing distance in kilometres with distance in centimetres without converting units would be unfair. Feature scaling puts measurements onto comparable scales; it does not make every feature equally important, so domain knowledge still matters."
+    },
+    {
+      "type": "h2",
+      "text": "Partitioning Methods: K-Means and K-Medoids"
+    },
+    {
+      "type": "h3",
+      "text": "K-Means: arranging students into K study groups"
+    },
+    {
+      "type": "p",
+      "text": "Imagine arranging students into K study groups based on marks in Mathematics and Programming. First choose K temporary group leaders (centroids). Each student joins the nearest leader. Then each leader moves to the average position of the students in that group. Students are reassigned, leaders move again, and the process repeats until the groups stop changing much. This is the assign-update cycle of K-means."
+    },
+    {
+      "type": "p",
+      "text": "For cluster Cₖ with nₖ points, its centroid is μₖ = (1/nₖ) Σ(xᵢ ∈ Cₖ) xᵢ. K-means minimises J = Σₖ Σ(xᵢ ∈ Cₖ) ||xᵢ − μₖ||². Each point is assigned to exactly one cluster, so K-means is a hard clustering method. The centroid is an arithmetic mean and may not be an actual observation."
+    },
+    {
+      "type": "h3",
+      "text": "A tiny numerical example"
+    },
+    {
+      "type": "p",
+      "text": "Consider one-dimensional values 2, 4, 10 and 12 with K = 2. If the first cluster is {2, 4}, its centroid is (2 + 4)/2 = 3. If the second is {10, 12}, its centroid is (10 + 12)/2 = 11. The squared-error contribution is (2−3)² + (4−3)² + (10−11)² + (12−11)² = 4. The example shows why points close to their own centroid give a small within-cluster sum of squares."
+    },
+    {
+      "type": "p",
+      "text": "K-means is efficient and easy to explain, but K must be chosen, results can depend on initial centroids, outliers can pull means, and it works best when clusters are roughly compact and similarly scaled. It may split a long curved group or struggle when clusters have very different sizes or densities. K-means++ improves centroid initialisation; multiple restarts reduce dependence on one random start."
+    },
+    {
+      "type": "h3",
+      "text": "K-Medoids: choose a real student as the group representative"
+    },
+    {
+      "type": "p",
+      "text": "K-medoids is similar to K-means, but the centre is an actual data point called a medoid. Think of choosing a real student whose overall distance to the other students in the group is smallest, rather than inventing an average student. Because the representative is a real observation, K-medoids can use many distance or dissimilarity measures and is often more robust to extreme values, although it can be more computationally expensive."
+    },
+    {
+      "type": "table",
+      "headers": ["Feature", "K-Means", "K-Medoids"],
+      "rows": [
+        ["Representative", "Mean / centroid; may not be a data point", "Actual observation / medoid"],
+        ["Objective", "Minimise sum of squared distances to centroids", "Minimise total dissimilarity to medoids"],
+        ["Outliers", "Can be strongly affected", "Often more robust"],
+        ["Cost", "Usually faster for large numeric datasets", "Often more expensive"],
+        ["Analogy", "Average position of a study group", "The actual student most centrally located"]
+      ]
+    },
+    {
+      "type": "h2",
+      "text": "Hierarchical Clustering: Build a Family Tree of Groups"
+    },
+    {
+      "type": "p",
+      "text": "Think of organising books. At the bottom level, every book is its own group. Similar books are joined into small collections, collections are joined into larger sections, and eventually everything forms one tree. Agglomerative clustering follows this bottom-up process. Divisive clustering does the reverse: begin with all books in one collection and repeatedly split it into smaller groups."
+    },
+    {
+      "type": "p",
+      "text": "The result is often displayed as a dendrogram. The height at which two branches join represents the dissimilarity at which clusters were merged. Cutting the dendrogram at a chosen height produces a selected number of clusters. The number of clusters therefore need not be fixed at the very beginning, although a cut level or desired cluster count is needed to obtain a final partition."
+    },
+    {
+      "type": "h3",
+      "text": "Linkage formulas: how do we define distance between groups?"
+    },
+    {
+      "type": "table",
+      "headers": ["Linkage", "Definition", "Intuition"],
+      "rows": [
+        ["Single", "D(A,B) = min d(a,b), for a∈A and b∈B", "Closest pair; can form long chain-like clusters"],
+        ["Complete", "D(A,B) = max d(a,b)", "Farthest pair; favours compact groups"],
+        ["Average", "D(A,B) = average of all d(a,b)", "Average separation between the two groups"],
+        ["Ward", "Merge causing the smallest increase in within-cluster sum of squares", "Joins groups while trying to keep them compact"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "A small example: if every point in group A is compared with every point in group B, single linkage uses the smallest cross-group distance, complete linkage uses the largest, and average linkage uses the mean of those distances. Different linkage rules can create different dendrograms from the same dataset. Hierarchical clustering is useful for taxonomy, document organisation and biological classification, but can be expensive for very large datasets and early merge/split decisions are generally not reversed."
+    },
+    {
+      "type": "h2",
+      "text": "Fuzzy C-Means: A Person Can Belong to More Than One Group"
+    },
+    {
+      "type": "p",
+      "text": "Real life is not always a set of rigid boxes. A song can be partly pop, partly electronic and partly dance. Fuzzy clustering represents this overlap by assigning each point a membership value uᵢₖ between 0 and 1 for every cluster k. For each point, the memberships add to one: Σₖ uᵢₖ = 1. A student might have membership 0.7 in a 'programming-oriented' cluster and 0.3 in a 'mathematics-oriented' cluster."
+    },
+    {
+      "type": "p",
+      "text": "Fuzzy C-means minimises Jₘ = Σᵢ Σₖ uᵢₖᵐ ||xᵢ − vₖ||², where vₖ is cluster k's centre and m > 1 is the fuzziness exponent. A commonly used membership update is uᵢₖ = 1 / Σⱼ (||xᵢ−vₖ|| / ||xᵢ−vⱼ||)^(2/(m−1)), for nonzero distances. Centres are updated by vₖ = [Σᵢ uᵢₖᵐ xᵢ] / [Σᵢ uᵢₖᵐ]."
+    },
+    {
+      "type": "p",
+      "text": "The exponent m controls how soft the memberships are: values close to 1 make assignments sharper, while larger values spread membership more evenly. Fuzzy C-means is useful for image segmentation, overlapping customer profiles and medical-image analysis. It still requires the number of clusters, is sensitive to scaling and noise, and membership values should not automatically be interpreted as calibrated probabilities."
+    },
+    {
+      "type": "h2",
+      "text": "BIRCH: Summarise a Large Dataset Instead of Keeping Every Point in Memory"
+    },
+    {
+      "type": "p",
+      "text": "Imagine a library that receives millions of books. Rather than repeatedly carrying every book around to reorganise the shelves, the librarian keeps compact summaries for groups: how many books are there, what are their combined measurements, and how spread out are they? BIRCH uses a similar idea. It incrementally builds a CF-Tree (Clustering Feature Tree) whose nodes store compact summaries of subclusters."
+    },
+    {
+      "type": "p",
+      "text": "A Clustering Feature is CF = (N, LS, SS). N is the number of points, LS = Σᵢ xᵢ is the linear sum, and SS = Σᵢ ||xᵢ||² is the sum of squared magnitudes. These summaries are additive: CF(A∪B) = (N_A+N_B, LS_A+LS_B, SS_A+SS_B). This makes merging summaries efficient without revisiting every original point."
+    },
+    {
+      "type": "h3",
+      "text": "Radius and diameter from a CF summary"
+    },
+    {
+      "type": "p",
+      "text": "For a subcluster, the squared radius around its centroid can be computed as R² = SS/N − ||LS/N||². The squared pairwise diameter can be computed as D² = 2SS/[N(N−1)] − 2||LS||²/[N(N−1)] for N > 1. These quantities help determine whether a new point can be absorbed into a leaf subcluster without exceeding the chosen threshold. Implementations may use equivalent algebraic forms."
+    },
+    {
+      "type": "p",
+      "text": "The branching factor controls how many child entries a non-leaf node can hold; the threshold controls the maximum allowed size (commonly radius) of a leaf subcluster. When a node overflows, the tree is split. BIRCH is especially useful for large, numeric, often incrementally arriving datasets and can act as a pre-clustering step. Its compact summaries are efficient, but the result can depend on insertion order, threshold and feature scaling; the basic method is not ideal for arbitrary non-spherical cluster shapes."
+    },
+    {
+      "type": "h2",
+      "text": "CURE: Represent One Cluster with Several Carefully Placed Points"
+    },
+    {
+      "type": "p",
+      "text": "Imagine describing a large, irregular island using only its centre. The centre may hide the island's shape. CURE (Clustering Using REpresentatives) instead selects several well-scattered representative points from each cluster and shrinks them toward the cluster mean. The representatives preserve more information about the cluster's shape than one centroid does."
+    },
+    {
+      "type": "p",
+      "text": "If μ is the cluster mean and p is a selected representative point, the shrunken representative is p′ = μ + α(p − μ), where 0 < α ≤ 1. When α = 1, the point is not shrunk; when α is smaller, it moves closer to the mean. The distance between clusters is then estimated using their representative points, commonly the minimum distance between representative sets."
+    },
+    {
+      "type": "p",
+      "text": "CURE can handle clusters with different shapes and sizes better than a single-centroid method and is designed for large datasets using sampling and partitioning strategies. Its quality depends on the number of representatives, shrink factor and sampling choices. Too few representatives may miss shape; too many increase computation."
+    },
+    {
+      "type": "table",
+      "headers": ["Algorithm", "What it stores", "Memory/scale idea", "Useful strength"],
+      "rows": [
+        ["BIRCH", "CF summaries: N, LS, SS", "Compresses many points into a tree of summaries", "Incremental processing and compact subclusters"],
+        ["CURE", "Several shrunk representative points per cluster", "Uses sampling/partitioning to scale hierarchical clustering", "Captures irregular shapes and different cluster sizes"]
+      ]
+    },
+    {
+      "type": "h2",
+      "text": "Gaussian Mixture Models: Clusters as Overlapping Probability Clouds"
+    },
+    {
+      "type": "p",
+      "text": "Imagine heights in a population. The overall height distribution may be a mixture of several overlapping groups. A Gaussian Mixture Model (GMM) assumes that each observation was generated by one of K Gaussian distributions, but we do not know which one generated it. Unlike K-means, GMM can represent elliptical clusters and gives each point a probability of belonging to every component."
+    },
+    {
+      "type": "p",
+      "text": "The mixture density is p(x) = Σₖ₌₁ᴷ πₖ N(x | μₖ, Σₖ), where πₖ is the mixing weight, μₖ is the mean vector, and Σₖ is the covariance matrix of component k. Each πₖ is non-negative and Σₖ πₖ = 1. The Gaussian density describes how plausible x is under that component."
+    },
+    {
+      "type": "h3",
+      "text": "What does covariance change?"
+    },
+    {
+      "type": "p",
+      "text": "The covariance matrix describes spread and direction. A spherical covariance gives similar spread in every direction; a diagonal covariance allows different spread along each feature axis; a full covariance can represent tilted ellipses and relationships between features. Thus, GMM is more flexible than K-means, but estimating full covariance matrices requires more data and computation."
+    },
+    {
+      "type": "p",
+      "text": "The posterior responsibility that component k generated xᵢ is γᵢₖ = [πₖ N(xᵢ|μₖ,Σₖ)] / [Σⱼ πⱼ N(xᵢ|μⱼ,Σⱼ)]. For each observation, responsibilities across all components sum to one. These are soft assignments: a point can have, for example, 0.8 responsibility for component 1 and 0.2 for component 2."
+    },
+    {
+      "type": "h2",
+      "text": "Expectation-Maximization: Alternate Between Guessing Membership and Updating the Model"
+    },
+    {
+      "type": "p",
+      "text": "Think of sorting a mixed box of fruit when the labels have fallen off. First, based on the current idea of what apples and oranges look like, estimate how likely each fruit is to belong to each group. Then use those weighted assignments to update the description of each group. Repeat. EM follows this pattern: E-step estimates hidden memberships; M-step updates the model parameters."
+    },
+    {
+      "type": "steps",
+      "items": [
+        {"num": "1", "title": "Initialise", "text": "Choose initial mixing weights, means and covariance matrices. Poor initialisation can lead to a poor local optimum."},
+        {"num": "2", "title": "E-step (Expectation)", "text": "Calculate responsibilities γᵢₖ using the current parameters and Bayes' rule."},
+        {"num": "3", "title": "M-step (Maximisation)", "text": "Use responsibilities as weights to update the mixing weights, means and covariance matrices."},
+        {"num": "4", "title": "Check convergence", "text": "Evaluate the data log-likelihood. Stop when improvement is sufficiently small or a maximum iteration count is reached."}
+      ]
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "Nₖ = Σᵢ γᵢₖ\nπₖ(new) = Nₖ / n\nμₖ(new) = [Σᵢ γᵢₖ xᵢ] / Nₖ\nΣₖ(new) = [Σᵢ γᵢₖ (xᵢ−μₖ)(xᵢ−μₖ)ᵀ] / Nₖ"
+    },
+    {
+      "type": "p",
+      "text": "The log-likelihood is ℓ(θ) = Σᵢ log[Σₖ πₖ N(xᵢ|μₖ,Σₖ)]. EM is designed to increase (or leave unchanged) this likelihood at each ideal iteration, but it may converge to a local optimum rather than the global best. Run several initialisations and compare solutions. Very small or singular covariance matrices can cause numerical problems, so practical implementations use safeguards such as covariance regularisation."
+    },
+    {
+      "type": "h3",
+      "text": "K-Means versus GMM: a common exam comparison"
+    },
+    {
+      "type": "table",
+      "headers": ["Point", "K-Means", "Gaussian Mixture Model"],
+      "rows": [
+        ["Cluster model", "Centroid-based distance partition", "Mixture of Gaussian probability distributions"],
+        ["Membership", "Hard: one cluster per point", "Soft: posterior probabilities"],
+        ["Cluster shape", "Best for compact, roughly spherical groups", "Can model elliptical groups through covariance"],
+        ["Main optimisation", "Minimise within-cluster squared distance", "Maximise data likelihood, commonly using EM"],
+        ["Output", "Cluster label and centroid", "Mixing weights, means, covariances and responsibilities"],
+        ["Limitations", "Sensitive to scale, outliers and initial centres", "More parameters; sensitive to initialisation and covariance issues"]
+      ]
+    },
+    {
+      "type": "h2",
+      "text": "Parameter Estimation: MLE and MAP Made Intuitive"
+    },
+    {
+      "type": "p",
+      "text": "A model has unknown parameters, such as the probability of heads for a coin or the mean and variance of a Gaussian. Parameter estimation means using observed data to choose plausible values. Maximum Likelihood Estimation (MLE) asks: which parameter value makes the data we observed most likely? Maximum A Posteriori (MAP) asks: which parameter value is most plausible after combining the data with a prior belief?"
+    },
+    {
+      "type": "h3",
+      "text": "MLE: let the observed data speak"
+    },
+    {
+      "type": "p",
+      "text": "For parameter θ and data D, the likelihood is L(θ|D) = P(D|θ). MLE chooses θ̂_MLE = arg maxθ P(D|θ). Since products of many probabilities can become extremely small, calculations commonly use the log-likelihood: θ̂_MLE = arg maxθ log P(D|θ). For independent observations, the joint likelihood is the product of the individual likelihoods and the log-likelihood is their sum."
+    },
+    {
+      "type": "callout",
+      "icon": "🪙",
+      "text": "Coin analogy: you toss a coin 10 times and observe 7 heads. If you estimate the probability of heads using only these observations, the MLE is p̂ = 7/10 = 0.7. The data-based estimate says 70%."
+    },
+    {
+      "type": "h3",
+      "text": "MAP: combine data with a prior belief"
+    },
+    {
+      "type": "p",
+      "text": "Bayes' rule gives P(θ|D) ∝ P(D|θ)P(θ). MAP chooses the parameter with the largest posterior: θ̂_MAP = arg maxθ P(D|θ)P(θ) = arg maxθ [log P(D|θ) + log P(θ)]. The prior P(θ) represents information or assumptions specified before seeing the current data. A prior is not automatically correct; it should be justified and its influence considered."
+    },
+    {
+      "type": "p",
+      "text": "For a coin with p as the probability of heads, use a Beta(a,b) prior. After observing h heads and t tails, the posterior is Beta(a+h,b+t). Its mode, when both posterior parameters exceed 1, is (a+h−1)/(a+b+h+t−2). With 7 heads and 3 tails and a Beta(2,2) prior, the posterior is Beta(9,5), so the MAP estimate is (9−1)/(9+5−2) = 8/12 ≈ 0.667. The prior pulls the estimate slightly toward 0.5 compared with the MLE 0.7."
+    },
+    {
+      "type": "p",
+      "text": "Important distinction: the posterior mean for a Beta(a+h,b+t) distribution is (a+h)/(a+b+h+t), while its mode is (a+h−1)/(a+b+h+t−2), when the mode formula applies. MAP is the posterior mode, not the posterior mean. For the example above, the posterior mean is 9/14 ≈ 0.643, which is different from the MAP value 0.667."
+    },
+    {
+      "type": "table",
+      "headers": ["Aspect", "MLE", "MAP"],
+      "rows": [
+        ["Uses", "Likelihood from observed data", "Likelihood multiplied by prior"],
+        ["Formula", "arg maxθ P(D|θ)", "arg maxθ P(D|θ)P(θ)"],
+        ["Prior information", "Not explicitly included", "Explicitly included"],
+        ["Small datasets", "Can be unstable or extreme", "A suitable prior can regularise estimates"],
+        ["Large datasets", "Often dominates as data accumulate", "Often approaches MLE under regular conditions and a fixed prior"],
+        ["Common ML connection", "Likelihood-based model fitting", "Bayesian estimation and regularisation"]
+      ]
+    },
+    {
+      "type": "h2",
+      "text": "Where Are These Clustering Methods Used?"
+    },
+    {
+      "type": "table",
+      "headers": ["Application", "What is grouped?", "Why clustering helps"],
+      "rows": [
+        ["Customer segmentation", "Customers by purchasing and browsing behaviour", "Supports targeted services and product recommendations"],
+        ["Healthcare", "Patients with similar measurements or clinical profiles", "Can reveal subgroups for further expert investigation; it does not itself diagnose"],
+        ["Image segmentation", "Pixels with similar colour, intensity or texture", "Separates regions and simplifies image analysis"],
+        ["Document organisation", "Articles or documents represented by text features", "Groups similar content for browsing and search"],
+        ["Cybersecurity", "Network events or user activity patterns", "Can expose unusual groups or outliers for analyst review"],
+        ["Environmental monitoring", "Sensor readings and locations with similar patterns", "Can reveal pollution patterns, station behaviour or unusual measurements"],
+        ["Retail inventory", "Products with similar demand patterns", "Helps with stocking, grouping and demand planning"]
+      ]
+    },
+    {
+      "type": "h2",
+      "text": "How to Select a Clustering Method"
+    },
+    {
+      "type": "table",
+      "headers": ["Data situation / requirement", "Methods worth considering", "Reason"],
+      "rows": [
+        ["Need a fast baseline with numeric features and compact groups", "K-means", "Simple and computationally efficient"],
+        ["Outliers are important and representatives should be real observations", "K-medoids", "Uses medoids rather than means"],
+        ["Need nested groups and a dendrogram", "Hierarchical clustering", "Shows relationships at multiple levels"],
+        ["Groups overlap and partial membership is meaningful", "Fuzzy C-means", "Provides degrees of membership"],
+        ["Very large or streaming-like numeric data", "BIRCH", "Incremental CF-Tree summaries"],
+        ["Clusters have irregular shapes or different sizes", "CURE", "Multiple representative points preserve shape"],
+        ["Clusters are probabilistic/elliptical and uncertainty matters", "GMM", "Models Gaussian components and posterior responsibilities"]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "⚠️",
+      "text": "No clustering algorithm can guarantee that the discovered groups are meaningful. Evaluate cluster quality with suitable internal measures (such as silhouette score), stability checks, domain knowledge and, when available, external labels. A high score on one metric does not prove that the groups are useful."
+    },
+    {
+      "type": "h2",
+      "text": "Common Mistakes and Memory Aids"
+    },
+    {
+      "type": "table",
+      "headers": ["Common mistake", "Correct understanding"],
+      "rows": [
+        ["Treating K-means centres as actual observations", "A centroid is an arithmetic mean and may be a synthetic point; a medoid is an actual observation"],
+        ["Calling GMM hard clustering", "GMM naturally gives soft posterior responsibilities; a hard label can be created afterward by choosing the largest responsibility"],
+        ["Calling fuzzy memberships probabilities", "They are membership degrees defined by the fuzzy objective, not necessarily calibrated probabilities"],
+        ["Assuming BIRCH and CURE are identical", "BIRCH stores compact CF summaries; CURE stores multiple shrunk representative points"],
+        ["Assuming EM always finds the global optimum", "EM can converge to a local optimum and depends on initialisation"],
+        ["Confusing MLE and MAP", "MLE uses likelihood; MAP uses likelihood and prior"],
+        ["Comparing unscaled features with Euclidean distance", "Large-scale features can dominate; scaling should be considered and fitted without leakage"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Memory aid: K-means = one average centre; K-medoids = one real representative; hierarchical = a tree; fuzzy = degrees of membership; BIRCH = compact summaries in a tree; CURE = several shrunk representatives; GMM = probability clouds; EM = estimate memberships, then maximise parameters; MLE = data likelihood; MAP = likelihood plus prior."
+    },
+    {
+      "type": "h2",
+      "text": "Mini Worked Exercise: Identify the Right Idea"
+    },
+    {
+      "type": "p",
+      "text": "1. A point has GMM responsibilities 0.65, 0.25 and 0.10. These are soft probabilities that sum to one. 2. A point has fuzzy memberships 0.65, 0.25 and 0.10. These are fuzzy membership degrees that sum to one, but should not automatically be called probabilities. 3. A very large dataset must be compressed into compact subcluster summaries as it arrives: consider BIRCH. 4. Clusters are irregular and need multiple boundary representatives: consider CURE. 5. A coin shows 4 heads in 5 tosses: the MLE of p is 4/5 = 0.8. With a Beta(2,2) prior, the posterior is Beta(6,3), and the MAP mode is (6−1)/(6+3−2) = 5/7 ≈ 0.714."
+    },
+    {
+      "type": "h2",
       "text": "Quiz: Test Your Understanding"
     },
     {
