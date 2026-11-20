@@ -6,7 +6,7 @@ const post = {
   "title": "Clustering, GMM & Parameter Estimation (Part 2)",
   "seriesTitle": "Machine Learning: The Complete Unit-Wise Exam Mastery Series",
   "date": "September 28, 2026",
-  "readTime": "30 min read",
+  "readTime": "22 min read",
   "category": "Machine Learning",
   "categoryColor": "#f59e0b",
   "excerpt": "Partitioning, hierarchical, fuzzy and distribution-based clustering, BIRCH and CURE, Gaussian Mixture Models with Expectation Maximization, MLE vs MAP, and applications of clustering.",
@@ -33,7 +33,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Clustering is an unsupervised learning technique that partitions a set of unlabelled data points into groups (clusters) so that points in the same cluster are more similar to each other than to points in other clusters. Similarity is measured with a distance function, most commonly Euclidean distance \\(d(a,b)=\\sqrt{\\sum_i(a_i-b_i)^2}\\)."
+      "text": "Clustering is an unsupervised learning technique that partitions a set of unlabelled data points into groups (clusters) so that points in the same cluster are more similar to each other than to points in other clusters. Similarity is measured with a distance function, most commonly Euclidean distance d(a, b) = √( Σᵢ (aᵢ − bᵢ)² )."
     },
     {
       "type": "callout",
@@ -190,6 +190,33 @@ const post = {
       "text": "Exam example: for customer spending data, K-means may produce a centroid such as (₹4,250, 3.7 visits), even if no customer has exactly those values. K-medoids chooses an actual customer record as the representative."
     },
     {
+      "type": "p",
+      "text": "Code walkthrough: the loop below is K-means with nothing hidden. It repeats the two steps from the algorithm (assign every point to its nearest centroid, then move each centroid to the mean of its points) and prints the sum of squared errors (SSE) after each pass. The starting centroids are deliberately poor, with both placed inside the first group, so you can watch the algorithm repair itself."
+    },
+    {
+      "type": "code-block",
+      "label": "K-Means from Scratch: Assignment and Update Steps",
+      "code": "import numpy as np\n\n# Six 2-D points forming two obvious groups\nX = np.array([[1.0, 1.0], [1.5, 2.0], [2.0, 1.5],\n              [8.0, 8.0], [8.5, 9.0], [9.0, 8.5]])\nk = 2\ncentroids = X[[0, 1]].copy()          # a poor start: both centroids inside the first group\n\nfor step in range(1, 10):\n    # Assignment step: nearest centroid for every point\n    dists = np.linalg.norm(X[:, None, :] - centroids[None, :, :], axis=2)\n    labels = dists.argmin(axis=1)\n\n    # Update step: each centroid becomes the mean of its points\n    new_centroids = np.array([X[labels == j].mean(axis=0) for j in range(k)])\n    sse = sum(((X[labels == j] - new_centroids[j]) ** 2).sum() for j in range(k))\n    print(f\"iter {step}: labels={labels.tolist()}, SSE={sse:.3f}\")\n\n    if np.allclose(new_centroids, centroids):   # converged: nothing moved\n        break\n    centroids = new_centroids\n\nprint(\"final centroids:\\n\", np.round(centroids, 2))\n\n# Output:\n#   iter 1: labels=[0, 1, 1, 1, 1, 1], SSE=110.600\n#   iter 2: labels=[0, 0, 0, 1, 1, 1], SSE=2.000\n#   iter 3: labels=[0, 0, 0, 1, 1, 1], SSE=2.000\n#   final centroids:\n#    [[1.5 1.5]\n#    [8.5 8.5]]"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: in iteration 1 the bad start leaves one centroid alone and drags the other across both groups, so SSE is 110.6. One update later SSE drops to 2.0, and iteration 3 changes nothing, which is the convergence test. SSE never increases from one iteration to the next, but the result depends on the starting centroids, which is why practical implementations use several random restarts (n_init) or k-means++ seeding."
+    },
+    {
+      "type": "p",
+      "text": "K-means versus K-medoids is easiest to defend with a tiny outlier example. The mean is an average that may not be a real observation and moves towards extreme values; a medoid is always an actual data point chosen to minimise total distance to the others."
+    },
+    {
+      "type": "code-block",
+      "label": "Why K-Medoids Is More Robust Than K-Means",
+      "code": "import numpy as np\n\n# One cluster of marks with a single extreme outlier\nx = np.array([52.0, 55.0, 58.0, 60.0, 61.0, 300.0])\n\nmean = x.mean()                                   # K-means style centre\n# Medoid: the actual data point with the smallest total distance to all others\ntotal_dist = np.abs(x[:, None] - x[None, :]).sum(axis=1)\nmedoid = x[total_dist.argmin()]\n\nprint(f\"mean   = {mean:.2f}   (dragged towards the outlier, not a real data point)\")\nprint(f\"medoid = {medoid:.2f}   (an actual observation, barely affected by the outlier)\")\n\n# Output:\n#   mean   = 97.67   (dragged towards the outlier, not a real data point)\n#   medoid = 58.00   (an actual observation, barely affected by the outlier)"
+    },
+    {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Exam sentence: 'K-means uses the mean as the cluster centre, so one extreme value can pull the centroid away from the bulk of the data (here 97.67 against a typical value near 58). K-medoids uses an actual observation as the centre, so it is more robust to outliers, at the cost of a more expensive search for medoids.'"
+    },
+    {
       "type": "h2",
       "text": "Selecting k and Evaluating Cluster Quality"
     },
@@ -199,7 +226,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "The silhouette coefficient measures how well a point fits its assigned cluster compared with the nearest alternative cluster. For a point i, let a(i) be its average distance to points in its own cluster and b(i) the smallest average distance to points in another cluster. Its silhouette is \\(s(i)=\\frac{b(i)-a(i)}{\\max(a(i),b(i))}\\). Values approach +1 for well-separated assignments, are around 0 near a boundary, and can be negative when a point may be assigned to the wrong cluster. The overall score is the mean across points."
+      "text": "The silhouette coefficient measures how well a point fits its assigned cluster compared with the nearest alternative cluster. For a point i, let a(i) be its average distance to points in its own cluster and b(i) the smallest average distance to points in another cluster. Its silhouette is s(i) = (b(i) − a(i)) / max(a(i), b(i)). Values approach +1 for well-separated assignments, are around 0 near a boundary, and can be negative when a point may be assigned to the wrong cluster. The overall score is the mean across points."
     },
     {
       "type": "table",
@@ -302,6 +329,19 @@ const post = {
       "text": "Exam tip: explain both the direction and the stopping/cutting idea. Agglomerative starts with n singleton clusters and performs n−1 merges to obtain one cluster; a dendrogram can be cut earlier to obtain the desired grouping."
     },
     {
+      "type": "p",
+      "text": "Code walkthrough: SciPy builds the full merge tree with linkage(). Each row of the returned matrix records which two clusters were merged, the distance at which they merged and the size of the new cluster. fcluster() then cuts the tree to give a flat clustering, and the cophenetic correlation measures how faithfully the tree preserves the original pairwise distances (closer to 1 is better)."
+    },
+    {
+      "type": "code-block",
+      "label": "Agglomerative Clustering: Linkage Methods, Cophenetic Correlation and Cutting the Tree",
+      "code": "import numpy as np\nfrom scipy.cluster.hierarchy import linkage, fcluster, cophenet\nfrom scipy.spatial.distance import pdist\n\nX = np.array([[1, 1], [1.5, 1.2], [2, 1],\n              [6, 6], [6.5, 6.2], [7, 6],\n              [12, 1], [12.5, 1.3]])\n\nd = pdist(X)                                   # pairwise Euclidean distances\nfor method in [\"single\", \"complete\", \"average\", \"ward\"]:\n    Z = linkage(X, method=method)              # each row: [cluster_a, cluster_b, distance, size]\n    c, _ = cophenet(Z, d)                      # how faithfully the tree preserves distances\n    labels = fcluster(Z, t=3, criterion=\"maxclust\")   # cut the dendrogram into 3 clusters\n    print(f\"{method:8s} cophenetic corr={c:.3f}  labels={labels.tolist()}\")\n\nZ = linkage(X, method=\"average\")\nprint(\"\\nLast three merges (average linkage): [a, b, merge distance, size]\")\nprint(np.round(Z[-3:], 2))\n\n# Output:\n#   single   cophenetic corr=0.939  labels=[2, 2, 2, 3, 3, 3, 1, 1]\n#   complete cophenetic corr=0.945  labels=[2, 2, 2, 3, 3, 3, 1, 1]\n#   average  cophenetic corr=0.951  labels=[2, 2, 2, 3, 3, 3, 1, 1]\n#   ward     cophenetic corr=0.918  labels=[1, 1, 1, 3, 3, 3, 2, 2]\n#   \n#   Last three merges (average linkage): [a, b, merge distance, size]\n#   [[ 5.    9.    0.77  3.  ]\n#    [11.   12.    7.08  6.  ]\n#    [10.   13.    9.16  8.  ]]"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: single, complete and average linkage agree on the three natural groups, while Ward linkage finds the same groups but numbers them differently, because cluster IDs are arbitrary labels and not class names. The last three rows of the average-linkage matrix show the story of the dendrogram: a tight triple forms at distance 0.77, but the next two merges happen at 7.08 and 9.16. That large jump in merge distance is the visual cue for where to cut: cutting below 7.08 leaves three natural clusters."
+    },
+    {
       "type": "h2",
       "text": "Fuzzy C-Means: Interpreting Membership Values"
     },
@@ -319,12 +359,25 @@ const post = {
       "text": "Fuzzy membership is not automatically the same as a calibrated probability. It expresses the algorithm's degree of membership under its objective and should not be interpreted as a statistically calibrated chance unless a probabilistic model justifies that interpretation."
     },
     {
+      "type": "p",
+      "text": "Code walkthrough: this is Fuzzy C-Means with the two update rules written out. The membership update gives a larger value to nearer centres and forces each row of U to sum to 1; the centre update is a weighted mean using memberships raised to the fuzziness exponent m. The last data point is placed exactly between the two groups to show what soft assignment looks like."
+    },
+    {
+      "type": "code-block",
+      "label": "Fuzzy C-Means: Membership and Centre Updates",
+      "code": "import numpy as np\n\nX = np.array([[1.0], [2.0], [3.0], [7.0], [8.0], [9.0], [5.0]])   # last point sits in the middle\nc, m = 2, 2.0                                   # clusters and fuzziness exponent\ncenters = np.array([[2.0], [8.0]])              # fixed start for a repeatable run\n\nfor it in range(50):\n    # Membership update: closer centre => larger membership; each row sums to 1\n    d = np.linalg.norm(X[:, None, :] - centers[None, :, :], axis=2) + 1e-9\n    U = 1.0 / ((d[:, :, None] / d[:, None, :]) ** (2 / (m - 1))).sum(axis=2)\n\n    # Centre update: weighted mean using memberships raised to the power m\n    W = U ** m\n    new_centers = (W.T @ X) / W.sum(axis=0)[:, None]\n    if np.allclose(new_centers, centers, atol=1e-6):\n        break\n    centers = new_centers\n\nprint(\"centres:\", np.round(centers.ravel(), 2))\nprint(\"memberships (rows = points, columns = clusters):\")\nprint(np.round(U, 2))\n\n# Output:\n#   centres: [2.25 7.75]\n#   memberships (rows = points, columns = clusters):\n#   [[0.97 0.03]\n#    [1.   0.  ]\n#    [0.98 0.02]\n#    [0.02 0.98]\n#    [0.   1.  ]\n#    [0.03 0.97]\n#    [0.5  0.5 ]]"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: points inside a group get memberships close to 1 for their own cluster, but the middle point (5.0) gets 0.50 and 0.50. K-means would force it into one cluster with no sign of doubt; Fuzzy C-Means keeps the ambiguity visible. Rows always sum to 1, but, as noted above, these are degrees of membership and not calibrated probabilities."
+    },
+    {
       "type": "h2",
       "text": "BIRCH Algorithm: Clustering Features and CF-Tree"
     },
     {
       "type": "p",
-      "text": "For a d-dimensional sub-cluster, the Clustering Feature \\(\\mathrm{CF}=(N,LS,SS)\\) stores N, the number of points; LS, the component-wise linear sum of the points; and SS, the sum of squared coordinates. The centroid is \\(\\frac{LS}{N}\\). The radius is the root mean squared distance of the points from their centroid, and the diameter is the root mean squared pairwise distance between points in the sub-cluster. These statistics allow compact summaries to be combined without repeatedly storing every original observation."
+      "text": "For a d-dimensional sub-cluster, the Clustering Feature CF = (N, LS, SS) stores N, the number of points; LS, the component-wise linear sum of the points; and SS, the sum of squared coordinates. The centroid is LS/N. The radius is the root mean squared distance of the points from their centroid, and the diameter is the root mean squared pairwise distance between points in the sub-cluster. These statistics allow compact summaries to be combined without repeatedly storing every original observation."
     },
     {
       "type": "p",
@@ -370,7 +423,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "A centroid alone can poorly describe an irregular cluster. CURE selects several well-scattered observations as representatives, then shrinks each representative toward the cluster mean. If a representative is x and the cluster centroid is μ, the shrunk point is \\(x'=\\mu+\\alpha(x-\\mu)\\), where α is the shrink factor between 0 and 1. When α is close to 1, representatives remain near their original positions; when α is smaller, they move closer to the centroid."
+      "text": "A centroid alone can poorly describe an irregular cluster. CURE selects several well-scattered observations as representatives, then shrinks each representative toward the cluster mean. If a representative is x and the cluster centroid is μ, the shrunk point is x′ = μ + α(x − μ), where α is the shrink factor between 0 and 1. When α is close to 1, representatives remain near their original positions; when α is smaller, they move closer to the centroid."
     },
     {
       "type": "p",
@@ -382,12 +435,25 @@ const post = {
       "text": "Memory aid: BIRCH compresses observations into statistical summaries; CURE describes each cluster with several geometrical representatives and moves them inward."
     },
     {
+      "type": "p",
+      "text": "Code walkthrough: the first half streams 3,000 points into scikit-learn's Birch in six batches using partial_fit, so the algorithm never needs the whole dataset in memory at once; only the compact CF-tree summaries are kept. The second half demonstrates CURE's shrinking step, x′ = μ + α(x − μ), on four well-scattered representative points of one cluster."
+    },
+    {
+      "type": "code-block",
+      "label": "BIRCH on a Stream of Batches and CURE Representative Shrinking",
+      "code": "import numpy as np\nfrom sklearn.cluster import Birch\nfrom sklearn.datasets import make_blobs\n\nX, _ = make_blobs(n_samples=3000, centers=3, cluster_std=0.7, random_state=7)\n\n# BIRCH reads data in batches and keeps only compact summaries (CF entries)\nmodel = Birch(threshold=0.8, branching_factor=50, n_clusters=3)\nfor batch in np.array_split(X, 6):              # pretend the data arrives as a stream\n    model.partial_fit(batch)\nlabels = model.predict(X)\nprint(\"sub-clusters kept in the CF-tree:\", len(model.subcluster_centers_))\nprint(\"cluster sizes:\", np.bincount(labels).tolist())\n\n# CURE idea: shrink representative points towards the centroid by factor alpha\ncluster = X[labels == 0]\ncentroid = cluster.mean(axis=0)\nfar = np.argsort(np.linalg.norm(cluster - centroid, axis=1))[-4:]   # 4 well-scattered extremes\nreps = cluster[far]\nalpha = 0.3\nshrunk = centroid + alpha * (reps - centroid)    # x' = mu + alpha (x - mu)\nprint(\"distance of representatives from centroid before:\", np.round(np.linalg.norm(reps - centroid, axis=1), 2))\nprint(\"distance of representatives from centroid after :\", np.round(np.linalg.norm(shrunk - centroid, axis=1), 2))\n\n# Output:\n#   sub-clusters kept in the CF-tree: 15\n#   cluster sizes: [1000, 1000, 1000]\n#   distance of representatives from centroid before: [2.46 2.46 2.6  2.67]\n#   distance of representatives from centroid after : [0.74 0.74 0.78 0.8 ]"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: 3,000 points are summarised by only 15 sub-clusters in the CF-tree, and the final grouping still recovers three clusters of 1,000. For CURE, shrinking with α = 0.3 pulls representatives from about 2.5 to about 0.75 units from the centroid, so outliers cannot stretch the cluster boundary far, while multiple representatives still let the cluster keep a non-spherical shape."
+    },
+    {
       "type": "h2",
       "text": "Gaussian Mixture Models: Parameters and Covariance"
     },
     {
       "type": "p",
-      "text": "A GMM with K components has mixing weights \\(\\pi_1,\\ldots,\\pi_K\\), component means \\(\\mu_1,\\ldots,\\mu_K\\) and covariance matrices \\(\\Sigma_1,\\ldots,\\Sigma_K\\). Each mixing weight is non-negative and the weights sum to 1. The covariance matrix describes spread and relationships between features. A diagonal covariance assumes no within-component feature correlations; a full covariance can represent tilted elliptical clusters but requires more parameters."
+      "text": "A GMM with K components has mixing weights π₁, …, πₖ, component means μ₁, …, μₖ and covariance matrices Σ₁, …, Σₖ. Each mixing weight is non-negative and the weights sum to 1. The covariance matrix describes spread and relationships between features. A diagonal covariance assumes no within-component feature correlations; a full covariance can represent tilted elliptical clusters but requires more parameters."
     },
     {
       "type": "table",
@@ -466,16 +532,42 @@ const post = {
       "text": "Numerical note: implementations generally evaluate Gaussian probabilities using log densities and log-sum-exp calculations. Directly multiplying many very small probabilities can underflow to zero and make responsibility calculations unstable."
     },
     {
+      "type": "p",
+      "text": "Code walkthrough: this is a complete EM loop for a one-dimensional mixture of two Gaussians. The E-step computes each point's responsibility for each component, and the M-step re-estimates the weights, means and variances from those responsibilities. The starting means are deliberately close together and wrong, and the two clumps overlap, so convergence takes several iterations and you can watch it happen."
+    },
+    {
+      "type": "code-block",
+      "label": "Expectation-Maximization for a Two-Component Gaussian Mixture",
+      "code": "import numpy as np\n\nx = np.array([1.0, 1.8, 2.3, 2.9, 4.0, 4.7, 5.6, 6.4])   # two overlapping clumps on a line\n\n# Initial guesses for K = 2 components\npi = np.array([0.5, 0.5])\nmu = np.array([2.0, 3.0])        # deliberately poor, close-together start\nvar = np.array([1.0, 1.0])\n\ndef normal_pdf(x, mu, var):\n    return np.exp(-(x - mu) ** 2 / (2 * var)) / np.sqrt(2 * np.pi * var)\n\nfor step in range(1, 9):\n    # E-step: responsibility of each component for each point\n    dens = pi * normal_pdf(x[:, None], mu, var)           # shape (n, K)\n    resp = dens / dens.sum(axis=1, keepdims=True)\n\n    # M-step: re-estimate parameters using the responsibilities\n    Nk = resp.sum(axis=0)\n    pi = Nk / len(x)\n    mu = (resp * x[:, None]).sum(axis=0) / Nk\n    var = (resp * (x[:, None] - mu) ** 2).sum(axis=0) / Nk\n\n    loglik = np.log(dens.sum(axis=1)).sum()               # log-likelihood before this update\n    print(f\"iter {step}: loglik={loglik:.3f}, mu={np.round(mu, 2)}, pi={np.round(pi, 2)}\")\n\nprint(\"responsibility of component 2 for the point 3.5:\",\n      np.round((pi[1] * normal_pdf(3.5, mu[1], var[1])) /\n               (pi * normal_pdf(3.5, mu, var)).sum(), 3))\n\n# Output:\n#   iter 1: loglik=-22.485, mu=[2.16 4.35], pi=[0.35 0.65]\n#   iter 2: loglik=-15.617, mu=[2.07 4.43], pi=[0.36 0.64]\n#   iter 3: loglik=-15.414, mu=[1.98 4.53], pi=[0.37 0.63]\n#   iter 4: loglik=-15.232, mu=[1.91 4.62], pi=[0.38 0.62]\n#   iter 5: loglik=-15.114, mu=[1.88 4.7 ], pi=[0.39 0.61]\n#   iter 6: loglik=-15.057, mu=[1.87 4.76], pi=[0.41 0.59]\n#   iter 7: loglik=-15.026, mu=[1.88 4.82], pi=[0.42 0.58]\n#   iter 8: loglik=-15.002, mu=[1.9  4.86], pi=[0.43 0.57]\n#   responsibility of component 2 for the point 3.5: 0.864"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: the log-likelihood rises at every iteration (-22.5, -15.6, -15.4, ... -15.0), which is the guarantee EM gives: it never decreases the likelihood. The means move apart towards the two clumps and the mixing weights adjust towards the group sizes. The final line shows a soft assignment: a point at 3.5 sits between the components and receives a responsibility of about 0.86 for the second one, not a hard 0 or 1."
+    },
+    {
+      "type": "p",
+      "text": "In practice you rarely write EM yourself. scikit-learn's GaussianMixture runs the same loop, and its bic() method supports the model-selection step mentioned earlier: fit several values of K and prefer the lowest BIC."
+    },
+    {
+      "type": "code-block",
+      "label": "GaussianMixture with BIC Model Selection and Soft Assignment",
+      "code": "import numpy as np\nfrom sklearn.mixture import GaussianMixture\nfrom sklearn.datasets import make_blobs\n\nX, _ = make_blobs(n_samples=600, centers=[[0, 0], [5, 5], [0, 6]],\n                  cluster_std=[1.0, 1.4, 1.0], random_state=3)\n\n# Model selection: lower BIC is better\nfor K in range(1, 6):\n    gmm = GaussianMixture(n_components=K, covariance_type=\"full\", random_state=3).fit(X)\n    print(f\"K={K}: BIC={gmm.bic(X):.1f}, AIC={gmm.aic(X):.1f}\")\n\nbest = GaussianMixture(n_components=3, covariance_type=\"full\", random_state=3).fit(X)\nprint(\"mixing weights:\", np.round(np.sort(best.weights_), 2))\nprint(\"EM converged:\", best.converged_)\n\n# Soft assignment: probabilities, not just a label\nprobs = best.predict_proba([[2.0, 4.0]])\nprint(\"soft membership of the point (2.0, 4.0):\", np.round(probs[0], 2))\n\n# Output:\n#   K=1: BIC=5836.9, AIC=5814.9\n#   K=2: BIC=5260.3, AIC=5211.9\n#   K=3: BIC=5091.5, AIC=5016.8\n#   K=4: BIC=5127.5, AIC=5026.4\n#   K=5: BIC=5166.0, AIC=5038.5\n#   mixing weights: [0.33 0.33 0.33]\n#   EM converged: True\n#   soft membership of the point (2.0, 4.0): [0.79 0.01 0.21]"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: BIC is lowest at K = 3, which matches how the data was generated, and then rises again as extra components add parameters without improving the fit enough. predict_proba() returns a probability for each component for a new point, so a point between clusters is shared (roughly 0.79 and 0.21 here), whereas K-means would return a single label. The order of the components is arbitrary, just like cluster IDs."
+    },
+    {
       "type": "h2",
       "text": "Maximum Likelihood Estimation (MLE)"
     },
     {
       "type": "p",
-      "text": "Suppose observations x₁,…,xₙ are modelled by a probability distribution with parameter θ. The likelihood is \\(L(\\theta)=P(D\\mid\\theta)\\) = product of the individual observation probabilities or densities, under the model's independence assumptions. The log-likelihood is \\(\\ell(\\theta)=\\log L(\\theta)\\), which converts products into sums and is easier to optimize. MLE chooses the parameter that maximizes this likelihood."
+      "text": "Suppose observations x₁,…,xₙ are modelled by a probability distribution with parameter θ. The likelihood is L(θ) = P(D | θ) = product of the individual observation probabilities or densities, under the model's independence assumptions. The log-likelihood is ℓ(θ) = log L(θ), which converts products into sums and is easier to optimize. MLE chooses the parameter that maximizes this likelihood."
     },
     {
       "type": "p",
-      "text": "For a Bernoulli coin with h heads and t tails, the likelihood is proportional to \\(p^h(1-p)^t\\). Taking the derivative of the log-likelihood and setting it to zero gives \\(\\hat p_{\\mathrm{MLE}}=\\frac{h}{h+t}\\), the observed fraction of heads. This estimate is intuitive, but with a very small sample it can be extreme; three heads in three tosses gives an MLE of 1."
+      "text": "For a Bernoulli coin with h heads and t tails, the likelihood is proportional to pʰ(1 − p)ᵗ. Taking the derivative of the log-likelihood and setting it to zero gives p̂MLE = h / (h + t), the observed fraction of heads. This estimate is intuitive, but with a very small sample it can be extreme; three heads in three tosses gives an MLE of 1."
     },
     {
       "type": "h2",
@@ -483,11 +575,11 @@ const post = {
     },
     {
       "type": "p",
-      "text": "MAP combines the likelihood with a prior distribution over parameters. Bayes' theorem gives \\(P(\\theta\\mid D)\\propto P(D\\mid\\theta)P(\\theta)\\), so maximizing the posterior is equivalent to maximizing log-likelihood plus log-prior: \\(\\hat\\theta_{\\mathrm{MAP}}=\\arg\\max_\\theta[\\log P(D\\mid\\theta)+\\log P(\\theta)]\\). The prior can stabilize estimates when data is limited, but the result depends on the chosen prior."
+      "text": "MAP combines the likelihood with a prior distribution over parameters. Bayes' theorem gives P(θ | D) ∝ P(D | θ) P(θ), so maximizing the posterior is equivalent to maximizing log-likelihood plus log-prior: θ̂MAP = argmax_θ [log P(D | θ) + log P(θ)]. The prior can stabilize estimates when data is limited, but the result depends on the chosen prior."
     },
     {
       "type": "p",
-      "text": "For a Bernoulli parameter p with a \\(\\operatorname{Beta}(\\alpha,\\beta)\\) prior and h heads and t tails, the posterior is \\(\\operatorname{Beta}(\\alpha+h,\\beta+t)\\). When both posterior shape parameters are greater than 1, the posterior mode (MAP estimate) is \\(\\frac{\\alpha+h-1}{\\alpha+\\beta+h+t-2}\\). If either shape parameter is at most 1, the mode may occur at a boundary, so the formula should not be applied blindly."
+      "text": "For a Bernoulli parameter p with a Beta(α, β) prior and h heads and t tails, the posterior is Beta(α + h, β + t). When both posterior shape parameters are greater than 1, the posterior mode (MAP estimate) is (α + h − 1) / (α + β + h + t − 2). If either shape parameter is at most 1, the mode may occur at a boundary, so the formula should not be applied blindly."
     },
     {
       "type": "table",
@@ -528,6 +620,24 @@ const post = {
       "type": "callout",
       "icon": "🔗",
       "text": "Connection to regularization: maximizing a likelihood with a Gaussian prior on model weights corresponds to an L2 penalty in the negative log objective; a Laplace prior corresponds to an L1 penalty. Thus, regularization can be interpreted as a MAP estimation choice."
+    },
+    {
+      "type": "p",
+      "text": "Code walkthrough: the coin example from the text, computed three ways. The closed forms p̂MLE = h / (h + t) and p̂MAP = (α + h − 1) / (α + β + h + t − 2) are checked against a brute-force search over a grid of candidate values of p, and then the data is scaled up to show how the prior's influence fades."
+    },
+    {
+      "type": "code-block",
+      "label": "MLE versus MAP for a Coin, and the Gaussian MLE",
+      "code": "import numpy as np\nfrom scipy import stats\n\nh, t = 6, 2                      # 6 heads and 2 tails\nn = h + t\n\n# MLE for a Bernoulli parameter: maximise p^h (1-p)^t\np_mle = h / n\n\n# MAP with a Beta(a, b) prior: posterior is Beta(a + h, b + t)\na, b = 2, 2                      # mild belief that the coin is roughly fair\np_map = (a + h - 1) / (a + b + n - 2)\n\n# Verify numerically on a grid of candidate p values\ngrid = np.linspace(0.001, 0.999, 999)\nloglik = h * np.log(grid) + t * np.log(1 - grid)\nlogpost = loglik + stats.beta.logpdf(grid, a, b)\nprint(f\"MLE closed form={p_mle:.3f}, grid={grid[loglik.argmax()]:.3f}\")\nprint(f\"MAP closed form={p_map:.3f}, grid={grid[logpost.argmax()]:.3f}\")\n\n# More data => the prior matters less\nfor scale in [1, 5, 50]:\n    hh, tt = h * scale, t * scale\n    print(f\"data x{scale:>2}: MLE={hh/(hh+tt):.3f}  MAP={(a+hh-1)/(a+b+hh+tt-2):.3f}\")\n\n# Gaussian MLE: sample mean and the divide-by-n variance\nx = np.array([4.1, 5.0, 5.4, 4.8, 5.2])\nprint(f\"Gaussian MLE: mu={x.mean():.3f}, variance={x.var():.4f}  (ddof=0)\")\n\n# Output:\n#   MLE closed form=0.750, grid=0.750\n#   MAP closed form=0.700, grid=0.700\n#   data x 1: MLE=0.750  MAP=0.700\n#   data x 5: MLE=0.750  MAP=0.738\n#   data x50: MLE=0.750  MAP=0.749\n#   Gaussian MLE: mu=4.900, variance=0.2000  (ddof=0)"
+    },
+    {
+      "type": "p",
+      "text": "What to notice: the closed forms and the grid search agree (0.750 and 0.700), so the formulas are right. With a mild Beta(2, 2) prior, MAP is pulled from 0.75 towards 0.5, giving 0.70. As the same proportion of heads is observed over 5 times and 50 times more tosses, MAP climbs to 0.738 and then 0.749, converging to the MLE: with enough data the likelihood dominates the prior. The last line also reminds you that the Gaussian MLE of the variance divides by n (ddof = 0), not n − 1."
+    },
+    {
+      "type": "callout",
+      "icon": "📌",
+      "text": "Exam tip: when asked to compare MLE and MAP in code or on paper, show the small-data case (prior matters, MAP ≠ MLE) and the large-data case (MAP ≈ MLE). That single contrast earns the marks for 'effect of the prior'."
     },
     {
       "type": "h2",
@@ -682,7 +792,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "A3: \\(\\mathrm{CF}=(N,LS,SS)\\), the number of points, linear sum of points and sum of squares of points in a sub-cluster. CFs are additive, so merging is cheap. The CF-Tree uses branching factor B (maximum children per node) and threshold T (maximum radius of a leaf sub-cluster)."
+      "text": "A3: CF = (N, LS, SS), the number of points, linear sum of points and sum of squares of points in a sub-cluster. CFs are additive, so merging is cheap. The CF-Tree uses branching factor B (maximum children per node) and threshold T (maximum radius of a leaf sub-cluster)."
     },
     {
       "type": "p",
@@ -690,7 +800,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "A5: MLE maximizes the likelihood using data only; MAP maximizes likelihood times a prior, so it incorporates prior belief. Here \\(\\hat p_{\\mathrm{MLE}}=\\frac{6}{8}=0.75\\). \\(\\hat p_{\\mathrm{MAP}}=\\frac{6+2-1}{8+2+2-2}=\\frac{7}{10}=0.70\\), slightly pulled toward the prior mean of 0.5."
+      "text": "A5: MLE maximizes the likelihood using data only; MAP maximizes likelihood times a prior, so it incorporates prior belief. Here p̂MLE = 6/8 = 0.75. p̂MAP = (6 + 2 − 1) / (8 + 2 + 2 − 2) = 7/10 = 0.70, slightly pulled toward the prior mean of 0.5."
     },
     {
       "type": "h2",
