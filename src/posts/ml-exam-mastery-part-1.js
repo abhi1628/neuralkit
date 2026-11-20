@@ -876,6 +876,144 @@ const post = {
     },
     {
       "type": "h2",
+      "text": "7A. Type I and Type II Errors: The Two Ways a Statistical Decision Can Go Wrong"
+    },
+    {
+      "type": "p",
+      "text": "A statistical test uses sample evidence to decide whether to reject the null hypothesis H₀. Because a sample is only a part of the population, the decision can be wrong. There are two important error types. A Type I error happens when we reject H₀ even though H₀ is actually true. A Type II error happens when we fail to reject H₀ even though H₀ is actually false. The word 'fail to reject' is deliberate: a test does not prove H₀; it only tells us whether the sample gives enough evidence against it."
+    },
+    {
+      "type": "table",
+      "headers": ["Reality", "Decision: reject H₀", "Decision: fail to reject H₀"],
+      "rows": [
+        ["H₀ is true", "Type I error (false positive)", "Correct decision"],
+        ["H₀ is false", "Correct decision (true positive)", "Type II error (false negative)"]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "🩺",
+      "text": "Medical-test analogy: suppose H₀ says 'the patient does not have the disease'. A Type I error is a false alarm: the test says disease is present when the patient is healthy. A Type II error is a missed case: the test says there is not enough evidence of disease when the patient actually has it. The same logic applies to spam filters, fraud detection and quality inspection."
+    },
+    {
+      "type": "h3",
+      "text": "The formulas you must know"
+    },
+    {
+      "type": "p",
+      "text": "Let α be the probability of a Type I error and β be the probability of a Type II error. The formulas are conditional probabilities because each error is calculated under a particular reality:"
+    },
+    {
+      "type": "code",
+      "language": "text",
+      "code": "α = P(reject H₀ | H₀ is true)       Type I error rate / significance level\nβ = P(fail to reject H₀ | H₀ is false) Type II error rate\nPower = 1 − β = P(reject H₀ | H₀ is false)"
+    },
+    {
+      "type": "p",
+      "text": "The significance level α is selected before the test. If α = 0.05, the procedure is designed to have a 5% Type I error probability when H₀ is true, assuming the test assumptions hold. Power is the probability that the test correctly detects a specified real effect. A test with β = 0.20 has power 1 − 0.20 = 0.80, or 80%."
+    },
+    {
+      "type": "h3",
+      "text": "Worked numerical example: a new teaching method"
+    },
+    {
+      "type": "p",
+      "text": "Suppose a college tests whether a new teaching method changes the average exam score. H₀: the population mean score is unchanged (μ = 70). H₁: the population mean score is different from 70. The college chooses α = 0.05. If the method truly has no effect but the sample result leads the college to reject H₀, that is a Type I error. The long-run probability of this false rejection is controlled at 0.05 by a correctly calibrated test. If the method really improves the mean but the sample does not provide enough evidence to reject H₀, that is a Type II error."
+    },
+    {
+      "type": "p",
+      "text": "For a particular alternative effect size, suppose the test has β = 0.20. Then power = 1 − 0.20 = 0.80. In repeated studies under that specified alternative, the test would detect the effect about 80% of the time and miss it about 20% of the time. Power is not one universal number: it depends on the true effect size, sample size, variability, significance level and test design."
+    },
+    {
+      "type": "h3",
+      "text": "How can we reduce these errors?"
+    },
+    {
+      "type": "table",
+      "headers": ["Change", "Typical effect", "Important caution"],
+      "rows": [
+        ["Increase sample size", "Usually reduces β and increases power for a fixed effect and α", "Collect representative, independent observations; a large biased sample is still biased"],
+        ["Increase α (for example, 0.01 to 0.05)", "Makes rejection easier; usually lowers β and raises power", "Also increases the tolerated Type I error rate"],
+        ["Reduce measurement noise", "Can make a real effect easier to detect", "Use reliable instruments and consistent procedures"],
+        ["Use a more efficient design", "Paired or blocked designs can reduce unexplained variability", "The design must match the research question and assumptions"],
+        ["Choose a meaningful effect in advance", "Allows a defensible sample-size and power calculation", "Do not select the effect size after seeing the result"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "There is often a trade-off between α and β when sample size and the test procedure are fixed. Making the rejection rule stricter reduces false positives but can increase missed effects. Increasing sample size is a common way to improve power without simply accepting a larger Type I error rate."
+    },
+    {
+      "type": "h3",
+      "text": "P-value, significance level and decision rule"
+    },
+    {
+      "type": "steps",
+      "items": [
+        {"num": "1", "title": "Set α before analysing the data", "text": "For example, α = 0.05. This is the chosen long-run Type I error rate under the null model."},
+        {"num": "2", "title": "Calculate the test statistic and p-value", "text": "The p-value measures how surprising the observed result, or a more extreme one, would be if H₀ and the test assumptions were true."},
+        {"num": "3", "title": "Compare p with α", "text": "If p ≤ α, reject H₀. If p > α, fail to reject H₀."},
+        {"num": "4", "title": "Explain the result in context", "text": "State what the data support, and avoid claiming that H₀ has been proved or that the effect must be practically important."}
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "⚠️",
+      "text": "A p-value of 0.03 does NOT mean there is a 3% probability that H₀ is true, and α = 0.05 does NOT mean every individual study has a 5% probability of being wrong. α describes the long-run Type I error rate of the testing procedure when H₀ is true."
+    },
+    {
+      "type": "h3",
+      "text": "Quick exam-ready comparison"
+    },
+    {
+      "type": "table",
+      "headers": ["Point", "Type I error", "Type II error"],
+      "rows": [
+        ["Meaning", "Reject a true H₀", "Fail to reject a false H₀"],
+        ["Common name", "False positive / false alarm", "False negative / missed detection"],
+        ["Probability symbol", "α", "β"],
+        ["Related quantity", "Significance level", "Power = 1 − β"],
+        ["Medical example", "Healthy person incorrectly flagged as ill", "Ill person incorrectly not detected"],
+        ["Typical concern", "Unnecessary intervention or false accusation", "Missed disease, fraud or real improvement"]
+      ]
+    },
+    {
+      "type": "h3",
+      "text": "Practice questions with answers"
+    },
+    {
+      "type": "p",
+      "text": "Q1. A spam filter labels a legitimate email as spam. Which error is this? Answer: Type I-style false positive if H₀ is defined as 'the email is legitimate'; the filter rejected that null claim incorrectly. Q2. A fraud system fails to flag a genuinely fraudulent transaction. Answer: Type II-style false negative if H₀ is 'the transaction is legitimate'. Q3. If β = 0.15, calculate power. Answer: 1 − 0.15 = 0.85, or 85%. Q4. If α = 0.01 and p = 0.04, what is the decision? Answer: fail to reject H₀ because 0.04 is greater than 0.01. Q5. Does failing to reject H₀ prove it is true? Answer: No; the evidence may simply be insufficient."
+    },
+    {
+      "type": "p",
+      "text": "Exam writing tip: define H₀ and H₁ first, draw or reproduce the 2 × 2 decision table, write α and β as conditional-probability formulas, define power as 1 − β, and finish with one practical example. This structure is suitable for a 5- or 7-mark answer."
+    },
+    {
+      "type": "h2",
+      "text": "7B. Choosing a Statistical Test: A Simple Decision Guide"
+    },
+    {
+      "type": "p",
+      "text": "The correct test depends on the question, the type of outcome, the number of groups, whether observations are independent or paired, the sampling design and the assumptions. For example, a two-sample t-test compares means of two independent groups; a paired t-test compares measurements on the same people or matched units; a chi-square test examines association between categorical variables; and correlation measures association between numeric variables. Do not select a test only because its name is familiar."
+    },
+    {
+      "type": "table",
+      "headers": ["Research question", "Common test", "Simple example"],
+      "rows": [
+        ["Is one sample mean different from a reference value?", "One-sample t-test", "Is average battery life different from 10 hours?"],
+        ["Do two independent groups have different means?", "Independent two-sample t-test", "Compare scores of two separate classes"],
+        ["Did the same group change over time?", "Paired t-test", "Measure the same students before and after training"],
+        ["Are two categorical variables associated?", "Chi-square test of independence", "Is product preference associated with age group?"],
+        ["Are two numeric variables linearly associated?", "Pearson correlation test", "Study hours and exam score"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Always check assumptions such as independence, sampling method, distributional conditions and expected cell counts. When assumptions are seriously violated, consider an appropriate alternative, such as a non-parametric test, a permutation method or a model designed for the data structure."
+    },
+    {
+      "type": "h2",
       "text": "8. Data Pre-processing: A Reliable Order of Operations"
     },
     {
