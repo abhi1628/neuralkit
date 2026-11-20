@@ -364,11 +364,11 @@ const post = {
     },
     {
       "type": "p",
-      "text": "In ML, a hypothesis is a candidate function h that maps inputs to predictions, and the hypothesis space is the set of all functions the algorithm is allowed to choose from. For simple linear regression the hypothesis function is h(x) = θ0 + θ1·x, where θ0 (intercept/bias) and θ1 (slope/weight) are the parameters the algorithm learns. Learning means choosing the θ values that minimize a cost function, typically the mean squared error J(θ) = (1/2m) Σ (h(xᵢ) − yᵢ)²."
+      "text": "In ML, a hypothesis is a candidate function h that maps inputs to predictions, and the hypothesis space is the set of all functions the algorithm is allowed to choose from. For simple linear regression the hypothesis function is \\(h_\\theta(x)=\\theta_0+\\theta_1x\\), where θ0 (intercept/bias) and θ1 (slope/weight) are the parameters the algorithm learns. Learning means choosing the θ values that minimize a cost function, typically the mean squared error \\(J(\\theta)=\\frac{1}{2m}\\sum_{i=1}^{m}(h_\\theta(x_i)-y_i)^2\\)."
     },
     {
       "type": "p",
-      "text": "'Testing a hypothesis' has two related meanings, and a good answer covers both. In ML evaluation, you test the learned hypothesis on data it never saw (a held-out test set) to estimate how well it generalizes. In statistics, hypothesis testing checks a claim about a population: you state a null hypothesis H0 (no effect or no difference) and an alternative H1, compute a test statistic and a p-value, and reject H0 if the p-value is below the significance level α (commonly 0.05)."
+      "text": "'Testing a hypothesis' has two related meanings, and a good answer covers both. In ML evaluation, you test the learned hypothesis on data it never saw (a held-out test set) to estimate how well it generalizes. In statistics, hypothesis testing checks a claim about a population: you state a null hypothesis null hypothesis \\(H_0\\) (no effect or no difference) and an alternative \\(H_1\\), compute a test statistic and a p-value, and reject H0 if the p-value is below the significance level \\(\\alpha\\) (commonly 0.05)."
     },
     {
       "type": "code-block",
@@ -540,7 +540,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Bias is the error caused by wrong or overly simple assumptions in the model, which leads to underfitting. Variance is the error caused by excessive sensitivity to the particular training sample, which leads to overfitting. For squared error, the expected test error decomposes as: Error = Bias² + Variance + Irreducible Error (noise)."
+      "text": "Bias is the error caused by wrong or overly simple assumptions in the model, which leads to underfitting. Variance is the error caused by excessive sensitivity to the particular training sample, which leads to overfitting. For squared error, the expected test error decomposes as: \\(\\mathbb{E}[\\text{Test Error}]=\\text{Bias}^2+\\text{Variance}+\\text{Irreducible Noise}\\)."
     },
     {
       "type": "image",
@@ -669,17 +669,57 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Term", "Meaning", "Example"],
+      "headers": [
+        "Term",
+        "Meaning",
+        "Example"
+      ],
       "rows": [
-        ["Dataset", "A collection of observations used for analysis or learning", "10,000 customer records"],
-        ["Observation / sample", "One row or example in a dataset", "One customer's record"],
-        ["Feature", "An input variable used by the model", "Age, income, temperature"],
-        ["Target / label", "The output to be predicted in supervised learning", "Fraud / not fraud"],
-        ["Model", "The learned function or representation", "A fitted decision tree"],
-        ["Parameter", "A value learned from training data", "A regression coefficient"],
-        ["Hyperparameter", "A setting selected before or around training", "Tree depth, k in k-NN"],
-        ["Loss function", "A numerical measure of prediction error", "Mean squared error"],
-        ["Generalisation", "Performance on new, unseen observations", "Correctly predicting future transactions"]
+        [
+          "Dataset",
+          "A collection of observations used for analysis or learning",
+          "10,000 customer records"
+        ],
+        [
+          "Observation / sample",
+          "One row or example in a dataset",
+          "One customer's record"
+        ],
+        [
+          "Feature",
+          "An input variable used by the model",
+          "Age, income, temperature"
+        ],
+        [
+          "Target / label",
+          "The output to be predicted in supervised learning",
+          "Fraud / not fraud"
+        ],
+        [
+          "Model",
+          "The learned function or representation",
+          "A fitted decision tree"
+        ],
+        [
+          "Parameter",
+          "A value learned from training data",
+          "A regression coefficient"
+        ],
+        [
+          "Hyperparameter",
+          "A setting selected before or around training",
+          "Tree depth, k in k-NN"
+        ],
+        [
+          "Loss function",
+          "A numerical measure of prediction error",
+          "Mean squared error"
+        ],
+        [
+          "Generalisation",
+          "Performance on new, unseen observations",
+          "Correctly predicting future transactions"
+        ]
       ]
     },
     {
@@ -697,18 +737,62 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Lifecycle stage", "Detailed activities", "Typical output / checkpoint"],
+      "headers": [
+        "Lifecycle stage",
+        "Detailed activities",
+        "Typical output / checkpoint"
+      ],
       "rows": [
-        ["Problem framing", "Identify the user, decision, prediction target, constraints, baseline and success metric", "Problem statement and acceptance criteria"],
-        ["Data acquisition", "Identify sources, permissions, sampling period, labels, collection frequency and data ownership", "Raw, documented dataset"],
-        ["Data understanding", "Inspect schema, units, distributions, missingness, duplicates, class balance and possible leakage", "Data-quality report and initial hypotheses"],
-        ["Preparation", "Clean records, impute missing values, encode categories, scale numeric features and engineer useful variables", "Reproducible preprocessing pipeline"],
-        ["Partitioning", "Create train, validation and test sets using random, stratified, grouped or time-based splitting as appropriate", "Leakage-aware data partitions"],
-        ["Model development", "Establish a simple baseline, select algorithms, train candidates and tune hyperparameters", "Trained candidate models"],
-        ["Evaluation", "Compare suitable metrics, inspect errors, test robustness, fairness and calibration where relevant", "Evaluation report and selected model"],
-        ["Deployment", "Package model and preprocessing, expose predictions through an API, application or scheduled batch process", "Versioned, usable model service"],
-        ["Monitoring", "Track data quality, drift, latency, failures, prediction patterns and real-world outcomes", "Alerts, monitoring dashboard and retraining triggers"],
-        ["Maintenance", "Investigate changes, refresh data, retrain, validate and roll back when necessary", "Updated model with audit trail"]
+        [
+          "Problem framing",
+          "Identify the user, decision, prediction target, constraints, baseline and success metric",
+          "Problem statement and acceptance criteria"
+        ],
+        [
+          "Data acquisition",
+          "Identify sources, permissions, sampling period, labels, collection frequency and data ownership",
+          "Raw, documented dataset"
+        ],
+        [
+          "Data understanding",
+          "Inspect schema, units, distributions, missingness, duplicates, class balance and possible leakage",
+          "Data-quality report and initial hypotheses"
+        ],
+        [
+          "Preparation",
+          "Clean records, impute missing values, encode categories, scale numeric features and engineer useful variables",
+          "Reproducible preprocessing pipeline"
+        ],
+        [
+          "Partitioning",
+          "Create train, validation and test sets using random, stratified, grouped or time-based splitting as appropriate",
+          "Leakage-aware data partitions"
+        ],
+        [
+          "Model development",
+          "Establish a simple baseline, select algorithms, train candidates and tune hyperparameters",
+          "Trained candidate models"
+        ],
+        [
+          "Evaluation",
+          "Compare suitable metrics, inspect errors, test robustness, fairness and calibration where relevant",
+          "Evaluation report and selected model"
+        ],
+        [
+          "Deployment",
+          "Package model and preprocessing, expose predictions through an API, application or scheduled batch process",
+          "Versioned, usable model service"
+        ],
+        [
+          "Monitoring",
+          "Track data quality, drift, latency, failures, prediction patterns and real-world outcomes",
+          "Alerts, monitoring dashboard and retraining triggers"
+        ],
+        [
+          "Maintenance",
+          "Investigate changes, refresh data, retrain, validate and roll back when necessary",
+          "Updated model with audit trail"
+        ]
       ]
     },
     {
@@ -730,14 +814,49 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Learning setup", "Best suited to", "Main benefit", "Main concern"],
+      "headers": [
+        "Learning setup",
+        "Best suited to",
+        "Main benefit",
+        "Main concern"
+      ],
       "rows": [
-        ["Supervised", "Historical examples have reliable target labels", "Directly optimises a known prediction task", "Label cost, label errors and class imbalance"],
-        ["Unsupervised", "Targets are unavailable or the goal is exploration", "Discovers groups, structure and unusual observations", "Results may be difficult to validate or interpret"],
-        ["Batch", "Data is relatively stable and periodic retraining is acceptable", "Training can be controlled, tested and versioned offline", "Cannot immediately adapt to new patterns"],
-        ["Online", "Data arrives continuously or the environment changes rapidly", "Incremental adaptation with potentially low memory use", "Sensitive to noisy data, drift and learning-rate choices"],
-        ["Instance-based", "Similarity to stored examples is meaningful", "Flexible local decisions with little explicit training", "Prediction cost, memory use and distance sensitivity"],
-        ["Model-based", "A compact learned representation is useful", "Fast inference and often easier deployment", "Model assumptions may not capture complex patterns"]
+        [
+          "Supervised",
+          "Historical examples have reliable target labels",
+          "Directly optimises a known prediction task",
+          "Label cost, label errors and class imbalance"
+        ],
+        [
+          "Unsupervised",
+          "Targets are unavailable or the goal is exploration",
+          "Discovers groups, structure and unusual observations",
+          "Results may be difficult to validate or interpret"
+        ],
+        [
+          "Batch",
+          "Data is relatively stable and periodic retraining is acceptable",
+          "Training can be controlled, tested and versioned offline",
+          "Cannot immediately adapt to new patterns"
+        ],
+        [
+          "Online",
+          "Data arrives continuously or the environment changes rapidly",
+          "Incremental adaptation with potentially low memory use",
+          "Sensitive to noisy data, drift and learning-rate choices"
+        ],
+        [
+          "Instance-based",
+          "Similarity to stored examples is meaningful",
+          "Flexible local decisions with little explicit training",
+          "Prediction cost, memory use and distance sensitivity"
+        ],
+        [
+          "Model-based",
+          "A compact learned representation is useful",
+          "Fast inference and often easier deployment",
+          "Model assumptions may not capture complex patterns"
+        ]
       ]
     },
     {
@@ -762,16 +881,52 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Application area", "Typical ML task", "Illustrative use"],
+      "headers": [
+        "Application area",
+        "Typical ML task",
+        "Illustrative use"
+      ],
       "rows": [
-        ["Healthcare", "Classification, segmentation, risk prediction", "Flagging scans or records for expert review"],
-        ["Banking and finance", "Anomaly detection, classification, forecasting", "Transaction fraud screening and credit-risk estimation"],
-        ["Education", "Prediction and recommendation", "Identifying learners who may need additional support"],
-        ["Agriculture", "Image classification and forecasting", "Crop-disease identification and yield estimation"],
-        ["Manufacturing", "Anomaly detection and regression", "Predictive maintenance from machine sensors"],
-        ["Transport", "Computer vision and optimisation", "Traffic estimation and driver-assistance systems"],
-        ["Retail", "Recommendation and demand forecasting", "Product suggestions and inventory planning"],
-        ["Environment", "Time-series forecasting and anomaly detection", "Air-quality prediction and unusual sensor readings"]
+        [
+          "Healthcare",
+          "Classification, segmentation, risk prediction",
+          "Flagging scans or records for expert review"
+        ],
+        [
+          "Banking and finance",
+          "Anomaly detection, classification, forecasting",
+          "Transaction fraud screening and credit-risk estimation"
+        ],
+        [
+          "Education",
+          "Prediction and recommendation",
+          "Identifying learners who may need additional support"
+        ],
+        [
+          "Agriculture",
+          "Image classification and forecasting",
+          "Crop-disease identification and yield estimation"
+        ],
+        [
+          "Manufacturing",
+          "Anomaly detection and regression",
+          "Predictive maintenance from machine sensors"
+        ],
+        [
+          "Transport",
+          "Computer vision and optimisation",
+          "Traffic estimation and driver-assistance systems"
+        ],
+        [
+          "Retail",
+          "Recommendation and demand forecasting",
+          "Product suggestions and inventory planning"
+        ],
+        [
+          "Environment",
+          "Time-series forecasting and anomaly detection",
+          "Air-quality prediction and unusual sensor readings"
+        ]
       ]
     },
     {
@@ -789,19 +944,67 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Challenge", "Why it matters", "Practical response"],
+      "headers": [
+        "Challenge",
+        "Why it matters",
+        "Practical response"
+      ],
       "rows": [
-        ["Insufficient data", "The model cannot observe enough examples of the underlying variation", "Collect more representative data, use transfer learning or carefully justified augmentation"],
-        ["Sampling bias", "The training sample does not represent the population or deployment setting", "Review collection methods and evaluate across relevant groups"],
-        ["Noisy or incorrect labels", "The model is trained toward wrong answers", "Audit labels, define annotation rules and use expert review"],
-        ["Missing and inconsistent values", "Different formats and gaps can distort patterns or break pipelines", "Validate schemas and use suitable imputation with missingness analysis"],
-        ["Class imbalance", "A model can appear accurate by predicting the majority class", "Use precision, recall, F1, PR-AUC, class weighting or resampling as appropriate"],
-        ["Irrelevant or redundant features", "They add noise, complexity or unstable relationships", "Use domain knowledge, feature selection and regularisation"],
-        ["Overfitting and underfitting", "The model respectively memorises noise or misses the real pattern", "Use validation, regularisation and suitable model complexity"],
-        ["Distribution shift", "Production data differs from training data", "Monitor drift, investigate causes and retrain only after validation"],
-        ["Interpretability", "Users may not understand why a prediction was made", "Use interpretable models or appropriate explanation techniques"],
-        ["Privacy and security", "Sensitive data or model interfaces may be exposed or attacked", "Minimise data, control access, secure pipelines and assess threats"],
-        ["Compute and environmental cost", "Training and inference may be expensive in time, money and energy", "Use efficient models, measure resource use and avoid unnecessary retraining"]
+        [
+          "Insufficient data",
+          "The model cannot observe enough examples of the underlying variation",
+          "Collect more representative data, use transfer learning or carefully justified augmentation"
+        ],
+        [
+          "Sampling bias",
+          "The training sample does not represent the population or deployment setting",
+          "Review collection methods and evaluate across relevant groups"
+        ],
+        [
+          "Noisy or incorrect labels",
+          "The model is trained toward wrong answers",
+          "Audit labels, define annotation rules and use expert review"
+        ],
+        [
+          "Missing and inconsistent values",
+          "Different formats and gaps can distort patterns or break pipelines",
+          "Validate schemas and use suitable imputation with missingness analysis"
+        ],
+        [
+          "Class imbalance",
+          "A model can appear accurate by predicting the majority class",
+          "Use precision, recall, F1, PR-AUC, class weighting or resampling as appropriate"
+        ],
+        [
+          "Irrelevant or redundant features",
+          "They add noise, complexity or unstable relationships",
+          "Use domain knowledge, feature selection and regularisation"
+        ],
+        [
+          "Overfitting and underfitting",
+          "The model respectively memorises noise or misses the real pattern",
+          "Use validation, regularisation and suitable model complexity"
+        ],
+        [
+          "Distribution shift",
+          "Production data differs from training data",
+          "Monitor drift, investigate causes and retrain only after validation"
+        ],
+        [
+          "Interpretability",
+          "Users may not understand why a prediction was made",
+          "Use interpretable models or appropriate explanation techniques"
+        ],
+        [
+          "Privacy and security",
+          "Sensitive data or model interfaces may be exposed or attacked",
+          "Minimise data, control access, secure pipelines and assess threats"
+        ],
+        [
+          "Compute and environmental cost",
+          "Training and inference may be expensive in time, money and energy",
+          "Use efficient models, measure resource use and avoid unnecessary retraining"
+        ]
       ]
     },
     {
@@ -818,15 +1021,47 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Analytical question", "Recommended visualization", "Interpretation to look for"],
+      "headers": [
+        "Analytical question",
+        "Recommended visualization",
+        "Interpretation to look for"
+      ],
       "rows": [
-        ["How is one numeric feature distributed?", "Histogram or density plot", "Skew, multiple peaks, spread and extreme values"],
-        ["How do two numeric features relate?", "Scatter plot", "Positive/negative association, clusters and non-linearity"],
-        ["How does a numeric feature vary by category?", "Box plot or violin plot", "Median, spread and unusual observations by group"],
-        ["How many records belong to each class?", "Bar chart", "Class imbalance and rare classes"],
-        ["Which numeric features are associated?", "Correlation heatmap", "Strong pairwise linear associations"],
-        ["How does a value change over time?", "Line chart", "Trend, seasonality, sudden shifts and gaps"],
-        ["How do many features relate pairwise?", "Pair plot", "Potential clusters and redundant features"]
+        [
+          "How is one numeric feature distributed?",
+          "Histogram or density plot",
+          "Skew, multiple peaks, spread and extreme values"
+        ],
+        [
+          "How do two numeric features relate?",
+          "Scatter plot",
+          "Positive/negative association, clusters and non-linearity"
+        ],
+        [
+          "How does a numeric feature vary by category?",
+          "Box plot or violin plot",
+          "Median, spread and unusual observations by group"
+        ],
+        [
+          "How many records belong to each class?",
+          "Bar chart",
+          "Class imbalance and rare classes"
+        ],
+        [
+          "Which numeric features are associated?",
+          "Correlation heatmap",
+          "Strong pairwise linear associations"
+        ],
+        [
+          "How does a value change over time?",
+          "Line chart",
+          "Trend, seasonality, sudden shifts and gaps"
+        ],
+        [
+          "How do many features relate pairwise?",
+          "Pair plot",
+          "Potential clusters and redundant features"
+        ]
       ]
     },
     {
@@ -843,7 +1078,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "In supervised learning, the hypothesis function h maps an input observation to an estimated output. For multiple input features, a linear hypothesis can be written as hθ(x) = θ0 + θ1x1 + θ2x2 + ... + θnxn. The hypothesis space is the family of candidate functions available to the learner. A linear model searches within a linear family; a decision tree searches among tree-shaped decision rules. The chosen hypothesis depends on the training data, the loss function, the optimisation method and any regularisation."
+      "text": "In supervised learning, the hypothesis function h maps an input observation to an estimated output. For multiple input features, a linear hypothesis can be written as \\(h_\\theta(x)=\\theta_0+\\theta_1x_1+\\theta_2x_2+\\cdots+\\theta_nx_n\\). The hypothesis space is the family of candidate functions available to the learner. A linear model searches within a linear family; a decision tree searches among tree-shaped decision rules. The chosen hypothesis depends on the training data, the loss function, the optimisation method and any regularisation."
     },
     {
       "type": "p",
@@ -851,14 +1086,42 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Concept", "Question it answers", "Example"],
+      "headers": [
+        "Concept",
+        "Question it answers",
+        "Example"
+      ],
       "rows": [
-        ["Hypothesis function", "What prediction does this candidate model make?", "hθ(x) = θ0 + θ1x"],
-        ["Hypothesis space", "Which candidate functions may the learner choose?", "All linear functions of the selected features"],
-        ["Loss / cost", "How wrong are the predictions?", "Mean squared error"],
-        ["Optimisation", "How are model parameters adjusted?", "Gradient descent or a closed-form solver"],
-        ["Model evaluation", "Does the fitted model generalise to unseen data?", "Test-set RMSE or F1-score"],
-        ["Statistical hypothesis test", "Is the observed evidence inconsistent with a stated null claim?", "Two-sample t-test"]
+        [
+          "Hypothesis function",
+          "What prediction does this candidate model make?",
+          "hθ(x) = θ0 + θ1x"
+        ],
+        [
+          "Hypothesis space",
+          "Which candidate functions may the learner choose?",
+          "All linear functions of the selected features"
+        ],
+        [
+          "Loss / cost",
+          "How wrong are the predictions?",
+          "Mean squared error"
+        ],
+        [
+          "Optimisation",
+          "How are model parameters adjusted?",
+          "Gradient descent or a closed-form solver"
+        ],
+        [
+          "Model evaluation",
+          "Does the fitted model generalise to unseen data?",
+          "Test-set RMSE or F1-score"
+        ],
+        [
+          "Statistical hypothesis test",
+          "Is the observed evidence inconsistent with a stated null claim?",
+          "Two-sample t-test"
+        ]
       ]
     },
     {
@@ -884,10 +1147,22 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Reality", "Decision: reject H₀", "Decision: fail to reject H₀"],
+      "headers": [
+        "Reality",
+        "Decision: reject H₀",
+        "Decision: fail to reject H₀"
+      ],
       "rows": [
-        ["H₀ is true", "Type I error (false positive)", "Correct decision"],
-        ["H₀ is false", "Correct decision (true positive)", "Type II error (false negative)"]
+        [
+          "H₀ is true",
+          "Type I error (false positive)",
+          "Correct decision"
+        ],
+        [
+          "H₀ is false",
+          "Correct decision (true positive)",
+          "Type II error (false negative)"
+        ]
       ]
     },
     {
@@ -910,7 +1185,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "The significance level α is selected before the test. If α = 0.05, the procedure is designed to have a 5% Type I error probability when H₀ is true, assuming the test assumptions hold. Power is the probability that the test correctly detects a specified real effect. A test with β = 0.20 has power 1 − 0.20 = 0.80, or 80%."
+      "text": "The significance level α is selected before the test. If \\(\\alpha=0.05\\), the procedure is designed to have a 5% Type I error probability when H₀ is true, assuming the test assumptions hold. Power is the probability that the test correctly detects a specified real effect. A test with \\(\\beta=0.20\\) has power \\(1-\\beta=1-0.20=0.80\\), or 80%."
     },
     {
       "type": "h3",
@@ -918,11 +1193,11 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Suppose a college tests whether a new teaching method changes the average exam score. H₀: the population mean score is unchanged (μ = 70). H₁: the population mean score is different from 70. The college chooses α = 0.05. If the method truly has no effect but the sample result leads the college to reject H₀, that is a Type I error. The long-run probability of this false rejection is controlled at 0.05 by a correctly calibrated test. If the method really improves the mean but the sample does not provide enough evidence to reject H₀, that is a Type II error."
+      "text": "Suppose a college tests whether a new teaching method changes the average exam score. H₀: the population mean score is unchanged (\\(\\mu=70\\)). H₁: the population mean score is different from 70. The college chooses \\(\\alpha=0.05\\). If the method truly has no effect but the sample result leads the college to reject H₀, that is a Type I error. The long-run probability of this false rejection is controlled at 0.05 by a correctly calibrated test. If the method really improves the mean but the sample does not provide enough evidence to reject H₀, that is a Type II error."
     },
     {
       "type": "p",
-      "text": "For a particular alternative effect size, suppose the test has β = 0.20. Then power = 1 − 0.20 = 0.80. In repeated studies under that specified alternative, the test would detect the effect about 80% of the time and miss it about 20% of the time. Power is not one universal number: it depends on the true effect size, sample size, variability, significance level and test design."
+      "text": "For a particular alternative effect size, suppose the test has \\(\\beta=0.20\\). Then power = \\(1-\\beta=1-0.20=0.80\\). In repeated studies under that specified alternative, the test would detect the effect about 80% of the time and miss it about 20% of the time. Power is not one universal number: it depends on the true effect size, sample size, variability, significance level and test design."
     },
     {
       "type": "h3",
@@ -930,13 +1205,37 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Change", "Typical effect", "Important caution"],
+      "headers": [
+        "Change",
+        "Typical effect",
+        "Important caution"
+      ],
       "rows": [
-        ["Increase sample size", "Usually reduces β and increases power for a fixed effect and α", "Collect representative, independent observations; a large biased sample is still biased"],
-        ["Increase α (for example, 0.01 to 0.05)", "Makes rejection easier; usually lowers β and raises power", "Also increases the tolerated Type I error rate"],
-        ["Reduce measurement noise", "Can make a real effect easier to detect", "Use reliable instruments and consistent procedures"],
-        ["Use a more efficient design", "Paired or blocked designs can reduce unexplained variability", "The design must match the research question and assumptions"],
-        ["Choose a meaningful effect in advance", "Allows a defensible sample-size and power calculation", "Do not select the effect size after seeing the result"]
+        [
+          "Increase sample size",
+          "Usually reduces β and increases power for a fixed effect and α",
+          "Collect representative, independent observations; a large biased sample is still biased"
+        ],
+        [
+          "Increase α (for example, 0.01 to 0.05)",
+          "Makes rejection easier; usually lowers β and raises power",
+          "Also increases the tolerated Type I error rate"
+        ],
+        [
+          "Reduce measurement noise",
+          "Can make a real effect easier to detect",
+          "Use reliable instruments and consistent procedures"
+        ],
+        [
+          "Use a more efficient design",
+          "Paired or blocked designs can reduce unexplained variability",
+          "The design must match the research question and assumptions"
+        ],
+        [
+          "Choose a meaningful effect in advance",
+          "Allows a defensible sample-size and power calculation",
+          "Do not select the effect size after seeing the result"
+        ]
       ]
     },
     {
@@ -950,16 +1249,32 @@ const post = {
     {
       "type": "steps",
       "items": [
-        {"num": "1", "title": "Set α before analysing the data", "text": "For example, α = 0.05. This is the chosen long-run Type I error rate under the null model."},
-        {"num": "2", "title": "Calculate the test statistic and p-value", "text": "The p-value measures how surprising the observed result, or a more extreme one, would be if H₀ and the test assumptions were true."},
-        {"num": "3", "title": "Compare p with α", "text": "If p ≤ α, reject H₀. If p > α, fail to reject H₀."},
-        {"num": "4", "title": "Explain the result in context", "text": "State what the data support, and avoid claiming that H₀ has been proved or that the effect must be practically important."}
+        {
+          "num": "1",
+          "title": "Set α before analysing the data",
+          "text": "For example, α = 0.05. This is the chosen long-run Type I error rate under the null model."
+        },
+        {
+          "num": "2",
+          "title": "Calculate the test statistic and p-value",
+          "text": "The p-value measures how surprising the observed result, or a more extreme one, would be if H₀ and the test assumptions were true."
+        },
+        {
+          "num": "3",
+          "title": "Compare p with α",
+          "text": "If p ≤ α, reject H₀. If p > α, fail to reject H₀."
+        },
+        {
+          "num": "4",
+          "title": "Explain the result in context",
+          "text": "State what the data support, and avoid claiming that H₀ has been proved or that the effect must be practically important."
+        }
       ]
     },
     {
       "type": "callout",
       "icon": "⚠️",
-      "text": "A p-value of 0.03 does NOT mean there is a 3% probability that H₀ is true, and α = 0.05 does NOT mean every individual study has a 5% probability of being wrong. α describes the long-run Type I error rate of the testing procedure when H₀ is true."
+      "text": "A p-value of 0.03 does NOT mean there is a 3% probability that H₀ is true, and \\(\\alpha=0.05\\) does NOT mean every individual study has a 5% probability of being wrong. α describes the long-run Type I error rate of the testing procedure when H₀ is true."
     },
     {
       "type": "h3",
@@ -967,14 +1282,42 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Point", "Type I error", "Type II error"],
+      "headers": [
+        "Point",
+        "Type I error",
+        "Type II error"
+      ],
       "rows": [
-        ["Meaning", "Reject a true H₀", "Fail to reject a false H₀"],
-        ["Common name", "False positive / false alarm", "False negative / missed detection"],
-        ["Probability symbol", "α", "β"],
-        ["Related quantity", "Significance level", "Power = 1 − β"],
-        ["Medical example", "Healthy person incorrectly flagged as ill", "Ill person incorrectly not detected"],
-        ["Typical concern", "Unnecessary intervention or false accusation", "Missed disease, fraud or real improvement"]
+        [
+          "Meaning",
+          "Reject a true H₀",
+          "Fail to reject a false H₀"
+        ],
+        [
+          "Common name",
+          "False positive / false alarm",
+          "False negative / missed detection"
+        ],
+        [
+          "Probability symbol",
+          "α",
+          "β"
+        ],
+        [
+          "Related quantity",
+          "Significance level",
+          "Power = 1 − β"
+        ],
+        [
+          "Medical example",
+          "Healthy person incorrectly flagged as ill",
+          "Ill person incorrectly not detected"
+        ],
+        [
+          "Typical concern",
+          "Unnecessary intervention or false accusation",
+          "Missed disease, fraud or real improvement"
+        ]
       ]
     },
     {
@@ -983,7 +1326,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Q1. A spam filter labels a legitimate email as spam. Which error is this? Answer: Type I-style false positive if H₀ is defined as 'the email is legitimate'; the filter rejected that null claim incorrectly. Q2. A fraud system fails to flag a genuinely fraudulent transaction. Answer: Type II-style false negative if H₀ is 'the transaction is legitimate'. Q3. If β = 0.15, calculate power. Answer: 1 − 0.15 = 0.85, or 85%. Q4. If α = 0.01 and p = 0.04, what is the decision? Answer: fail to reject H₀ because 0.04 is greater than 0.01. Q5. Does failing to reject H₀ prove it is true? Answer: No; the evidence may simply be insufficient."
+      "text": "Q1. A spam filter labels a legitimate email as spam. Which error is this? Answer: Type I-style false positive if H₀ is defined as 'the email is legitimate'; the filter rejected that null claim incorrectly. Q2. A fraud system fails to flag a genuinely fraudulent transaction. Answer: Type II-style false negative if H₀ is 'the transaction is legitimate'. Q3. If \\(\\beta=0.15\\), calculate power. Answer: \\(1-0.15=0.85\\), or 85%. Q4. If \\(\\alpha=0.01\\) and \\(p=0.04\\), what is the decision? Answer: fail to reject H₀ because 0.04 is greater than 0.01. Q5. Does failing to reject H₀ prove it is true? Answer: No; the evidence may simply be insufficient."
     },
     {
       "type": "p",
@@ -999,13 +1342,37 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Research question", "Common test", "Simple example"],
+      "headers": [
+        "Research question",
+        "Common test",
+        "Simple example"
+      ],
       "rows": [
-        ["Is one sample mean different from a reference value?", "One-sample t-test", "Is average battery life different from 10 hours?"],
-        ["Do two independent groups have different means?", "Independent two-sample t-test", "Compare scores of two separate classes"],
-        ["Did the same group change over time?", "Paired t-test", "Measure the same students before and after training"],
-        ["Are two categorical variables associated?", "Chi-square test of independence", "Is product preference associated with age group?"],
-        ["Are two numeric variables linearly associated?", "Pearson correlation test", "Study hours and exam score"]
+        [
+          "Is one sample mean different from a reference value?",
+          "One-sample t-test",
+          "Is average battery life different from 10 hours?"
+        ],
+        [
+          "Do two independent groups have different means?",
+          "Independent two-sample t-test",
+          "Compare scores of two separate classes"
+        ],
+        [
+          "Did the same group change over time?",
+          "Paired t-test",
+          "Measure the same students before and after training"
+        ],
+        [
+          "Are two categorical variables associated?",
+          "Chi-square test of independence",
+          "Is product preference associated with age group?"
+        ],
+        [
+          "Are two numeric variables linearly associated?",
+          "Pearson correlation test",
+          "Study hours and exam score"
+        ]
       ]
     },
     {
@@ -1023,12 +1390,36 @@ const post = {
     {
       "type": "steps",
       "items": [
-        {"num": "1", "title": "Profile and validate", "text": "Check rows and columns, data types, ranges, units, missingness, duplicates, label quality and unexpected categories."},
-        {"num": "2", "title": "Define the prediction point", "text": "Identify which information would genuinely be available when a real prediction is made; exclude future or outcome-derived variables."},
-        {"num": "3", "title": "Split the dataset", "text": "Choose random, stratified, grouped or chronological splitting based on the data-generation process."},
-        {"num": "4", "title": "Fit transformations on training data", "text": "Learn imputation values, scaling parameters, category vocabularies and feature-selection decisions from training data."},
-        {"num": "5", "title": "Transform all partitions consistently", "text": "Apply the already-fitted pipeline to validation and test data without refitting it."},
-        {"num": "6", "title": "Check the result", "text": "Confirm shapes, ranges, missing-value handling, category handling and absence of leakage."}
+        {
+          "num": "1",
+          "title": "Profile and validate",
+          "text": "Check rows and columns, data types, ranges, units, missingness, duplicates, label quality and unexpected categories."
+        },
+        {
+          "num": "2",
+          "title": "Define the prediction point",
+          "text": "Identify which information would genuinely be available when a real prediction is made; exclude future or outcome-derived variables."
+        },
+        {
+          "num": "3",
+          "title": "Split the dataset",
+          "text": "Choose random, stratified, grouped or chronological splitting based on the data-generation process."
+        },
+        {
+          "num": "4",
+          "title": "Fit transformations on training data",
+          "text": "Learn imputation values, scaling parameters, category vocabularies and feature-selection decisions from training data."
+        },
+        {
+          "num": "5",
+          "title": "Transform all partitions consistently",
+          "text": "Apply the already-fitted pipeline to validation and test data without refitting it."
+        },
+        {
+          "num": "6",
+          "title": "Check the result",
+          "text": "Confirm shapes, ranges, missing-value handling, category handling and absence of leakage."
+        }
       ]
     },
     {
@@ -1053,13 +1444,37 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Domain", "Examples", "Important caution"],
+      "headers": [
+        "Domain",
+        "Examples",
+        "Important caution"
+      ],
       "rows": [
-        ["Images", "Crop, flip, rotate, resize, brightness/contrast adjustment, blur and noise", "A transformation must not change the object identity or class; orientation may matter in medical or document images"],
-        ["Text", "Careful synonym substitution, paraphrasing and back-translation", "A small wording change can reverse sentiment, intent or a named entity"],
-        ["Audio", "Time stretching, pitch shifting, background-noise mixing and time masking", "Do not distort speech so much that the label or speaker/event identity changes"],
-        ["Tabular", "SMOTE, random oversampling and domain-valid perturbations", "Synthetic records must respect feature constraints and realistic relationships"],
-        ["Time series", "Window slicing, jittering, scaling and time warping", "Preserve temporal order and avoid using future information"]
+        [
+          "Images",
+          "Crop, flip, rotate, resize, brightness/contrast adjustment, blur and noise",
+          "A transformation must not change the object identity or class; orientation may matter in medical or document images"
+        ],
+        [
+          "Text",
+          "Careful synonym substitution, paraphrasing and back-translation",
+          "A small wording change can reverse sentiment, intent or a named entity"
+        ],
+        [
+          "Audio",
+          "Time stretching, pitch shifting, background-noise mixing and time masking",
+          "Do not distort speech so much that the label or speaker/event identity changes"
+        ],
+        [
+          "Tabular",
+          "SMOTE, random oversampling and domain-valid perturbations",
+          "Synthetic records must respect feature constraints and realistic relationships"
+        ],
+        [
+          "Time series",
+          "Window slicing, jittering, scaling and time warping",
+          "Preserve temporal order and avoid using future information"
+        ]
       ]
     },
     {
@@ -1080,12 +1495,37 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Method", "Transformation", "Strength", "Limitation"],
+      "headers": [
+        "Method",
+        "Transformation",
+        "Strength",
+        "Limitation"
+      ],
       "rows": [
-        ["Min-max scaling", "x_scaled = (x - minimum) / (maximum - minimum)", "Maps observed training range to a fixed interval, commonly 0 to 1", "Extreme values can compress most observations; future values may fall outside the interval"],
-        ["Standardization", "z = (x - mean) / standard deviation", "Centres at zero and scales to unit standard deviation", "Sensitive to outliers; does not bound values"],
-        ["Robust scaling", "x_scaled = (x - median) / interquartile range", "Uses robust centre and spread statistics", "Does not force a fixed range or remove outliers"],
-        ["Max-absolute scaling", "x_scaled = x / maximum absolute value", "Preserves sparsity and scales values by magnitude", "Can be affected by extreme values"]
+        [
+          "Min-max scaling",
+          "x_scaled = (x - minimum) / (maximum - minimum)",
+          "Maps observed training range to a fixed interval, commonly 0 to 1",
+          "Extreme values can compress most observations; future values may fall outside the interval"
+        ],
+        [
+          "Standardization",
+          "z = (x - mean) / standard deviation",
+          "Centres at zero and scales to unit standard deviation",
+          "Sensitive to outliers; does not bound values"
+        ],
+        [
+          "Robust scaling",
+          "x_scaled = (x - median) / interquartile range",
+          "Uses robust centre and spread statistics",
+          "Does not force a fixed range or remove outliers"
+        ],
+        [
+          "Max-absolute scaling",
+          "x_scaled = x / maximum absolute value",
+          "Preserves sparsity and scales values by magnitude",
+          "Can be affected by extreme values"
+        ]
       ]
     },
     {
@@ -1111,12 +1551,32 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Diagnostic pattern", "Likely interpretation", "Possible action"],
+      "headers": [
+        "Diagnostic pattern",
+        "Likely interpretation",
+        "Possible action"
+      ],
       "rows": [
-        ["High training error and high validation error", "Underfitting / high bias", "Use a more expressive model, improve features or reduce excessive regularisation"],
-        ["Very low training error and much higher validation error", "Overfitting / high variance", "Add regularisation, simplify the model, collect more data or use cross-validation"],
-        ["Low training and low validation error", "Good fit for the measured task", "Check test performance, robustness and whether the metric matches the real objective"],
-        ["Validation performance varies greatly across folds", "Unstable estimate or high sensitivity to data partition", "Use suitable stratified/group/time splits and investigate data size or heterogeneity"]
+        [
+          "High training error and high validation error",
+          "Underfitting / high bias",
+          "Use a more expressive model, improve features or reduce excessive regularisation"
+        ],
+        [
+          "Very low training error and much higher validation error",
+          "Overfitting / high variance",
+          "Add regularisation, simplify the model, collect more data or use cross-validation"
+        ],
+        [
+          "Low training and low validation error",
+          "Good fit for the measured task",
+          "Check test performance, robustness and whether the metric matches the real objective"
+        ],
+        [
+          "Validation performance varies greatly across folds",
+          "Unstable estimate or high sensitivity to data partition",
+          "Use suitable stratified/group/time splits and investigate data size or heterogeneity"
+        ]
       ]
     },
     {
@@ -1145,13 +1605,49 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Dimension", "AI", "ML", "DL", "Data Science"],
+      "headers": [
+        "Dimension",
+        "AI",
+        "ML",
+        "DL",
+        "Data Science"
+      ],
       "rows": [
-        ["Central question", "How can a system perform an intelligent task?", "How can a system learn a pattern from data?", "How can multi-layer neural networks learn representations?", "What can data tell us, and how can it support decisions?"],
-        ["Typical methods", "Search, rules, logic, planning, ML", "Regression, trees, SVM, clustering, neural networks", "CNNs, RNNs, transformers and other deep neural networks", "Statistics, SQL, visualisation, experimentation, ML and communication"],
-        ["Data requirement", "Varies by approach", "Usually relies on examples or observations", "Often data-intensive, though pretrained models can help", "Depends on the analytical question"],
-        ["Typical output", "Intelligent behaviour or action", "A learned predictor or grouping", "A learned deep representation or prediction system", "Insight, report, decision support or predictive product"],
-        ["Relationship", "Broad field", "Part of AI", "Part of ML", "Overlaps with AI/ML but is not a subset of them"]
+        [
+          "Central question",
+          "How can a system perform an intelligent task?",
+          "How can a system learn a pattern from data?",
+          "How can multi-layer neural networks learn representations?",
+          "What can data tell us, and how can it support decisions?"
+        ],
+        [
+          "Typical methods",
+          "Search, rules, logic, planning, ML",
+          "Regression, trees, SVM, clustering, neural networks",
+          "CNNs, RNNs, transformers and other deep neural networks",
+          "Statistics, SQL, visualisation, experimentation, ML and communication"
+        ],
+        [
+          "Data requirement",
+          "Varies by approach",
+          "Usually relies on examples or observations",
+          "Often data-intensive, though pretrained models can help",
+          "Depends on the analytical question"
+        ],
+        [
+          "Typical output",
+          "Intelligent behaviour or action",
+          "A learned predictor or grouping",
+          "A learned deep representation or prediction system",
+          "Insight, report, decision support or predictive product"
+        ],
+        [
+          "Relationship",
+          "Broad field",
+          "Part of AI",
+          "Part of ML",
+          "Overlaps with AI/ML but is not a subset of them"
+        ]
       ]
     },
     {
@@ -1165,18 +1661,51 @@ const post = {
     },
     {
       "type": "table",
-      "headers": ["Incorrect statement", "Correct understanding"],
+      "headers": [
+        "Incorrect statement",
+        "Correct understanding"
+      ],
       "rows": [
-        ["Every AI system uses machine learning.", "AI can also use rules, search, logic and planning without learning from data."],
-        ["Deep learning and machine learning are the same.", "Deep learning is one family of machine-learning methods based on multi-layer neural networks."],
-        ["Unsupervised learning means there is no evaluation.", "Evaluation is possible, but it may use internal criteria, expert judgement or external labels rather than direct training labels."],
-        ["Online learning always means learning from one record at a time.", "It can update from one example or a small mini-batch at a time."],
-        ["More features always improve accuracy.", "Irrelevant, noisy or redundant features can harm generalisation."],
-        ["Normalization makes every feature normally distributed.", "Scaling changes numerical scale; it does not necessarily change distribution shape."],
-        ["A low p-value is the probability that the null hypothesis is true.", "A p-value is calculated assuming the null hypothesis and test assumptions are true."],
-        ["A model with perfect training accuracy is excellent.", "It may be overfitting; performance on unseen data is essential."],
-        ["All outliers should be deleted.", "Outliers may be errors or important rare events; investigate before deciding."],
-        ["Data augmentation can be applied before splitting the dataset.", "Split first and augment training data only to avoid leakage."]
+        [
+          "Every AI system uses machine learning.",
+          "AI can also use rules, search, logic and planning without learning from data."
+        ],
+        [
+          "Deep learning and machine learning are the same.",
+          "Deep learning is one family of machine-learning methods based on multi-layer neural networks."
+        ],
+        [
+          "Unsupervised learning means there is no evaluation.",
+          "Evaluation is possible, but it may use internal criteria, expert judgement or external labels rather than direct training labels."
+        ],
+        [
+          "Online learning always means learning from one record at a time.",
+          "It can update from one example or a small mini-batch at a time."
+        ],
+        [
+          "More features always improve accuracy.",
+          "Irrelevant, noisy or redundant features can harm generalisation."
+        ],
+        [
+          "Normalization makes every feature normally distributed.",
+          "Scaling changes numerical scale; it does not necessarily change distribution shape."
+        ],
+        [
+          "A low p-value is the probability that the null hypothesis is true.",
+          "A p-value is calculated assuming the null hypothesis and test assumptions are true."
+        ],
+        [
+          "A model with perfect training accuracy is excellent.",
+          "It may be overfitting; performance on unseen data is essential."
+        ],
+        [
+          "All outliers should be deleted.",
+          "Outliers may be errors or important rare events; investigate before deciding."
+        ],
+        [
+          "Data augmentation can be applied before splitting the dataset.",
+          "Split first and augment training data only to avoid leakage."
+        ]
       ]
     },
     {
