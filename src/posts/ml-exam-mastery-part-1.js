@@ -364,11 +364,11 @@ const post = {
     },
     {
       "type": "p",
-      "text": "In ML, a hypothesis is a candidate function h that maps inputs to predictions, and the hypothesis space is the set of all functions the algorithm is allowed to choose from. For simple linear regression the hypothesis function is \\(h_\\theta(x)=\\theta_0+\\theta_1x\\), where θ0 (intercept/bias) and θ1 (slope/weight) are the parameters the algorithm learns. Learning means choosing the θ values that minimize a cost function, typically the mean squared error \\(J(\\theta)=\\frac{1}{2m}\\sum_{i=1}^{m}(h_\\theta(x_i)-y_i)^2\\)."
+      "text": "In ML, a hypothesis is a candidate function h that maps inputs to predictions, and the hypothesis space is the set of all functions the algorithm is allowed to choose from. For simple linear regression the hypothesis function is hθ(x) = θ₀ + θ₁x, where θ₀ (intercept/bias) and θ₁ (slope/weight) are the parameters the algorithm learns. Learning means choosing the θ values that minimize a cost function, typically the mean squared error J(θ) = (1/2m) Σᵢ₌₁ᵐ (hθ(xᵢ) − yᵢ)²."
     },
     {
       "type": "p",
-      "text": "'Testing a hypothesis' has two related meanings, and a good answer covers both. In ML evaluation, you test the learned hypothesis on data it never saw (a held-out test set) to estimate how well it generalizes. In statistics, hypothesis testing checks a claim about a population: you state a null hypothesis null hypothesis \\(H_0\\) (no effect or no difference) and an alternative \\(H_1\\), compute a test statistic and a p-value, and reject H0 if the p-value is below the significance level \\(\\alpha\\) (commonly 0.05)."
+      "text": "'Testing a hypothesis' has two related meanings, and a good answer covers both. In ML evaluation, you test the learned hypothesis on data it never saw (a held-out test set) to estimate how well it generalizes. In statistics, hypothesis testing checks a claim about a population: you state a null hypothesis null hypothesis H₀ (no effect or no difference) and an alternative H₁, compute a test statistic and a p-value, and reject H₀ if the p-value is below the significance level α (commonly 0.05)."
     },
     {
       "type": "code-block",
@@ -540,7 +540,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Bias is the error caused by wrong or overly simple assumptions in the model, which leads to underfitting. Variance is the error caused by excessive sensitivity to the particular training sample, which leads to overfitting. For squared error, the expected test error decomposes as: \\(\\mathbb{E}[\\text{Test Error}]=\\text{Bias}^2+\\text{Variance}+\\text{Irreducible Noise}\\)."
+      "text": "Bias is the error caused by wrong or overly simple assumptions in the model, which leads to underfitting. Variance is the error caused by excessive sensitivity to the particular training sample, which leads to overfitting. For squared error, the expected test error decomposes as: E[Test Error] = Bias² + Variance + Irreducible Noise."
     },
     {
       "type": "image",
@@ -1078,7 +1078,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "In supervised learning, the hypothesis function h maps an input observation to an estimated output. For multiple input features, a linear hypothesis can be written as \\(h_\\theta(x)=\\theta_0+\\theta_1x_1+\\theta_2x_2+\\cdots+\\theta_nx_n\\). The hypothesis space is the family of candidate functions available to the learner. A linear model searches within a linear family; a decision tree searches among tree-shaped decision rules. The chosen hypothesis depends on the training data, the loss function, the optimisation method and any regularisation."
+      "text": "In supervised learning, the hypothesis function h maps an input observation to an estimated output. For multiple input features, a linear hypothesis can be written as hθ(x) = θ₀ + θ₁x₁ + θ₂x₂ + … + θₙxₙ. The hypothesis space is the family of candidate functions available to the learner. A linear model searches within a linear family; a decision tree searches among tree-shaped decision rules. The chosen hypothesis depends on the training data, the loss function, the optimisation method and any regularisation."
     },
     {
       "type": "p",
@@ -1095,7 +1095,7 @@ const post = {
         [
           "Hypothesis function",
           "What prediction does this candidate model make?",
-          "hθ(x) = θ0 + θ1x"
+          "hθ(x) = θ₀ + θ₁x"
         ],
         [
           "Hypothesis space",
@@ -1126,16 +1126,16 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Statistical hypothesis testing follows a disciplined process: formulate H0 and H1 before examining the result; select a test whose assumptions fit the data; choose a significance level α; calculate the test statistic and p-value; and state the decision in the context of the question. A p-value is the probability, assuming H0 and the test assumptions are true, of obtaining a result at least as extreme as the observed result. It is not the probability that H0 is true."
+      "text": "Statistical hypothesis testing follows a disciplined process: formulate H₀ and H₁ before examining the result; select a test whose assumptions fit the data; choose a significance level α; calculate the test statistic and p-value; and state the decision in the context of the question. A p-value is the probability, assuming H₀ and the test assumptions are true, of obtaining a result at least as extreme as the observed result. It is not the probability that H₀ is true."
     },
     {
       "type": "p",
-      "text": "Rejecting H0 does not automatically mean an effect is large or practically important. Failing to reject H0 does not prove that H0 is true; it may mean that the data provide insufficient evidence. Report effect sizes and confidence intervals where possible, consider sample size and test assumptions, and account for multiple comparisons when many hypotheses are tested."
+      "text": "Rejecting H₀ does not automatically mean an effect is large or practically important. Failing to reject H₀ does not prove that H₀ is true; it may mean that the data provide insufficient evidence. Report effect sizes and confidence intervals where possible, consider sample size and test assumptions, and account for multiple comparisons when many hypotheses are tested."
     },
     {
       "type": "callout",
       "icon": "⚠️",
-      "text": "Do not confuse the ML hypothesis function with a statistical null hypothesis. The ML hypothesis function is a candidate prediction rule. H0 is a claim about a population or process that is assessed using statistical evidence. The word hypothesis is used in two different technical senses."
+      "text": "Do not confuse the ML hypothesis function with a statistical null hypothesis. The ML hypothesis function is a candidate prediction rule. H₀ is a claim about a population or process that is assessed using statistical evidence. The word hypothesis is used in two different technical senses."
     },
     {
       "type": "h2",
@@ -1185,7 +1185,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "The significance level α is selected before the test. If \\(\\alpha=0.05\\), the procedure is designed to have a 5% Type I error probability when H₀ is true, assuming the test assumptions hold. Power is the probability that the test correctly detects a specified real effect. A test with \\(\\beta=0.20\\) has power \\(1-\\beta=1-0.20=0.80\\), or 80%."
+      "text": "The significance level α is selected before the test. If α = 0.05, the procedure is designed to have a 5% Type I error probability when H₀ is true, assuming the test assumptions hold. Power is the probability that the test correctly detects a specified real effect. A test with β = 0.20 has power 1 − β = 1 − 0.20 = 0.80, or 80%."
     },
     {
       "type": "h3",
@@ -1193,11 +1193,11 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Suppose a college tests whether a new teaching method changes the average exam score. H₀: the population mean score is unchanged (\\(\\mu=70\\)). H₁: the population mean score is different from 70. The college chooses \\(\\alpha=0.05\\). If the method truly has no effect but the sample result leads the college to reject H₀, that is a Type I error. The long-run probability of this false rejection is controlled at 0.05 by a correctly calibrated test. If the method really improves the mean but the sample does not provide enough evidence to reject H₀, that is a Type II error."
+      "text": "Suppose a college tests whether a new teaching method changes the average exam score. H₀: the population mean score is unchanged (μ = 70). H₁: the population mean score is different from 70. The college chooses α = 0.05. If the method truly has no effect but the sample result leads the college to reject H₀, that is a Type I error. The long-run probability of this false rejection is controlled at 0.05 by a correctly calibrated test. If the method really improves the mean but the sample does not provide enough evidence to reject H₀, that is a Type II error."
     },
     {
       "type": "p",
-      "text": "For a particular alternative effect size, suppose the test has \\(\\beta=0.20\\). Then power = \\(1-\\beta=1-0.20=0.80\\). In repeated studies under that specified alternative, the test would detect the effect about 80% of the time and miss it about 20% of the time. Power is not one universal number: it depends on the true effect size, sample size, variability, significance level and test design."
+      "text": "For a particular alternative effect size, suppose the test has β = 0.20. Then power = 1 − β = 1 − 0.20 = 0.80. In repeated studies under that specified alternative, the test would detect the effect about 80% of the time and miss it about 20% of the time. Power is not one universal number: it depends on the true effect size, sample size, variability, significance level and test design."
     },
     {
       "type": "h3",
@@ -1274,7 +1274,7 @@ const post = {
     {
       "type": "callout",
       "icon": "⚠️",
-      "text": "A p-value of 0.03 does NOT mean there is a 3% probability that H₀ is true, and \\(\\alpha=0.05\\) does NOT mean every individual study has a 5% probability of being wrong. α describes the long-run Type I error rate of the testing procedure when H₀ is true."
+      "text": "A p-value of 0.03 does NOT mean there is a 3% probability that H₀ is true, and α = 0.05 does NOT mean every individual study has a 5% probability of being wrong. α describes the long-run Type I error rate of the testing procedure when H₀ is true."
     },
     {
       "type": "h3",
@@ -1326,7 +1326,7 @@ const post = {
     },
     {
       "type": "p",
-      "text": "Q1. A spam filter labels a legitimate email as spam. Which error is this? Answer: Type I-style false positive if H₀ is defined as 'the email is legitimate'; the filter rejected that null claim incorrectly. Q2. A fraud system fails to flag a genuinely fraudulent transaction. Answer: Type II-style false negative if H₀ is 'the transaction is legitimate'. Q3. If \\(\\beta=0.15\\), calculate power. Answer: \\(1-0.15=0.85\\), or 85%. Q4. If \\(\\alpha=0.01\\) and \\(p=0.04\\), what is the decision? Answer: fail to reject H₀ because 0.04 is greater than 0.01. Q5. Does failing to reject H₀ prove it is true? Answer: No; the evidence may simply be insufficient."
+      "text": "Q1. A spam filter labels a legitimate email as spam. Which error is this? Answer: Type I-style false positive if H₀ is defined as 'the email is legitimate'; the filter rejected that null claim incorrectly. Q2. A fraud system fails to flag a genuinely fraudulent transaction. Answer: Type II-style false negative if H₀ is 'the transaction is legitimate'. Q3. If β = 0.15, calculate power. Answer: 1 − 0.15 = 0.85, or 85%. Q4. If α = 0.01 and p = 0.04, what is the decision? Answer: fail to reject H₀ because 0.04 is greater than 0.01. Q5. Does failing to reject H₀ prove it is true? Answer: No; the evidence may simply be insufficient."
     },
     {
       "type": "p",
