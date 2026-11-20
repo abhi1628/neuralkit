@@ -649,6 +649,405 @@ const post = {
     },
     {
       "type": "h2",
+      "text": "Detailed Study Notes: Deeper Concepts and Practical Guidance"
+    },
+    {
+      "type": "p",
+      "text": "The sections below are supplementary explanations. The original explanations, tables, examples and code above have been retained. These notes add conceptual depth, practical decision rules, common misconceptions and additional exam points."
+    },
+    {
+      "type": "h2",
+      "text": "1. Machine Learning: How Learning Actually Happens"
+    },
+    {
+      "type": "p",
+      "text": "A machine-learning system identifies useful relationships in examples and uses those relationships to make predictions or decisions on new examples. A dataset is commonly represented by a feature matrix X and, in supervised learning, a target vector y. A feature is an input property such as age, temperature or pixel intensity; a target is the quantity or class the system must predict. The model is the learned mathematical representation, while the learning algorithm is the procedure used to find that representation."
+    },
+    {
+      "type": "p",
+      "text": "Training is not the same as memorising a list of answers. The objective is generalisation: performing well on observations that were not used to fit the model. A model that achieves 100% training accuracy but performs poorly on new records has not learned a reliable general rule. The training process usually adjusts parameters to reduce a loss function, subject to constraints such as model complexity, regularisation and available computation."
+    },
+    {
+      "type": "table",
+      "headers": ["Term", "Meaning", "Example"],
+      "rows": [
+        ["Dataset", "A collection of observations used for analysis or learning", "10,000 customer records"],
+        ["Observation / sample", "One row or example in a dataset", "One customer's record"],
+        ["Feature", "An input variable used by the model", "Age, income, temperature"],
+        ["Target / label", "The output to be predicted in supervised learning", "Fraud / not fraud"],
+        ["Model", "The learned function or representation", "A fitted decision tree"],
+        ["Parameter", "A value learned from training data", "A regression coefficient"],
+        ["Hyperparameter", "A setting selected before or around training", "Tree depth, k in k-NN"],
+        ["Loss function", "A numerical measure of prediction error", "Mean squared error"],
+        ["Generalisation", "Performance on new, unseen observations", "Correctly predicting future transactions"]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "💡",
+      "text": "Important distinction: parameters are learned by the model from training data; hyperparameters are selected by the practitioner or a tuning procedure. For example, a decision tree learns its split thresholds (parameters/structure) while its maximum depth is a hyperparameter."
+    },
+    {
+      "type": "h2",
+      "text": "2. Machine Learning Life Cycle: Detailed Activities and Deliverables"
+    },
+    {
+      "type": "p",
+      "text": "A professional ML project begins with a clearly framed problem, not with choosing an algorithm. The team first determines who will use the prediction, what action follows it, how costly different mistakes are, what data may legally and ethically be used, and what measurable result would count as success. A technically accurate model is not useful if it does not solve the actual operational problem."
+    },
+    {
+      "type": "table",
+      "headers": ["Lifecycle stage", "Detailed activities", "Typical output / checkpoint"],
+      "rows": [
+        ["Problem framing", "Identify the user, decision, prediction target, constraints, baseline and success metric", "Problem statement and acceptance criteria"],
+        ["Data acquisition", "Identify sources, permissions, sampling period, labels, collection frequency and data ownership", "Raw, documented dataset"],
+        ["Data understanding", "Inspect schema, units, distributions, missingness, duplicates, class balance and possible leakage", "Data-quality report and initial hypotheses"],
+        ["Preparation", "Clean records, impute missing values, encode categories, scale numeric features and engineer useful variables", "Reproducible preprocessing pipeline"],
+        ["Partitioning", "Create train, validation and test sets using random, stratified, grouped or time-based splitting as appropriate", "Leakage-aware data partitions"],
+        ["Model development", "Establish a simple baseline, select algorithms, train candidates and tune hyperparameters", "Trained candidate models"],
+        ["Evaluation", "Compare suitable metrics, inspect errors, test robustness, fairness and calibration where relevant", "Evaluation report and selected model"],
+        ["Deployment", "Package model and preprocessing, expose predictions through an API, application or scheduled batch process", "Versioned, usable model service"],
+        ["Monitoring", "Track data quality, drift, latency, failures, prediction patterns and real-world outcomes", "Alerts, monitoring dashboard and retraining triggers"],
+        ["Maintenance", "Investigate changes, refresh data, retrain, validate and roll back when necessary", "Updated model with audit trail"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "The data split must reflect the way the model will be used. Random splitting is often suitable when observations are independent and identically distributed. Stratified splitting preserves class proportions for classification. Group splitting keeps records from the same person, patient, machine or household in only one partition. Time-based splitting trains on the past and tests on the future; this is essential when predicting future events from historical data."
+    },
+    {
+      "type": "callout",
+      "icon": "⚠️",
+      "text": "Data leakage occurs when information unavailable at prediction time enters model training or evaluation. Examples include using a post-outcome variable, allowing the same patient's records into both train and test sets, or fitting preprocessing transformations on the complete dataset before splitting. Leakage produces overly optimistic evaluation results."
+    },
+    {
+      "type": "h2",
+      "text": "3. Types of Machine Learning Systems: Choosing the Right Learning Setup"
+    },
+    {
+      "type": "p",
+      "text": "The three classification axes introduced earlier describe different properties and should not be confused. Supervised versus unsupervised learning describes the kind of feedback or labels available. Batch versus online learning describes how the model receives training data over time. Instance-based versus model-based learning describes how the system represents what it has learned and makes predictions. These categories are therefore complementary, not competing alternatives."
+    },
+    {
+      "type": "table",
+      "headers": ["Learning setup", "Best suited to", "Main benefit", "Main concern"],
+      "rows": [
+        ["Supervised", "Historical examples have reliable target labels", "Directly optimises a known prediction task", "Label cost, label errors and class imbalance"],
+        ["Unsupervised", "Targets are unavailable or the goal is exploration", "Discovers groups, structure and unusual observations", "Results may be difficult to validate or interpret"],
+        ["Batch", "Data is relatively stable and periodic retraining is acceptable", "Training can be controlled, tested and versioned offline", "Cannot immediately adapt to new patterns"],
+        ["Online", "Data arrives continuously or the environment changes rapidly", "Incremental adaptation with potentially low memory use", "Sensitive to noisy data, drift and learning-rate choices"],
+        ["Instance-based", "Similarity to stored examples is meaningful", "Flexible local decisions with little explicit training", "Prediction cost, memory use and distance sensitivity"],
+        ["Model-based", "A compact learned representation is useful", "Fast inference and often easier deployment", "Model assumptions may not capture complex patterns"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "A supervised problem may be a classification task when the output is a category (for example, defective or non-defective), or a regression task when the output is numeric (for example, energy consumption). In unsupervised learning, clustering groups similar observations, dimensionality reduction compresses information into fewer variables, and association analysis finds items or events that occur together. Anomaly detection may be supervised when labelled anomalies exist, or unsupervised when unusual patterns must be identified without labels."
+    },
+    {
+      "type": "p",
+      "text": "Online learning is particularly useful for click streams, sensor telemetry and changing user preferences, but it requires safeguards. The system should validate incoming records, monitor prediction quality, control update frequency and retain the ability to revert to a known-good model. A learning rate that is too high can make the model forget useful historical patterns; one that is too low can make adaptation too slow."
+    },
+    {
+      "type": "p",
+      "text": "Instance-based learning is sometimes called lazy learning because much of the work is postponed until prediction time. k-NN stores examples and compares a new observation with nearby stored examples. Model-based learning is often called eager learning because it builds a general representation during training. The distinction is not simply whether data is stored: it concerns whether predictions are made mainly by comparing with stored cases or by evaluating a learned model."
+    },
+    {
+      "type": "h2",
+      "text": "4. Scope, Applications and Limitations of Machine Learning"
+    },
+    {
+      "type": "p",
+      "text": "Machine learning is valuable when patterns are too numerous, subtle or changeable to describe reliably with hand-written rules. Its scope includes prediction, classification, ranking, recommendation, grouping, forecasting, anomaly detection, perception, language processing and decision support. It can support human experts by prioritising cases or highlighting patterns, but high-impact decisions should include suitable human oversight and an appeal or review process."
+    },
+    {
+      "type": "table",
+      "headers": ["Application area", "Typical ML task", "Illustrative use"],
+      "rows": [
+        ["Healthcare", "Classification, segmentation, risk prediction", "Flagging scans or records for expert review"],
+        ["Banking and finance", "Anomaly detection, classification, forecasting", "Transaction fraud screening and credit-risk estimation"],
+        ["Education", "Prediction and recommendation", "Identifying learners who may need additional support"],
+        ["Agriculture", "Image classification and forecasting", "Crop-disease identification and yield estimation"],
+        ["Manufacturing", "Anomaly detection and regression", "Predictive maintenance from machine sensors"],
+        ["Transport", "Computer vision and optimisation", "Traffic estimation and driver-assistance systems"],
+        ["Retail", "Recommendation and demand forecasting", "Product suggestions and inventory planning"],
+        ["Environment", "Time-series forecasting and anomaly detection", "Air-quality prediction and unusual sensor readings"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "ML has important limitations. It does not automatically understand meaning or causality; it estimates patterns from the data and assumptions supplied. Performance can deteriorate when the real world changes, when rare cases are under-represented, or when the training data reflects historical discrimination. Some models are difficult to explain, and a model that performs well on average may still fail for a particular subgroup or costly edge case. Privacy, security, energy consumption, infrastructure cost, legal requirements and accountability must also be considered."
+    },
+    {
+      "type": "callout",
+      "icon": "🧭",
+      "text": "Use ML when there is a meaningful pattern to learn, sufficient representative data, a measurable objective and a way to monitor outcomes. Prefer a simpler rule-based solution when the rules are stable, transparent and easy to maintain. ML is a tool for problem-solving, not a requirement for every software problem."
+    },
+    {
+      "type": "h2",
+      "text": "5. Challenges of Machine Learning: Beyond the Basic List"
+    },
+    {
+      "type": "table",
+      "headers": ["Challenge", "Why it matters", "Practical response"],
+      "rows": [
+        ["Insufficient data", "The model cannot observe enough examples of the underlying variation", "Collect more representative data, use transfer learning or carefully justified augmentation"],
+        ["Sampling bias", "The training sample does not represent the population or deployment setting", "Review collection methods and evaluate across relevant groups"],
+        ["Noisy or incorrect labels", "The model is trained toward wrong answers", "Audit labels, define annotation rules and use expert review"],
+        ["Missing and inconsistent values", "Different formats and gaps can distort patterns or break pipelines", "Validate schemas and use suitable imputation with missingness analysis"],
+        ["Class imbalance", "A model can appear accurate by predicting the majority class", "Use precision, recall, F1, PR-AUC, class weighting or resampling as appropriate"],
+        ["Irrelevant or redundant features", "They add noise, complexity or unstable relationships", "Use domain knowledge, feature selection and regularisation"],
+        ["Overfitting and underfitting", "The model respectively memorises noise or misses the real pattern", "Use validation, regularisation and suitable model complexity"],
+        ["Distribution shift", "Production data differs from training data", "Monitor drift, investigate causes and retrain only after validation"],
+        ["Interpretability", "Users may not understand why a prediction was made", "Use interpretable models or appropriate explanation techniques"],
+        ["Privacy and security", "Sensitive data or model interfaces may be exposed or attacked", "Minimise data, control access, secure pipelines and assess threats"],
+        ["Compute and environmental cost", "Training and inference may be expensive in time, money and energy", "Use efficient models, measure resource use and avoid unnecessary retraining"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "A useful way to organise ML challenges in an examination is into four groups: data challenges (quantity, quality, labels and representativeness); model challenges (underfitting, overfitting and poor assumptions); operational challenges (deployment, latency, drift and maintenance); and responsible-use challenges (privacy, fairness, explainability, security and environmental impact). This classification gives a more complete answer than listing only data problems."
+    },
+    {
+      "type": "h2",
+      "text": "6. Data Visualization: Selecting and Interpreting the Right Plot"
+    },
+    {
+      "type": "p",
+      "text": "Exploratory data analysis (EDA) uses numerical summaries and visual displays to understand the dataset before model fitting. Begin with data shape, data types, unique values, missing-value counts and descriptive statistics. Then select plots according to the question: one variable, two variables, several variables, time behaviour or class distribution. A chart should answer a specific question rather than merely decorate a report."
+    },
+    {
+      "type": "table",
+      "headers": ["Analytical question", "Recommended visualization", "Interpretation to look for"],
+      "rows": [
+        ["How is one numeric feature distributed?", "Histogram or density plot", "Skew, multiple peaks, spread and extreme values"],
+        ["How do two numeric features relate?", "Scatter plot", "Positive/negative association, clusters and non-linearity"],
+        ["How does a numeric feature vary by category?", "Box plot or violin plot", "Median, spread and unusual observations by group"],
+        ["How many records belong to each class?", "Bar chart", "Class imbalance and rare classes"],
+        ["Which numeric features are associated?", "Correlation heatmap", "Strong pairwise linear associations"],
+        ["How does a value change over time?", "Line chart", "Trend, seasonality, sudden shifts and gaps"],
+        ["How do many features relate pairwise?", "Pair plot", "Potential clusters and redundant features"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Correlation is a measure of association, not proof that one variable causes another. Pearson correlation mainly measures linear association and can be strongly affected by outliers. A low Pearson correlation does not rule out a non-linear relationship. Also, a heatmap based on correlation does not establish that a feature is useful for prediction; usefulness must be checked using the training and validation process."
+    },
+    {
+      "type": "p",
+      "text": "Good visualization practice includes meaningful axis labels and units, readable scales, clear legends, suitable bin widths, honest ranges and colour choices that remain understandable to viewers with colour-vision differences. Avoid 3-D effects when they obscure values. For time-series data, preserve chronological order. When plotting target labels, make sure the chart does not accidentally reveal test-set information during model development."
+    },
+    {
+      "type": "h2",
+      "text": "7. Hypothesis Function, Hypothesis Space and Statistical Testing"
+    },
+    {
+      "type": "p",
+      "text": "In supervised learning, the hypothesis function h maps an input observation to an estimated output. For multiple input features, a linear hypothesis can be written as hθ(x) = θ0 + θ1x1 + θ2x2 + ... + θnxn. The hypothesis space is the family of candidate functions available to the learner. A linear model searches within a linear family; a decision tree searches among tree-shaped decision rules. The chosen hypothesis depends on the training data, the loss function, the optimisation method and any regularisation."
+    },
+    {
+      "type": "p",
+      "text": "The cost or loss function tells the learning algorithm how undesirable a prediction is. Mean squared error is common for regression because it squares residuals and penalises large errors more strongly. Mean absolute error is less sensitive to extreme residuals. Classification commonly uses log loss or cross-entropy, while accuracy is usually an evaluation metric rather than a smooth training objective. The choice should reflect the task and the consequences of errors."
+    },
+    {
+      "type": "table",
+      "headers": ["Concept", "Question it answers", "Example"],
+      "rows": [
+        ["Hypothesis function", "What prediction does this candidate model make?", "hθ(x) = θ0 + θ1x"],
+        ["Hypothesis space", "Which candidate functions may the learner choose?", "All linear functions of the selected features"],
+        ["Loss / cost", "How wrong are the predictions?", "Mean squared error"],
+        ["Optimisation", "How are model parameters adjusted?", "Gradient descent or a closed-form solver"],
+        ["Model evaluation", "Does the fitted model generalise to unseen data?", "Test-set RMSE or F1-score"],
+        ["Statistical hypothesis test", "Is the observed evidence inconsistent with a stated null claim?", "Two-sample t-test"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Statistical hypothesis testing follows a disciplined process: formulate H0 and H1 before examining the result; select a test whose assumptions fit the data; choose a significance level α; calculate the test statistic and p-value; and state the decision in the context of the question. A p-value is the probability, assuming H0 and the test assumptions are true, of obtaining a result at least as extreme as the observed result. It is not the probability that H0 is true."
+    },
+    {
+      "type": "p",
+      "text": "Rejecting H0 does not automatically mean an effect is large or practically important. Failing to reject H0 does not prove that H0 is true; it may mean that the data provide insufficient evidence. Report effect sizes and confidence intervals where possible, consider sample size and test assumptions, and account for multiple comparisons when many hypotheses are tested."
+    },
+    {
+      "type": "callout",
+      "icon": "⚠️",
+      "text": "Do not confuse the ML hypothesis function with a statistical null hypothesis. The ML hypothesis function is a candidate prediction rule. H0 is a claim about a population or process that is assessed using statistical evidence. The word hypothesis is used in two different technical senses."
+    },
+    {
+      "type": "h2",
+      "text": "8. Data Pre-processing: A Reliable Order of Operations"
+    },
+    {
+      "type": "p",
+      "text": "Pre-processing should be designed as a reproducible pipeline, not as a collection of unrelated manual edits. First inspect and validate the raw data. Correct data types and units, remove exact duplicates when they are truly duplicate records, investigate impossible values, and understand why values are missing. Then create data partitions and fit data-dependent transformations using training data only. Apply the fitted transformations unchanged to validation, test and production data."
+    },
+    {
+      "type": "steps",
+      "items": [
+        {"num": "1", "title": "Profile and validate", "text": "Check rows and columns, data types, ranges, units, missingness, duplicates, label quality and unexpected categories."},
+        {"num": "2", "title": "Define the prediction point", "text": "Identify which information would genuinely be available when a real prediction is made; exclude future or outcome-derived variables."},
+        {"num": "3", "title": "Split the dataset", "text": "Choose random, stratified, grouped or chronological splitting based on the data-generation process."},
+        {"num": "4", "title": "Fit transformations on training data", "text": "Learn imputation values, scaling parameters, category vocabularies and feature-selection decisions from training data."},
+        {"num": "5", "title": "Transform all partitions consistently", "text": "Apply the already-fitted pipeline to validation and test data without refitting it."},
+        {"num": "6", "title": "Check the result", "text": "Confirm shapes, ranges, missing-value handling, category handling and absence of leakage."}
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Missing values should not be filled automatically without understanding their cause. Mean imputation is simple but can reduce variance and distort relationships; median imputation is more robust to skew and outliers; mode imputation is common for categorical variables. In some applications, a missingness indicator is useful because the fact that a value is missing may itself carry information. Dropping records is reasonable only when the amount and pattern of missingness make that choice defensible."
+    },
+    {
+      "type": "p",
+      "text": "Categorical features can be represented with one-hot encoding when categories have no natural order. Ordinal encoding is suitable only when a meaningful order exists and the chosen numeric representation is justified. Label-encoding nominal categories as 0, 1 and 2 can accidentally imply an order or distance that does not exist. Unknown categories at prediction time should be handled deliberately, for example with an encoder configured to ignore or map unseen categories."
+    },
+    {
+      "type": "p",
+      "text": "Outliers should be investigated before removal. An extreme value may be a measurement error, a data-entry mistake or a genuine rare event that is important to detect. Use domain rules, visual inspection and robust statistics to decide whether to correct, cap, transform, retain or exclude an observation. Removing unusual but valid cases can make a model less useful in precisely the situations where it is needed."
+    },
+    {
+      "type": "h2",
+      "text": "9. Data Augmentation: Benefits, Risks and Correct Use"
+    },
+    {
+      "type": "p",
+      "text": "Data augmentation increases the diversity of training examples by applying transformations that preserve the task label or by generating plausible synthetic samples. It is especially useful when data collection is expensive, when classes are imbalanced or when a model must tolerate realistic changes such as image orientation, lighting or background noise. Augmentation does not create genuinely independent real-world evidence; it creates additional training variations based on assumptions about which changes should not affect the label."
+    },
+    {
+      "type": "table",
+      "headers": ["Domain", "Examples", "Important caution"],
+      "rows": [
+        ["Images", "Crop, flip, rotate, resize, brightness/contrast adjustment, blur and noise", "A transformation must not change the object identity or class; orientation may matter in medical or document images"],
+        ["Text", "Careful synonym substitution, paraphrasing and back-translation", "A small wording change can reverse sentiment, intent or a named entity"],
+        ["Audio", "Time stretching, pitch shifting, background-noise mixing and time masking", "Do not distort speech so much that the label or speaker/event identity changes"],
+        ["Tabular", "SMOTE, random oversampling and domain-valid perturbations", "Synthetic records must respect feature constraints and realistic relationships"],
+        ["Time series", "Window slicing, jittering, scaling and time warping", "Preserve temporal order and avoid using future information"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Augmentation must be applied after the train/test split and only to training examples. If augmented copies of one original record appear in both training and test sets, the evaluation is contaminated because the model has effectively seen a close relative of the test example. For imbalanced classification, resampling should also occur inside each training fold during cross-validation, not before the folds are created."
+    },
+    {
+      "type": "p",
+      "text": "SMOTE creates synthetic minority-class observations by interpolating between nearby minority examples in feature space. It can help some tabular classification problems, but it is not automatically appropriate for categorical variables, highly constrained data or overlapping classes. Always compare it with class weighting and simpler baselines, and evaluate using metrics that reflect the cost of false positives and false negatives."
+    },
+    {
+      "type": "h2",
+      "text": "10. Normalizing Data Sets: Scaling Choices and Worked Example"
+    },
+    {
+      "type": "p",
+      "text": "Feature scaling is important when an algorithm uses distances, dot products, gradient updates or variance-based directions. Without scaling, a feature with a large numerical range can dominate a distance calculation even when it is not more informative. Scaling does not necessarily make data normally distributed, remove outliers or improve every algorithm. Decision trees and random forests are generally insensitive to monotonic rescaling of individual features, whereas k-NN, k-means, SVM, PCA and many neural-network workflows are often sensitive to feature scale."
+    },
+    {
+      "type": "table",
+      "headers": ["Method", "Transformation", "Strength", "Limitation"],
+      "rows": [
+        ["Min-max scaling", "x_scaled = (x - minimum) / (maximum - minimum)", "Maps observed training range to a fixed interval, commonly 0 to 1", "Extreme values can compress most observations; future values may fall outside the interval"],
+        ["Standardization", "z = (x - mean) / standard deviation", "Centres at zero and scales to unit standard deviation", "Sensitive to outliers; does not bound values"],
+        ["Robust scaling", "x_scaled = (x - median) / interquartile range", "Uses robust centre and spread statistics", "Does not force a fixed range or remove outliers"],
+        ["Max-absolute scaling", "x_scaled = x / maximum absolute value", "Preserves sparsity and scales values by magnitude", "Can be affected by extreme values"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Worked example: suppose a training feature contains values 10, 20, 30 and 40. Its minimum is 10 and maximum is 40. Min-max scaling maps 10 to 0, 20 to 0.333, 30 to 0.667 and 40 to 1. If a new production value is 50, applying the same training-fitted transformation gives 1.333; it should not be refitted just to force the new value into the interval. This illustrates why the scaler must be saved as part of the deployed model pipeline."
+    },
+    {
+      "type": "callout",
+      "icon": "📝",
+      "text": "Terminology note: in many introductory courses, 'normalization' is used broadly for feature scaling. More precisely, min-max scaling maps values to a selected range, while standardization converts values to z-scores. Standardization does not guarantee a Gaussian or normal distribution."
+    },
+    {
+      "type": "h2",
+      "text": "11. Bias-Variance Tradeoff: Understanding Generalisation Error"
+    },
+    {
+      "type": "p",
+      "text": "The bias-variance tradeoff explains why neither an overly simple nor an unnecessarily complex model is ideal. High bias means the model's assumptions are too restrictive to represent the underlying relationship; it tends to make similar systematic errors on training and test data. High variance means the fitted model changes substantially when the training sample changes; it may fit random fluctuations in the training set and perform poorly on new observations."
+    },
+    {
+      "type": "p",
+      "text": "For squared prediction error, the expected error at a point can be understood as the sum of squared bias, variance and irreducible noise. Bias is related to systematic distance between the average learned prediction and the true relationship. Variance measures how much predictions vary across different possible training samples. Irreducible noise comes from randomness or information not captured by the available features; it cannot be eliminated simply by choosing a more complex model."
+    },
+    {
+      "type": "table",
+      "headers": ["Diagnostic pattern", "Likely interpretation", "Possible action"],
+      "rows": [
+        ["High training error and high validation error", "Underfitting / high bias", "Use a more expressive model, improve features or reduce excessive regularisation"],
+        ["Very low training error and much higher validation error", "Overfitting / high variance", "Add regularisation, simplify the model, collect more data or use cross-validation"],
+        ["Low training and low validation error", "Good fit for the measured task", "Check test performance, robustness and whether the metric matches the real objective"],
+        ["Validation performance varies greatly across folds", "Unstable estimate or high sensitivity to data partition", "Use suitable stratified/group/time splits and investigate data size or heterogeneity"]
+      ]
+    },
+    {
+      "type": "p",
+      "text": "Regularisation controls model complexity by penalising certain parameter values or structures. L1 regularisation can drive some coefficients to zero, supporting sparse models; L2 regularisation discourages large coefficients and often stabilises fitting. Decision-tree pruning limits unnecessary branches. More training data can reduce variance when the added data is relevant and representative. Cross-validation helps estimate how reliably a model performs across different training/validation partitions."
+    },
+    {
+      "type": "p",
+      "text": "The tradeoff is not a rule that complexity must always increase variance by a fixed amount. It is a conceptual relationship used to reason about expected generalisation. The practical goal is to choose model complexity and regularisation using validation data, then report final performance on an untouched test set."
+    },
+    {
+      "type": "h2",
+      "text": "12. Relationship Between AI, ML, DL and Data Science"
+    },
+    {
+      "type": "p",
+      "text": "Artificial Intelligence (AI) is the broad discipline concerned with building systems that perform tasks associated with intelligent behaviour, such as reasoning, planning, perception, language understanding and decision-making. AI includes approaches based on explicit rules, search, logic, knowledge representation and learning. Machine Learning (ML) is one approach within AI: systems improve task performance by learning patterns from examples or experience rather than relying only on manually specified rules."
+    },
+    {
+      "type": "p",
+      "text": "Deep Learning (DL) is a subfield of ML that uses neural networks with multiple processing layers. These networks can learn increasingly abstract representations from data and have been particularly influential in image recognition, speech processing, language technologies and generative systems. Deep learning often benefits from large datasets and substantial computing resources, although transfer learning and efficient architectures can reduce the amount of training required for a particular task."
+    },
+    {
+      "type": "p",
+      "text": "Data Science (DS) is an interdisciplinary practice that turns data into evidence, insight and useful decisions. It combines data acquisition, data engineering, statistics, visualisation, experimentation, domain knowledge, communication and sometimes ML or DL. A data-science project may use a simple statistical summary or dashboard without any machine-learning model. Conversely, an ML engineer may deploy a model as part of an AI system while relying on data-science methods for evaluation and analysis."
+    },
+    {
+      "type": "table",
+      "headers": ["Dimension", "AI", "ML", "DL", "Data Science"],
+      "rows": [
+        ["Central question", "How can a system perform an intelligent task?", "How can a system learn a pattern from data?", "How can multi-layer neural networks learn representations?", "What can data tell us, and how can it support decisions?"],
+        ["Typical methods", "Search, rules, logic, planning, ML", "Regression, trees, SVM, clustering, neural networks", "CNNs, RNNs, transformers and other deep neural networks", "Statistics, SQL, visualisation, experimentation, ML and communication"],
+        ["Data requirement", "Varies by approach", "Usually relies on examples or observations", "Often data-intensive, though pretrained models can help", "Depends on the analytical question"],
+        ["Typical output", "Intelligent behaviour or action", "A learned predictor or grouping", "A learned deep representation or prediction system", "Insight, report, decision support or predictive product"],
+        ["Relationship", "Broad field", "Part of AI", "Part of ML", "Overlaps with AI/ML but is not a subset of them"]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "🎯",
+      "text": "Exam-ready relationship: AI is the broad field; ML is a subset of AI; DL is a subset of ML. Data Science overlaps with AI and ML but also includes work such as data cleaning, statistical analysis, experimentation, dashboards and communicating findings. Therefore, Data Science should not be drawn as simply another nested circle inside AI."
+    },
+    {
+      "type": "h2",
+      "text": "13. Quick Revision: Common Misconceptions to Avoid"
+    },
+    {
+      "type": "table",
+      "headers": ["Incorrect statement", "Correct understanding"],
+      "rows": [
+        ["Every AI system uses machine learning.", "AI can also use rules, search, logic and planning without learning from data."],
+        ["Deep learning and machine learning are the same.", "Deep learning is one family of machine-learning methods based on multi-layer neural networks."],
+        ["Unsupervised learning means there is no evaluation.", "Evaluation is possible, but it may use internal criteria, expert judgement or external labels rather than direct training labels."],
+        ["Online learning always means learning from one record at a time.", "It can update from one example or a small mini-batch at a time."],
+        ["More features always improve accuracy.", "Irrelevant, noisy or redundant features can harm generalisation."],
+        ["Normalization makes every feature normally distributed.", "Scaling changes numerical scale; it does not necessarily change distribution shape."],
+        ["A low p-value is the probability that the null hypothesis is true.", "A p-value is calculated assuming the null hypothesis and test assumptions are true."],
+        ["A model with perfect training accuracy is excellent.", "It may be overfitting; performance on unseen data is essential."],
+        ["All outliers should be deleted.", "Outliers may be errors or important rare events; investigate before deciding."],
+        ["Data augmentation can be applied before splitting the dataset.", "Split first and augment training data only to avoid leakage."]
+      ]
+    },
+    {
+      "type": "callout",
+      "icon": "📚",
+      "text": "For long-answer questions, use this structure: definition → explanation of the working principle → diagram or formula where relevant → comparison table or example → advantages and limitations → short conclusion. This makes answers organised, technically complete and easier to evaluate."
+    },
+    {
+      "type": "h2",
       "text": "Quiz: Test Your Understanding"
     },
     {
